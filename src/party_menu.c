@@ -1532,6 +1532,20 @@ static u16 PartyMenuButtonHandler(s8 *slotPtr)
         return A_BUTTON; // Select is allowed to act as the A Button while CursorCb_Switch is active.
     }
     
+
+    if (JOY_NEW(START_BUTTON) && CalculatePlayerPartyCount() >= 1 && !IsInvalidPartyMenuActionType(gPartyMenu.action))
+    {
+        if (gPartyMenu.menuType != PARTY_MENU_TYPE_FIELD)
+            return START_BUTTON;
+        if (gPartyMenu.action != PARTY_ACTION_SWITCH)
+        {
+            gLastViewedMonIndex = gPartyMenu.slotId;
+            CreateTask(CursorCb_Summary, 1);
+            return START_BUTTON;
+        }
+        return A_BUTTON; // Select is allowed to act as the A Button while CursorCb_Switch is active.
+    }
+
     if (JOY_NEW(START_BUTTON))
         return START_BUTTON;
 
