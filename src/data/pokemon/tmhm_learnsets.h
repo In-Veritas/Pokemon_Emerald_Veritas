@@ -5543,6 +5543,7 @@ const union {
         .THIEF = TRUE,
         .STEEL_WING = TRUE,
         .CUT = TRUE,
+        .FLY = TRUE,
         .STRENGTH = TRUE,
         .ROCK_SMASH = TRUE,
     } },
