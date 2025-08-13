@@ -100,18 +100,6 @@ static void SetDefaultOptions(void)
     gSaveBlock2Ptr->optionsBattleSceneOff = FALSE;
     gSaveBlock2Ptr->regionMapZoom = FALSE;
     gSaveBlock2Ptr->optionsBattleItemAnimation = OPTIONS_ITEM_ANIMATION_NORMAL; // Added option to change Item Use Battle animation
-    FlagSet(FLAG_ENABLE_SURFOVERWORLD); // Set the Surfing Overworld Sprites enabled by default
-    FlagSet(FLAG_ENABLE_FOLLOWER); // Set the Overworld Follower enabled by default
-    /*
-    Other Options using Flags not touched as they default to 0/FALSE and don't need to be manually cleared:
-    FLAG_SHOW_STAT_EDITOR (Also relies on FLAG_ENABLE_STAT_EDITOR unlocked in post-game)
-    FLAG_DISABLE_BIKEMUSIC
-    FLAG_DISABLE_SURFMUSIC
-    FLAG_ENABLE_AUTORUN
-    FLAG_ENABLE_FASTSURF
-    FLAG_SWAP_FONT
-    FLAG_ENABLE_FISHCANTESCAPE
-    */
 }
 
 static void ClearPokedexFlags(void)
@@ -243,6 +231,18 @@ void NewGameInitData(void)
     SetPlayerSecretBaseCoords(-1, -1, WARP_ID_NONE, -1, -1);
     
     FlagSet(FLAG_HIDE_TYPE_EFFECT_BATTLE); // Set to not show Type Effectiveness by default
+    FlagSet(FLAG_ENABLE_SURFOVERWORLD); // Set the Surfing Overworld Sprites enabled by default
+    FlagSet(FLAG_ENABLE_FOLLOWER); // Set the Overworld Follower enabled by default
+    /*
+    Other Options using Flags not touched as they default to 0/FALSE and don't need to be manually cleared:
+    FLAG_SHOW_STAT_EDITOR (Also relies on FLAG_ENABLE_STAT_EDITOR unlocked in post-game)
+    FLAG_DISABLE_BIKEMUSIC
+    FLAG_DISABLE_SURFMUSIC
+    FLAG_ENABLE_AUTORUN
+    FLAG_ENABLE_FASTSURF
+    FLAG_SWAP_FONT
+    FLAG_ENABLE_FISHCANTESCAPE
+    */
 }
 
 static void ResetMiniGamesRecords(void)
