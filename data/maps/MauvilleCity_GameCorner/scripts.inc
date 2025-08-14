@@ -364,6 +364,7 @@ MauvilleCity_GameCorner_EventScript_GotPorygonPrize::
 	setvar 0x8005, TRAINER_WATTSON_3
 	special HasRematchBeenFought
 	goto_if_eq VAR_RESULT, TRUE, MauvilleCity_Gym_EventScript_PorygonUpgradePrize
+	goto_if_eq FLAG_NATIONAL_DEX_MODE, TRUE, MauvilleCity_Gym_EventScript_PorygonUpgradePrize
 	msgbox MauvilleCity_GameCorner_Text_ClaimedPorygon, MSGBOX_DEFAULT
 	closemessage
 	end
