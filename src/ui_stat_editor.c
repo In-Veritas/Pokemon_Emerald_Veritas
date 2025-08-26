@@ -927,7 +927,7 @@ static void ChangeAndUpdateStat()
 #define EDITING_IVS     1
 
 #define CHECK_IF_STAT_CANT_INCREASE (((sStatEditorDataPtr->editingStat == ((sStatEditorDataPtr->selector_x == EDITING_EVS) ? (EV_MAX_SINGLE_STAT) : (IV_MAX_SINGLE_STAT))) \
-                                     || ((sStatEditorDataPtr->selector_x == EDITING_EVS) && (sStatEditorDataPtr->evTotal == EV_MAX_TOTAL))))
+                                     || ((sStatEditorDataPtr->selector_x == EDITING_EVS) && (sStatEditorDataPtr->evTotal >= EV_MAX_TOTAL))))
 
 static void HandleEditingStatInput(u32 input)
 {
@@ -974,7 +974,11 @@ static void HandleEditingStatInput(u32 input)
             for (iterator = 0; iterator < INCREASE_DECREASE_AMOUNT; iterator++)
             {
                 if(!CHECK_IF_STAT_CANT_INCREASE)
+                {
                     sStatEditorDataPtr->editingStat++;
+                    if((sStatEditorDataPtr->selector_x == EDITING_EVS))
+                        sStatEditorDataPtr->evTotal++;
+                }
                 else
                     break;
             }
@@ -983,7 +987,11 @@ static void HandleEditingStatInput(u32 input)
             for (iterator = 0; iterator < BULK_INCREASE_DECREASE_AMOUNT; iterator++)
             {
                 if(!CHECK_IF_STAT_CANT_INCREASE)
+                {
                     sStatEditorDataPtr->editingStat++;
+                    if((sStatEditorDataPtr->selector_x == EDITING_EVS))
+                        sStatEditorDataPtr->evTotal++;
+                }
                 else
                     break;
             }
