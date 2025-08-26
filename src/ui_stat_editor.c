@@ -754,13 +754,13 @@ static void SelectorCallback(struct Sprite *sprite)
         {{188, 110 + 20}, {220, 110 + 20}}, // Thanks Jaizu
     };
 
-    if(sStatEditorDataPtr->inputMode == INPUT_EDIT_STAT)
+    if (sStatEditorDataPtr->inputMode == INPUT_EDIT_STAT)
     {
-        if(sprite->data[0] == 32)
+        if (sprite->data[0] == 32)
         {
             sprite->invisible = TRUE;
         }
-        if(sprite->data[0] >= 48)
+        if (sprite->data[0] >= 48)
         {
             sprite->invisible = FALSE;
             sprite->data[0] = 0;
@@ -820,11 +820,11 @@ static void Task_StatEditorMain(u8 taskId) // input control when first loaded in
         PrintTitleToWindowEditState();
         sStatEditorDataPtr->inputMode = INPUT_EDIT_STAT;
         gTasks[taskId].func = Task_MenuEditingStat;
-        if(sStatEditorDataPtr->editingStat == 0)
+        if (sStatEditorDataPtr->editingStat == 0)
             StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 1);
-        if((sStatEditorDataPtr->editingStat == 255 || (sStatEditorDataPtr->evTotal == 510)) && (sStatEditorDataPtr->selector_x == 0))
+        if ((sStatEditorDataPtr->editingStat == 255 || (sStatEditorDataPtr->evTotal == 510)) && (sStatEditorDataPtr->selector_x == 0))
             StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 2);
-        if((sStatEditorDataPtr->editingStat == 31) && (sStatEditorDataPtr->selector_x == 1))
+        if ((sStatEditorDataPtr->editingStat == 31) && (sStatEditorDataPtr->selector_x == 1))
             StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 2);
         return;
     }
@@ -858,7 +858,7 @@ static void Task_StatEditorMain(u8 taskId) // input control when first loaded in
     }
     if (JOY_NEW(DPAD_LEFT) || JOY_NEW(DPAD_RIGHT))
     {
-        if(sStatEditorDataPtr->selector_x == 0)
+        if (sStatEditorDataPtr->selector_x == 0)
             sStatEditorDataPtr->selector_x = 1;
         else
             sStatEditorDataPtr->selector_x = 0; 
@@ -932,13 +932,13 @@ static void ChangeAndUpdateStat()
 static void HandleEditingStatInput(u32 input)
 {
     u16 iterator = 0;
-    if((input <= EDIT_INPUT_MAX_INCREASE_STATE) && CHECK_IF_STAT_CANT_INCREASE)
+    if ((input <= EDIT_INPUT_MAX_INCREASE_STATE) && CHECK_IF_STAT_CANT_INCREASE)
     {
         StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 2);
         return;
     }
 
-    if((input >= EDIT_INPUT_DECREASE_STATE) && (sStatEditorDataPtr->editingStat == STAT_MINIMUM))
+    if ((input >= EDIT_INPUT_DECREASE_STATE) && (sStatEditorDataPtr->editingStat == STAT_MINIMUM))
     {
         StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 1);
         return;
@@ -952,7 +952,7 @@ static void HandleEditingStatInput(u32 input)
         case EDIT_INPUT_DECREASE_STATE:
             for (iterator = 0; iterator < INCREASE_DECREASE_AMOUNT; iterator++)
             {
-                if(!(sStatEditorDataPtr->editingStat == STAT_MINIMUM))
+                if (!(sStatEditorDataPtr->editingStat == STAT_MINIMUM))
                     sStatEditorDataPtr->editingStat--;
                 else
                     break;
@@ -961,7 +961,7 @@ static void HandleEditingStatInput(u32 input)
         case EDIT_INPUT_BULK_DECREASE_STATE:
             for (iterator = 0; iterator < BULK_INCREASE_DECREASE_AMOUNT; iterator++)
             {
-                if(!(sStatEditorDataPtr->editingStat == STAT_MINIMUM))
+                if (!(sStatEditorDataPtr->editingStat == STAT_MINIMUM))
                     sStatEditorDataPtr->editingStat--;
                 else
                     break;
@@ -973,10 +973,10 @@ static void HandleEditingStatInput(u32 input)
         case EDIT_INPUT_INCREASE_STATE:
             for (iterator = 0; iterator < INCREASE_DECREASE_AMOUNT; iterator++)
             {
-                if(!CHECK_IF_STAT_CANT_INCREASE)
+                if (!CHECK_IF_STAT_CANT_INCREASE)
                 {
                     sStatEditorDataPtr->editingStat++;
-                    if((sStatEditorDataPtr->selector_x == EDITING_EVS))
+                    if ((sStatEditorDataPtr->selector_x == EDITING_EVS))
                         sStatEditorDataPtr->evTotal++;
                 }
                 else
@@ -986,10 +986,10 @@ static void HandleEditingStatInput(u32 input)
         case EDIT_INPUT_BULK_INCREASE_STATE:
             for (iterator = 0; iterator < BULK_INCREASE_DECREASE_AMOUNT; iterator++)
             {
-                if(!CHECK_IF_STAT_CANT_INCREASE)
+                if (!CHECK_IF_STAT_CANT_INCREASE)
                 {
                     sStatEditorDataPtr->editingStat++;
-                    if((sStatEditorDataPtr->selector_x == EDITING_EVS))
+                    if ((sStatEditorDataPtr->selector_x == EDITING_EVS))
                         sStatEditorDataPtr->evTotal++;
                 }
                 else
@@ -997,13 +997,13 @@ static void HandleEditingStatInput(u32 input)
             }
             break;
         case EDIT_INPUT_MAX_INCREASE_STATE:
-            if((sStatEditorDataPtr->selector_x == EDITING_EVS))
+            if ((sStatEditorDataPtr->selector_x == EDITING_EVS))
             {
                 if (EV_MAX_TOTAL - sStatEditorDataPtr->evTotal < EV_MAX_SINGLE_STAT)
                     sStatEditorDataPtr->editingStat += EV_MAX_TOTAL - sStatEditorDataPtr->evTotal;
                 else
                     sStatEditorDataPtr->editingStat = EV_MAX_SINGLE_STAT;
-                if(sStatEditorDataPtr->editingStat > EV_MAX_SINGLE_STAT)
+                if (sStatEditorDataPtr->editingStat > EV_MAX_SINGLE_STAT)
                     sStatEditorDataPtr->editingStat = EV_MAX_SINGLE_STAT;
             }
             else
@@ -1014,9 +1014,9 @@ static void HandleEditingStatInput(u32 input)
 
     ChangeAndUpdateStat();
 
-    if(CHECK_IF_STAT_CANT_INCREASE)
+    if (CHECK_IF_STAT_CANT_INCREASE)
         StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 2);
-    else if(sStatEditorDataPtr->editingStat == STAT_MINIMUM)
+    else if (sStatEditorDataPtr->editingStat == STAT_MINIMUM)
         StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 1); 
     else
         StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 3);       
