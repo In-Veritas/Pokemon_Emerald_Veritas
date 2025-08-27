@@ -61,6 +61,7 @@ EverGrandeCity_HallOfFame_EventScript_ResetDefeatedEventLegendaries::
 	clearflag FLAG_DEFEATED_ZAPDOS
 	clearflag FLAG_DEFEATED_MOLTRES
 	clearflag FLAG_DEFEATED_SHINY_LATIAS_OR_LATIOS
+	clearflag FLAG_DEFEATED_SHINY_RAYQUAZA
 	return
 
 EverGrandeCity_HallOfFame_EventScript_ResetDefeatedStaticEncounters::

@@ -21,7 +21,7 @@
 #define FLAG_TEMP_B                 (TEMP_FLAGS_START + 0xB)  // Unused Flag
 #define FLAG_TEMP_C                 (TEMP_FLAGS_START + 0xC)  // Unused Flag
 #define FLAG_TEMP_D                 (TEMP_FLAGS_START + 0xD)  // Unused Flag
-#define FLAG_TEMP_E                 (TEMP_FLAGS_START + 0xE)  // Unused Flag
+#define FLAG_TEMP_HIDE_SPECIAL      (TEMP_FLAGS_START + 0xE)  // Used for showing and hiding special object events on specific maps.
 #define FLAG_TEMP_HIDE_FOLLOWER     (TEMP_FLAGS_START + 0xF)  // When set, follower pokemon won't be spawned
 #define FLAG_TEMP_10                (TEMP_FLAGS_START + 0x10) // Unused Flag
 #define FLAG_TEMP_11                (TEMP_FLAGS_START + 0x11)
@@ -698,8 +698,8 @@
 #define FLAG_DEFEATED_EXCLSIOR                                     0x293 // Flag for Exclsior Dev Battle
 #define FLAG_DEFEATED_SHINY_LATIAS_OR_LATIOS                       0x294 // Flag for Shiny Lati Defeated
 #define FLAG_CAUGHT_SHINY_LATIAS_OR_LATIOS                         0x295 // Flag for Shiny Lati Caught
-#define FLAG_UNUSED_0x296                                          0x296 // Unused Flag
-#define FLAG_UNUSED_0x297                                          0x297 // Unused Flag
+#define FLAG_DEFEATED_SHINY_RAYQUAZA                               0x296 // Flag for Shiny Rayquaza Defeated
+#define FLAG_CAUGHT_SHINY_RAYQUAZA                                 0x297 // Flag for Shiny Rayquaza Caught
 #define FLAG_UNUSED_0x298                                          0x298 // Unused Flag
 #define FLAG_UNUSED_0x299                                          0x299 // Unused Flag
 #define FLAG_UNUSED_0x29A                                          0x29A // Unused Flag

@@ -51,11 +51,11 @@ SouthernIsland_Interior_EventScript_CheckExclsior::
 	goto_if_unset FLAG_DEFEATED_SMITH, SouthernIsland_Interior_EventScript_HideExclsior
 	goto_if_unset FLAG_DEFEATED_METEOR_FALLS_STEVEN, SouthernIsland_Interior_EventScript_HideExclsior
 	goto_if_unset FLAG_BATTLED_JIRACHI, SouthernIsland_Interior_EventScript_HideExclsior
-	clearflag FLAG_TEMP_5
+	clearflag FLAG_TEMP_HIDE_SPECIAL
 	end
 
 SouthernIsland_Interior_EventScript_HideExclsior::
-	setflag FLAG_TEMP_5
+	setflag FLAG_TEMP_HIDE_SPECIAL
 	end
 
 SouthernIsland_Interior_EventScript_Typhlosion::
