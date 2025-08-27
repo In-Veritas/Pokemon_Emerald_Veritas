@@ -1288,8 +1288,8 @@
 #define FLAG_DISABLE_SURFMUSIC                                      0x4DC // Flag for disabling Surf music when surfing
 #define FLAG_DISABLE_BIKEMUSIC                                      0x4DD // Flag for disabling Bike music when biking
 #define FLAG_ENABLE_NICKNAME                                        0x4DE // Flag for enabling use of Nickname changer within Party Menu
-#define FLAG_UNUSED_0x4DF                                           0x4DF // Unused Flag
-#define FLAG_UNUSED_0x4E0                                           0x4E0 // Unused Flag
+#define FLAG_ENABLE_FASTMODE                                        0x4DF // Flag for enabling and disabling Fast Mode
+#define FLAG_ENABLE_FASTWATERING                                    0x4E0 // Flag for faster berry watering
 #define FLAG_UNUSED_0x4E1                                           0x4E1 // Unused Flag
 #define FLAG_UNUSED_0x4E2                                           0x4E2 // Unused Flag
 #define FLAG_UNUSED_0x4E3                                           0x4E3 // Unused Flag
