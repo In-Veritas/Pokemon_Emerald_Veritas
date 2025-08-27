@@ -48,6 +48,8 @@ enum
     MENUITEM_BATTLE_HARDMODE,
     MENUITEM_MAIN_BATTLESCENE,
     MENUITEM_MAIN_BATTLESTYLE,
+    MENUITEM_BATTLE_FAST_INTRO,
+    MENUITEM_BATTLE_FAST_BATTLES,
     MENUITEM_CUSTOM_HP_BAR,
     MENUITEM_CUSTOM_EXP_BAR,
     MENUITEM_BATTLE_ITEMANIMATE,
@@ -211,6 +213,8 @@ static void DrawChoices_MonOverworld(int selection, int y);
 static void DrawChoices_SurfOverworld(int selection, int y);
 static void DrawChoices_ItemAnimate(int selection, int y);
 static void DrawChoices_TypeEffect(int selection, int y);
+static void DrawChoices_FastIntro(int selection, int y);
+static void DrawChoices_FastBattles(int selection, int y);
 static void DrawChoices_HardMode(int selection, int y);
 static void DrawChoices_FrameType(int selection, int y);
 static void DrawChoices_Font(int selection, int y);
@@ -268,6 +272,8 @@ struct // MENU_BATTLE
     [MENUITEM_MAIN_BATTLESTYLE]     = {DrawChoices_BattleStyle, ProcessInput_Options_Two},
     [MENUITEM_BATTLE_ITEMANIMATE]   = {DrawChoices_ItemAnimate, ProcessInput_Options_Four},
     [MENUITEM_BATTLE_TYPEEFFECT]    = {DrawChoices_TypeEffect,  ProcessInput_Options_Two},
+    [MENUITEM_BATTLE_FAST_INTRO]    = {DrawChoices_FastIntro,   ProcessInput_Options_Two},
+    [MENUITEM_BATTLE_FAST_BATTLES]  = {DrawChoices_FastBattles, ProcessInput_Options_Two},
     [MENUITEM_BATTLE_HARDMODE]      = {DrawChoices_HardMode,    ProcessInput_Options_Three},
     [MENUITEM_BATTLE_CANCEL]        = {NULL, NULL},
 };
@@ -321,6 +327,8 @@ static const u8 sText_ExpBar[]      = _("EXP BAR SPEED");
 static const u8 sText_HardMode[]    = _("BATTLE MODE");
 static const u8 sText_TypeEffect[]  = _("TYPE EFFECTS");
 static const u8 sText_ItemAnimate[] = _("ITEM ANIMATION");
+static const u8 sText_FastIntro[]   = _("FAST INTRO");
+static const u8 sText_FastBattles[] = _("FAST BATTLES");
 static const u8 *const sOptionMenuItemsNamesBattle[MENUITEM_BATTLE_COUNT] =
 {
     [MENUITEM_CUSTOM_HP_BAR]        = sText_HpBar,
@@ -329,6 +337,10 @@ static const u8 *const sOptionMenuItemsNamesBattle[MENUITEM_BATTLE_COUNT] =
     [MENUITEM_MAIN_BATTLESTYLE]     = gText_BattleStyle,
     [MENUITEM_BATTLE_ITEMANIMATE]   = sText_ItemAnimate,
     [MENUITEM_BATTLE_TYPEEFFECT]    = sText_TypeEffect,
+    [MENUITEM_BATTLE_FAST_INTRO]    = sText_FastIntro,
+    [MENUITEM_BATTLE_FAST_BATTLES]  = sText_FastBattles,
+
+
     [MENUITEM_BATTLE_HARDMODE]      = sText_HardMode,
     [MENUITEM_BATTLE_CANCEL]        = gText_OptionMenuSave,
 };
@@ -424,6 +436,8 @@ static bool8 CheckConditions(int selection)
         }
         case MENUITEM_BATTLE_ITEMANIMATE:     return TRUE;
         case MENUITEM_BATTLE_TYPEEFFECT:      return TRUE;
+        case MENUITEM_BATTLE_FAST_INTRO:      return TRUE;
+        case MENUITEM_BATTLE_FAST_BATTLES:    return TRUE;
         case MENUITEM_BATTLE_HARDMODE:
         {
             if (!FlagGet(FLAG_DEFEATED_METEOR_FALLS_STEVEN))
@@ -515,6 +529,10 @@ static const u8 sText_Desc_ItemAnimateMinimal[]     = _("Minimal in-battle item 
 static const u8 sText_Desc_ItemAnimateNone[]        = _("No in-battle item animation.\nAnimation skipped.");
 static const u8 sText_Desc_TypeEffect_On[]          = _("Show move type effect in battle.\nGreen: Super, Red: Not very, Grey: No");
 static const u8 sText_Desc_TypeEffect_Off[]         = _("Original experience, does not show\nmove type effectiveness in battle.");
+static const u8 sText_Desc_FastIntroOn[]            = _("Skip the sliding animation\nand enter battles faster.");
+static const u8 sText_Desc_FastIntroOff[]           = _("Original Experience.\nBattles load at the usual speed.");
+static const u8 sText_Desc_FastBattleOn[]           = _("Skips all delays in battles, which\nmakes them faster.");
+static const u8 sText_Desc_FastBattleOff[]          = _("Original Experience.\nYou can press {A_BUTTON} or {B_BUTTON} to skip delays.");
 static const u8 sText_Desc_HardMode_Off[]           = _("Original experience.\nNo extra restrictions in battle.");
 static const u8 sText_Desc_HardMode_Hard[]          = _("SET mode, no items in battle,\nGYM level caps.");
 static const u8 sText_Desc_HardMode_Hardcore[]      = _("Hard mode, but POKéMON can't\nbe revived.");
@@ -526,6 +544,8 @@ static const u8 *const sOptionMenuItemDescriptionsBattle[MENUITEM_BATTLE_COUNT][
     [MENUITEM_MAIN_BATTLESTYLE]         = {sText_Desc_BattleStyle_Shift,    sText_Desc_BattleStyle_Set,     sText_Empty},
     [MENUITEM_BATTLE_ITEMANIMATE]       = {sText_Desc_ItemAnimateNormal,    sText_Desc_ItemAnimateReduced,  sText_Desc_ItemAnimateMinimal,  sText_Desc_ItemAnimateNone},
     [MENUITEM_BATTLE_TYPEEFFECT]        = {sText_Desc_TypeEffect_On,        sText_Desc_TypeEffect_Off,      sText_Empty},
+    [MENUITEM_BATTLE_FAST_INTRO]        = {sText_Desc_FastIntroOn,              sText_Desc_FastIntroOff},
+    [MENUITEM_BATTLE_FAST_BATTLES]      = {sText_Desc_FastBattleOn,             sText_Desc_FastBattleOff},
     [MENUITEM_BATTLE_HARDMODE]          = {sText_Desc_HardMode_Off,         sText_Desc_HardMode_Hard,       sText_Desc_HardMode_Hardcore},
     [MENUITEM_BATTLE_CANCEL]            = {sText_Desc_Save,                 sText_Empty,                    sText_Empty,                    sText_Empty},
 };
@@ -538,7 +558,7 @@ static const u8 sText_Desc_OverworldSpeed_4x[]          = _("4x standard player 
 static const u8 sText_Desc_OverworldSpeed_8x[]          = _("8x standard player and NPC speed.\nHold {R_BUTTON} button for standard speed.");
 static const u8 sText_Desc_ImprovedFishing_On[]         = _("Improved Fishing.\nFish are not able to escape.");
 static const u8 sText_Desc_ImprovedFishing_Off[]        = _("Fish as usual.\nFish may escape if not reeled in.");
-static const u8 sText_Desc_FastWatering_On[]            = _("Faster BERRY Watering.\nIncreases speed of watering BERRY PLANTS.");
+static const u8 sText_Desc_FastWatering_On[]            = _("Faster BERRY Watering.\nIncrease BERRY PLANT watering speed.");
 static const u8 sText_Desc_FastWatering_Off[]           = _("Original Experience.\nWater BERRY PLANTS at normal speed.");
 static const u8 sText_Desc_BikeOff[]                    = _("Disables the BIKE music when you\nstart riding the BIKE.");
 static const u8 sText_Desc_BikeOn[]                     = _("Enables the BIKE music when you\nstart riding the BIKE.");
@@ -596,6 +616,8 @@ static const u8 *const sOptionMenuItemDescriptionsDisabledBattle[MENUITEM_BATTLE
     [MENUITEM_CUSTOM_EXP_BAR]     = sText_Empty,
     [MENUITEM_MAIN_BATTLESCENE] = sText_Empty,
     [MENUITEM_MAIN_BATTLESTYLE] = sText_Desc_Disabled_BattleStyle,
+    [MENUITEM_BATTLE_FAST_INTRO]          = sText_Empty,
+    [MENUITEM_BATTLE_FAST_BATTLES]        = sText_Empty,
     [MENUITEM_BATTLE_HARDMODE] = sText_Desc_Disabled_Hardmode,
     [MENUITEM_BATTLE_CANCEL]      = sText_Empty,
     
@@ -885,6 +907,8 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel_battle[MENUITEM_MAIN_BATTLESCENE] = gSaveBlock2Ptr->optionsBattleSceneOff;
         sOptions->sel_battle[MENUITEM_BATTLE_ITEMANIMATE]   = gSaveBlock2Ptr->optionsBattleItemAnimation;
         sOptions->sel_battle[MENUITEM_BATTLE_TYPEEFFECT]    = FlagGet(FLAG_HIDE_TYPE_EFFECT_BATTLE);
+        sOptions->sel_battle[MENUITEM_BATTLE_FAST_INTRO]    = !FlagGet(FLAG_ENABLE_FAST_BATTLE_INTRO);
+        sOptions->sel_battle[MENUITEM_BATTLE_FAST_BATTLES]  = !FlagGet(FLAG_ENABLE_FAST_BATTLE);
         if (FlagGet(FLAG_HARD) || FlagGet(FLAG_NUZLOCKE))
         {
             sOptions->sel_battle[MENUITEM_MAIN_BATTLESTYLE] = OPTIONS_BATTLE_STYLE_SET;
@@ -1174,7 +1198,9 @@ static void Task_OptionMenuSave(u8 taskId)
     gSaveBlock2Ptr->optionsBattleSceneOff                   = sOptions->sel_battle[MENUITEM_MAIN_BATTLESCENE];
     gSaveBlock2Ptr->optionsBattleStyle                      = sOptions->sel_battle[MENUITEM_MAIN_BATTLESTYLE];
     gSaveBlock2Ptr->optionsBattleItemAnimation              = sOptions->sel_battle[MENUITEM_BATTLE_ITEMANIMATE];
-    sOptions->sel_battle[MENUITEM_BATTLE_TYPEEFFECT] == 0   ? FlagClear(FLAG_HIDE_TYPE_EFFECT_BATTLE)   : FlagSet(FLAG_HIDE_TYPE_EFFECT_BATTLE);
+    sOptions->sel_battle[MENUITEM_BATTLE_TYPEEFFECT] == 0   ? FlagClear(FLAG_HIDE_TYPE_EFFECT_BATTLE) : FlagSet(FLAG_HIDE_TYPE_EFFECT_BATTLE);
+    sOptions->sel_battle[MENUITEM_BATTLE_FAST_INTRO] == 0   ? FlagSet(FLAG_ENABLE_FAST_BATTLE_INTRO)  : FlagClear(FLAG_ENABLE_FAST_BATTLE_INTRO);   // Used the inverse to align with other similar options.
+    sOptions->sel_battle[MENUITEM_BATTLE_FAST_BATTLES] == 0 ? FlagSet(FLAG_ENABLE_FAST_BATTLE)        : FlagClear(FLAG_ENABLE_FAST_BATTLE);         // Used the inverse to align with other similar options.
     
     switch (sOptions->sel_battle[MENUITEM_BATTLE_HARDMODE])
     {
@@ -1484,6 +1510,24 @@ static void DrawChoices_TypeEffect(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_BATTLE_TYPEEFFECT);
     DrawOptionMenuChoiceStrings(selection, y, active, sTypeEffectStrings, 2);
+}
+
+static const u8 sText_FastIntro_On[]   = _("ON");
+static const u8 sText_FastIntro_Off[]  = _("OFF");
+static const u8 *const sFastIntroStrings[] = {sText_FastIntro_On, sText_FastIntro_Off};
+static void DrawChoices_FastIntro(int selection, int y)
+{
+    bool8 active = CheckConditions(MENUITEM_BATTLE_FAST_INTRO);
+    DrawOptionMenuChoiceStrings(selection, y, active, sFastIntroStrings, 2);
+}
+
+static const u8 sText_FastBattle_On[]   = _("ON");
+static const u8 sText_FastBattle_Off[]  = _("OFF");
+static const u8 *const sFastBattleStrings[] = {sText_FastBattle_On, sText_FastBattle_Off};
+static void DrawChoices_FastBattles(int selection, int y)
+{
+    bool8 active = CheckConditions(FLAG_ENABLE_FAST_BATTLE);
+    DrawOptionMenuChoiceStrings(selection, y, active, sFastBattleStrings, 2);
 }
 
 static const u8 sText_HardMode_Off[]        = _("NORMAL");

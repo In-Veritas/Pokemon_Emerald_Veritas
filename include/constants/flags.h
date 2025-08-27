@@ -1290,8 +1290,8 @@
 #define FLAG_ENABLE_NICKNAME                                        0x4DE // Flag for enabling use of Nickname changer within Party Menu
 #define FLAG_ENABLE_FASTMODE                                        0x4DF // Flag for enabling and disabling Fast Mode
 #define FLAG_ENABLE_FASTWATERING                                    0x4E0 // Flag for faster berry watering
-#define FLAG_UNUSED_0x4E1                                           0x4E1 // Unused Flag
-#define FLAG_UNUSED_0x4E2                                           0x4E2 // Unused Flag
+#define FLAG_ENABLE_FAST_BATTLE_INTRO                               0x4E1 // Flag for enabling faster battle introduction
+#define FLAG_ENABLE_FAST_BATTLE                                     0x4E2 // Flag for enabling auto skip for battle pauses
 #define FLAG_UNUSED_0x4E3                                           0x4E3 // Unused Flag
 #define FLAG_UNUSED_0x4E4                                           0x4E4 // Unused Flag
 #define FLAG_UNUSED_0x4E5                                           0x4E5 // Unused Flag

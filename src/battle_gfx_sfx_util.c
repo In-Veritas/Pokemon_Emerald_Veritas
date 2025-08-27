@@ -25,6 +25,7 @@
 #include "constants/songs.h"
 #include "constants/rgb.h"
 #include "constants/battle_palace.h"
+#include "event_data.h"
 
 extern const u8 gBattlePalaceNatureToMoveTarget[];
 extern const u8 * const gBattleAnims_General[];
@@ -385,6 +386,18 @@ void SpriteCB_TrainerSlideIn(struct Sprite *sprite)
             else
                 sprite->callback = SpriteCallbackDummy;
         }
+    }
+}
+
+void SpriteCB_TrainerSpawn(struct Sprite *sprite)
+{
+    if (!(gIntroSlideFlags & 1))
+    {
+        sprite->x2 = 0;
+        if (sprite->y2 != 0)
+            sprite->callback = SpriteCB_TrainerSlideVertical;
+        else
+            sprite->callback = SpriteCallbackDummy;
     }
 }
 
