@@ -823,6 +823,13 @@ static const u16 sRarePickupItems[] =
     ITEM_RARE_CANDY,
 };
 
+static const u16 sVowelPickupItems[] =
+{
+    ITEM_ETHER,
+    ITEM_ULTRA_BALL,
+    ITEM_IRON,
+};
+
 static const u8 sPickupProbabilities[] =
 {
     30, 40, 50, 60, 70, 80, 90, 94, 98
@@ -9736,8 +9743,11 @@ static void Cmd_getsecretpowereffect(void)
 static void Cmd_pickup(void)
 {
     s32 i;
-    u16 species, heldItem;
+    u16 species, heldItem, pickedupItem;
     u8 ability;
+    u8 pickedUp = 0;
+    u8 monIdx;
+    bool8 doesItemStartWithVowel = FALSE;
 
     if (InBattlePike())
     {
@@ -9763,6 +9773,8 @@ static void Cmd_pickup(void)
             {
                 heldItem = GetBattlePyramidPickupItemId();
                 SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
+
+                pickedUp++;
             }
         }
     }
@@ -9794,12 +9806,26 @@ static void Cmd_pickup(void)
                 {
                     if (sPickupProbabilities[j] > rand)
                     {
-                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &sPickupItems[lvlDivBy10 + j]);
+                        heldItem = sPickupItems[lvlDivBy10 + j];
+                        monIdx = i;
+
+                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
+
+                        pickedupItem = heldItem;
+                        pickedUp++;
+
                         break;
                     }
                     else if (rand == 99 || rand == 98)
                     {
-                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &sRarePickupItems[lvlDivBy10 + (99 - rand)]);
+                        heldItem = sRarePickupItems[lvlDivBy10 + (99 - rand)];
+                        monIdx = i;
+
+                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
+
+                        pickedupItem = heldItem;
+                        pickedUp++;
+
                         break;
                     }
                 }
@@ -9807,7 +9833,38 @@ static void Cmd_pickup(void)
         }
     }
 
-    gBattlescriptCurrInstr++;
+    if (pickedUp > 1)
+    {
+        PREPARE_BYTE_NUMBER_BUFFER(gBattleTextBuff1, 1, pickedUp);
+
+        BattleScriptPush(gBattlescriptCurrInstr + 1);
+        gBattlescriptCurrInstr = BattleScript_PrintPickupMultipleString;
+    }
+    else if (pickedUp == 1)
+    {
+        PREPARE_MON_NICK_BUFFER(gBattleTextBuff1, 0, monIdx);
+        PREPARE_ITEM_BUFFER(gBattleTextBuff2, pickedupItem);
+        
+        BattleScriptPush(gBattlescriptCurrInstr + 1);
+        
+        for (i = 0; i < (int)ARRAY_COUNT(sVowelPickupItems); i++)
+        {
+            if (pickedupItem == sVowelPickupItems[i])
+            {
+                doesItemStartWithVowel = TRUE;
+                break;
+            }   
+        }
+
+        if (doesItemStartWithVowel)
+            gBattlescriptCurrInstr = BattleScript_PrintPickupStringVowelItem;
+        else
+            gBattlescriptCurrInstr = BattleScript_PrintPickupString;
+    }
+    else
+    {
+        gBattlescriptCurrInstr++;
+    }
 }
 
 static void Cmd_docastformchangeanimation(void)

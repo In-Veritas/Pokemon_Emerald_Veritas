@@ -3898,6 +3898,21 @@ BattleScript_PrintPayDayMoneyString::
 	waitmessage B_WAIT_TIME_LONG
 	return
 
+BattleScript_PrintPickupString::
+	printstring STRINGID_POKEMONPICKUP
+	waitmessage B_WAIT_TIME_LONG
+	return
+
+BattleScript_PrintPickupStringVowelItem::
+	printstring STRINGID_POKEMONPICKUPVOWELITEMS
+	waitmessage B_WAIT_TIME_LONG
+	return
+
+BattleScript_PrintPickupMultipleString::
+	printstring STRINGID_POKEMONPICKUPMULTIPLE
+	waitmessage B_WAIT_TIME_LONG
+	return
+
 BattleScript_WrapTurnDmg::
 	playanimation BS_ATTACKER, B_ANIM_TURN_TRAP, sB_ANIM_ARG1
 	printstring STRINGID_PKMNHURTBY
