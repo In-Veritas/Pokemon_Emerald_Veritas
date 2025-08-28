@@ -9833,14 +9833,14 @@ static void Cmd_pickup(void)
         }
     }
 
-    if (pickedUp > 1)
+    if (pickedUp > 1 && FlagGet(FLAG_ENABLE_PICKUP_TEXT))
     {
         PREPARE_BYTE_NUMBER_BUFFER(gBattleTextBuff1, 1, pickedUp);
 
         BattleScriptPush(gBattlescriptCurrInstr + 1);
         gBattlescriptCurrInstr = BattleScript_PrintPickupMultipleString;
     }
-    else if (pickedUp == 1)
+    else if (pickedUp == 1 && FlagGet(FLAG_ENABLE_PICKUP_TEXT))
     {
         PREPARE_MON_NICK_BUFFER(gBattleTextBuff1, 0, monIdx);
         PREPARE_ITEM_BUFFER(gBattleTextBuff2, pickedupItem);
