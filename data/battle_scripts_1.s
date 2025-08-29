@@ -1108,8 +1108,15 @@ BattleScript_EffectAccuracyDownHit::
 	goto BattleScript_EffectHit
 
 BattleScript_EffectSkyAttack::
+	attackcanceler
 	ppreduce
-	goto BattleScript_TwoTurnMovesSecondTurn
+	setmoveeffect MOVE_EFFECT_CHARGING
+	setbyte sB_ANIM_TURN, 1
+	clearstatusfromeffect BS_ATTACKER
+	orword gHitMarker, HITMARKER_NO_PPDEDUCT
+	setmoveeffect MOVE_EFFECT_FLINCH
+	goto BattleScript_HitFromAccCheck
+	@goto BattleScript_TwoTurnMovesSecondTurn
 	@jumpifstatus2 BS_ATTACKER, STATUS2_MULTIPLETURNS, BattleScript_TwoTurnMovesSecondTurn
 	@jumpifword CMP_COMMON_BITS, gHitMarker, HITMARKER_NO_ATTACKSTRING, BattleScript_TwoTurnMovesSecondTurn
 	@setbyte sTWOTURN_STRINGID, B_MSG_TURN1_SKY_ATTACK
@@ -3891,6 +3898,21 @@ BattleScript_PrintPayDayMoneyString::
 	waitmessage B_WAIT_TIME_LONG
 	return
 
+BattleScript_PrintPickupString::
+	printstring STRINGID_POKEMONPICKUP
+	waitmessage B_WAIT_TIME_LONG
+	return
+
+BattleScript_PrintPickupStringVowelItem::
+	printstring STRINGID_POKEMONPICKUPVOWELITEMS
+	waitmessage B_WAIT_TIME_LONG
+	return
+
+BattleScript_PrintPickupMultipleString::
+	printstring STRINGID_POKEMONPICKUPMULTIPLE
+	waitmessage B_WAIT_TIME_LONG
+	return
+
 BattleScript_WrapTurnDmg::
 	playanimation BS_ATTACKER, B_ANIM_TURN_TRAP, sB_ANIM_ARG1
 	printstring STRINGID_PKMNHURTBY
@@ -4625,6 +4647,14 @@ BattleScript_PrintPlayerForfeitedLinkBattle::
 	endlinkbattle
 	waitmessage B_WAIT_TIME_LONG
 	end2
+
+BattleScript_AttackBoostedByAbility::
+	printstring STRINGID_ATTACKBOOSTEDBYABILITY
+	return
+
+BattleScript_MagmaArmorActivated::
+	printstring STRINGID_MAGMAARMORACTIVATED
+	return
 
 BattleScript_HeldItemAnimation_Scripting::
 	jumpifbyte CMP_EQUAL, sBATTLE_ITEM_ANIMATION, OPTIONS_ITEM_ANIMATION_NORMAL, BattleScript_HeldItemAnimationNormal_Scripting

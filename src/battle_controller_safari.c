@@ -23,6 +23,7 @@
 #include "constants/battle_anim.h"
 #include "constants/songs.h"
 #include "constants/rgb.h"
+#include "event_data.h"
 
 static void SafariHandleGetMonData(void);
 static void SafariHandleGetRawMonData(void);
@@ -230,6 +231,13 @@ static void HandleInputChooseAction(void)
             ActionSelectionCreateCursorAt(gActionSelectionCursor[gActiveBattler], 0);
         }
     }
+    else if (JOY_NEW(B_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        ActionSelectionDestroyCursorAt(gActionSelectionCursor[gActiveBattler]);
+        gActionSelectionCursor[gActiveBattler] = 3;
+        ActionSelectionCreateCursorAt(gActionSelectionCursor[gActiveBattler], 0);
+    }
 }
 
 static void CompleteOnBattlerSpriteCallbackDummy(void)
@@ -362,7 +370,11 @@ static void SafariHandleDrawTrainerPic(void)
     gSprites[gBattlerSpriteIds[gActiveBattler]].oam.paletteNum = gActiveBattler;
     gSprites[gBattlerSpriteIds[gActiveBattler]].x2 = DISPLAY_WIDTH;
     gSprites[gBattlerSpriteIds[gActiveBattler]].sSpeedX = -2;
-    gSprites[gBattlerSpriteIds[gActiveBattler]].callback = SpriteCB_TrainerSlideIn;
+    if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE_INTRO) || FlagGet(FLAG_ENABLE_FASTMODE)))
+        gSprites[gBattlerSpriteIds[gActiveBattler]].callback = SpriteCB_TrainerSlideIn;
+    else
+        gSprites[gBattlerSpriteIds[gActiveBattler]].callback = SpriteCB_TrainerSpawn;
+    
     gBattlerControllerFuncs[gActiveBattler] = CompleteOnBattlerSpriteCallbackDummy;
 }
 

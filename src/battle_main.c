@@ -61,6 +61,7 @@
 #include "constants/songs.h"
 #include "constants/trainers.h"
 #include "cable_club.h"
+#include "event_data.h"
 
 extern const struct BgTemplate gBattleBgTemplates[];
 extern const struct WindowTemplate *const gBattleWindowTemplates[];
@@ -535,6 +536,7 @@ const struct TrainerMoney gTrainerMoneyTable[] =
     {TRAINER_CLASS_LOREKEEPER, 25},
     {TRAINER_CLASS_WALLY, 15},
     {TRAINER_CLASS_PKMN_TRAINER_1, 50},
+    {TRAINER_CLASS_PKMN_TRAINER_2, 100},
     {0xFF, 5}, // Any trainer class not listed above uses this
 };
 
@@ -649,21 +651,31 @@ static void CB2_InitBattleInternal(void)
     else
     {
         gBattle_WIN0V = WIN_RANGE(DISPLAY_HEIGHT / 2, DISPLAY_HEIGHT / 2 + 1);
-        ScanlineEffect_Clear();
-
-        for (i = 0; i < DISPLAY_HEIGHT / 2; i++)
+        if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE_INTRO) || FlagGet(FLAG_ENABLE_FASTMODE)))
         {
-            gScanlineEffectRegBuffers[0][i] = 0xF0;
-            gScanlineEffectRegBuffers[1][i] = 0xF0;
-        }
+            ScanlineEffect_Clear();
 
-        for (; i < DISPLAY_HEIGHT; i++)
-        {
-            gScanlineEffectRegBuffers[0][i] = 0xFF10;
-            gScanlineEffectRegBuffers[1][i] = 0xFF10;
-        }
+            for (i = 0; i < DISPLAY_HEIGHT / 2; i++)
+            {
+                gScanlineEffectRegBuffers[0][i] = 0xF0;
+                gScanlineEffectRegBuffers[1][i] = 0xF0;
+            }
 
-        ScanlineEffect_SetParams(sIntroScanlineParams16Bit);
+            for (; i < DISPLAY_HEIGHT; i++)
+            {
+                gScanlineEffectRegBuffers[0][i] = 0xFF10;
+                gScanlineEffectRegBuffers[1][i] = 0xFF10;
+            }
+
+            while (i < 160)
+            {
+                gScanlineEffectRegBuffers[0][i] = 0xFF10;
+                gScanlineEffectRegBuffers[1][i] = 0xFF10;
+                i++;
+            }
+
+            ScanlineEffect_SetParams(sIntroScanlineParams16Bit);
+        }
     }
 
     ResetPaletteFade();
@@ -692,7 +704,8 @@ static void CB2_InitBattleInternal(void)
     LoadBattleTextboxAndBackground();
     ResetSpriteData();
     ResetTasks();
-    DrawBattleEntryBackground();
+    if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE_INTRO) || FlagGet(FLAG_ENABLE_FASTMODE)))
+        DrawBattleEntryBackground();
     FreeAllSpritePalettes();
     gReservedSpritePaletteCount = MAX_BATTLERS_COUNT;
     SetVBlankCallback(VBlankCB_Battle);
@@ -2737,18 +2750,37 @@ u32 GetBattleWindowTemplatePixelWidth(u32 windowsType, u32 tableId)
 
 void SpriteCB_WildMon(struct Sprite *sprite)
 {
-    sprite->callback = SpriteCB_MoveWildMonToRight;
-    StartSpriteAnimIfDifferent(sprite, 0);
-    BeginNormalPaletteFade(0x20000, 0, 10, 10, RGB(8, 8, 8));
+    if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE_INTRO) || FlagGet(FLAG_ENABLE_FASTMODE)))
+    {
+        sprite->callback = SpriteCB_MoveWildMonToRight;
+        StartSpriteAnimIfDifferent(sprite, 0);
+        BeginNormalPaletteFade(0x20000, 0, 10, 10, RGB(8, 8, 8));
+    }
+    else
+    {
+        sprite->callback = SpriteCB_MoveWildMonToRight;
+        StartSpriteAnimIfDifferent(sprite, 0);
+    }
 }
 
 static void SpriteCB_MoveWildMonToRight(struct Sprite *sprite)
 {
-    if ((gIntroSlideFlags & 1) == 0)
+    if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE_INTRO) || FlagGet(FLAG_ENABLE_FASTMODE)))
     {
-        sprite->x2 += 2;
-        if (sprite->x2 == 0)
+        if ((gIntroSlideFlags & 1) == 0)
         {
+            sprite->x2 += 2;
+            if (sprite->x2 == 0)
+            {
+                sprite->callback = SpriteCB_WildMonShowHealthbox;
+            }
+        }
+    }
+    else
+    {
+        if ((gIntroSlideFlags & 1) == 0)
+        {
+            sprite->x2 = 0;
             sprite->callback = SpriteCB_WildMonShowHealthbox;
         }
     }
@@ -2758,11 +2790,21 @@ static void SpriteCB_WildMonShowHealthbox(struct Sprite *sprite)
 {
     if (sprite->animEnded)
     {
-        StartHealthboxSlideIn(sprite->sBattler);
-        SetHealthboxSpriteVisible(gHealthboxSpriteIds[sprite->sBattler]);
-        sprite->callback = SpriteCB_WildMonAnimate;
-        StartSpriteAnimIfDifferent(sprite, 0);
-        BeginNormalPaletteFade(0x20000, 0, 10, 0, RGB(8, 8, 8));
+        if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE_INTRO) || FlagGet(FLAG_ENABLE_FASTMODE)))
+        {
+            StartHealthboxSlideIn(sprite->sBattler);
+            SetHealthboxSpriteVisible(gHealthboxSpriteIds[sprite->sBattler]);
+            sprite->callback = SpriteCB_WildMonAnimate;
+            StartSpriteAnimIfDifferent(sprite, 0);
+            BeginNormalPaletteFade(0x20000, 0, 10, 0, RGB(8, 8, 8));
+        }
+        else
+        {
+            StartHealthboxSlideIn(sprite->sBattler);
+            SetHealthboxSpriteVisible(gHealthboxSpriteIds[sprite->sBattler]);
+            sprite->callback = SpriteCB_WildMonAnimate;
+            StartSpriteAnimIfDifferent(sprite, 0);
+        }
     }
 }
 
@@ -3059,6 +3101,29 @@ void SpriteCB_PlayerMonFromBall(struct Sprite *sprite)
 {
     if (sprite->affineAnimEnded)
         BattleAnimateBackSprite(sprite, sprite->sSpeciesId);
+}
+
+void SpriteCB_PlayerMonSlideIn(struct Sprite *sprite) {
+    if (sprite->data[3] == 0) {
+        PlaySE(SE_BALL_TRAY_ENTER);
+        sprite->data[3]++;
+    } else if (sprite->data[3] == 1) {
+        if (sprite->animEnded)
+            return;
+        sprite->data[4] = sprite->x;
+        sprite->x = -33;
+        sprite->invisible = FALSE;
+        sprite->data[3]++;
+    } else if (sprite->data[3] < 27) {
+        sprite->x += 4;
+        sprite->data[3]++;
+    } else {
+        sprite->data[3] = 0;
+        sprite->x = sprite->data[4];
+        sprite->data[4] = 0;
+        sprite->callback = SpriteCB_PlayerMonFromBall;
+        PlayCry_ByMode(sprite->sSpeciesId, -25, CRY_MODE_NORMAL);
+    }
 }
 
 static void SpriteCB_TrainerThrowObject_Main(struct Sprite *sprite)
@@ -3513,12 +3578,7 @@ static void BattleIntroDrawTrainersOrMonsSprites(void)
                 BtlController_EmitDrawTrainerPic(BUFFER_A);
                 MarkBattlerForControllerExec(gActiveBattler);
             }
-            if (GetBattlerSide(gActiveBattler) == B_SIDE_OPPONENT
-             && !(gBattleTypeFlags & (BATTLE_TYPE_EREADER_TRAINER
-                                      | BATTLE_TYPE_FRONTIER
-                                      | BATTLE_TYPE_LINK
-                                      | BATTLE_TYPE_RECORDED_LINK
-                                      | BATTLE_TYPE_TRAINER_HILL)))
+            if (GetBattlerSide(gActiveBattler) == B_SIDE_OPPONENT) // Updated to allow any seen pokemon to register in Pokedex
             {
                 HandleSetPokedexFlag(SpeciesToNationalPokedexNum(gBattleMons[gActiveBattler].species), FLAG_SET_SEEN, gBattleMons[gActiveBattler].personality);
             }
@@ -3527,14 +3587,9 @@ static void BattleIntroDrawTrainersOrMonsSprites(void)
         {
             if (GetBattlerSide(gActiveBattler) == B_SIDE_OPPONENT)
             {
-                if (!(gBattleTypeFlags & (BATTLE_TYPE_EREADER_TRAINER
-                                      | BATTLE_TYPE_FRONTIER
-                                      | BATTLE_TYPE_LINK
-                                      | BATTLE_TYPE_RECORDED_LINK
-                                      | BATTLE_TYPE_TRAINER_HILL)))
-                {
-                    HandleSetPokedexFlag(SpeciesToNationalPokedexNum(gBattleMons[gActiveBattler].species), FLAG_SET_SEEN, gBattleMons[gActiveBattler].personality);
-                }
+                // Updated to allow any seen pokemon to register in Pokedex
+                HandleSetPokedexFlag(SpeciesToNationalPokedexNum(gBattleMons[gActiveBattler].species), FLAG_SET_SEEN, gBattleMons[gActiveBattler].personality);
+                
                 BtlController_EmitLoadMonSprite(BUFFER_A);
                 MarkBattlerForControllerExec(gActiveBattler);
                 gBattleResults.lastOpponentSpecies = GetMonData(&gEnemyParty[gBattlerPartyIndexes[gActiveBattler]], MON_DATA_SPECIES, NULL);
@@ -3751,12 +3806,7 @@ static void BattleIntroRecordMonsToDex(void)
     {
         for (gActiveBattler = 0; gActiveBattler < gBattlersCount; gActiveBattler++)
         {
-            if (GetBattlerSide(gActiveBattler) == B_SIDE_OPPONENT
-             && !(gBattleTypeFlags & (BATTLE_TYPE_EREADER_TRAINER
-                                      | BATTLE_TYPE_FRONTIER
-                                      | BATTLE_TYPE_LINK
-                                      | BATTLE_TYPE_RECORDED_LINK
-                                      | BATTLE_TYPE_TRAINER_HILL)))
+            if (GetBattlerSide(gActiveBattler) == B_SIDE_OPPONENT) // Updated to allow any seen pokemon to register in Pokedex
             {
                 HandleSetPokedexFlag(SpeciesToNationalPokedexNum(gBattleMons[gActiveBattler].species), FLAG_SET_SEEN, gBattleMons[gActiveBattler].personality);
             }
@@ -5050,6 +5100,7 @@ static void HandleEndTurn_BattleWon(void)
 
         switch (gTrainers[gTrainerBattleOpponent_A].trainerClass)
         {
+        case TRAINER_CLASS_PKMN_TRAINER_2:
         case TRAINER_CLASS_ELITE_FOUR:
         case TRAINER_CLASS_CHAMPION:
         case TRAINER_CLASS_CHAMPION_STEVEN:

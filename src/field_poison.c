@@ -3,6 +3,7 @@
 #include "battle_pike.h"
 #include "battle_pyramid.h"
 #include "event_data.h"
+#include "event_object_movement.h"
 #include "field_message_box.h"
 #include "field_poison.h"
 #include "fldeff_misc.h"
@@ -46,6 +47,13 @@ static void FaintFromFieldPoison(u8 partyIdx)
 
     AdjustFriendship(pokemon, FRIENDSHIP_EVENT_FAINT_FIELD_PSN);
     SetMonData(pokemon, MON_DATA_STATUS, &status);
+    
+    if (FlagGet(FLAG_NUZLOCKE) && FlagGet(FLAG_SYS_POKEDEX_GET))
+    {
+        bool8 dead = TRUE;
+        SetMonData(pokemon, MON_DATA_DEAD, &dead);
+    }
+
     GetMonData(pokemon, MON_DATA_NICKNAME, gStringVar1);
     StringGet_Nickname(gStringVar1);
 }
@@ -97,6 +105,7 @@ static void Task_TryFieldPoisonWhiteOut(u8 taskId)
         else
         {
             gSpecialVar_Result = FLDPSN_NO_WHITEOUT;
+            UpdateFollowingPokemon();
         }
         ScriptContext_Enable();
         DestroyTask(taskId);

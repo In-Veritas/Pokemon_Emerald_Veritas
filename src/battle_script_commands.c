@@ -823,6 +823,13 @@ static const u16 sRarePickupItems[] =
     ITEM_RARE_CANDY,
 };
 
+static const u16 sVowelPickupItems[] =
+{
+    ITEM_ETHER,
+    ITEM_ULTRA_BALL,
+    ITEM_IRON,
+};
+
 static const u8 sPickupProbabilities[] =
 {
     30, 40, 50, 60, 70, 80, 90, 94, 98
@@ -1357,6 +1364,62 @@ static void ModulateDmgByType(u8 multiplier)
         }
         break;
     }
+}
+
+s32 GetTypeEffectiveness(struct Pokemon *mon, u8 moveType) {
+    u16 species = GetMonData(mon, MON_DATA_SPECIES);
+    u8 type1 = gSpeciesInfo[species].types[0];
+    u8 type2 = gSpeciesInfo[species].types[1];
+    s32 i = 0;
+    u8 multiplier;
+    s32 flags = 0;
+    if (GetMonAbility(mon) == ABILITY_LEVITATE && moveType == TYPE_GROUND)
+        return MOVE_RESULT_NOT_VERY_EFFECTIVE;
+    while (TYPE_EFFECT_ATK_TYPE(i) != TYPE_ENDTABLE) {
+        if (TYPE_EFFECT_ATK_TYPE(i) == TYPE_FORESIGHT) {
+            i += 3;
+            continue;
+        }
+        else if (TYPE_EFFECT_ATK_TYPE(i) == moveType) {
+            // check type1
+            if (TYPE_EFFECT_DEF_TYPE(i) == type1)
+                multiplier = TYPE_EFFECT_MULTIPLIER(i);
+            else if (TYPE_EFFECT_DEF_TYPE(i) == type2 && type1 != type2)
+                multiplier = TYPE_EFFECT_MULTIPLIER(i);
+            else {
+                i += 3;
+                continue;
+            }
+            switch (multiplier)
+            {
+            case TYPE_MUL_NO_EFFECT:
+                flags |= MOVE_RESULT_DOESNT_AFFECT_FOE;
+                flags &= ~MOVE_RESULT_NOT_VERY_EFFECTIVE;
+                flags &= ~MOVE_RESULT_SUPER_EFFECTIVE;
+                break;
+            case TYPE_MUL_NOT_EFFECTIVE:
+                if (!(flags & MOVE_RESULT_NO_EFFECT))
+                {
+                    if (flags & MOVE_RESULT_SUPER_EFFECTIVE)
+                        flags &= ~MOVE_RESULT_SUPER_EFFECTIVE;
+                    else
+                        flags |= MOVE_RESULT_NOT_VERY_EFFECTIVE;
+                }
+                break;
+            case TYPE_MUL_SUPER_EFFECTIVE:
+                if (!(flags & MOVE_RESULT_NO_EFFECT))
+                {
+                    if (flags & MOVE_RESULT_NOT_VERY_EFFECTIVE)
+                        flags &= ~MOVE_RESULT_NOT_VERY_EFFECTIVE;
+                    else
+                        flags |= MOVE_RESULT_SUPER_EFFECTIVE;
+                }
+                break;
+            }
+        }
+        i += 3;
+    }
+    return flags;
 }
 
 static void Cmd_typecalc(void)
@@ -2059,6 +2122,10 @@ static void Cmd_effectivenesssound(void)
 static void Cmd_resultmessage(void)
 {
     u32 stringId = 0;
+    u32 moveType;
+    u8 ability = gBattleMons[gBattlerAttacker].ability;
+
+    GET_MOVE_TYPE(gCurrentMove, moveType);
 
     if (gBattleControllerExecFlags)
         return;
@@ -2069,7 +2136,58 @@ static void Cmd_resultmessage(void)
         gBattleCommunication[MSG_DISPLAY] = 1;
     }
     else
-    {
+    {      
+        // Added check for Overgrow, Blaze, Torrent and Swarm to provide a message if activated     
+        if (gBattleMons[gBattlerAttacker].hp <= (gBattleMons[gBattlerAttacker].maxHP / 3) && !gBattleStruct->checkedMoveBoostedByAbility)
+        {
+            switch (ability)
+            {
+                case ABILITY_OVERGROW:
+                    if (moveType == TYPE_GRASS)
+                    {
+                        BattleScriptPushCursor();
+                        gBattleCommunication[MSG_DISPLAY] = 1;
+                        gBattlescriptCurrInstr = BattleScript_AttackBoostedByAbility;
+                    }
+                    break;
+                case ABILITY_BLAZE:
+                    if (moveType == TYPE_FIRE)
+                    {
+                        BattleScriptPushCursor();
+                        gBattleCommunication[MSG_DISPLAY] = 1;
+                        gBattlescriptCurrInstr = BattleScript_AttackBoostedByAbility;
+                    }
+                    break;
+                case ABILITY_TORRENT:
+                    if (moveType == TYPE_WATER)
+                    {
+                        BattleScriptPushCursor();
+                        gBattleCommunication[MSG_DISPLAY] = 1;
+                        gBattlescriptCurrInstr = BattleScript_AttackBoostedByAbility;
+                    }
+                    break;
+                case ABILITY_SWARM:
+                    if (moveType == TYPE_BUG)
+                    {
+                        BattleScriptPushCursor();
+                        gBattleCommunication[MSG_DISPLAY] = 1;
+                        gBattlescriptCurrInstr = BattleScript_AttackBoostedByAbility;
+                    }
+                    break;
+            }
+            gBattleStruct->checkedMoveBoostedByAbility = TRUE;
+            return;
+        }
+        
+        // Added check for Magma Armor to provide a message if activated
+        if (gBattleMons[gBattlerTarget].ability == ABILITY_MAGMA_ARMOR && moveType == TYPE_WATER && !gBattleStruct->checkedMagmaArmor)
+        {
+            BattleScriptPushCursor();
+            gBattleCommunication[MSG_DISPLAY] = 1;
+            gBattlescriptCurrInstr = BattleScript_MagmaArmorActivated;
+            gBattleStruct->checkedMagmaArmor = TRUE;
+            return;
+        }
         gBattleCommunication[MSG_DISPLAY] = 1;
         switch (gMoveResultFlags & (u8)(~MOVE_RESULT_MISSED))
         {
@@ -2178,7 +2296,13 @@ static void Cmd_waitmessage(void)
         else
         {
             u16 toWait = T2_READ_16(gBattlescriptCurrInstr + 1);
-            if (++gPauseCounterBattle >= toWait || (JOY_NEW(A_BUTTON | B_BUTTON)))
+            if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE) || FlagGet(FLAG_ENABLE_FASTMODE)))
+            {
+                gPauseCounterBattle = 0;
+                gBattlescriptCurrInstr += 3;
+                gBattleCommunication[MSG_DISPLAY] = 0;
+            }
+            else if (++gPauseCounterBattle >= toWait || (JOY_NEW(A_BUTTON | B_BUTTON)))
             {
                 gPauseCounterBattle = 0;
                 gBattlescriptCurrInstr += 3;
@@ -2247,7 +2371,7 @@ void SetMoveEffect(bool8 primary, u8 certain)
     bool32 statusChanged = FALSE;
     u8 affectsUser = 0; // 0x40 otherwise
     bool32 noSunCanFreeze = TRUE;
-
+    
     if (gBattleCommunication[MOVE_EFFECT_BYTE] & MOVE_EFFECT_AFFECTS_USER)
     {
         gEffectBattler = gBattlerAttacker; // battlerId that effects get applied on
@@ -3964,7 +4088,12 @@ static void Cmd_pause(void)
     if (gBattleControllerExecFlags == 0)
     {
         u16 value = T2_READ_16(gBattlescriptCurrInstr + 1);
-        if (++gPauseCounterBattle >= value || (JOY_NEW(A_BUTTON | B_BUTTON)))
+        if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE) || FlagGet(FLAG_ENABLE_FASTMODE)))
+        {
+            gPauseCounterBattle = 0;
+            gBattlescriptCurrInstr += 3;
+        }
+        else if (++gPauseCounterBattle >= value || (JOY_NEW(A_BUTTON | B_BUTTON)))
         {
             gPauseCounterBattle = 0;
             gBattlescriptCurrInstr += 3;
@@ -4265,6 +4394,9 @@ static void Cmd_moveend(void)
     u16 *choicedMoveAtk = NULL;
     u8 endMode, endState;
     u16 originallyUsedMove;
+
+    gBattleStruct->checkedMoveBoostedByAbility = FALSE;
+    gBattleStruct->checkedMagmaArmor = FALSE;
 
     if (gChosenMove == MOVE_UNAVAILABLE)
         originallyUsedMove = MOVE_NONE;
@@ -4727,12 +4859,7 @@ static void Cmd_switchinanim(void)
 
     gActiveBattler = GetBattlerForBattleScript(gBattlescriptCurrInstr[1]);
 
-    if (GetBattlerSide(gActiveBattler) == B_SIDE_OPPONENT
-        && !(gBattleTypeFlags & (BATTLE_TYPE_LINK
-                                 | BATTLE_TYPE_EREADER_TRAINER
-                                 | BATTLE_TYPE_RECORDED_LINK
-                                 | BATTLE_TYPE_TRAINER_HILL
-                                 | BATTLE_TYPE_FRONTIER)))
+    if (GetBattlerSide(gActiveBattler) == B_SIDE_OPPONENT) // Updated to allow any seen pokemon to register in Pokedex
         HandleSetPokedexFlag(SpeciesToNationalPokedexNum(gBattleMons[gActiveBattler].species), FLAG_SET_SEEN, gBattleMons[gActiveBattler].personality);
 
     gAbsentBattlerFlags &= ~(gBitTable[gActiveBattler]);
@@ -9616,8 +9743,11 @@ static void Cmd_getsecretpowereffect(void)
 static void Cmd_pickup(void)
 {
     s32 i;
-    u16 species, heldItem;
+    u16 species, heldItem, pickedupItem;
     u8 ability;
+    u8 pickedUp = 0;
+    u8 monIdx;
+    bool8 doesItemStartWithVowel = FALSE;
 
     if (InBattlePike())
     {
@@ -9643,6 +9773,8 @@ static void Cmd_pickup(void)
             {
                 heldItem = GetBattlePyramidPickupItemId();
                 SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
+
+                pickedUp++;
             }
         }
     }
@@ -9674,12 +9806,26 @@ static void Cmd_pickup(void)
                 {
                     if (sPickupProbabilities[j] > rand)
                     {
-                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &sPickupItems[lvlDivBy10 + j]);
+                        heldItem = sPickupItems[lvlDivBy10 + j];
+                        monIdx = i;
+
+                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
+
+                        pickedupItem = heldItem;
+                        pickedUp++;
+
                         break;
                     }
                     else if (rand == 99 || rand == 98)
                     {
-                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &sRarePickupItems[lvlDivBy10 + (99 - rand)]);
+                        heldItem = sRarePickupItems[lvlDivBy10 + (99 - rand)];
+                        monIdx = i;
+
+                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
+
+                        pickedupItem = heldItem;
+                        pickedUp++;
+
                         break;
                     }
                 }
@@ -9687,7 +9833,38 @@ static void Cmd_pickup(void)
         }
     }
 
-    gBattlescriptCurrInstr++;
+    if (pickedUp > 1 && FlagGet(FLAG_ENABLE_PICKUP_TEXT))
+    {
+        PREPARE_BYTE_NUMBER_BUFFER(gBattleTextBuff1, 1, pickedUp);
+
+        BattleScriptPush(gBattlescriptCurrInstr + 1);
+        gBattlescriptCurrInstr = BattleScript_PrintPickupMultipleString;
+    }
+    else if (pickedUp == 1 && FlagGet(FLAG_ENABLE_PICKUP_TEXT))
+    {
+        PREPARE_MON_NICK_BUFFER(gBattleTextBuff1, 0, monIdx);
+        PREPARE_ITEM_BUFFER(gBattleTextBuff2, pickedupItem);
+        
+        BattleScriptPush(gBattlescriptCurrInstr + 1);
+        
+        for (i = 0; i < (int)ARRAY_COUNT(sVowelPickupItems); i++)
+        {
+            if (pickedupItem == sVowelPickupItems[i])
+            {
+                doesItemStartWithVowel = TRUE;
+                break;
+            }   
+        }
+
+        if (doesItemStartWithVowel)
+            gBattlescriptCurrInstr = BattleScript_PrintPickupStringVowelItem;
+        else
+            gBattlescriptCurrInstr = BattleScript_PrintPickupString;
+    }
+    else
+    {
+        gBattlescriptCurrInstr++;
+    }
 }
 
 static void Cmd_docastformchangeanimation(void)
@@ -10114,9 +10291,15 @@ static void Cmd_displaydexinfo(void)
         if (!gPaletteFade.active)
         {
             FreeAllWindowBuffers();
+            #ifndef BATTLE_ENGINE
             gBattleCommunication[TASK_ID] = DisplayCaughtMonDexPage(SpeciesToNationalPokedexNum(species),
                                                                         gBattleMons[gBattlerTarget].otId,
                                                                         gBattleMons[gBattlerTarget].personality);
+            #else
+            gBattleCommunication[TASK_ID] = DisplayCaughtMonDexPage(SpeciesToNationalPokedexNum(species),
+                                                                        gBattleMons[GetCatchingBattler()].otId,
+                                                                        gBattleMons[GetCatchingBattler()].personality);
+            #endif
             gBattleCommunication[0]++;
         }
         break;

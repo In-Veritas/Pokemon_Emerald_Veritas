@@ -556,7 +556,7 @@ void BattleSetup_StartLatiBattle(void)
     LockPlayerFieldControls();
     gMain.savedCallback = CB2_EndScriptedWildBattle;
     gBattleTypeFlags = BATTLE_TYPE_LEGENDARY;
-    CreateBattleStartTask(GetWildBattleTransition(), 0);
+    CreateBattleStartTask(B_TRANSITION_BLUR, MUS_RG_VS_LEGEND);
     IncrementGameStat(GAME_STAT_TOTAL_BATTLES);
     IncrementGameStat(GAME_STAT_WILD_BATTLES);
     IncrementDailyWildBattles();
@@ -589,10 +589,12 @@ void BattleSetup_StartLegendaryBattle(void)
         break;
     case SPECIES_LUGIA:
     case SPECIES_HO_OH:
+        CreateBattleStartTask(B_TRANSITION_BLUR, MUS_RG_VS_LEGEND);
+        break;
     case SPECIES_ENTEI:
     case SPECIES_RAIKOU:
     case SPECIES_SUICUNE:
-        CreateBattleStartTask(B_TRANSITION_BLUR, MUS_RG_VS_LEGEND);
+        CreateBattleStartTask(B_TRANSITION_BLUR, MUS_C_VS_LEGEND_BEAST);
         break;
     case SPECIES_MEWTWO:
     case SPECIES_ZAPDOS:
@@ -884,6 +886,9 @@ static u8 GetTrainerBattleTransition(void)
         || gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_AQUA_ADMIN)
         return B_TRANSITION_AQUA;
 
+    if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_PKMN_TRAINER_2)
+        return B_TRANSITION_RED;
+
     if (gTrainers[gTrainerBattleOpponent_A].doubleBattle == TRUE)
         minPartyCount = 2; // double battles always at least have 2 Pokémon.
     else
@@ -951,6 +956,64 @@ void ChooseStarter(void)
 {
     SetMainCallback2(CB2_ChooseStarter);
     gMain.savedCallback = CB2_GiveStarter;
+}
+
+void StartFirstBattle_NationalDexMode(void)
+{
+    u16 starterMon;
+    
+    starterMon = gSpecialVar_Result;
+
+    // Switch to set starter as original Hoenn starter of same type for all starter decisions in game
+    switch(starterMon)
+    {
+        case SPECIES_TREECKO:
+            *GetVarPointer(VAR_STARTER_MON) = 0;
+            *GetVarPointer(VAR_STARTER_MON_NAT_DEX) = 0;
+            break;
+        case SPECIES_TORCHIC:
+            *GetVarPointer(VAR_STARTER_MON) = 1;
+            *GetVarPointer(VAR_STARTER_MON_NAT_DEX) = 1;
+            break;
+        case SPECIES_MUDKIP:
+            *GetVarPointer(VAR_STARTER_MON) = 2;
+            *GetVarPointer(VAR_STARTER_MON_NAT_DEX) = 2;
+            break;
+        case SPECIES_BULBASAUR:
+            *GetVarPointer(VAR_STARTER_MON) = 0;
+            *GetVarPointer(VAR_STARTER_MON_NAT_DEX) = 3;
+            break;
+        case SPECIES_CHARMANDER:
+            *GetVarPointer(VAR_STARTER_MON) = 1;
+            *GetVarPointer(VAR_STARTER_MON_NAT_DEX) = 4;
+            break;
+        case SPECIES_SQUIRTLE:
+            *GetVarPointer(VAR_STARTER_MON) = 2;
+            *GetVarPointer(VAR_STARTER_MON_NAT_DEX) = 5;
+            break;
+        case SPECIES_CHIKORITA:
+            *GetVarPointer(VAR_STARTER_MON) = 0;
+            *GetVarPointer(VAR_STARTER_MON_NAT_DEX) = 6;
+            break;
+        case SPECIES_CYNDAQUIL:
+            *GetVarPointer(VAR_STARTER_MON) = 1;
+            *GetVarPointer(VAR_STARTER_MON_NAT_DEX) = 7;
+            break;
+        case SPECIES_TOTODILE:
+            *GetVarPointer(VAR_STARTER_MON) = 2;
+            *GetVarPointer(VAR_STARTER_MON_NAT_DEX) = 8;
+            break;
+        default:
+            *GetVarPointer(VAR_STARTER_MON) = 0;
+            *GetVarPointer(VAR_STARTER_MON_NAT_DEX) = 0;
+            break;
+    }
+
+    ScriptGiveMon(starterMon, 5, ITEM_NONE, 0, 0, 0);
+    ResetTasks();
+    PlayBattleBGM();
+    SetMainCallback2(CB2_StartFirstBattle);
+    BattleTransition_Start(B_TRANSITION_BLUR);
 }
 
 static void CB2_GiveStarter(void)

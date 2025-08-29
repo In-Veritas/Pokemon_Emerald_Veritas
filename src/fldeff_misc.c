@@ -1024,7 +1024,7 @@ void DoSecretBaseGlitterMatSparkle(void)
     {
         gSprites[spriteId].coordOffsetEnabled = TRUE;
         gSprites[spriteId].oam.priority = 1;
-        gSprites[spriteId].oam.paletteNum = 5;
+        UpdateSpritePaletteByTemplate(gFieldEffectObjectTemplatePointers[FLDEFFOBJ_SPARKLE], &gSprites[spriteId]);
         gSprites[spriteId].callback = SpriteCB_GlitterMatSparkle;
         gSprites[spriteId].data[0] = 0;
     }
@@ -1268,7 +1268,7 @@ static void Task_WateringBerryTreeAnim_Continue(u8 taskId)
         s16 value = gTasks[taskId].data[1]++;
 
         // Continue holding watering action 10 times, then end
-        if (value < 10)
+        if (value < (FlagGet(FLAG_ENABLE_FASTWATERING) ? 2 : 10))
             ObjectEventSetHeldMovement(playerObjEvent, GetWalkInPlaceNormalMovementAction(GetPlayerFacingDirection()));
         else
             gTasks[taskId].func = Task_WateringBerryTreeAnim_End;

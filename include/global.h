@@ -35,6 +35,7 @@
 #define INCBIN_S8   INCBIN
 #define INCBIN_S16  INCBIN
 #define INCBIN_S32  INCBIN
+#define INCBIN_COMP INCBIN
 #endif // IDE support
 
 #define ARRAY_COUNT(array) (size_t)(sizeof(array) / sizeof((array)[0]))
@@ -84,6 +85,8 @@
 #else
 #define SAFE_DIV(a, b) ((a) / (b))
 #endif
+
+#define IS_POW_OF_TWO(n) (((n) & ((n)-1)) == 0)
 
 // The below macro does a%n, but (to match) will switch to a&(n-1) if n is a power of 2.
 // There are cases where GF does a&(n-1) where we would really like to have a%n, because
@@ -516,10 +519,10 @@ struct SaveBlock2
             u16 optionsBattleStyle:1; // OPTIONS_BATTLE_STYLE_[SHIFT/SET]
             u16 optionsBattleSceneOff:1; // whether battle animations are disabled
             u16 regionMapZoom:1; // whether the map is zoomed in
-            u16 optionsBikeMusic:1; // whether the bike music plays when riding
-            u16 optionsSurfMusic:1; // whether the surf music plays when surfing
-            u16 optionsSurfOverworld:1; // whether to use the original Surf blob or dynamic blob (False to use dynamic)
-            u16 optionsBattleItemAnimation:3; // whether the battle animation is reduced or not
+            u16 optionsBattleItemAnimation:2; // whether the battle animation is reduced or not
+            u16 optionsDiveSpeed:2; // Option to change Diving movement speed
+            u16 optionsHpBarSpeed:4;   // Option to change HP Bar movement speed
+            u16 optionsExpBarSpeed:4;  // Option to change Exp Bar movement speed
     struct Pokedex pokedex;
     u8 filler_90[0x8];
     struct Time localTimeOffset;
@@ -538,6 +541,8 @@ struct SaveBlock2
 };
 
 extern struct SaveBlock2 *gSaveBlock2Ptr;
+
+extern u8 UpdateSpritePaletteWithTime(u8);
 
 struct SecretBaseParty
 {
@@ -1090,5 +1095,7 @@ struct MapPosition
     s16 y;
     s8 elevation;
 };
+
+#define OW_GFX_COMPRESS FALSE
 
 #endif // GUARD_GLOBAL_H

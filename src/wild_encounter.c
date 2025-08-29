@@ -88,6 +88,7 @@ static const u16 gRoute119MetatileTable[] =
     [0x18A - 0x02C] = 0x31D,
     [0x190 - 0x02C] = 0x310,
     [0x192 - 0x02C] = 0x31E,
+    [0x193 - 0x02C] = 0x308, // Metatile definition for trees able to be surfed underneath, update to three layer metatiles recommended to show shiny sparkle with tree
     [0x198 - 0x02C] = 0x311,
     [0x19A - 0x02C] = 0x30D,
     [0x20F - 0x02C] = 0x2D3,
@@ -135,13 +136,17 @@ static bool8 CheckFeebas(void)
 {
     u8 i;
     s16 x, y;
+    u16 random;
 
     if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(ROUTE119) && gSaveBlock1Ptr->location.mapNum == MAP_NUM(ROUTE119))
     {
         GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
 
-        // Updated 50% chance of encountering Feebas to 25% (assuming this is a Feebas spot) due to Feebas tiles visible after Devon Scope recieved (Random() % 100 > 49
-        if (Random() % 100 > 74)
+        random = Random() % 100;
+        // Updated 50% chance of encountering Feebas to 10% (assuming this is a Feebas spot) due to Feebas tiles visible after Devon Scope recieved
+        if (random > 49 && !FlagGet(FLAG_RECEIVED_DEVON_SCOPE)) // Normal 50% before Devon Scope to stay as Vanilla
+            return FALSE;
+        else if (random > 9 && FlagGet(FLAG_RECEIVED_DEVON_SCOPE)) // 10% after Devon Scope
             return FALSE;
 
         for (i = 0; i < NUM_FEEBAS_SPOTS; i++)
@@ -208,11 +213,27 @@ void GetFeebasTiles(void)
 
 #undef nWaterTiles
 
+#define OVERHANGING_TREE_METATILE   0x193 // Metatile definition for surfable overhanging tree tile (possible Feebas tile)
+#define SHORELINE_TREE_METATILE     0x284 // Metatile definition for tree with shoreline above. (To replace bottom of overhanging tree)
+
 void HighlightFeebasTiles(void)
 {
     u32 i;
     for (i = 0; i < NUM_FEEBAS_SPOTS; i++)
-        MapGridSetMetatileIdAt(gFeebasTiles[i][0], gFeebasTiles[i][1], gRoute119MetatileTable[MapGridGetMetatileIdAt(gFeebasTiles[i][0], gFeebasTiles[i][1]) - 0x2C]);
+    {
+        // Added fix for tile below surfable overhanging tree tiles to show shoreline.
+        // This could be replaced with an upgrade to three layer metatiles and
+        // creating a new metatile with water, overhanging tree and sparkles.
+        if (MapGridGetMetatileIdAt(gFeebasTiles[i][0], gFeebasTiles[i][1]) == OVERHANGING_TREE_METATILE)
+        {
+            MapGridSetMetatileIdAt(gFeebasTiles[i][0], gFeebasTiles[i][1] + 1, SHORELINE_TREE_METATILE);
+            MapGridSetMetatileImpassabilityAt(gFeebasTiles[i][0], gFeebasTiles[i][1] + 1, TRUE);
+        }
+
+        // Check whether a real metatile is returned before overriding with new metatile.
+        if (gRoute119MetatileTable[MapGridGetMetatileIdAt(gFeebasTiles[i][0], gFeebasTiles[i][1]) - 0x2C] != 0x000)
+            MapGridSetMetatileIdAt(gFeebasTiles[i][0], gFeebasTiles[i][1], gRoute119MetatileTable[MapGridGetMetatileIdAt(gFeebasTiles[i][0], gFeebasTiles[i][1]) - 0x2C]);  
+    }
 }
 
 // LAND_WILD_COUNT
@@ -422,6 +443,11 @@ static u16 GetCurrentMapWildMonHeaderId(void)
             {
                 i += VarGet(VAR_GRANITE_CAVE_B1F_WILD_SET);
             }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(GRANITE_CAVE_B2F) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(GRANITE_CAVE_B2F))
+            {
+                i += VarGet(VAR_GRANITE_CAVE_B1F_WILD_SET); // Re-using Granite Cave Variable to prevent new variable on save file migration from older versions.
+            }
             if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(VICTORY_ROAD_1F) &&
                 gSaveBlock1Ptr->location.mapNum == MAP_NUM(VICTORY_ROAD_1F))
             {
@@ -436,6 +462,46 @@ static u16 GetCurrentMapWildMonHeaderId(void)
                 gSaveBlock1Ptr->location.mapNum == MAP_NUM(JAGGED_PASS))
             {
                 i += VarGet(VAR_JAGGED_PASS_WILD_SET);
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAGMA_HIDEOUT_1F) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAGMA_HIDEOUT_1F))
+            {
+                i += VarGet(VAR_JAGGED_PASS_WILD_SET); // Re-using Jagged Pass Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAGMA_HIDEOUT_2F_1R) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAGMA_HIDEOUT_2F_1R))
+            {
+                i += VarGet(VAR_JAGGED_PASS_WILD_SET); // Re-using Jagged Pass Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAGMA_HIDEOUT_2F_2R) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAGMA_HIDEOUT_2F_2R))
+            {
+                i += VarGet(VAR_JAGGED_PASS_WILD_SET); // Re-using Jagged Pass Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAGMA_HIDEOUT_2F_3R) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAGMA_HIDEOUT_2F_3R))
+            {
+                i += VarGet(VAR_JAGGED_PASS_WILD_SET); // Re-using Jagged Pass Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAGMA_HIDEOUT_3F_1R) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAGMA_HIDEOUT_3F_1R))
+            {
+                i += VarGet(VAR_JAGGED_PASS_WILD_SET); // Re-using Jagged Pass Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAGMA_HIDEOUT_3F_2R) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAGMA_HIDEOUT_3F_2R))
+            {
+                i += VarGet(VAR_JAGGED_PASS_WILD_SET); // Re-using Jagged Pass Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAGMA_HIDEOUT_3F_3R) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAGMA_HIDEOUT_3F_3R))
+            {
+                i += VarGet(VAR_JAGGED_PASS_WILD_SET); // Re-using Jagged Pass Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAGMA_HIDEOUT_4F) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAGMA_HIDEOUT_4F))
+            {
+                i += VarGet(VAR_JAGGED_PASS_WILD_SET); // Re-using Jagged Pass Variable to prevent new variable on save file migration from older versions.
             }
             if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(ROUTE107) &&
                 gSaveBlock1Ptr->location.mapNum == MAP_NUM(ROUTE107))
@@ -502,6 +568,11 @@ static u16 GetCurrentMapWildMonHeaderId(void)
             {
                 i += VarGet(VAR_MT_PYRE_EXTERIOR_WILD_SET);
             }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MT_PYRE_SUMMIT) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(MT_PYRE_SUMMIT))
+            {
+                i += VarGet(VAR_MT_PYRE_EXTERIOR_WILD_SET); // Re-using Mt. Pyre Variable to prevent new variable on save file migration from older versions.
+            }
             if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(ROUTE131) &&
                 gSaveBlock1Ptr->location.mapNum == MAP_NUM(ROUTE131))
             {
@@ -518,7 +589,8 @@ static u16 GetCurrentMapWildMonHeaderId(void)
                 i += VarGet(VAR_VICTORY_ROAD_B1F_WILD_SET);
             }
             if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(VICTORY_ROAD_B2F) &&
-                gSaveBlock1Ptr->location.mapNum == MAP_NUM(VICTORY_ROAD_B2F))
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(VICTORY_ROAD_B2F) &&
+                FlagGet(FLAG_BATTLED_JIRACHI)) // Locked after Jirachi Event for National Dex Mode - Pupitar
             {
                 i += VarGet(VAR_VICTORY_ROAD_B2F_WILD_SET);
             }
@@ -526,6 +598,46 @@ static u16 GetCurrentMapWildMonHeaderId(void)
                 gSaveBlock1Ptr->location.mapNum == MAP_NUM(METEOR_FALLS_1F_1R))
             {
                 i += VarGet(VAR_METEOR_FALLS_1F_1R_WILD_SET);
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(METEOR_FALLS_1F_2R) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(METEOR_FALLS_1F_2R))
+            {
+                i += VarGet(VAR_METEOR_FALLS_1F_1R_WILD_SET); // Re-using Meteor Falls Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(METEOR_FALLS_B1F_1R) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(METEOR_FALLS_B1F_1R))
+            {
+                i += VarGet(VAR_METEOR_FALLS_1F_1R_WILD_SET); // Re-using Meteor Falls Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(METEOR_FALLS_B1F_2R) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(METEOR_FALLS_B1F_2R) &&
+                FlagGet(FLAG_BATTLED_JIRACHI)) // Locked after Jirachi Event for National Dex Mode - Dratini and Dragonair
+            {
+                i += VarGet(VAR_METEOR_FALLS_1F_1R_WILD_SET); // Re-using Meteor Falls Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(METEOR_FALLS_STEVENS_CAVE) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(METEOR_FALLS_STEVENS_CAVE) &&
+                FlagGet(FLAG_BATTLED_JIRACHI)) // Locked after Jirachi Event for National Dex Mode - Metang
+            {
+                i += VarGet(VAR_METEOR_FALLS_1F_1R_WILD_SET); // Re-using Meteor Falls Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(SKY_PILLAR_1F) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(SKY_PILLAR_1F) &&
+                FlagGet(FLAG_BATTLED_JIRACHI)) // Locked after Jirachi Event for National Dex Mode - Shelgon and Higher Level Encounters
+            {
+                i += VarGet(VAR_METEOR_FALLS_1F_1R_WILD_SET); // Re-using Meteor Falls Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(SKY_PILLAR_3F) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(SKY_PILLAR_3F) &&
+                FlagGet(FLAG_BATTLED_JIRACHI)) // Locked after Jirachi Event for National Dex Mode - Higher Level Encounters
+            {
+                i += VarGet(VAR_METEOR_FALLS_1F_1R_WILD_SET); // Re-using Meteor Falls Variable to prevent new variable on save file migration from older versions.
+            }
+            if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(SKY_PILLAR_5F) &&
+                gSaveBlock1Ptr->location.mapNum == MAP_NUM(SKY_PILLAR_5F) &&
+                FlagGet(FLAG_BATTLED_JIRACHI)) // Locked after Jirachi Event for National Dex Mode - Higher Level Encounters
+            {
+                i += VarGet(VAR_METEOR_FALLS_1F_1R_WILD_SET); // Re-using Meteor Falls Variable to prevent new variable on save file migration from older versions.
             }
             if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(SLATEPORT_CITY) &&
                 gSaveBlock1Ptr->location.mapNum == MAP_NUM(SLATEPORT_CITY))
@@ -579,7 +691,7 @@ static u16 GetCurrentMapWildMonHeaderId(void)
     return HEADER_NONE;
 }
 
-static u8 PickWildMonNature(void)
+u8 PickWildMonNature(void)
 {
     u8 i;
     u8 j;

@@ -1,7 +1,9 @@
 #include "global.h"
 #include "save.h"
 #include "item.h"
+#include "event_data.h"
 #include "constants/heal_locations.h"
+#include "constants/flags.h"
 
 struct SaveBlock2_v1
 {
@@ -142,13 +144,16 @@ struct SaveBlock1_v1
                struct RegisteredItemSlot registeredItems[10];               
 };
 
-bool8 UpdateSave_v1_v2(const struct SaveSectorLocation *locations)
+bool8 UpdateSave_v1_v3(const struct SaveSectorLocation *locations)
 {
     const struct SaveBlock2_v1* sOldSaveBlock2Ptr = (struct SaveBlock2_v1*)(locations[SECTOR_ID_SAVEBLOCK2].data);
     const struct SaveBlock1_v1* sOldSaveBlock1Ptr = (struct SaveBlock1_v1*)(locations[SECTOR_ID_SAVEBLOCK1_START].data);
     const struct PokemonStorage* sOldPokemonStoragePtr = (struct PokemonStorage*)(locations[SECTOR_ID_PKMN_STORAGE_START].data);
 
     u32 arg, i, j, k;
+    u16 tempOptionSurfMusic;
+    u16 tempOptionBikeMusic;
+    u16 tempOptionSurfOverworld;
     
     #define COPY_FIELD(field) gSaveBlock2Ptr->field = sOldSaveBlock2Ptr->field
     #define COPY_BLOCK(field) CpuCopy16(&sOldSaveBlock2Ptr->field, &gSaveBlock2Ptr->field, sizeof(gSaveBlock2Ptr->field))
@@ -156,16 +161,17 @@ bool8 UpdateSave_v1_v2(const struct SaveSectorLocation *locations)
 
     /** We need to fill in any data that's new in this version. */
     gSaveBlock2Ptr->_saveSentinel = 0xFF;
-    gSaveBlock2Ptr->saveVersion = 2;
+    gSaveBlock2Ptr->saveVersion = 3;
+    gSaveBlock2Ptr->optionsDiveSpeed = 0;
 
     // Set Secret Base Entrance Warp to -1 until Secret Base entered.
     SetPlayerSecretBaseCoords(-1, -1, WARP_ID_NONE, -1, -1);
 
     // Copy V1 items - SaveBlock2
 
-    COPY_FIELD(optionsBikeMusic);
-    COPY_FIELD(optionsSurfMusic);
-    COPY_FIELD(optionsSurfOverworld);
+    tempOptionSurfMusic = sOldSaveBlock2Ptr->optionsSurfMusic;
+    tempOptionBikeMusic = sOldSaveBlock2Ptr->optionsBikeMusic;
+    tempOptionSurfOverworld = sOldSaveBlock2Ptr->optionsSurfOverworld;
     COPY_FIELD(optionsBattleItemAnimation);
 
     COPY_ARRAY(playerName);
@@ -315,12 +321,50 @@ bool8 UpdateSave_v1_v2(const struct SaveSectorLocation *locations)
     #undef COPY_FIELD
     #undef COPY_BLOCK
     #undef COPY_ARRAY
-    
+
     /**
      * The pokemon structure hasn't changed at all this version, so
-     * we can just assign across the old box storage to the new.  */ 
+     * we can just assign across the old box storage to the new.  */
     *gPokemonStoragePtr = *sOldPokemonStoragePtr;
+
+    // Swap L=A and LR Options from older save if set due to definition swap in v3
+    if (gSaveBlock2Ptr->optionsButtonMode == 1)
+        gSaveBlock2Ptr->optionsButtonMode = 2;
+    else if (gSaveBlock2Ptr->optionsButtonMode == 2)         
+        gSaveBlock2Ptr->optionsButtonMode = 1;
     
+    // Set Option Flag Defaults
+    FlagSet(FLAG_ENABLE_FOLLOWER); // Turns Pokemon following On
+    
+    // Update Flags moved from Saveblock
+    tempOptionSurfOverworld == 0    ? FlagSet(FLAG_ENABLE_SURFOVERWORLD)    : FlagClear(FLAG_ENABLE_SURFOVERWORLD); // Inverse Flag setting due to 0 defaulting to on in saveblock configuration
+    tempOptionSurfMusic == 0        ? FlagClear(FLAG_DISABLE_SURFMUSIC)     : FlagSet(FLAG_DISABLE_SURFMUSIC);
+    tempOptionBikeMusic == 0        ? FlagClear(FLAG_DISABLE_BIKEMUSIC)     : FlagSet(FLAG_DISABLE_BIKEMUSIC);
+
+    // Check for Game Cleared to unlocked for Stat Editor unlock due to change in flag configuration (Could use National Dex, but due to National Dex flag being used in more areas prefer to use game clear flag)
+    FlagGet(FLAG_SYS_GAME_CLEAR)    ? FlagSet(FLAG_ENABLE_STAT_EDITOR)      : FlagClear(FLAG_ENABLE_STAT_EDITOR);
+    FlagGet(FLAG_SYS_GAME_CLEAR)    ? FlagSet(FLAG_SHOW_STAT_EDITOR)        : FlagClear(FLAG_SHOW_STAT_EDITOR);
+
+    // Add Shiny Charm to Save Upgrades
+    AddPCItem(ITEM_SHINY_CHARM, 1); // One base Shiny Charm for the game
+
+    // Add Shiny Charms based on in-game progression
+    FlagGet(FLAG_SYS_GAME_CLEAR)                ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Beat the game
+    FlagGet(FLAG_RECEIVED_GLASS_ORNAMENT)       ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Complete Master Rank Contests
+    FlagGet(FLAG_DEFEATED_METEOR_FALLS_STEVEN)  ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Defeat Steven in Meteor Falls
+    FlagGet(FLAG_HOENN_DEX_COMPLETE)            ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Complete the Hoenn Dex (not including Jirachi or Deoxys)
+    FlagGet(FLAG_NATIONAL_DEX_COMPLETE)         ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Complete the National Dex (not including Mew, Celebi, Jirachi or Deoxys)
+    FlagGet(FLAG_COLLECTED_ALL_SILVER_SYMBOLS)  ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Get all Silver Symbols
+    FlagGet(FLAG_COLLECTED_ALL_GOLD_SYMBOLS)    ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Get all Gold Symbols
+    
+    if (FlagGet(FLAG_TRICK_HOUSE_PRIZE_EEVEE))
+    {
+        FlagClear(FLAG_TRICK_HOUSE_PRIZE_EEVEE);
+        *GetVarPointer(VAR_TRICK_HOUSE_PRIZE_PICKUP) = 1;
+    }
+    
+    FlagClear(FLAG_GOT_TRAINER_HILL_SNORLAX);
+
     /**
      * The most common kind of change that might happen between major versions are 
      * map changes. The save file usually saves the area around the player and 
