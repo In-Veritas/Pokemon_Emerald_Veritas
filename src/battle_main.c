@@ -704,7 +704,7 @@ static void CB2_InitBattleInternal(void)
     LoadBattleTextboxAndBackground();
     ResetSpriteData();
     ResetTasks();
-    if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE_INTRO) || FlagGet(FLAG_ENABLE_FASTMODE)))
+    if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE_INTRO) || FlagGet(FLAG_ENABLE_FASTMODE)) || gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER)
         DrawBattleEntryBackground();
     FreeAllSpritePalettes();
     gReservedSpritePaletteCount = MAX_BATTLERS_COUNT;
