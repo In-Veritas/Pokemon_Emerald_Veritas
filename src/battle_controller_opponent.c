@@ -1310,7 +1310,7 @@ static void OpponentHandleDrawTrainerPic(void)
     gSprites[gBattlerSpriteIds[gActiveBattler]].sSpeedX = 2;
     gSprites[gBattlerSpriteIds[gActiveBattler]].oam.paletteNum = IndexOfSpritePaletteTag(gTrainerFrontPicPaletteTable[trainerPicId].tag);
     gSprites[gBattlerSpriteIds[gActiveBattler]].oam.affineParam = trainerPicId;
-    if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE_INTRO) || FlagGet(FLAG_ENABLE_FASTMODE)))
+    if (!(FlagGet(FLAG_ENABLE_FAST_BATTLE_INTRO) || FlagGet(FLAG_ENABLE_FASTMODE)) || gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER)
         gSprites[gBattlerSpriteIds[gActiveBattler]].callback = SpriteCB_TrainerSlideIn;
     else
         gSprites[gBattlerSpriteIds[gActiveBattler]].callback = SpriteCB_TrainerSpawn;
