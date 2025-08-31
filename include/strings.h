@@ -2337,6 +2337,7 @@ extern const u8 gText_NoPokemonForBattle[];
 extern const u8 gText_ChoosePokemonSelectToMove[]; // Updates from ChoosePokemon2 to account for Select to Move
 extern const u8 gText_SelectToMove[];
 extern const u8 gText_ConfirmMove[];
+extern const u8 gText_StartToSummary[];
 extern const u8 gText_NotEnoughHp[];
 extern const u8 gText_PokemonAreNeeded[];
 extern const u8 gText_PokemonCantBeSame[];
