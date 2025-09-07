@@ -47,7 +47,6 @@ enum
 enum
 {
     MENUITEM_BATTLE_HARDMODE,
-    MENUITEM_MAIN_BATTLESCENE,
     MENUITEM_MAIN_BATTLESTYLE,
     MENUITEM_BATTLE_TYPEEFFECT,
     MENUITEM_BATTLE_PICKUPTEXT,
@@ -58,11 +57,12 @@ enum
 // Battle Speed Items
 enum
 {
+    MENUITEM_MAIN_BATTLESCENE,
+    MENUITEM_BATTLE_ITEMANIMATE,
     MENUITEM_BATTLE_FAST_INTRO,
     MENUITEM_BATTLE_FAST_BATTLES,
     MENUITEM_CUSTOM_HP_BAR,
     MENUITEM_CUSTOM_EXP_BAR,
-    MENUITEM_BATTLE_ITEMANIMATE,
     MENUITEM_BATTLE_SPEED_CANCEL,
     MENUITEM_BATTLE_SPEED_COUNT,
 };
@@ -277,7 +277,6 @@ struct // MENU_BATTLE
     int (*processInput)(int selection);
 } static const sItemFunctionsBattle[MENUITEM_BATTLE_COUNT] =
 {
-    [MENUITEM_MAIN_BATTLESCENE]         = {DrawChoices_BattleScene,         ProcessInput_Options_Two},
     [MENUITEM_MAIN_BATTLESTYLE]         = {DrawChoices_BattleStyle,         ProcessInput_Options_Two},
     [MENUITEM_BATTLE_TYPEEFFECT]        = {DrawChoices_TypeEffect,          ProcessInput_Options_Two},
     [MENUITEM_BATTLE_PICKUPTEXT]        = {DrawChoices_PickupText,          ProcessInput_Options_Two},
@@ -291,6 +290,7 @@ struct // MENU_BATTLE_SPEED
     int (*processInput)(int selection);
 } static const sItemFunctionsBattSpeed[MENUITEM_BATTLE_SPEED_COUNT] =
 {
+    [MENUITEM_MAIN_BATTLESCENE]         = {DrawChoices_BattleScene,         ProcessInput_Options_Two},
     [MENUITEM_BATTLE_FAST_INTRO]        = {DrawChoices_FastIntro,           ProcessInput_Options_Two},
     [MENUITEM_BATTLE_FAST_BATTLES]      = {DrawChoices_FastBattles,         ProcessInput_Options_Two},
     [MENUITEM_CUSTOM_HP_BAR]            = {DrawChoices_BarSpeed,            ProcessInput_Options_Eleven},
@@ -348,7 +348,6 @@ static const u8 sText_TypeEffect[]          = _("TYPE EFFECTS");
 static const u8 sText_PickupText[]          = _("PICKUP MESSAGE");
 static const u8 *const sOptionMenuItemsNamesBattle[MENUITEM_BATTLE_COUNT] =
 {
-    [MENUITEM_MAIN_BATTLESCENE]             = gText_BattleScene,
     [MENUITEM_MAIN_BATTLESTYLE]             = gText_BattleStyle,
     [MENUITEM_BATTLE_TYPEEFFECT]            = sText_TypeEffect,
     [MENUITEM_BATTLE_PICKUPTEXT]            = sText_PickupText,
@@ -363,6 +362,7 @@ static const u8 sText_FastIntro[]           = _("FAST INTRO");
 static const u8 sText_FastBattles[]         = _("FAST BATTLES");
 static const u8 *const sOptionMenuItemsNamesBattleSpeed[MENUITEM_BATTLE_SPEED_COUNT] =
 {
+    [MENUITEM_MAIN_BATTLESCENE]             = gText_BattleScene,
     [MENUITEM_CUSTOM_HP_BAR]                = sText_HpBar,
     [MENUITEM_CUSTOM_EXP_BAR]               = sText_ExpBar,
     [MENUITEM_BATTLE_ITEMANIMATE]           = sText_ItemAnimate,
@@ -445,7 +445,6 @@ static bool8 CheckConditions(int selection)
     case MENU_BATTLE:
         switch(selection)
         {
-        case MENUITEM_MAIN_BATTLESCENE:         return TRUE;
         case MENUITEM_MAIN_BATTLESTYLE:
         {
             if (FlagGet(FLAG_HARD) || FlagGet(FLAG_NUZLOCKE))
@@ -478,6 +477,7 @@ static bool8 CheckConditions(int selection)
     case MENU_BATTLE_SPEED:
         switch(selection)
         {
+        case MENUITEM_MAIN_BATTLESCENE:         return TRUE;
         case MENUITEM_CUSTOM_HP_BAR:            return TRUE;
         case MENUITEM_CUSTOM_EXP_BAR:           return TRUE;
         case MENUITEM_BATTLE_ITEMANIMATE:       return TRUE;
@@ -550,8 +550,6 @@ static const u8 *const sOptionMenuItemDescriptionsMain[MENUITEM_MAIN_COUNT][10] 
 };
 
 // Battle
-static const u8 sText_Desc_BattleScene_On[]         = _("Show the POKéMON battle animations.");
-static const u8 sText_Desc_BattleScene_Off[]        = _("Skip the POKéMON battle animations.");
 static const u8 sText_Desc_BattleStyle_Shift[]      = _("Get the option to switch your\nPOKéMON after the enemy's faints.");
 static const u8 sText_Desc_BattleStyle_Set[]        = _("No free switch after fainting the\nenemy's POKéMON.");
 static const u8 sText_Desc_TypeEffect_On[]          = _("Show move type effect in battle.\nGreen: Super, Red: Not very, Grey: No");
@@ -563,7 +561,6 @@ static const u8 sText_Desc_HardMode_Hard[]          = _("SET mode, no items in b
 static const u8 sText_Desc_HardMode_Hardcore[]      = _("Hard mode, but POKéMON can't\nbe revived.");
 static const u8 *const sOptionMenuItemDescriptionsBattle[MENUITEM_BATTLE_COUNT][3] =
 {
-    [MENUITEM_MAIN_BATTLESCENE]         = {sText_Desc_BattleScene_On,       sText_Desc_BattleScene_Off},
     [MENUITEM_MAIN_BATTLESTYLE]         = {sText_Desc_BattleStyle_Shift,    sText_Desc_BattleStyle_Set},
     [MENUITEM_BATTLE_TYPEEFFECT]        = {sText_Desc_TypeEffect_On,        sText_Desc_TypeEffect_Off},
     [MENUITEM_BATTLE_PICKUPTEXT]        = {sText_Desc_PickupText_On,        sText_Desc_PickupText_Off},
@@ -572,6 +569,8 @@ static const u8 *const sOptionMenuItemDescriptionsBattle[MENUITEM_BATTLE_COUNT][
 };
 
 // Battle Speed
+static const u8 sText_Desc_BattleScene_On[]         = _("Show the POKéMON battle animations.");
+static const u8 sText_Desc_BattleScene_Off[]        = _("Skip the POKéMON battle animations.");
 static const u8 sText_Desc_BattleHPBar[]            = _("Choose how fast the HP BAR will get\ndrained in battles.");
 static const u8 sText_Desc_BattleExpBar[]           = _("Choose how fast the EXP BAR will get\nfilled in battles.");
 static const u8 sText_Desc_ItemAnimateNormal[]      = _("Original in-battle item animation.\nNo change from original Emerald.");
@@ -584,6 +583,7 @@ static const u8 sText_Desc_FastBattleOn[]           = _("Skips all delays in bat
 static const u8 sText_Desc_FastBattleOff[]          = _("Original Experience.\nYou can press {A_BUTTON} or {B_BUTTON} to skip delays.");
 static const u8 *const sOptionMenuItemDescriptionsBatSpeed[MENUITEM_BATTLE_SPEED_COUNT][4] =
 {
+    [MENUITEM_MAIN_BATTLESCENE]         = {sText_Desc_BattleScene_On,       sText_Desc_BattleScene_Off},
     [MENUITEM_CUSTOM_HP_BAR]            = {sText_Desc_BattleHPBar},
     [MENUITEM_CUSTOM_EXP_BAR]           = {sText_Desc_BattleExpBar},
     [MENUITEM_BATTLE_ITEMANIMATE]       = {sText_Desc_ItemAnimateNormal,    sText_Desc_ItemAnimateReduced,  sText_Desc_ItemAnimateMinimal,  sText_Desc_ItemAnimateNone},
@@ -963,7 +963,6 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel[MENUITEM_MAIN_NICKNAME]                   = FlagGet(FLAG_ENABLE_NICKNAME);
         
         //Battle
-        sOptions->sel_battle[MENUITEM_MAIN_BATTLESCENE]         = gSaveBlock2Ptr->optionsBattleSceneOff;
         sOptions->sel_battle[MENUITEM_BATTLE_TYPEEFFECT]        = FlagGet(FLAG_HIDE_TYPE_EFFECT_BATTLE);
         sOptions->sel_battle[MENUITEM_BATTLE_PICKUPTEXT]        = !FlagGet(FLAG_ENABLE_PICKUP_TEXT);
         if (FlagGet(FLAG_HARD) || FlagGet(FLAG_NUZLOCKE))
@@ -983,6 +982,7 @@ void CB2_InitOptionPlusMenu(void)
             sOptions->sel_battle[MENUITEM_BATTLE_HARDMODE]      = 0;
         
         //Battle Speed
+        sOptions->sel_batt_speed[MENUITEM_MAIN_BATTLESCENE]     = gSaveBlock2Ptr->optionsBattleSceneOff;
         sOptions->sel_batt_speed[MENUITEM_CUSTOM_HP_BAR]        = gSaveBlock2Ptr->optionsHpBarSpeed;
         sOptions->sel_batt_speed[MENUITEM_CUSTOM_EXP_BAR]       = gSaveBlock2Ptr->optionsExpBarSpeed;
         sOptions->sel_batt_speed[MENUITEM_BATTLE_ITEMANIMATE]   = gSaveBlock2Ptr->optionsBattleItemAnimation;
@@ -1280,7 +1280,6 @@ static void Task_OptionMenuSave(u8 taskId)
     sOptions->sel[MENUITEM_MAIN_NICKNAME]       == 0        ? FlagClear(FLAG_ENABLE_NICKNAME)           : FlagSet(FLAG_ENABLE_NICKNAME);
 
     //Battle
-    gSaveBlock2Ptr->optionsBattleSceneOff                   = sOptions->sel_battle[MENUITEM_MAIN_BATTLESCENE];
     gSaveBlock2Ptr->optionsBattleStyle                      = sOptions->sel_battle[MENUITEM_MAIN_BATTLESTYLE];
     sOptions->sel_battle[MENUITEM_BATTLE_TYPEEFFECT] == 0   ? FlagClear(FLAG_HIDE_TYPE_EFFECT_BATTLE) : FlagSet(FLAG_HIDE_TYPE_EFFECT_BATTLE);
     sOptions->sel_battle[MENUITEM_BATTLE_PICKUPTEXT] == 0   ? FlagSet(FLAG_ENABLE_PICKUP_TEXT)        : FlagClear(FLAG_ENABLE_PICKUP_TEXT);         // Used the inverse to align with other similar options.
@@ -1303,6 +1302,7 @@ static void Task_OptionMenuSave(u8 taskId)
     }
 
     //Battle Speed
+    gSaveBlock2Ptr->optionsBattleSceneOff                   = sOptions->sel_batt_speed[MENUITEM_MAIN_BATTLESCENE];
     gSaveBlock2Ptr->optionsHpBarSpeed                       = sOptions->sel_batt_speed[MENUITEM_CUSTOM_HP_BAR];
     gSaveBlock2Ptr->optionsExpBarSpeed                      = sOptions->sel_batt_speed[MENUITEM_CUSTOM_EXP_BAR];
     gSaveBlock2Ptr->optionsBattleItemAnimation              = sOptions->sel_batt_speed[MENUITEM_BATTLE_ITEMANIMATE];
