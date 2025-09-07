@@ -1855,6 +1855,15 @@ static void Task_ReturnToChooseMonAfterText(u8 taskId)
         {
             gTasks[taskId].func = Task_WaitForLinkAndReturnToChooseMon;
         }
+        else if (gPartyMenu.menuType == PARTY_MENU_TYPE_FIELD)
+        {
+            if (!ShouldUseChooseMonText())
+                DisplayPartyMenuStdMessage(PARTY_MSG_CHOOSE_MON_OR_CANCEL);
+            else
+                DisplayPartyMenuStdMessage(PARTY_MSG_CHOOSE_MON_SEL_MOVE);
+            
+            gTasks[taskId].func = Task_HandleChooseMonInput;
+        }
         else
         {
             DisplayPartyMenuStdMessage(PARTY_MSG_CHOOSE_MON);
