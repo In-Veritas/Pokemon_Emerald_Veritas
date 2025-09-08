@@ -3395,7 +3395,7 @@ static void Cmd_getexp(void)
 
     switch (gBattleScripting.getexpState)
     {
-    case 0: // check if should receive exp at all
+    case EXP_SHOULD_RECEIVE: // check if should receive exp at all
         if (GetBattlerSide(gBattlerFainted) != B_SIDE_OPPONENT || (gBattleTypeFlags &
              (BATTLE_TYPE_LINK
               | BATTLE_TYPE_RECORDED_LINK
@@ -3405,7 +3405,7 @@ static void Cmd_getexp(void)
               | BATTLE_TYPE_BATTLE_TOWER
               | BATTLE_TYPE_EREADER_TRAINER)))
         {
-            gBattleScripting.getexpState = 6; // goto last case
+            gBattleScripting.getexpState = EXP_COMPLETE; // goto last case
         }
         else
         {
@@ -3413,7 +3413,7 @@ static void Cmd_getexp(void)
             gBattleStruct->givenExpMons |= gBitTable[gBattlerPartyIndexes[gBattlerFainted]];
         }
         break;
-    case 1: // calculate experience points to redistribute
+    case EXP_CALCULATE_ALL: // calculate experience points to redistribute
         {
             u16 calculatedExp;
             s32 viaSentIn;
@@ -3463,6 +3463,10 @@ static void Cmd_getexp(void)
                     *exp = 1;
 
                 gExpShareExp = SAFE_DIV(calculatedExp / 2, viaExpShare);
+
+                if (FlagGet(FLAG_SYS_GAME_CLEAR) && FlagGet(FLAG_EXP_ALL))
+                    gExpShareExp = SAFE_DIV(calculatedExp, 2);
+                
                 if (gExpShareExp == 0)
                     gExpShareExp = 1;
             }
@@ -3479,7 +3483,7 @@ static void Cmd_getexp(void)
             gBattleStruct->sentInPokes = sentIn;
         }
         // fall through
-    case 2: // set exp value to the poke in expgetter_id and print message
+    case EXP_CALCULATE_SINGLE: // set exp value to the poke in expgetter_id and print message
         if (gBattleControllerExecFlags == 0)
         {
             item = GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_HELD_ITEM);
@@ -3500,14 +3504,14 @@ static void Cmd_getexp(void)
             if (holdEffect != HOLD_EFFECT_EXP_SHARE && !FlagGet(FLAG_EXP_ALL) && !(gBattleStruct->sentInPokes & 1))
             {
                 *(&gBattleStruct->sentInPokes) >>= 1;
-                gBattleScripting.getexpState = 5;
+                gBattleScripting.getexpState = EXP_NEXT_MON;
                 gBattleMoveDamage = 0; // used for exp
             }
             else if (GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_LEVEL) == MAX_LEVEL
                 || levelCappedNuzlocke(GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_LEVEL)))
             {
                 *(&gBattleStruct->sentInPokes) >>= 1;
-                gBattleScripting.getexpState = 5;
+                gBattleScripting.getexpState = EXP_NEXT_MON;
                 gBattleMoveDamage = 0; // used for exp
 
                 // Added ability to gain EVs for Level 100 or Level Capped Pokemon
@@ -3583,7 +3587,7 @@ static void Cmd_getexp(void)
 
                     if ((gBattleStruct->sentInPokes & 1) || ((holdEffect == HOLD_EFFECT_EXP_SHARE) && !FlagGet(FLAG_EXP_ALL)))
                         PrepareStringBattle(STRINGID_PKMNGAINEDEXP, gBattleStruct->expGetterBattlerId);
-
+                    
                     MonGainEVs(&gPlayerParty[gBattleStruct->expGetterMonId], gBattleMons[gBattlerFainted].species);
                 }
                 gBattleStruct->sentInPokes >>= 1;
@@ -3591,7 +3595,7 @@ static void Cmd_getexp(void)
             }
         }
         break;
-    case 3: // Set stats and give exp
+    case EXP_SET_STATS_AND_GIVE: // Set stats and give exp
         if (gBattleControllerExecFlags == 0)
         {
             gBattleBufferB[gBattleStruct->expGetterBattlerId][0] = 0;
@@ -3612,7 +3616,16 @@ static void Cmd_getexp(void)
             gBattleScripting.getexpState++;
         }
         break;
-    case 4: // lvl up if necessary
+    case EXP_ALL_MESSAGE: // Exp. All message before possible Level-ups
+        if (gExpAllMessCheck && FlagGet(FLAG_EXP_ALL) && gBattleStruct->expGetterMonId == 0) // Only show message on first loop
+        {
+            gExpAllMessCheck = FALSE;
+            PREPARE_WORD_NUMBER_BUFFER(gBattleTextBuff3, 5, gExpShareExp);
+            PrepareStringBattle(STRINGID_PKMNGAINEDEXPALL, gBattleStruct->expGetterBattlerId);
+        }
+        gBattleScripting.getexpState++;
+        break;
+    case EXP_LEVEL_UP: // lvl up if necessary
         if (gBattleControllerExecFlags == 0)
         {
             gActiveBattler = gBattleStruct->expGetterBattlerId;
@@ -3656,39 +3669,30 @@ static void Cmd_getexp(void)
                     gBattleMons[2].spDefense = GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_SPDEF);
                     gBattleMons[2].spAttack = GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_SPATK);
                 }
-                gBattleScripting.getexpState = 5;
+                gBattleScripting.getexpState = EXP_NEXT_MON;
             }
             else
             {
                 gBattleMoveDamage = 0;
-                gBattleScripting.getexpState = 5;
+                gBattleScripting.getexpState = EXP_NEXT_MON;
             }
         }
         break;
-    case 5: // looper increment
+    case EXP_NEXT_MON: // looper increment
         if (gBattleMoveDamage) // there is exp to give, goto case 3 that gives exp
         {
-            gBattleScripting.getexpState = 3;
+            gBattleScripting.getexpState = EXP_SET_STATS_AND_GIVE;
         }
         else
         {
             gBattleStruct->expGetterMonId++;
             if (gBattleStruct->expGetterMonId < PARTY_SIZE)
-                gBattleScripting.getexpState = 2; // loop again
+                gBattleScripting.getexpState = EXP_CALCULATE_SINGLE; // loop again
             else
-            {                
-                if (gExpAllMessCheck && FlagGet(FLAG_EXP_ALL))
-                {
-                    gExpAllMessCheck = FALSE;
-                    gBattleStruct->expGetterMonId = 0;
-                    PREPARE_WORD_NUMBER_BUFFER(gBattleTextBuff3, 5, gExpShareExp);
-                    PrepareStringBattle(STRINGID_PKMNGAINEDEXPALL, gBattleStruct->expGetterBattlerId);
-                }
-                gBattleScripting.getexpState = 6; // we're done
-            }
+                gBattleScripting.getexpState = EXP_COMPLETE; // we're done
         }
         break;
-    case 6: // increment instruction
+    case EXP_COMPLETE: // increment instruction
         if (gBattleControllerExecFlags == 0)
         {
             // not sure why gf clears the item and ability here
