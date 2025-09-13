@@ -66,6 +66,9 @@ struct StatEditorResources
 
 #define INPUT_SELECT_STAT 0
 #define INPUT_EDIT_STAT 1
+                
+#define EDITING_EVS     0
+#define EDITING_IVS     1
 
 enum WindowIds
 {
@@ -580,6 +583,8 @@ static const u8 sGenderColors[2][3] =
 };
 
 static const u8 sText_MenuTitle[] = _("Stat Editor");
+static const u8 sText_MenuTitleIV[] = _("Edit IV");
+static const u8 sText_MenuTitleEV[] = _("Edit EV");
 static const u8 sText_MenuHP[] = _("HP");
 static const u8 sText_MenuAttack[] = _("Attack");
 static const u8 sText_MenuSpAttack[] = _("Sp. Atk");
@@ -593,10 +598,10 @@ static const u8 sText_MenuEV[] = _("EV");
 static const u8 sText_MenuIV[] = _("IV");
 static const u8 sText_MonLevel[]         = _("Lv.{CLEAR 1}{STR_VAR_1}");
 
-static const u8 sText_MenuLRButtonTextMain[]   = _("Cycle Party");
-static const u8 sText_MenuAButtonTextMain[]    = _("Edit Stats");
-static const u8 sText_MenuBButtonTextMain[]    = _("Save & Back");
-static const u8 sText_MenuDPadButtonTextMain[] = _("Change Stat");
+static const u8 sText_MenuLRButtonTextMain[]   = _("{L_BUTTON}{R_BUTTON} Cycle Party");
+static const u8 sText_MenuAButtonTextMain[]    = _("{A_BUTTON} Edit Stats");
+static const u8 sText_MenuBButtonTextMain[]    = _("{B_BUTTON} Save & Back");
+static const u8 sText_MenuDPadButtonTextMain[] = _("{DPAD_NONE}{L_BUTTON}{R_BUTTON} Change Stat");
 
 #define BUTTON_Y 4
 static void PrintTitleToWindowMainState()
@@ -605,27 +610,31 @@ static void PrintTitleToWindowMainState()
     
     AddTextPrinterParameterized4(WINDOW_1, FONT_NORMAL, 1, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuTitle);
 
-    BlitBitmapToWindow(WINDOW_1, sR_ButtonGfx, 75, (BUTTON_Y), 24, 8);
-    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 102, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuLRButtonTextMain);
+    //BlitBitmapToWindow(WINDOW_1, sR_ButtonGfx, 75, (BUTTON_Y), 24, 8);
+    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 70, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuLRButtonTextMain);
 
-    BlitBitmapToWindow(WINDOW_1, sA_ButtonGfx, 160, (BUTTON_Y), 8, 8);
-    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 172, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuAButtonTextMain);
+    //BlitBitmapToWindow(WINDOW_1, sA_ButtonGfx, 160, (BUTTON_Y), 8, 8);
+    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 165, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuAButtonTextMain);
 
     PutWindowTilemap(WINDOW_1);
     CopyWindowToVram(WINDOW_1, 3);
 }
 
-static void PrintTitleToWindowEditState()
+static void PrintTitleToWindowEditState(bool8 selectedStatType)
 {
     FillWindowPixelBuffer(WINDOW_1, PIXEL_FILL(TEXT_COLOR_TRANSPARENT));
     
-    AddTextPrinterParameterized4(WINDOW_1, FONT_NORMAL, 1, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuTitle);
+    if (selectedStatType == EDITING_EVS)
+        AddTextPrinterParameterized4(WINDOW_1, FONT_NORMAL, 1, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuTitleEV);
+    else        
+        AddTextPrinterParameterized4(WINDOW_1, FONT_NORMAL, 1, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuTitleIV);
 
-    BlitBitmapToWindow(WINDOW_1, sDPad_ButtonGfx, 75, (BUTTON_Y), 24, 8);
-    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 102, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuDPadButtonTextMain);
+    //BlitBitmapToWindow(WINDOW_1, sDPad_ButtonGfx, 50, (BUTTON_Y), 24, 8);
+    //BlitBitmapToWindow(WINDOW_1, sR_ButtonGfx, 75, (BUTTON_Y), 24, 8);
+    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 62, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuDPadButtonTextMain);
 
-    BlitBitmapToWindow(WINDOW_1, sB_ButtonGfx, 160, (BUTTON_Y), 8, 8);
-    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 172, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuBButtonTextMain);
+    //BlitBitmapToWindow(WINDOW_1, sB_ButtonGfx, 160, (BUTTON_Y), 8, 8);
+    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 165, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuBButtonTextMain);
 
     PutWindowTilemap(WINDOW_1);
     CopyWindowToVram(WINDOW_1, 3);
@@ -817,14 +826,14 @@ static void Task_StatEditorMain(u8 taskId) // input control when first loaded in
         sStatEditorDataPtr->editingStat = GetMonData(ReturnPartyMon(), selectedStatToStatEnum[sStatEditorDataPtr->selectedStat]);
         StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 3);
         PlaySE(SE_SELECT);
-        PrintTitleToWindowEditState();
+        PrintTitleToWindowEditState(sStatEditorDataPtr->selector_x);
         sStatEditorDataPtr->inputMode = INPUT_EDIT_STAT;
         gTasks[taskId].func = Task_MenuEditingStat;
-        if (sStatEditorDataPtr->editingStat == 0)
+        if(sStatEditorDataPtr->editingStat == 0)
             StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 1);
-        if ((sStatEditorDataPtr->editingStat == 255 || (sStatEditorDataPtr->evTotal == 510)) && (sStatEditorDataPtr->selector_x == 0))
+        if((sStatEditorDataPtr->editingStat == 255 || (sStatEditorDataPtr->evTotal == 510)) && (sStatEditorDataPtr->selector_x == EDITING_EVS))
             StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 2);
-        if ((sStatEditorDataPtr->editingStat == 31) && (sStatEditorDataPtr->selector_x == 1))
+        if((sStatEditorDataPtr->editingStat == 31) && (sStatEditorDataPtr->selector_x == EDITING_IVS))
             StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 2);
         return;
     }
@@ -858,10 +867,10 @@ static void Task_StatEditorMain(u8 taskId) // input control when first loaded in
     }
     if (JOY_NEW(DPAD_LEFT) || JOY_NEW(DPAD_RIGHT))
     {
-        if (sStatEditorDataPtr->selector_x == 0)
-            sStatEditorDataPtr->selector_x = 1;
+        if(sStatEditorDataPtr->selector_x == EDITING_EVS)
+            sStatEditorDataPtr->selector_x = EDITING_IVS;
         else
-            sStatEditorDataPtr->selector_x = 0; 
+            sStatEditorDataPtr->selector_x = EDITING_EVS; 
     }
     if (JOY_NEW(DPAD_UP))
     {
@@ -921,10 +930,7 @@ static void ChangeAndUpdateStat()
 #define STAT_MINIMUM          0  
 #define IV_MAX_SINGLE_STAT    31   
 #define EV_MAX_SINGLE_STAT    255   
-#define EV_MAX_TOTAL          510            
-                
-#define EDITING_EVS     0
-#define EDITING_IVS     1
+#define EV_MAX_TOTAL          510
 
 #define CHECK_IF_STAT_CANT_INCREASE (((sStatEditorDataPtr->editingStat == ((sStatEditorDataPtr->selector_x == EDITING_EVS) ? (EV_MAX_SINGLE_STAT) : (IV_MAX_SINGLE_STAT))) \
                                      || ((sStatEditorDataPtr->selector_x == EDITING_EVS) && (sStatEditorDataPtr->evTotal >= EV_MAX_TOTAL))))
@@ -1048,5 +1054,3 @@ static void Task_MenuEditingStat(u8 taskId) // This function should be refactore
         HandleEditingStatInput(EDIT_INPUT_BULK_INCREASE_STATE);
 
 }
-
-
