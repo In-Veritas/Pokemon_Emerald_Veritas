@@ -53,6 +53,7 @@ struct StatEditorResources
     u8 monIconSpriteId;
     u16 speciesID;
     u16 selectedStat;
+    u16 adjusterSpriteId;
     u16 selectorSpriteId;
     u16 selector_x;
     u16 selector_y;
@@ -96,9 +97,12 @@ static void Task_MenuEditingStat(u8 taskId);
 static void SampleUi_DrawMonIcon(u16 dexNum);
 static void PrintMonStats(void);
 static void SelectorCallback(struct Sprite *sprite);
+static void AdjusterCallback(struct Sprite *sprite);
 static struct Pokemon *ReturnPartyMon();
 static u8 CreateSelector();
 static void DestroySelector();
+static u8 CreateAdjuster();
+static void DestroyAdjuster();
 
 //==========CONST=DATA==========//
 static const struct BgTemplate sStatEditorBgTemplates[] =
@@ -178,9 +182,12 @@ static const u8 sMenuWindowFontColors[][3] =
 };
 
 #define TAG_SELECTOR 30004
+#define TAG_ADJUSTER 30005
 
 static const u16 sSelector_Pal[] = INCBIN_U16("graphics/ui_menu/selector.gbapal");
 static const u32 sSelector_Gfx[] = INCBIN_U32("graphics/ui_menu/selector.4bpp.lz");
+static const u16 sAdjuster_Pal[] = INCBIN_U16("graphics/ui_menu/adjuster.gbapal");
+static const u32 sAdjuster_Gfx[] = INCBIN_U32("graphics/ui_menu/adjuster.4bpp.lz");
 static const u8 sA_ButtonGfx[]         = INCBIN_U8("graphics/ui_menu/a_button.4bpp");
 static const u8 sB_ButtonGfx[]         = INCBIN_U8("graphics/ui_menu/b_button.4bpp");
 static const u8 sR_ButtonGfx[]         = INCBIN_U8("graphics/ui_menu/r_button.4bpp");
@@ -208,8 +215,8 @@ static const struct SpritePalette sSpritePal_Selector =
 
 static const union AnimCmd sSpriteAnim_Selector0[] =
 {
-    ANIMCMD_FRAME(0, 32),
-    ANIMCMD_FRAME(0, 32),
+    ANIMCMD_FRAME(0, 16),
+    ANIMCMD_FRAME(32, 16),
     //ANIMCMD_FRAME(48, 10),
     ANIMCMD_JUMP(0),
 };
@@ -254,6 +261,74 @@ static const struct SpriteTemplate sSpriteTemplate_Selector =
     .callback = SelectorCallback
 };
 
+static const struct OamData sOamData_Adjuster =
+{
+    .size = SPRITE_SIZE(64x32),
+    .shape = SPRITE_SHAPE(64x32),
+    .priority = 0,
+};
+
+static const struct CompressedSpriteSheet sSpriteSheet_Adjuster =
+{
+    .data = sAdjuster_Gfx,
+    .size = 32*128*4/2,
+    .tag = TAG_ADJUSTER,
+};
+
+static const struct SpritePalette sSpritePal_Adjuster =
+{
+    .data = sAdjuster_Pal,
+    .tag = TAG_ADJUSTER
+};
+
+static const union AnimCmd sSpriteAnim_Adjuster0[] =
+{
+    ANIMCMD_FRAME(0, 16),
+    ANIMCMD_FRAME(128, 16),
+    //ANIMCMD_FRAME(48, 10),
+    ANIMCMD_JUMP(0),
+};
+
+static const union AnimCmd sSpriteAnim_Adjuster1[] =
+{
+    ANIMCMD_FRAME(64, 16),
+    ANIMCMD_FRAME(64 + 128, 16),
+    ANIMCMD_JUMP(0),
+};
+
+static const union AnimCmd sSpriteAnim_Adjuster2[] =
+{
+    ANIMCMD_FRAME(32, 16),
+    ANIMCMD_FRAME(32 + 128, 16),
+    ANIMCMD_JUMP(0),
+};
+
+static const union AnimCmd sSpriteAnim_Adjuster3[] =
+{
+    ANIMCMD_FRAME(0, 16),
+    ANIMCMD_FRAME(128, 16),
+    ANIMCMD_JUMP(0),
+};
+
+static const union AnimCmd *const sSpriteAnimTable_Adjuster[] =
+{
+    sSpriteAnim_Adjuster0,
+    sSpriteAnim_Adjuster1,
+    sSpriteAnim_Adjuster2,
+    sSpriteAnim_Adjuster3,
+};
+
+static const struct SpriteTemplate sSpriteTemplate_Adjuster =
+{
+    .tileTag = TAG_ADJUSTER,
+    .paletteTag = TAG_ADJUSTER,
+    .oam = &sOamData_Adjuster,
+    .anims = sSpriteAnimTable_Adjuster,
+    .images = NULL,
+    .affineAnims = gDummySpriteAffineAnimTable,
+    .callback = AdjusterCallback
+};
+
 // Begin Generic UI Initialization Code
 void Task_OpenStatEditorFromStartMenu(u8 taskId)
 {
@@ -277,6 +352,7 @@ void StatEditor_Init(MainCallback callback)
     // initialize stuff
     sStatEditorDataPtr->gfxLoadState = 0;
     sStatEditorDataPtr->savedCallback = callback;
+    sStatEditorDataPtr->adjusterSpriteId = 0xFF;
     sStatEditorDataPtr->selectorSpriteId = 0xFF;
     sStatEditorDataPtr->partyid = gSpecialVar_0x8004;
     
@@ -349,6 +425,8 @@ static bool8 StatEditor_DoGfxSetup(void)
         LoadMonIconPalettes();
         LoadCompressedSpriteSheet(&sSpriteSheet_Selector);
         LoadSpritePalette(&sSpritePal_Selector);
+        LoadCompressedSpriteSheet(&sSpriteSheet_Adjuster);
+        LoadSpritePalette(&sSpritePal_Adjuster);
         SampleUi_DrawMonIcon(sStatEditorDataPtr->speciesID);
         gMain.state++;
         break;
@@ -386,6 +464,7 @@ static bool8 StatEditor_DoGfxSetup(void)
 static void StatEditor_FreeResources(void)
 {
     DestroySelector();
+    DestroyAdjuster();
     FreeResourcesAndDestroySprite(&gSprites[sStatEditorDataPtr->monIconSpriteId], sStatEditorDataPtr->monIconSpriteId);
     try_free(sStatEditorDataPtr);
     try_free(sBg1TilemapBuffer);
@@ -518,11 +597,29 @@ static u8 CreateSelector()
     return sStatEditorDataPtr->selectorSpriteId;
 }
 
+static u8 CreateAdjuster()
+{
+    if (sStatEditorDataPtr->adjusterSpriteId == 0xFF)
+        sStatEditorDataPtr->adjusterSpriteId = CreateSprite(&sSpriteTemplate_Adjuster, 172, 30, 0);
+
+    gSprites[sStatEditorDataPtr->adjusterSpriteId].invisible = FALSE;
+    StartSpriteAnim(&gSprites[sStatEditorDataPtr->adjusterSpriteId], 0);
+    DebugPrintf("Sprite ID: %d", sStatEditorDataPtr->adjusterSpriteId);
+    return sStatEditorDataPtr->adjusterSpriteId;
+}
+
 static void DestroySelector()
 {
     if (sStatEditorDataPtr->selectorSpriteId != 0xFF)
         DestroySprite(&gSprites[sStatEditorDataPtr->selectorSpriteId]);
     sStatEditorDataPtr->selectorSpriteId = 0xFF;
+}
+
+static void DestroyAdjuster()
+{
+    if (sStatEditorDataPtr->adjusterSpriteId != 0xFF)
+        DestroySprite(&gSprites[sStatEditorDataPtr->adjusterSpriteId]);
+    sStatEditorDataPtr->adjusterSpriteId = 0xFF;
 }
 
 #define DISTANCE_BETWEEN_STATS_Y 16
@@ -626,9 +723,9 @@ static const u8 sText_MenuEV[] = _("EV");
 static const u8 sText_MenuIV[] = _("IV");
 static const u8 sText_MonLevel[]         = _("Lv.{CLEAR 1}{STR_VAR_1}");
 
-static const u8 sText_MenuLRButtonTextMain[]   = _("{L_BUTTON}{R_BUTTON} Cycle Party");
-static const u8 sText_MenuAButtonTextMain[]    = _("{A_BUTTON} Edit Stats");
-static const u8 sText_MenuBButtonTextMain[]    = _("{B_BUTTON} Save & Back");
+static const u8 sText_MenuLRButtonTextMain[]   = _("{DPAD_NONE} Select {L_BUTTON}{R_BUTTON} Party");
+static const u8 sText_MenuAButtonTextMain[]    = _("{A_BUTTON} Edit Stat");
+static const u8 sText_MenuBButtonTextMain[]    = _("{B_BUTTON} Save&Back");
 static const u8 sText_MenuDPadButtonTextMain[] = _("{DPAD_NONE}{L_BUTTON}{R_BUTTON} Change Stat");
 
 #define BUTTON_Y 4
@@ -638,11 +735,9 @@ static void PrintTitleToWindowMainState()
     
     AddTextPrinterParameterized4(WINDOW_1, FONT_NORMAL, 1, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuTitle);
 
-    //BlitBitmapToWindow(WINDOW_1, sR_ButtonGfx, 75, (BUTTON_Y), 24, 8);
-    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 70, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuLRButtonTextMain);
+    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 62, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuLRButtonTextMain);
 
-    //BlitBitmapToWindow(WINDOW_1, sA_ButtonGfx, 160, (BUTTON_Y), 8, 8);
-    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 165, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuAButtonTextMain);
+    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 170, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuAButtonTextMain);
 
     PutWindowTilemap(WINDOW_1);
     CopyWindowToVram(WINDOW_1, 3);
@@ -662,7 +757,7 @@ static void PrintTitleToWindowEditState(bool8 selectedStatType)
     AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 62, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuDPadButtonTextMain);
 
     //BlitBitmapToWindow(WINDOW_1, sB_ButtonGfx, 160, (BUTTON_Y), 8, 8);
-    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 165, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuBButtonTextMain);
+    AddTextPrinterParameterized4(WINDOW_1, FONT_NARROW, 170, 0, 0, 0, sMenuWindowFontColors[FONT_WHITE], TEXT_SKIP_DRAW, sText_MenuBButtonTextMain);
 
     PutWindowTilemap(WINDOW_1);
     CopyWindowToVram(WINDOW_1, 3);
@@ -792,7 +887,7 @@ static void SelectorCallback(struct Sprite *sprite)
         {{188, 94 + 20}, {220, 94 + 20}},
         {{188, 110 + 20}, {220, 110 + 20}}, // Thanks Jaizu
     };
-
+/*
     if (sStatEditorDataPtr->inputMode == INPUT_EDIT_STAT)
     {
         if (sprite->data[0] == 32)
@@ -807,10 +902,48 @@ static void SelectorCallback(struct Sprite *sprite)
         sprite->data[0]++;
     }
     else
-    {
+    {*/
         sprite->invisible = FALSE;
         sprite->data[0] = 0;
+ /*   }
+*/
+    sStatEditorDataPtr->selectedStat = sStatEditorDataPtr->selector_x + (sStatEditorDataPtr->selector_y * 2);
+
+    sprite->x = spriteCords[sStatEditorDataPtr->selector_y][sStatEditorDataPtr->selector_x].x;
+    sprite->y = spriteCords[sStatEditorDataPtr->selector_y][sStatEditorDataPtr->selector_x].y;
+
+    DebugPrintf("%d", sStatEditorDataPtr->selectedStat);
+}
+
+static void AdjusterCallback(struct Sprite *sprite)
+{
+    struct SpriteCordsStruct spriteCords[6][2] = {
+        {{188, 30 + 20}, {220, 30 + 20}},
+        {{188, 46 + 20}, {220, 46 + 20}},
+        {{188, 62 + 20}, {220, 62 + 20}},
+        {{188, 78 + 20}, {220, 78 + 20}},
+        {{188, 94 + 20}, {220, 94 + 20}},
+        {{188, 110 + 20}, {220, 110 + 20}}, // Thanks Jaizu
+    };
+/*
+    if (sStatEditorDataPtr->inputMode == INPUT_EDIT_STAT)
+    {
+        if (sprite->data[0] == 32)
+        {
+            sprite->invisible = TRUE;
+        }
+        if (sprite->data[0] >= 48)
+        {
+            sprite->invisible = FALSE;
+            sprite->data[0] = 0;
+        }
+        sprite->data[0]++;
     }
+    else
+    {*/
+        sprite->invisible = FALSE;
+        sprite->data[0] = 0;
+ //   }
 
     sStatEditorDataPtr->selectedStat = sStatEditorDataPtr->selector_x + (sStatEditorDataPtr->selector_y * 2);
 
@@ -854,17 +987,18 @@ static void Task_StatEditorMain(u8 taskId) // input control when first loaded in
     if (JOY_NEW(A_BUTTON))
     {
         sStatEditorDataPtr->editingStat = GetMonData(ReturnPartyMon(), selectedStatToStatEnum[sStatEditorDataPtr->selectedStat]);
-        StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 3);
+        DestroySelector();
+        CreateAdjuster();
         PlaySE(SE_SELECT);
         PrintTitleToWindowEditState(sStatEditorDataPtr->selector_x);
         sStatEditorDataPtr->inputMode = INPUT_EDIT_STAT;
         gTasks[taskId].func = Task_MenuEditingStat;
         if(sStatEditorDataPtr->editingStat == 0)
-            StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 1);
+            StartSpriteAnim(&gSprites[sStatEditorDataPtr->adjusterSpriteId], 1);
         if((sStatEditorDataPtr->editingStat == 255 || (sStatEditorDataPtr->evTotal == 510)) && (sStatEditorDataPtr->selector_x == EDITING_EVS))
-            StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 2);
+            StartSpriteAnim(&gSprites[sStatEditorDataPtr->adjusterSpriteId], 2);
         if((sStatEditorDataPtr->editingStat == 31) && (sStatEditorDataPtr->selector_x == EDITING_IVS))
-            StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 2);
+            StartSpriteAnim(&gSprites[sStatEditorDataPtr->adjusterSpriteId], 2);
         return;
     }
     if (JOY_NEW(L_BUTTON))
@@ -970,13 +1104,13 @@ static void HandleEditingStatInput(u32 input)
     u16 iterator = 0;
     if ((input <= EDIT_INPUT_MAX_INCREASE_STATE) && CHECK_IF_STAT_CANT_INCREASE)
     {
-        StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 2);
+        StartSpriteAnim(&gSprites[sStatEditorDataPtr->adjusterSpriteId], 2);
         return;
     }
 
     if ((input >= EDIT_INPUT_DECREASE_STATE) && (sStatEditorDataPtr->editingStat == STAT_MINIMUM))
     {
-        StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 1);
+        StartSpriteAnim(&gSprites[sStatEditorDataPtr->adjusterSpriteId], 1);
         return;
     }
 
@@ -1051,11 +1185,11 @@ static void HandleEditingStatInput(u32 input)
     ChangeAndUpdateStat();
 
     if (CHECK_IF_STAT_CANT_INCREASE)
-        StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 2);
+        StartSpriteAnim(&gSprites[sStatEditorDataPtr->adjusterSpriteId], 2);
     else if (sStatEditorDataPtr->editingStat == STAT_MINIMUM)
-        StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 1); 
+        StartSpriteAnim(&gSprites[sStatEditorDataPtr->adjusterSpriteId], 1); 
     else
-        StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 3);       
+        StartSpriteAnim(&gSprites[sStatEditorDataPtr->adjusterSpriteId], 3);       
 }
 
 static void Task_MenuEditingStat(u8 taskId) // This function should be refactored to not be a hot mess
@@ -1063,6 +1197,8 @@ static void Task_MenuEditingStat(u8 taskId) // This function should be refactore
     if (JOY_NEW(B_BUTTON))
     {
         gTasks[taskId].func = Task_StatEditorMain;
+        DestroyAdjuster();
+        CreateSelector();
         StartSpriteAnim(&gSprites[sStatEditorDataPtr->selectorSpriteId], 0);
         PlaySE(SE_SELECT);
         sStatEditorDataPtr->inputMode = INPUT_SELECT_STAT;
