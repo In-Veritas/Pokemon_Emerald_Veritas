@@ -377,6 +377,7 @@ static void Task_PrintSkillsPage(u8);
 static void PrintHeldItemName(void);
 static void PrintSkillsPageText(void);
 static void PrintRibbonCount(void);
+static void PrintFriendship(void);
 static void BufferLeftColumnStats(void);
 static void PrintLeftColumnStats(void);
 static void BufferRightColumnStats(void);
@@ -1837,31 +1838,66 @@ static void CloseSummaryScreen(u8 taskId)
 #define IVS_STATS_BLOCK     (EVS_STATS_BLOCK + 3)
 #define STATS_BLANK_BLOCK   1241
 
+#define RIBBON_CORD_X    51
+#define RIBBON_CORD_Y    99
+
+#define RIBBONS_BLOCK   153
+#define FRIEND_BLOCK    234
+
 // Update skills page tilemap
 static void ChangeSummaryState(s16 *taskData, u8 taskId)
 {
+    // Stat Swap
     FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, STATS_CORD_X + 3, STATS_CORD_Y, 1, 1, 2);
     FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, STATS_CORD_X + 4, STATS_CORD_Y, 1, 1, 2);
     FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, STATS_CORD_X + 5, STATS_CORD_Y, 1, 1, 2);
+    // Ribbon/Friendship Swap
+    FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, RIBBON_CORD_X + 3, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, RIBBON_CORD_X + 4, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, RIBBON_CORD_X + 5, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, RIBBON_CORD_X + 6, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, RIBBON_CORD_X + 7, RIBBON_CORD_Y, 1, 1, 2);
     switch (currentStat)
     {
         case STAT_STATS:
+            // IV Swap
             FillBgTilemapBufferRect(1, IVS_STATS_BLOCK, STATS_CORD_X, STATS_CORD_Y, 1, 1, 2);
             FillBgTilemapBufferRect(1, IVS_STATS_BLOCK + 1, STATS_CORD_X + 1, STATS_CORD_Y, 1, 1, 2);
             FillBgTilemapBufferRect(1, IVS_STATS_BLOCK + 2, STATS_CORD_X + 2, STATS_CORD_Y, 1, 1, 2);
+            // Friendship Swap
+            FillBgTilemapBufferRect(1, FRIEND_BLOCK, RIBBON_CORD_X + 3, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, FRIEND_BLOCK + 1, RIBBON_CORD_X + 4, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, FRIEND_BLOCK + 2, RIBBON_CORD_X + 5, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, FRIEND_BLOCK + 3, RIBBON_CORD_X + 6, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, FRIEND_BLOCK + 4, RIBBON_CORD_X + 7, RIBBON_CORD_Y, 1, 1, 2);
+            
             taskData[3] = STAT_IVS;
             break;
         case STAT_IVS:
+            // EV Swap
             FillBgTilemapBufferRect(1, EVS_STATS_BLOCK, STATS_CORD_X, STATS_CORD_Y, 1, 1, 2);
             FillBgTilemapBufferRect(1, EVS_STATS_BLOCK + 1, STATS_CORD_X + 1, STATS_CORD_Y, 1, 1, 2);
             FillBgTilemapBufferRect(1, EVS_STATS_BLOCK + 2, STATS_CORD_X + 2, STATS_CORD_Y, 1, 1, 2);
+            // Friendship Swap
+            FillBgTilemapBufferRect(1, FRIEND_BLOCK, RIBBON_CORD_X + 3, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, FRIEND_BLOCK + 1, RIBBON_CORD_X + 4, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, FRIEND_BLOCK + 2, RIBBON_CORD_X + 5, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, FRIEND_BLOCK + 3, RIBBON_CORD_X + 6, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, FRIEND_BLOCK + 4, RIBBON_CORD_X + 7, RIBBON_CORD_Y, 1, 1, 2);
             taskData[3] = STAT_EVS;
             break;
         case STAT_EVS:
+            // Stat Swap
             FillBgTilemapBufferRect(1, STATS_STATS_BLOCK, STATS_CORD_X, STATS_CORD_Y, 1, 1, 2);
             FillBgTilemapBufferRect(1, STATS_STATS_BLOCK + 1, STATS_CORD_X + 1, STATS_CORD_Y, 1, 1, 2);
             FillBgTilemapBufferRect(1, STATS_STATS_BLOCK + 2, STATS_CORD_X + 2, STATS_CORD_Y, 1, 1, 2);
             FillBgTilemapBufferRect(1, STATS_STATS_BLOCK + 3, STATS_CORD_X + 3, STATS_CORD_Y, 1, 1, 2);
+            // Ribbon Swap
+            FillBgTilemapBufferRect(1, RIBBONS_BLOCK, RIBBON_CORD_X + 3, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, RIBBONS_BLOCK + 1, RIBBON_CORD_X + 4, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, RIBBONS_BLOCK + 2, RIBBON_CORD_X + 5, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, RIBBONS_BLOCK + 3, RIBBON_CORD_X + 6, RIBBON_CORD_Y, 1, 1, 2);
+            FillBgTilemapBufferRect(1, RIBBONS_BLOCK + 4, RIBBON_CORD_X + 7, RIBBON_CORD_Y, 1, 1, 2);
             taskData[3] = STAT_STATS;
             break;
     }
@@ -3746,6 +3782,20 @@ static void PrintRibbonCount(void)
     PrintTextOnWindow(AddWindowFromTemplateList(sPageSkillsTemplate, PSS_DATA_WINDOW_SKILLS_RIBBON_COUNT), text, x, 1, 0, 0);
 }
 
+static void PrintFriendship(void)
+{
+    const u8 *text;
+    u16 friendship = GetMonData(&sMonSummaryScreen->currentMon, MON_DATA_FRIENDSHIP);
+
+    int x;
+    ConvertIntToDecimalStringN(gStringVar1, friendship, STR_CONV_MODE_RIGHT_ALIGN, 3);
+    StringExpandPlaceholders(gStringVar4, gText_FriendshipVar1);
+    text = gStringVar4;
+
+    x = GetStringCenterAlignXOffset(FONT_NORMAL, text, 70) + 6;
+    PrintTextOnWindow(AddWindowFromTemplateList(sPageSkillsTemplate, PSS_DATA_WINDOW_SKILLS_RIBBON_COUNT), text, x, 1, 0, 0);
+}
+
 static void BufferIvOrEvStats(u8 mode)
 {
     u16 hp, hp2, atk, def, spA, spD, spe;
@@ -3787,6 +3837,7 @@ static void BufferIvOrEvStats(u8 mode)
 
     FillWindowPixelBuffer(sMonSummaryScreen->windowIds[PSS_DATA_WINDOW_SKILLS_STATS_LEFT], 0);
     FillWindowPixelBuffer(sMonSummaryScreen->windowIds[PSS_DATA_WINDOW_SKILLS_STATS_RIGHT], 0);
+    FillWindowPixelBuffer(sMonSummaryScreen->windowIds[PSS_DATA_WINDOW_SKILLS_RIBBON_COUNT], 0);
 
     switch (mode)
     {
@@ -3804,6 +3855,7 @@ static void BufferIvOrEvStats(u8 mode)
         BufferStat(gStringVar3, natureMod[STAT_SPEED - 1], spe, 2, 3);
         DynamicPlaceholderTextUtil_ExpandPlaceholders(gStringVar4, sStatsRightColumnLayout);
         PrintRightColumnStats();
+        PrintRibbonCount();
         break;
     case 1:
     case 2:
@@ -3818,6 +3870,7 @@ static void BufferIvOrEvStats(u8 mode)
         BufferStat(gStringVar3, 0, spe, 2, 3);
         DynamicPlaceholderTextUtil_ExpandPlaceholders(gStringVar4, sStatsRightColumnLayout);
         PrintRightColumnStats();
+        PrintFriendship();
         break;
     }
 
@@ -3867,6 +3920,17 @@ static void BufferRightColumnStats(void)
     FillBgTilemapBufferRect(1, STATS_STATS_BLOCK + 1, STATS_CORD_X + 1, STATS_CORD_Y, 1, 1, 2);
     FillBgTilemapBufferRect(1, STATS_STATS_BLOCK + 2, STATS_CORD_X + 2, STATS_CORD_Y, 1, 1, 2);
     FillBgTilemapBufferRect(1, STATS_STATS_BLOCK + 3, STATS_CORD_X + 3, STATS_CORD_Y, 1, 1, 2);
+    // Reset to RIBBONS graphics
+    FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, RIBBON_CORD_X + 3, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, RIBBON_CORD_X + 4, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, RIBBON_CORD_X + 5, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, RIBBON_CORD_X + 6, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, STATS_BLANK_BLOCK, RIBBON_CORD_X + 7, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, RIBBONS_BLOCK, RIBBON_CORD_X + 3, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, RIBBONS_BLOCK + 1, RIBBON_CORD_X + 4, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, RIBBONS_BLOCK + 2, RIBBON_CORD_X + 5, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, RIBBONS_BLOCK + 3, RIBBON_CORD_X + 6, RIBBON_CORD_Y, 1, 1, 2);
+    FillBgTilemapBufferRect(1, RIBBONS_BLOCK + 4, RIBBON_CORD_X + 7, RIBBON_CORD_Y, 1, 1, 2);
     CopyBgTilemapBufferToVram(1);
 
     DynamicPlaceholderTextUtil_Reset();

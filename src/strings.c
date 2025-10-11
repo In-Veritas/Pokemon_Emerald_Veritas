@@ -519,6 +519,7 @@ const u8 gText_Status[] = _("STATUS");
 const u8 gText_ExpPoints[] = _("EXP. POINTS");
 const u8 gText_NextLv[] = _("NEXT LV.");
 const u8 gText_RibbonsVar1[] = _("RIBBONS: {STR_VAR_1}");
+const u8 gText_FriendshipVar1[] = _("FRIEND: {STR_VAR_1}");
 const u8 gText_EmptyString5[] = _("");
 const u8 gText_Events[] = _("EVENTS"); // Unused
 const u8 gText_Switch[] = _("SWITCH");

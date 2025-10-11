@@ -1193,6 +1193,7 @@ extern const u8 gText_EggFromFortreeGym[];
 extern const u8 gText_OddEggFoundByCouple[];
 extern const u8 gText_None[];
 extern const u8 gText_RibbonsVar1[];
+extern const u8 gText_FriendshipVar1[];
 extern const u8 gText_OneDash[];
 extern const u8 gText_TwoDashes[];
 
