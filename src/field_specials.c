@@ -1415,6 +1415,26 @@ bool8 LeadMonHasEffortRibbon(void)
     return GetMonData(&gPlayerParty[GetLeadMonIndex()], MON_DATA_EFFORT_RIBBON, NULL);
 }
 
+void LeadMonHiddenPowerType(void)
+{
+    struct Pokemon *mon = &gPlayerParty[GetLeadMonIndex()];
+    u8 typeBits  = ((GetMonData(mon, MON_DATA_HP_IV) & 1) << 0)
+                        | ((GetMonData(mon, MON_DATA_ATK_IV) & 1) << 1)
+                        | ((GetMonData(mon, MON_DATA_DEF_IV) & 1) << 2)
+                        | ((GetMonData(mon, MON_DATA_SPEED_IV) & 1) << 3)
+                        | ((GetMonData(mon, MON_DATA_SPATK_IV) & 1) << 4)
+                        | ((GetMonData(mon, MON_DATA_SPDEF_IV) & 1) << 5);
+
+    u8 type = (15 * typeBits) / 63 + 1;
+    if (type >= TYPE_MYSTERY)
+        type++;
+    
+    if(type == TYPE_PSYCHIC)
+        StringCopy(gStringVar1, "PSYCHIC");
+    else
+        StringCopy(gStringVar1, gTypeNames[type]);
+}
+
 void GiveLeadMonEffortRibbon(void)
 {
     bool8 ribbonSet;
