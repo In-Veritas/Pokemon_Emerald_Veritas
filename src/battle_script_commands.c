@@ -3479,7 +3479,7 @@ static void Cmd_getexp(void)
 
                 gExpShareExp = SAFE_DIV(calculatedExp / 2, viaExpShare);
 
-                if (FlagGet(FLAG_SYS_GAME_CLEAR) && FlagGet(FLAG_EXP_ALL))
+                if (FlagGet(FLAG_EXP_ALL_UPGRADED) && FlagGet(FLAG_EXP_ALL))
                     gExpShareExp = SAFE_DIV(calculatedExp, 2);
                 
                 if (gExpShareExp == 0)

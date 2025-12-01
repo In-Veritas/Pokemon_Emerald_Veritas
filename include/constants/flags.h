@@ -700,7 +700,7 @@
 #define FLAG_CAUGHT_SHINY_LATIAS_OR_LATIOS                         0x295 // Flag for Shiny Lati Caught
 #define FLAG_DEFEATED_SHINY_RAYQUAZA                               0x296 // Flag for Shiny Rayquaza Defeated
 #define FLAG_CAUGHT_SHINY_RAYQUAZA                                 0x297 // Flag for Shiny Rayquaza Caught
-#define FLAG_UNUSED_0x298                                          0x298 // Unused Flag
+#define FLAG_ENABLE_EXP_ALL_UPGRADED_CALL                          0x298 // Flag to enable message to tell players of upgraded EXP. All
 #define FLAG_UNUSED_0x299                                          0x299 // Unused Flag
 #define FLAG_UNUSED_0x29A                                          0x29A // Unused Flag
 #define FLAG_UNUSED_0x29B                                          0x29B // Unused Flag
@@ -1293,7 +1293,7 @@
 #define FLAG_ENABLE_FAST_BATTLE_INTRO                               0x4E1 // Flag for enabling faster battle introduction
 #define FLAG_ENABLE_FAST_BATTLE                                     0x4E2 // Flag for enabling auto skip for battle pauses
 #define FLAG_ENABLE_PICKUP_TEXT                                     0x4E3 // Flag for enabling pickup text
-#define FLAG_UNUSED_0x4E4                                           0x4E4 // Unused Flag
+#define FLAG_EXP_ALL_UPGRADED                                       0x4E4 // Flag for upgraded EXP ALL
 #define FLAG_UNUSED_0x4E5                                           0x4E5 // Unused Flag
 #define FLAG_UNUSED_0x4E6                                           0x4E6 // Unused Flag
 #define FLAG_UNUSED_0x4E7                                           0x4E7 // Unused Flag

@@ -103,7 +103,7 @@
 #define VAR_LAVARIDGE_TOWN_STATE                         0x4053
 #define VAR_CURRENT_SECRET_BASE                          0x4054 // was probably allocated for VAR_FALLARBOR_TOWN_STATE at one point
 #define VAR_OVERWORLD_SPEEDUP                            0x4055 // Replaced unused 'VAR_VERDANTURF_TOWN_STATE' for Overworld Speedup
-#define VAR_PACIFIDLOG_TOWN_STATE                        0x4056 // Unused Var
+#define VAR_EXP_ALL_UPGRADED_CALL_STEP_COUNTER           0x4056 // Replaced 'VAR_PACIFIDLOG_TOWN_STATE' for EXP. All Upgraded call
 #define VAR_PETALBURG_CITY_STATE                         0x4057
 #define VAR_SLATEPORT_CITY_STATE                         0x4058
 #define VAR_MAUVILLE_CITY_STATE                          0x4059

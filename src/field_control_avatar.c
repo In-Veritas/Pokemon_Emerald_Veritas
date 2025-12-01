@@ -807,6 +807,11 @@ static bool8 TryStartStepCountScript(u16 metatileBehavior)
             ScriptContext_SetupScript(PetalburgCity_Gym_EventScript_NormanRematchCall);
             return TRUE;
         }
+        if (ShouldDoExpAllUpgradedCall() == TRUE)
+        {
+            ScriptContext_SetupScript(RustboroCity_DevonCorp_3F_EventScript_ExpAllUpgradedCall);
+            return TRUE;
+        }
     }
 
     if (SafariZoneTakeStep() == TRUE)

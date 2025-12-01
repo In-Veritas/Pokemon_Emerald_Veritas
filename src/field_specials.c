@@ -475,6 +475,31 @@ bool32 ShouldDoNormanRematchCall(void)
     return TRUE;
 }
 
+bool32 ShouldDoExpAllUpgradedCall(void)
+{
+    if (FlagGet(FLAG_ENABLE_EXP_ALL_UPGRADED_CALL))
+    {
+        switch (gMapHeader.mapType)
+        {
+        case MAP_TYPE_TOWN:
+        case MAP_TYPE_CITY:
+        case MAP_TYPE_ROUTE:
+        case MAP_TYPE_OCEAN_ROUTE:
+            if (++(*GetVarPointer(VAR_EXP_ALL_UPGRADED_CALL_STEP_COUNTER)) < 250)
+                return FALSE;
+            break;
+        default:
+            return FALSE;
+        }
+    }
+    else
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
 bool32 ShouldUpdateGymLeaderRematches(void)
 {
     switch (gMapHeader.mapType)

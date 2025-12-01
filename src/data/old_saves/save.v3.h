@@ -5,14 +5,14 @@
 #include "constants/heal_locations.h"
 #include "constants/flags.h"
 
-struct SaveBlock2_v2
+struct SaveBlock2_v3
 {
     u8 _saveSentinel; // 0xFF
     u16 saveVersion;
-    u8 playerName[7 + 1];
+    u8 playerName[PLAYER_NAME_LENGTH + 1];
     u8 playerGender; // MALE, FEMALE
     u8 specialSaveWarpFlags;
-    u8 playerTrainerId[4];
+    u8 playerTrainerId[TRAINER_ID_LENGTH];
     u16 playTimeHours;
     u8 playTimeMinutes;
     u8 playTimeSeconds;
@@ -24,10 +24,10 @@ struct SaveBlock2_v2
             u16 optionsBattleStyle:1; // OPTIONS_BATTLE_STYLE_[SHIFT/SET]
             u16 optionsBattleSceneOff:1; // whether battle animations are disabled
             u16 regionMapZoom:1; // whether the map is zoomed in
-            u16 optionsBikeMusic:1; // whether the bike music plays when riding
-            u16 optionsSurfMusic:1; // whether the surf music plays when surfing
-            u16 optionsSurfOverworld:1; // whether to use the original Surf blob or dynamic blob (False to use dynamic)
-            u16 optionsBattleItemAnimation:3; // whether the battle animation is reduced or not
+            u16 optionsBattleItemAnimation:2; // whether the battle animation is reduced or not
+            u16 optionsDiveSpeed:2; // Option to change Diving movement speed
+            u16 optionsHpBarSpeed:4;   // Option to change HP Bar movement speed
+            u16 optionsExpBarSpeed:4;  // Option to change Exp Bar movement speed
     struct Pokedex pokedex;
     u8 filler_90[0x8];
     struct Time localTimeOffset;
@@ -35,17 +35,17 @@ struct SaveBlock2_v2
     u32 gcnLinkFlags; // Read by Pokémon Colosseum/XD
     u32 encryptionKey;
     struct PlayersApprentice playerApprentice;
-    struct Apprentice apprentices[4];
+    struct Apprentice apprentices[APPRENTICE_COUNT];
     struct BerryCrush berryCrush;
     struct PokemonJumpRecords pokeJump;
     struct BerryPickingResults berryPick;
-    struct RankingHall1P hallRecords1P[9][2][3]; // From record mixing.
-    struct RankingHall2P hallRecords2P[2][3]; // From record mixing.
-    u16 contestLinkResults[5][4];
+    struct RankingHall1P hallRecords1P[HALL_FACILITIES_COUNT][FRONTIER_LVL_MODE_COUNT][HALL_RECORDS_COUNT]; // From record mixing.
+    struct RankingHall2P hallRecords2P[FRONTIER_LVL_MODE_COUNT][HALL_RECORDS_COUNT]; // From record mixing.
+    u16 contestLinkResults[CONTEST_CATEGORIES_COUNT][CONTESTANT_COUNT];
     struct BattleFrontier frontier;
 };
 
-struct SaveBlock1_v2
+struct SaveBlock1_v3
 {
     struct Coords16 pos;
     struct WarpData location;
@@ -63,32 +63,32 @@ struct SaveBlock1_v2
     u16 mapView[0x100];
     u8 playerPartyCount;
     //u8 padding2[3];
-    struct Pokemon playerParty[6];
+    struct Pokemon playerParty[PARTY_SIZE];
     u32 money;
     u16 coins;
     u16 registeredItemSelect; // registered for use with SELECT button
-    struct ItemSlot pcItems[50];
-    struct ItemSlot bagPocket_Items[120];
-    struct ItemSlot bagPocket_KeyItems[30];
-    struct ItemSlot bagPocket_PokeBalls[16];
-    struct ItemSlot bagPocket_TMHM[64];
-    struct ItemSlot bagPocket_Berries[46];
-    struct Pokeblock pokeblocks[40];
+    struct ItemSlot pcItems[PC_ITEMS_COUNT];
+    struct ItemSlot bagPocket_Items[BAG_ITEMS_COUNT];
+    struct ItemSlot bagPocket_KeyItems[BAG_KEYITEMS_COUNT];
+    struct ItemSlot bagPocket_PokeBalls[BAG_POKEBALLS_COUNT];
+    struct ItemSlot bagPocket_TMHM[BAG_TMHM_COUNT];
+    struct ItemSlot bagPocket_Berries[BAG_BERRIES_COUNT];
+    struct Pokeblock pokeblocks[POKEBLOCKS_COUNT];
     u8 seen1[NUM_DEX_FLAG_BYTES];
     u16 berryBlenderRecords[3];
     //u8 unused_9C2[6];
     u16 trainerRematchStepCounter;
-    u8 trainerRematches[100];
+    u8 trainerRematches[MAX_REMATCH_ENTRIES];
     //u8 padding3[2];
-    struct ObjectEvent objectEvents[16];
-    struct ObjectEventTemplate objectEventTemplates[64];
+    struct ObjectEvent objectEvents[OBJECT_EVENTS_COUNT];
+    struct ObjectEventTemplate objectEventTemplates[OBJECT_EVENT_TEMPLATES_COUNT];
     u8 flags[NUM_FLAG_BYTES];
     u16 vars[VARS_COUNT];
-    u32 gameStats[64];
-    struct BerryTree berryTrees[128];
-    struct SecretBase secretBases[20];
-    u8 playerRoomDecorations[12];
-    u8 playerRoomDecorationPositions[12];
+    u32 gameStats[NUM_GAME_STATS];
+    struct BerryTree berryTrees[BERRY_TREES_COUNT];
+    struct SecretBase secretBases[SECRET_BASES_COUNT];
+    u8 playerRoomDecorations[DECOR_MAX_PLAYERS_HOUSE];
+    u8 playerRoomDecorationPositions[DECOR_MAX_PLAYERS_HOUSE];
     u8 decorationDesks[10];
     u8 decorationChairs[10];
     u8 decorationPlants[10];
@@ -98,63 +98,60 @@ struct SaveBlock1_v2
     u8 decorationDolls[40];
     u8 decorationCushions[10];
     //u8 padding4[2];
-    TVShow tvShows[5 + 20];
-    PokeNews pokeNews[16];
+    TVShow tvShows[TV_SHOWS_COUNT];
+    PokeNews pokeNews[POKE_NEWS_COUNT];
     u16 outbreakPokemonSpecies;
     u8 outbreakLocationMapNum;
     u8 outbreakLocationMapGroup;
     u8 outbreakPokemonLevel;
     u8 outbreakUnused1;
     u16 outbreakUnused2;
-    u16 outbreakPokemonMoves[4];
+    u16 outbreakPokemonMoves[MAX_MON_MOVES];
     u8 outbreakUnused3;
     u8 outbreakPokemonProbability;
     u16 outbreakDaysLeft;
     struct GabbyAndTyData gabbyAndTyData;
-    u16 easyChatProfile[6];
-    u16 easyChatBattleStart[6];
-    u16 easyChatBattleWon[6];
-    u16 easyChatBattleLost[6];
-    struct Mail mail[10 + 6];
+    u16 easyChatProfile[EASY_CHAT_BATTLE_WORDS_COUNT];
+    u16 easyChatBattleStart[EASY_CHAT_BATTLE_WORDS_COUNT];
+    u16 easyChatBattleWon[EASY_CHAT_BATTLE_WORDS_COUNT];
+    u16 easyChatBattleLost[EASY_CHAT_BATTLE_WORDS_COUNT];
+    struct Mail mail[MAIL_COUNT];
     u8 unlockedTrendySayings[NUM_TRENDY_SAYING_BYTES]; // Bitfield for unlockable Easy Chat words in EC_GROUP_TRENDY_SAYING
     //u8 padding5[3];
     OldMan oldMan;
-    struct DewfordTrend dewfordTrends[5];
-    struct ContestWinner contestWinners[13]; // see CONTEST_WINNER_*
+    struct DewfordTrend dewfordTrends[SAVED_TRENDS_COUNT];
+    struct ContestWinner contestWinners[NUM_CONTEST_WINNERS]; // see CONTEST_WINNER_*
     struct DayCare daycare;
     struct LinkBattleRecords linkBattleRecords;
-    u8 giftRibbons[11];
+    u8 giftRibbons[GIFT_RIBBONS_COUNT];
     struct ExternalEventData externalEventData;
     struct ExternalEventFlags externalEventFlags;
     struct Roamer roamer;
     struct EnigmaBerry enigmaBerry;
     struct MysteryGiftSave mysteryGift;
     u8 unused_3598[0x18];
-    u32 trainerHillTimes[4];
+    u32 trainerHillTimes[NUM_TRAINER_HILL_MODES];
     struct RamScript ramScript;
     struct RecordMixingGift recordMixingGift;
     u8 seen2[NUM_DEX_FLAG_BYTES];
     LilycoveLady lilycoveLady;
     struct TrainerNameRecord trainerNameRecords[20];
-    u8 registeredTexts[10][21];
+    u8 registeredTexts[UNION_ROOM_KB_ROW_COUNT][21];
     u8 unused_3D5A[10];
     struct TrainerHillSave trainerHill;
     struct WaldaPhrase waldaPhrase;
                u8 registeredItemLastSelected:4; //max 16 items
                u8 registeredItemListCount:4;
-               struct RegisteredItemSlot registeredItems[10];               
+               struct RegisteredItemSlot registeredItems[REGISTERED_ITEMS_MAX];               
 };
 
-bool8 UpdateSave_v2_v4(const struct SaveSectorLocation *locations)
+bool8 UpdateSave_v3_v4(const struct SaveSectorLocation *locations)
 {
-    const struct SaveBlock2_v2* sOldSaveBlock2Ptr = (struct SaveBlock2_v2*)(locations[SECTOR_ID_SAVEBLOCK2].data);
-    const struct SaveBlock1_v2* sOldSaveBlock1Ptr = (struct SaveBlock1_v2*)(locations[SECTOR_ID_SAVEBLOCK1_START].data);
+    const struct SaveBlock2_v3* sOldSaveBlock2Ptr = (struct SaveBlock2_v3*)(locations[SECTOR_ID_SAVEBLOCK2].data);
+    const struct SaveBlock1_v3* sOldSaveBlock1Ptr = (struct SaveBlock1_v3*)(locations[SECTOR_ID_SAVEBLOCK1_START].data);
     const struct PokemonStorage* sOldPokemonStoragePtr = (struct PokemonStorage*)(locations[SECTOR_ID_PKMN_STORAGE_START].data);
 
     u32 arg, i, j, k;
-    u16 tempOptionSurfMusic;
-    u16 tempOptionBikeMusic;
-    u16 tempOptionSurfOverworld;
     
     #define COPY_FIELD(field) gSaveBlock2Ptr->field = sOldSaveBlock2Ptr->field
     #define COPY_BLOCK(field) CpuCopy16(&sOldSaveBlock2Ptr->field, &gSaveBlock2Ptr->field, sizeof(gSaveBlock2Ptr->field))
@@ -163,13 +160,9 @@ bool8 UpdateSave_v2_v4(const struct SaveSectorLocation *locations)
     /** We need to fill in any data that's new in this version. */
     gSaveBlock2Ptr->_saveSentinel = 0xFF;
     gSaveBlock2Ptr->saveVersion = 4;
-    gSaveBlock2Ptr->optionsDiveSpeed = 0;
 
     // Copy V1 items - SaveBlock2
 
-    tempOptionSurfMusic = sOldSaveBlock2Ptr->optionsSurfMusic;
-    tempOptionBikeMusic = sOldSaveBlock2Ptr->optionsBikeMusic;
-    tempOptionSurfOverworld = sOldSaveBlock2Ptr->optionsSurfOverworld;
     COPY_FIELD(optionsBattleItemAnimation);
 
     COPY_ARRAY(playerName);
@@ -327,45 +320,11 @@ bool8 UpdateSave_v2_v4(const struct SaveSectorLocation *locations)
      * The pokemon structure hasn't changed at all this version, so
      * we can just assign across the old box storage to the new.  */
     *gPokemonStoragePtr = *sOldPokemonStoragePtr;
-
-    // Swap L=A and LR Options from older save if set due to definition swap in v3
-    if (gSaveBlock2Ptr->optionsButtonMode == 1)
-        gSaveBlock2Ptr->optionsButtonMode = 2;
-    else if (gSaveBlock2Ptr->optionsButtonMode == 2)         
-        gSaveBlock2Ptr->optionsButtonMode = 1;
     
     // Update Flags moved from Saveblock
-    !FlagGet(FLAG_ENABLE_FOLLOWER)  ? FlagSet(FLAG_ENABLE_FOLLOWER)         : FlagClear(FLAG_ENABLE_FOLLOWER); // For consistency with other similar flags the flag name has been changed and use has been inverted throughout the code between V2 and V3 (same Flag dataslot hence not needing to change the name)
-    tempOptionSurfOverworld == 0    ? FlagSet(FLAG_ENABLE_SURFOVERWORLD)    : FlagClear(FLAG_ENABLE_SURFOVERWORLD); // Inverse Flag setting due to 0 defaulting to on in saveblock configuration
-    tempOptionSurfMusic == 0        ? FlagClear(FLAG_DISABLE_SURFMUSIC)     : FlagSet(FLAG_DISABLE_SURFMUSIC);
-    tempOptionBikeMusic == 0        ? FlagClear(FLAG_DISABLE_BIKEMUSIC)     : FlagSet(FLAG_DISABLE_BIKEMUSIC);
-
-    // Check for Game Cleared to unlocked for Stat Editor unlock due to change in flag configuration (Could use National Dex, but due to National Dex flag being used in more areas prefer to use game clear flag)
-    FlagGet(FLAG_SYS_GAME_CLEAR)    ? FlagSet(FLAG_ENABLE_STAT_EDITOR)      : FlagClear(FLAG_ENABLE_STAT_EDITOR);
-    FlagGet(FLAG_SYS_GAME_CLEAR)    ? FlagSet(FLAG_SHOW_STAT_EDITOR)        : FlagClear(FLAG_SHOW_STAT_EDITOR);
 
     // Check for Game Cleared to unlocked for EXP. All Upgrade unlock
     FlagGet(FLAG_SYS_GAME_CLEAR)    ? FlagSet(FLAG_ENABLE_EXP_ALL_UPGRADED_CALL)      : FlagClear(FLAG_ENABLE_EXP_ALL_UPGRADED_CALL);
-
-    // Add Shiny Charm to Save Upgrades
-    AddPCItem(ITEM_SHINY_CHARM, 1); // One base Shiny Charm for the game
-
-    // Add Shiny Charms based on in-game progression
-    FlagGet(FLAG_SYS_GAME_CLEAR)                ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Beat the game
-    FlagGet(FLAG_RECEIVED_GLASS_ORNAMENT)       ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Complete Master Rank Contests
-    FlagGet(FLAG_DEFEATED_METEOR_FALLS_STEVEN)  ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Defeat Steven in Meteor Falls
-    FlagGet(FLAG_HOENN_DEX_COMPLETE)            ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Complete the Hoenn Dex (not including Jirachi or Deoxys)
-    FlagGet(FLAG_NATIONAL_DEX_COMPLETE)         ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Complete the National Dex (not including Mew, Celebi, Jirachi or Deoxys)
-    FlagGet(FLAG_COLLECTED_ALL_SILVER_SYMBOLS)  ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Get all Silver Symbols
-    FlagGet(FLAG_COLLECTED_ALL_GOLD_SYMBOLS)    ? AddPCItem(ITEM_SHINY_CHARM, 1) : 0; // Get all Gold Symbols
-    
-    if (FlagGet(FLAG_TRICK_HOUSE_PRIZE_EEVEE))
-    {
-        FlagClear(FLAG_TRICK_HOUSE_PRIZE_EEVEE);
-        *GetVarPointer(VAR_TRICK_HOUSE_PRIZE_PICKUP) = 1;
-    }
-    
-    FlagClear(FLAG_GOT_TRAINER_HILL_SNORLAX);
 
     /**
      * The most common kind of change that might happen between major versions are 
