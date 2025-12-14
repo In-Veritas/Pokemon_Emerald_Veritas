@@ -36,7 +36,6 @@ enum
     MENUITEM_MAIN_BUTTONMODE,
     MENUITEM_MAIN_FRAMETYPE,
     MENUITEM_CUSTOM_FONT,
-    MENUITEM_MAIN_STAT_EDITOR,
     MENUITEM_MAIN_NICKNAME,
     MENUITEM_MAIN_CANCEL,
     MENUITEM_MAIN_COUNT,
@@ -63,7 +62,6 @@ enum
     MENUITEM_WORLD_BIKEMUSIC,
     MENUITEM_WORLD_AUTORUN,
     MENUITEM_WORLD_IMPROVEDFISHING,
-    MENUITEM_WORLD_OVERWORLDSPEED,
     MENUITEM_WORLD_CANCEL,
     MENUITEM_WORLD_COUNT,
 };
@@ -196,12 +194,10 @@ static void DrawChoices_BattleStyle(int selection, int y);
 static void DrawChoices_Sound(int selection, int y);
 static void DrawChoices_ButtonMode(int selection, int y);
 static void DrawChoices_BarSpeed(int selection, int y); //HP and EXP
-static void DrawChoices_StatEditor(int selection, int y);
 static void DrawChoices_Nickname(int selection, int y);
 static void DrawChoices_AutoRun(int selection, int y);
 static void DrawChoices_FastSurf(int selection, int y);
 static void DrawChoices_DiveSpeed(int selection, int y);
-static void DrawChoices_OverworldSpeed(int selection, int y);
 static void DrawChoices_ImprovedFishing(int selection, int y);
 static void DrawChoices_BikeMusic(int selection, int y);
 static void DrawChoices_SurfMusic(int selection, int y);
@@ -249,7 +245,6 @@ struct // MENU_MAIN - General
     [MENUITEM_MAIN_BUTTONMODE]   = {DrawChoices_ButtonMode,  ProcessInput_Options_Ten},
     [MENUITEM_MAIN_FRAMETYPE]    = {DrawChoices_FrameType,   ProcessInput_FrameType},
     [MENUITEM_CUSTOM_FONT]       = {DrawChoices_Font,        ProcessInput_Options_Two}, 
-    [MENUITEM_MAIN_STAT_EDITOR]  = {DrawChoices_StatEditor,  ProcessInput_Options_Two},
     [MENUITEM_MAIN_NICKNAME]     = {DrawChoices_Nickname,    ProcessInput_Options_Two},
     [MENUITEM_MAIN_CANCEL]       = {NULL, NULL},
 };
@@ -277,7 +272,6 @@ struct // MENU_WORLD
 } static const sItemFunctionsWorld[MENUITEM_WORLD_COUNT] =
 {
     [MENUITEM_WORLD_AUTORUN]            = {DrawChoices_AutoRun,         ProcessInput_Options_Two},
-    [MENUITEM_WORLD_OVERWORLDSPEED]     = {DrawChoices_OverworldSpeed,  ProcessInput_Options_Four},
     [MENUITEM_WORLD_IMPROVEDFISHING]    = {DrawChoices_ImprovedFishing, ProcessInput_Options_Two},
     [MENUITEM_WORLD_BIKEMUSIC]          = {DrawChoices_BikeMusic,       ProcessInput_Options_Two},
     [MENUITEM_WORLD_MONOVERWORLD]       = {DrawChoices_MonOverworld,    ProcessInput_Options_Two},
@@ -298,7 +292,6 @@ struct // MENU_SURF
 };
 
 // Menu left side option names text
-static const u8 sText_StatEditor[]  = _("STAT EDITOR");
 static const u8 sText_Nickname[]    = _("NICKNAME IN MENU");
 static const u8 sText_Font[]        = _("FONT");
 static const u8 *const sOptionMenuItemsNamesMain[MENUITEM_MAIN_COUNT] =
@@ -308,7 +301,6 @@ static const u8 *const sOptionMenuItemsNamesMain[MENUITEM_MAIN_COUNT] =
     [MENUITEM_MAIN_BUTTONMODE]  = gText_ButtonMode,
     [MENUITEM_MAIN_FRAMETYPE]   = gText_Frame,
     [MENUITEM_CUSTOM_FONT]      = sText_Font,
-    [MENUITEM_MAIN_STAT_EDITOR] = sText_StatEditor,
     [MENUITEM_MAIN_NICKNAME]    = sText_Nickname,
     [MENUITEM_MAIN_CANCEL]      = gText_OptionMenuSave,
 };
@@ -333,14 +325,12 @@ static const u8 *const sOptionMenuItemsNamesBattle[MENUITEM_BATTLE_COUNT] =
 static const u8 sText_MonOverworld[]        = _("POKéMON FOLLOWER");
 static const u8 sText_BikeMusic[]           = _("BIKE MUSIC");
 static const u8 sText_AutoRun[]             = _("AUTO RUN");
-static const u8 sText_OverworldSpeed[]      = _("WORLD SPEED");
 static const u8 sText_ImprovedFishing[]     = _("IMPROVED FISHING");
 static const u8 *const sOptionMenuItemsNamesWorld[MENUITEM_WORLD_COUNT] =
 {
     [MENUITEM_WORLD_MONOVERWORLD]       = sText_MonOverworld,
     [MENUITEM_WORLD_BIKEMUSIC]          = sText_BikeMusic,
     [MENUITEM_WORLD_AUTORUN]            = sText_AutoRun,
-    [MENUITEM_WORLD_OVERWORLDSPEED]     = sText_OverworldSpeed,
     [MENUITEM_WORLD_IMPROVEDFISHING]    = sText_ImprovedFishing,
     [MENUITEM_WORLD_CANCEL]             = gText_OptionMenuSave,
 };
@@ -383,18 +373,6 @@ static bool8 CheckConditions(int selection)
         case MENUITEM_MAIN_BUTTONMODE:      return TRUE;
         case MENUITEM_MAIN_FRAMETYPE:       return TRUE;
         case MENUITEM_CUSTOM_FONT:          return TRUE;
-        case MENUITEM_MAIN_STAT_EDITOR:
-        {
-            if (!FlagGet(FLAG_ENABLE_STAT_EDITOR))
-            {
-                return FALSE;
-            }
-            else
-            {
-                return TRUE;
-            }
-
-        }
         case MENUITEM_MAIN_NICKNAME:        return TRUE;
         case MENUITEM_MAIN_CANCEL:          return TRUE;
         case MENUITEM_MAIN_COUNT:           return TRUE;
@@ -438,7 +416,6 @@ static bool8 CheckConditions(int selection)
         switch(selection)
         {
         case MENUITEM_WORLD_AUTORUN:         return TRUE;
-        case MENUITEM_WORLD_OVERWORLDSPEED:  return TRUE;
         case MENUITEM_WORLD_IMPROVEDFISHING: return TRUE;
         case MENUITEM_WORLD_BIKEMUSIC:       return TRUE;
         case MENUITEM_WORLD_MONOVERWORLD:    return TRUE;
@@ -464,8 +441,6 @@ static const u8 sText_Desc_Save[]                   = _("Save your settings.");
 static const u8 sText_Desc_TextSpeed[]              = _("Choose one of the three text-display\nspeeds.");
 static const u8 sText_Desc_SoundMono[]              = _("Sound is the same in all speakers.\nRecommended for original hardware.");
 static const u8 sText_Desc_SoundStereo[]            = _("Play the left and right audio channel\nseperately. Great with headphones.");
-static const u8 sText_Desc_StatEditor_Hide[]        = _("Hide IV/EV Editor in the Party Menu.\nAny stat changes made will remain.");
-static const u8 sText_Desc_StatEditor_Show[]        = _("Show IV/EV Editor in the Party Menu.\nAny stat changes made will remain.");
 static const u8 sText_Desc_Nickname_Hide[]          = _("Original Experience. Don't allow\nchanging Nickname in the Party Menu.");
 static const u8 sText_Desc_Nickname_Show[]          = _("Change Nickname in the Party Menu.\nTraded Pokemon require Name Rater.");
 static const u8 sText_Desc_FrameType[]              = _("Choose the frame surrounding the\nwindows.");
@@ -487,7 +462,6 @@ static const u8 *const sOptionMenuItemDescriptionsMain[MENUITEM_MAIN_COUNT][10] 
     [MENUITEM_MAIN_SOUND]           = {sText_Desc_SoundMono,            sText_Desc_SoundStereo,         sText_Empty},
     [MENUITEM_MAIN_FRAMETYPE]       = {sText_Desc_FrameType,            sText_Empty,                    sText_Empty},
     [MENUITEM_CUSTOM_FONT]          = {sText_Desc_FontType_Hoenn,       sText_Desc_FontType_Kanto,      sText_Empty},
-    [MENUITEM_MAIN_STAT_EDITOR]     = {sText_Desc_StatEditor_Hide,      sText_Desc_StatEditor_Show,     sText_Empty},
     [MENUITEM_MAIN_NICKNAME]        = {sText_Desc_Nickname_Hide,        sText_Desc_Nickname_Show,       sText_Empty},
     [MENUITEM_MAIN_CANCEL]          = {sText_Desc_Save,                 sText_Empty,                    sText_Empty},
     [MENUITEM_MAIN_BUTTONMODE]      = {sText_Desc_ButtonMode,           sText_Desc_ButtonMode_LA,       sText_Desc_ButtonMode_LR,
@@ -526,10 +500,6 @@ static const u8 *const sOptionMenuItemDescriptionsBattle[MENUITEM_BATTLE_COUNT][
 
 static const u8 sText_Desc_AutoRun_On[]                 = _("Use RUNNING SHOES automatically.\nHold {B_BUTTON} button to walk.");
 static const u8 sText_Desc_AutoRun_Off[]                = _("Use RUNNING SHOES as normal.\nHold {B_BUTTON} button to run.");
-static const u8 sText_Desc_OverworldSpeed_1x[]          = _("Standard player and NPC speed.\nNo change from original Emerald.");
-static const u8 sText_Desc_OverworldSpeed_2x[]          = _("2x standard player and NPC speed.\nHold {R_BUTTON} button for standard speed.");
-static const u8 sText_Desc_OverworldSpeed_4x[]          = _("4x standard player and NPC speed.\nHold {R_BUTTON} button for standard speed.");
-static const u8 sText_Desc_OverworldSpeed_8x[]          = _("8x standard player and NPC speed.\nHold {R_BUTTON} button for standard speed.");
 static const u8 sText_Desc_ImprovedFishing_On[]         = _("Improved Fishing.\nFish are not able to escape.");
 static const u8 sText_Desc_ImprovedFishing_Off[]        = _("Fish as usual.\nFish may escape if not reeled in.");
 static const u8 sText_Desc_BikeOff[]                    = _("Disables the BIKE music when you\nstart riding the BIKE.");
@@ -539,7 +509,6 @@ static const u8 sText_Desc_MonOverworldOn[]             = _("Enables following f
 static const u8 *const sOptionMenuItemDescriptionsWorld[MENUITEM_WORLD_COUNT][4] =
 {
     [MENUITEM_WORLD_AUTORUN]            = {sText_Desc_AutoRun_On,           sText_Desc_AutoRun_Off},
-    [MENUITEM_WORLD_OVERWORLDSPEED]     = {sText_Desc_OverworldSpeed_1x,    sText_Desc_OverworldSpeed_2x,   sText_Desc_OverworldSpeed_4x,   sText_Desc_OverworldSpeed_8x},
     [MENUITEM_WORLD_IMPROVEDFISHING]    = {sText_Desc_ImprovedFishing_On,   sText_Desc_ImprovedFishing_Off},
     [MENUITEM_WORLD_BIKEMUSIC]          = {sText_Desc_BikeOn,               sText_Desc_BikeOff},
     [MENUITEM_WORLD_MONOVERWORLD]       = {sText_Desc_MonOverworldOn,       sText_Desc_MonOverworldOff},
@@ -565,7 +534,6 @@ static const u8 *const sOptionMenuItemDescriptionsSurf[MENUITEM_SURF_COUNT][3] =
 };
 
 // Disabled Descriptions
-static const u8 sText_Desc_Disabled_StatEditor[]    = _("STAT EDITOR locked. Beat the game\nand speak to Prof. Birch to unlock.");
 static const u8 *const sOptionMenuItemDescriptionsDisabledMain[MENUITEM_MAIN_COUNT] =
 {
     [MENUITEM_MAIN_TEXTSPEED]   = sText_Empty,
@@ -573,7 +541,7 @@ static const u8 *const sOptionMenuItemDescriptionsDisabledMain[MENUITEM_MAIN_COU
     [MENUITEM_MAIN_BUTTONMODE]  = sText_Empty,
     [MENUITEM_MAIN_FRAMETYPE]   = sText_Empty,
     [MENUITEM_CUSTOM_FONT]        = sText_Empty,
-    [MENUITEM_MAIN_STAT_EDITOR] = sText_Desc_Disabled_StatEditor,
+    //[MENUITEM_MAIN_STAT_EDITOR] = sText_Desc_Disabled_StatEditor,
     [MENUITEM_MAIN_NICKNAME] = sText_Empty,
     [MENUITEM_MAIN_CANCEL]      = sText_Empty,
 };
@@ -867,7 +835,6 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel[MENUITEM_MAIN_BUTTONMODE]  = gSaveBlock2Ptr->optionsButtonMode;
         sOptions->sel[MENUITEM_MAIN_FRAMETYPE]   = gSaveBlock2Ptr->optionsWindowFrameType;
         sOptions->sel[MENUITEM_CUSTOM_FONT]      = FlagGet(FLAG_SWAP_FONT);
-        sOptions->sel[MENUITEM_MAIN_STAT_EDITOR] = FlagGet(FLAG_SHOW_STAT_EDITOR);
         sOptions->sel[MENUITEM_MAIN_NICKNAME]    = FlagGet(FLAG_ENABLE_NICKNAME);
         
         //Battle
@@ -897,7 +864,6 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel_world[MENUITEM_WORLD_IMPROVEDFISHING]     = !FlagGet(FLAG_ENABLE_FISHCANTESCAPE);     // Used the inverse to align with ON/OFF Buttons
         sOptions->sel_world[MENUITEM_WORLD_BIKEMUSIC]           = FlagGet(FLAG_DISABLE_BIKEMUSIC);
         sOptions->sel_world[MENUITEM_WORLD_MONOVERWORLD]        = !FlagGet(FLAG_ENABLE_FOLLOWER);
-        sOptions->sel_world[MENUITEM_WORLD_OVERWORLDSPEED]      = VarGet(VAR_OVERWORLD_SPEEDUP);
 
         //Surf
         sOptions->sel_surf[MENUITEM_SURF_FASTSURF]            = !FlagGet(FLAG_ENABLE_FASTSURF);           // Used the inverse to align with ON/OFF Buttons
@@ -1155,7 +1121,6 @@ static void Task_OptionMenuSave(u8 taskId)
     gSaveBlock2Ptr->optionsButtonMode                       = sOptions->sel[MENUITEM_MAIN_BUTTONMODE];
     gSaveBlock2Ptr->optionsWindowFrameType                  = sOptions->sel[MENUITEM_MAIN_FRAMETYPE];
     sOptions->sel[MENUITEM_CUSTOM_FONT]         == 0        ? FlagClear(FLAG_SWAP_FONT)                 : FlagSet(FLAG_SWAP_FONT);
-    sOptions->sel[MENUITEM_MAIN_STAT_EDITOR]    == 0        ? FlagClear(FLAG_SHOW_STAT_EDITOR)          : FlagSet(FLAG_SHOW_STAT_EDITOR);
     sOptions->sel[MENUITEM_MAIN_NICKNAME]       == 0        ? FlagClear(FLAG_ENABLE_NICKNAME)           : FlagSet(FLAG_ENABLE_NICKNAME);
 
     //Battle
@@ -1187,7 +1152,6 @@ static void Task_OptionMenuSave(u8 taskId)
     sOptions->sel_world[MENUITEM_WORLD_IMPROVEDFISHING]     == 0 ? FlagSet(FLAG_ENABLE_FISHCANTESCAPE)  : FlagClear(FLAG_ENABLE_FISHCANTESCAPE);    // Used the inverse to align with other similar options.
     sOptions->sel_world[MENUITEM_WORLD_BIKEMUSIC]           == 0 ? FlagClear(FLAG_DISABLE_BIKEMUSIC)    : FlagSet(FLAG_DISABLE_BIKEMUSIC);
     sOptions->sel_world[MENUITEM_WORLD_MONOVERWORLD]        == 0 ? FlagSet(FLAG_ENABLE_FOLLOWER)        : FlagClear(FLAG_ENABLE_FOLLOWER);          // Used the inverse to align with other similar options.
-    *GetVarPointer(VAR_OVERWORLD_SPEEDUP)                   = sOptions->sel_world[MENUITEM_WORLD_OVERWORLDSPEED];
 
     //Surf
     sOptions->sel_surf[MENUITEM_SURF_FASTSURF]              == 0 ? FlagSet(FLAG_ENABLE_FASTSURF)        : FlagClear(FLAG_ENABLE_FASTSURF);          // Used the inverse to align with other similar options.
@@ -1504,10 +1468,6 @@ static void DrawChoices_Sound(int selection, int y)
 }
 
 static const u8 sText_ButtonType_Settings[]         = _("L=SETTINGS");
-static const u8 sText_ButtonType_OverworldSpeed[]   = _("L=SPEED");
-static const u8 sText_ButtonType_OverworldSpeed2x[] = _("L=SPEED 2x");
-static const u8 sText_ButtonType_OverworldSpeed4x[] = _("L=SPEED 4x");
-static const u8 sText_ButtonType_OverworldSpeed8x[] = _("L=SPEED 8x");
 static const u8 sText_ButtonType_FastMode[]         = _("L=FAST MODE");
 static const u8 sText_ButtonType_Follower[]         = _("L=FOLLOWER");
 static const u8 *const sButtonModeStrings[] =
@@ -1516,10 +1476,6 @@ static const u8 *const sButtonModeStrings[] =
     gText_ButtonTypeLEqualsA,
     gText_ButtonTypeLR,
     sText_ButtonType_Settings,
-    sText_ButtonType_OverworldSpeed,
-    sText_ButtonType_OverworldSpeed2x,
-    sText_ButtonType_OverworldSpeed4x,
-    sText_ButtonType_OverworldSpeed8x,
     sText_ButtonType_FastMode,
     sText_ButtonType_Follower
     };
@@ -1619,14 +1575,15 @@ static void DrawChoices_Font(int selection, int y)
     DrawOptionMenuChoiceStrings(selection, y, active, sFontStrings, 2);
 }
 
-static const u8 sText_StatEditorHide[]   = _("HIDE");
-static const u8 sText_StatEditorShow[]   = _("SHOW");
-static const u8 *const sStatEditorStrings[] = {sText_StatEditorHide, sText_StatEditorShow};
-static void DrawChoices_StatEditor(int selection, int y)
-{
-    bool8 active = CheckConditions(MENUITEM_MAIN_STAT_EDITOR);
-    DrawOptionMenuChoiceStrings(selection, y, active, sStatEditorStrings, 2);
-}
+//static const u8 sText_StatEditorHide[]   = _("HIDE");
+//static const u8 sText_StatEditorShow[]   = _("SHOW");
+//static const u8 *const sStatEditorStrings[] = {sText_StatEditorHide, sText_StatEditorShow};
+// Draw Choices Strings functions ****DISABLED****
+//static void DrawChoices_StatEditor(int selection, int y)
+//{
+//    bool8 active = CheckConditions(MENUITEM_MAIN_STAT_EDITOR);
+//    DrawOptionMenuChoiceStrings(selection, y, active, sStatEditorStrings, 2);
+//}
 
 static const u8 sText_NicknameHide[]   = _("HIDE");
 static const u8 sText_NicknameShow[]   = _("SHOW");
@@ -1644,17 +1601,6 @@ static void DrawChoices_AutoRun(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_WORLD_AUTORUN);
     DrawOptionMenuChoiceStrings(selection, y, active, sAutoRunStrings, 2);
-}
-
-static const u8 sText_OverworldSpeedUp_Original[]   = _("ORIGINAL");
-static const u8 sText_OverworldSpeedUp_Fast[]       = _("2x");
-static const u8 sText_OverworldSpeedUp_Faster[]     = _("4x");
-static const u8 sText_OverworldSpeedUp_Fastest[]    = _("8x");
-static const u8 *const sOverworldSpeedupStrings[] = {sText_OverworldSpeedUp_Original, sText_OverworldSpeedUp_Fast, sText_OverworldSpeedUp_Faster, sText_OverworldSpeedUp_Fastest};
-static void DrawChoices_OverworldSpeed(int selection, int y)
-{
-    bool8 active = CheckConditions(MENUITEM_WORLD_OVERWORLDSPEED);
-    DrawOptionMenuChoiceStrings(selection, y, active, sOverworldSpeedupStrings, 4);
 }
 
 static const u8 sText_ImprovedFishing_On[]   = _("ON");

@@ -24,17 +24,16 @@
 #include "constants/songs.h"
 
 enum {
-    TAG_VERSION_LEFT = 1000,
-    TAG_VERSION_RIGHT,
+    TAG_VERSION = 1000,
     TAG_PRESS_START_COPYRIGHT,
     TAG_LOGO_SHINE,
 };
 
-//#define VERSION_BANNER_RIGHT_TILEOFFSET 64
+#define VERSION_BANNER_RIGHT_TILEOFFSET 64
 #define VERSION_BANNER_LEFT_X 98
 #define VERSION_BANNER_RIGHT_X 162
 #define VERSION_BANNER_Y 2
-#define VERSION_BANNER_Y_GOAL 85
+#define VERSION_BANNER_Y_GOAL 66
 #define START_BANNER_X 128
 
 #define CLEAR_SAVE_BUTTON_COMBO (B_BUTTON | SELECT_BUTTON | DPAD_UP)
@@ -114,10 +113,10 @@ static const struct OamData sVersionBannerLeftOamData =
     .objMode = ST_OAM_OBJ_NORMAL,
     .mosaic = FALSE,
     .bpp = ST_OAM_8BPP,
-    .shape = SPRITE_SHAPE(64x64),
+    .shape = SPRITE_SHAPE(64x32),
     .x = 0,
     .matrixNum = 0,
-    .size = SPRITE_SIZE(64x64),
+    .size = SPRITE_SIZE(64x32),
     .tileNum = 0,
     .priority = 0,
     .paletteNum = 0,
@@ -131,10 +130,10 @@ static const struct OamData sVersionBannerRightOamData =
     .objMode = ST_OAM_OBJ_NORMAL,
     .mosaic = FALSE,
     .bpp = ST_OAM_8BPP,
-    .shape = SPRITE_SHAPE(64x64),
+    .shape = SPRITE_SHAPE(64x32),
     .x = 0,
     .matrixNum = 0,
-    .size = SPRITE_SIZE(64x64),
+    .size = SPRITE_SIZE(64x32),
     .tileNum = 0,
     .priority = 0,
     .paletteNum = 0,
@@ -149,7 +148,7 @@ static const union AnimCmd sVersionBannerLeftAnimSequence[] =
 
 static const union AnimCmd sVersionBannerRightAnimSequence[] =
 {
-    ANIMCMD_FRAME(0, 30),
+    ANIMCMD_FRAME(VERSION_BANNER_RIGHT_TILEOFFSET, 30),
     ANIMCMD_END,
 };
 
@@ -165,8 +164,8 @@ static const union AnimCmd *const sVersionBannerRightAnimTable[] =
 
 static const struct SpriteTemplate sVersionBannerLeftSpriteTemplate =
 {
-    .tileTag = TAG_VERSION_LEFT,
-    .paletteTag = TAG_VERSION_LEFT,
+    .tileTag = TAG_VERSION,
+    .paletteTag = TAG_VERSION,
     .oam = &sVersionBannerLeftOamData,
     .anims = sVersionBannerLeftAnimTable,
     .images = NULL,
@@ -176,8 +175,8 @@ static const struct SpriteTemplate sVersionBannerLeftSpriteTemplate =
 
 static const struct SpriteTemplate sVersionBannerRightSpriteTemplate =
 {
-    .tileTag = TAG_VERSION_RIGHT,
-    .paletteTag = TAG_VERSION_RIGHT,
+    .tileTag = TAG_VERSION,
+    .paletteTag = TAG_VERSION,
     .oam = &sVersionBannerRightOamData,
     .anims = sVersionBannerRightAnimTable,
     .images = NULL,
@@ -185,22 +184,12 @@ static const struct SpriteTemplate sVersionBannerRightSpriteTemplate =
     .callback = SpriteCB_VersionBannerRight,
 };
 
-static const struct CompressedSpriteSheet sSpriteSheet_EmeraldLegacyEnhancedLeft[] =
+static const struct CompressedSpriteSheet sSpriteSheet_EmeraldVersion[] =
 {
     {
-        .data = gTitleScreenEmeraldLegacyEnhancedLeftGfx,
+        .data = gTitleScreenEmeraldVersionGfx,
         .size = 0x1000,
-        .tag = TAG_VERSION_LEFT
-    },
-    {},
-};
-
-static const struct CompressedSpriteSheet sSpriteSheet_EmeraldLegacyEnhancedRight[] =
-{
-    {
-        .data = gTitleScreenEmeraldLegacyEnhancedRightGfx,
-        .size = 0x1000,
-        .tag = TAG_VERSION_RIGHT
+        .tag = TAG_VERSION
     },
     {},
 };
@@ -621,11 +610,10 @@ void CB2_InitTitleScreen(void)
         ResetSpriteData();
         FreeAllSpritePalettes();
         gReservedSpritePaletteCount = 9;
-        LoadCompressedSpriteSheet(&sSpriteSheet_EmeraldLegacyEnhancedLeft[0]);
-        LoadCompressedSpriteSheet(&sSpriteSheet_EmeraldLegacyEnhancedRight[0]);
+        LoadCompressedSpriteSheet(&sSpriteSheet_EmeraldVersion[0]);
         LoadCompressedSpriteSheet(&sSpriteSheet_PressStart[0]);
         LoadCompressedSpriteSheet(&sPokemonLogoShineSpriteSheet[0]);
-        LoadPalette(gTitleScreenEmeraldLegacyEnhancedPal, OBJ_PLTT_ID(0), PLTT_SIZE_4BPP);
+        LoadPalette(gTitleScreenEmeraldVersionPal, OBJ_PLTT_ID(0), PLTT_SIZE_4BPP);
         LoadSpritePalette(&sSpritePalette_PressStart[0]);
         gMain.state = 2;
         break;

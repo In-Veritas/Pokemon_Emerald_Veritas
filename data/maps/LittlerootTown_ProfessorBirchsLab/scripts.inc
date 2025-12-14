@@ -1224,7 +1224,6 @@ LittlerootTown_ProfessorBirchsLab_EventScript_ChoseTradeMon3::
 LittlerootTown_ProfessorBirchsLab_EventScript_RivalStarterTreecko3::
 	bufferspeciesname STR_VAR_1, SPECIES_TREECKO
 	msgbox LittlerootTown_ProfessorBirchsLab_Text_SpecialGiftForYou, MSGBOX_DEFAULT
-	setflag FLAG_SHINY_CREATION	
 	setvar VAR_TEMP_TRANSFERRED_SPECIES, SPECIES_TREECKO
 	givemon SPECIES_TREECKO, 5, ITEM_NONE, MOVE_CRUNCH
 	bufferspeciesname STR_VAR_2, SPECIES_TREECKO
@@ -1233,7 +1232,6 @@ LittlerootTown_ProfessorBirchsLab_EventScript_RivalStarterTreecko3::
 LittlerootTown_ProfessorBirchsLab_EventScript_RivalStarterTorchic3::
 	bufferspeciesname STR_VAR_1, SPECIES_TORCHIC
 	msgbox LittlerootTown_ProfessorBirchsLab_Text_SpecialGiftForYou, MSGBOX_DEFAULT
-	setflag FLAG_SHINY_CREATION	
 	setvar VAR_TEMP_TRANSFERRED_SPECIES, SPECIES_TORCHIC
 	givemon SPECIES_TORCHIC, 5, ITEM_NONE, MOVE_ROCK_SLIDE 
 	bufferspeciesname STR_VAR_2, SPECIES_TORCHIC
@@ -1242,7 +1240,6 @@ LittlerootTown_ProfessorBirchsLab_EventScript_RivalStarterTorchic3::
 LittlerootTown_ProfessorBirchsLab_EventScript_RivalStarterMudkip3::
 	bufferspeciesname STR_VAR_1, SPECIES_MUDKIP
 	msgbox LittlerootTown_ProfessorBirchsLab_Text_SpecialGiftForYou, MSGBOX_DEFAULT
-	setflag FLAG_SHINY_CREATION	
 	setvar VAR_TEMP_TRANSFERRED_SPECIES, SPECIES_MUDKIP
 	givemon SPECIES_MUDKIP, 5, ITEM_NONE, MOVE_ICE_BALL
 	bufferspeciesname STR_VAR_2, SPECIES_MUDKIP
@@ -1488,7 +1485,6 @@ LittlerootTown_ProfessorBirchsLab_EventScript_EndGiveKantoStarter::
 	end
 
 LittlerootTown_ProfessorBirchsLab_EventScript_EnableShiny::
-	setflag FLAG_SHINY_CREATION
 	return
 
 LittlerootTown_ProfessorBirchsLab_EventScript_DeclineTrade::
