@@ -51,7 +51,9 @@ static void CB2_GoToClearSaveDataScreen(void);
 static void CB2_GoToResetRtcScreen(void);
 static void CB2_GoToBerryFixScreen(void);
 static void CB2_GoToCopyrightScreen(void);
-static void UpdateLegendaryMarkingColor(u8);
+static void UpdateLegendaryMarkingColorYellow(u8);
+static void UpdateLegendaryMarkingColorBlue(u8);
+static void UpdateLegendaryMarkingColorRed(u8);
 
 static void SpriteCB_VersionBannerLeft(struct Sprite *sprite);
 static void SpriteCB_VersionBannerRight(struct Sprite *sprite);
@@ -66,6 +68,28 @@ static const u32 sTitleScreenRayquazaTilemap[] = INCBIN_U32("graphics/title_scre
 static const u32 sTitleScreenLogoShineGfx[] = INCBIN_U32("graphics/title_screen/logo_shine.4bpp.lz");
 static const u32 sTitleScreenCloudsGfx[] = INCBIN_U32("graphics/title_screen/clouds.4bpp.lz");
 
+//random title number
+//static u16 aleatorio = 2; //0-rayquaza 1-kyogre 2-groudon
+
+//sapphire title const data
+static const u16 sTitleScreenKyogrePalettes[][16] =
+{
+    INCBIN_U16("graphics/title_screen/kyogre_dark.gbapal"),
+        INCBIN_U16("graphics/title_screen/kyogre_glow.gbapal"),
+};
+static const u32 sTitleScreenKyogrePixelData[] = INCBIN_U32("graphics/title_screen/kyogre.4bpp.lz");
+static const u32 sTitleScreenKyogreTilemap[] = INCBIN_U32("graphics/title_screen/kyogre_map.bin.lz");
+static const u32 sTitleScreenKyogreBackdropTilemap[] = INCBIN_U32("graphics/title_screen/water_map.bin.lz");
+
+//ruby title const data
+static const u16 sTitleScreenGroudonPalettes[][16] =
+{
+    INCBIN_U16("graphics/title_screen/groudon_dark.gbapal"),
+    INCBIN_U16("graphics/title_screen/groudon_glow.gbapal"),
+};
+static const u32 sTitleScreenGroudonPixelData[] = INCBIN_U32("graphics/title_screen/groudon.4bpp.lz");
+static const u32 sTitleScreenGroudonTilemap[] = INCBIN_U32("graphics/title_screen/groudon_map.bin.lz");
+static const u32 sTitleScreenGroudonBackdropTilemap[] = INCBIN_U32("graphics/title_screen/lava_map.bin.lz");
 
 
 // Used to blend "Emerald Version" as it passes over over the Pokémon banner.
@@ -580,6 +604,7 @@ static void VBlankCB(void)
 
 void CB2_InitTitleScreen(void)
 {
+    u16 aleatorio = 1; //0-rayquaza 1-kyogre 2-groudon
     switch (gMain.state)
     {
     default:
@@ -610,12 +635,25 @@ void CB2_InitTitleScreen(void)
         LZ77UnCompVram(gTitleScreenPokemonLogoGfx, (void *)(BG_CHAR_ADDR(0)));
         LZ77UnCompVram(gTitleScreenPokemonLogoTilemap, (void *)(BG_SCREEN_ADDR(9)));
         LoadPalette(gTitleScreenBgPalettes, BG_PLTT_ID(0), 15 * PLTT_SIZE_4BPP);
-        // bg3
-        LZ77UnCompVram(sTitleScreenRayquazaGfx, (void *)(BG_CHAR_ADDR(2)));
-        LZ77UnCompVram(sTitleScreenRayquazaTilemap, (void *)(BG_SCREEN_ADDR(26)));
-        // bg1
-        LZ77UnCompVram(sTitleScreenCloudsGfx, (void *)(BG_CHAR_ADDR(3)));
-        LZ77UnCompVram(gTitleScreenCloudsTilemap, (void *)(BG_SCREEN_ADDR(27)));
+        if (aleatorio == 0) { //rayquaza
+            LZ77UnCompVram(sTitleScreenRayquazaGfx, (void *)(BG_CHAR_ADDR(2))); 
+            LZ77UnCompVram(sTitleScreenRayquazaTilemap, (void *)(BG_SCREEN_ADDR(26))); 
+            LZ77UnCompVram(sTitleScreenCloudsGfx, (void *)(BG_CHAR_ADDR(3))); 
+            LZ77UnCompVram(gTitleScreenCloudsTilemap, (void *)(BG_SCREEN_ADDR(27))); 
+        } else if (aleatorio == 1) { //kyogre        
+            LoadPalette(sTitleScreenKyogrePalettes, 0xE0, sizeof(sTitleScreenKyogrePalettes)); //ta funcionando e ta carregando a paleta certa  
+            LZ77UnCompVram(sTitleScreenKyogrePixelData, (void *)(BG_CHAR_ADDR(2)));
+            LZ77UnCompVram(sTitleScreenKyogreTilemap, (void *)(BG_SCREEN_ADDR(26)));
+            LZ77UnCompVram(sTitleScreenCloudsGfx, (void *)(BG_CHAR_ADDR(3))); 
+            LZ77UnCompVram(gTitleScreenCloudsTilemap, (void *)(BG_SCREEN_ADDR(27))); 
+        } else if (aleatorio == 2) { //groudon
+            LoadPalette(sTitleScreenGroudonPalettes, 0xE0, sizeof(sTitleScreenGroudonPalettes));  //ta funcionando e ta carregando a paleta certa   
+            LZ77UnCompVram(sTitleScreenGroudonPixelData, (void *)(BG_CHAR_ADDR(2))); 
+            LZ77UnCompVram(sTitleScreenGroudonTilemap, (void *)(BG_SCREEN_ADDR(26))); 
+            LZ77UnCompVram(sTitleScreenCloudsGfx, (void *)(BG_CHAR_ADDR(3))); 
+            LZ77UnCompVram(gTitleScreenCloudsTilemap, (void *)(BG_SCREEN_ADDR(27))); 
+        }
+        
         ScanlineEffect_Stop();
         ResetTasks();
         ResetSpriteData();
@@ -791,6 +829,7 @@ static void Task_TitleScreenPhase2(u8 taskId)
 // Show Rayquaza silhouette and process main title screen input
 static void Task_TitleScreenPhase3(u8 taskId)
 {
+    u16 aleatorio = 1; //0-rayquaza 1-kyogre 2-groudon
     if (JOY_NEW(A_BUTTON) || JOY_NEW(START_BUTTON))
     {
         FadeOutBGM(4);
@@ -824,7 +863,13 @@ static void Task_TitleScreenPhase3(u8 taskId)
             gBattle_BG1_Y = gTasks[taskId].tBg1Y / 2;
             gBattle_BG1_X = 0;
         }
-        UpdateLegendaryMarkingColor(gTasks[taskId].tCounter);
+        if (aleatorio == 0) {
+            UpdateLegendaryMarkingColorYellow(gTasks[taskId].tCounter); //Rayquaza
+        } else if (aleatorio == 1) {
+            UpdateLegendaryMarkingColorRed(gTasks[taskId].tCounter); //Kyogre
+        } else if (aleatorio == 2) {
+            UpdateLegendaryMarkingColorBlue(gTasks[taskId].tCounter); //Groudon
+        }
         if ((gMPlayInfo_BGM.status & 0xFFFF) == 0)
         {
             BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_WHITEALPHA);
@@ -866,7 +911,7 @@ static void CB2_GoToBerryFixScreen(void)
     }
 }
 
-static void UpdateLegendaryMarkingColor(u8 frameNum)
+static void UpdateLegendaryMarkingColorYellow(u8 frameNum)
 {
     if ((frameNum % 4) == 0) // Change color every 4th frame
     {
@@ -878,4 +923,32 @@ static void UpdateLegendaryMarkingColor(u8 frameNum)
         u16 color = RGB(r, g, b);
         LoadPalette(&color, BG_PLTT_ID(14) + 15, sizeof(color));
    }
+}
+
+static void UpdateLegendaryMarkingColorRed(u8 frameNum)
+{
+    if ((frameNum % 4) == 0)
+    {
+        s32 intensity = Cos(frameNum, 128) + 128;
+        s32 r = 21 - ((intensity * 21) / 256);  // vermelho pulsante
+        s32 g = 0;
+        s32 b = 0;
+
+        u16 color = RGB(r, g, b);
+        LoadPalette(&color, BG_PLTT_ID(14) + 15, sizeof(color));
+    }
+}
+
+static void UpdateLegendaryMarkingColorBlue(u8 frameNum)
+{
+    if ((frameNum % 4) == 0)
+    {
+        s32 intensity = Cos(frameNum, 128) + 128;
+        s32 r = 0;
+        s32 g = 4 - ((intensity * 4) / 256);    // verde mínimo
+        s32 b = 25 - ((intensity * 25) / 256);  // azul pulsante
+
+        u16 color = RGB(r, g, b);
+        LoadPalette(&color, BG_PLTT_ID(14) + 15, sizeof(color));
+    }
 }
