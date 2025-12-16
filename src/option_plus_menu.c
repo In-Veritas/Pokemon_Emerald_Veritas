@@ -242,7 +242,7 @@ struct // MENU_MAIN - General
 {
     [MENUITEM_MAIN_TEXTSPEED]    = {DrawChoices_TextSpeed,   ProcessInput_Options_Three},
     [MENUITEM_MAIN_SOUND]        = {DrawChoices_Sound,       ProcessInput_Options_Two},
-    [MENUITEM_MAIN_BUTTONMODE]   = {DrawChoices_ButtonMode,  ProcessInput_Options_Ten},
+    [MENUITEM_MAIN_BUTTONMODE]   = {DrawChoices_ButtonMode,  ProcessInput_Options_Two},
     [MENUITEM_MAIN_FRAMETYPE]    = {DrawChoices_FrameType,   ProcessInput_FrameType},
     [MENUITEM_CUSTOM_FONT]       = {DrawChoices_Font,        ProcessInput_Options_Two}, 
     [MENUITEM_MAIN_NICKNAME]     = {DrawChoices_Nickname,    ProcessInput_Options_Two},
@@ -426,7 +426,7 @@ static bool8 CheckConditions(int selection)
         switch(selection)
         {
         case MENUITEM_SURF_FASTSURF:        return TRUE;
-        case MENUITEM_SURF_DIVESPEED:       return TRUE;
+        case MENUITEM_SURF_DIVESPEED:       return FALSE;
         case MENUITEM_SURF_SURFMUSIC:       return TRUE;
         case MENUITEM_SURF_SURFOVERWORLD:   return TRUE;
         case MENUITEM_SURF_CANCEL:          return TRUE;
@@ -448,15 +448,7 @@ static const u8 sText_Desc_FontType_Hoenn[]         = _("Original Experience.\nS
 static const u8 sText_Desc_FontType_Kanto[]         = _("POKéMON FIRERED/LEAFGREEN Font.\nMay not show correctly for all text.");
 static const u8 sText_Desc_ButtonMode[]             = _("All buttons work as normal.\nLR Mode inactive.");
 static const u8 sText_Desc_ButtonMode_LA[]          = _("The {L_BUTTON} button acts as another\n{A_BUTTON} button for one-handed play.");
-static const u8 sText_Desc_ButtonMode_LR[]          = _("{L_BUTTON} and {R_BUTTON} mainly act as left and right.\nActive on all Button Modes except L=A.");
-static const u8 sText_Desc_ButtonMode_Context[]     = _("The {L_BUTTON} button contextually changes\nRUN, BIKE, SURF, or DIVE settings.");
-static const u8 sText_Desc_ButtonMode_World[]       = _("The {L_BUTTON} button steps through each\nWORLD SPEED option.");
-static const u8 sText_Desc_ButtonMode_World2x[]     = _("The {L_BUTTON} button toggles\nWORLD SPEED at 2x on and off.");
-static const u8 sText_Desc_ButtonMode_World4x[]     = _("The {L_BUTTON} button toggles\nWORLD SPEED at 4x on and off.");
-static const u8 sText_Desc_ButtonMode_World8x[]     = _("The {L_BUTTON} button toggles\nWORLD SPEED at 8x on and off.");
-static const u8 sText_Desc_ButtonMode_FastMode[]    = _("The {L_BUTTON} button toggles WORLD SPEED,\nRUN, SURF, and DIVE to max or off.");
-static const u8 sText_Desc_ButtonMode_Follower[]    = _("The {L_BUTTON} button toggles\nPOKéMON FOLLOWERS on and off.");
-static const u8 *const sOptionMenuItemDescriptionsMain[MENUITEM_MAIN_COUNT][10] =
+static const u8 *const sOptionMenuItemDescriptionsMain[MENUITEM_MAIN_COUNT][3] =
 {
     [MENUITEM_MAIN_TEXTSPEED]       = {sText_Desc_TextSpeed,            sText_Empty,                    sText_Empty},
     [MENUITEM_MAIN_SOUND]           = {sText_Desc_SoundMono,            sText_Desc_SoundStereo,         sText_Empty},
@@ -464,10 +456,7 @@ static const u8 *const sOptionMenuItemDescriptionsMain[MENUITEM_MAIN_COUNT][10] 
     [MENUITEM_CUSTOM_FONT]          = {sText_Desc_FontType_Hoenn,       sText_Desc_FontType_Kanto,      sText_Empty},
     [MENUITEM_MAIN_NICKNAME]        = {sText_Desc_Nickname_Hide,        sText_Desc_Nickname_Show,       sText_Empty},
     [MENUITEM_MAIN_CANCEL]          = {sText_Desc_Save,                 sText_Empty,                    sText_Empty},
-    [MENUITEM_MAIN_BUTTONMODE]      = {sText_Desc_ButtonMode,           sText_Desc_ButtonMode_LA,       sText_Desc_ButtonMode_LR,
-                                       sText_Desc_ButtonMode_Context,   sText_Desc_ButtonMode_World,    sText_Desc_ButtonMode_World2x,
-                                       sText_Desc_ButtonMode_World4x,   sText_Desc_ButtonMode_World8x,  sText_Desc_ButtonMode_FastMode,
-                                       sText_Desc_ButtonMode_Follower},
+    [MENUITEM_MAIN_BUTTONMODE]      = {sText_Desc_ButtonMode,           sText_Desc_ButtonMode_LA,       sText_Empty},
 };
 
 // Battle
@@ -1469,20 +1458,15 @@ static void DrawChoices_Sound(int selection, int y)
 
 static const u8 sText_ButtonType_Settings[]         = _("L=SETTINGS");
 static const u8 sText_ButtonType_FastMode[]         = _("L=FAST MODE");
-static const u8 sText_ButtonType_Follower[]         = _("L=FOLLOWER");
 static const u8 *const sButtonModeStrings[] =
     {
     gText_ButtonTypeNormal,
     gText_ButtonTypeLEqualsA,
-    gText_ButtonTypeLR,
-    sText_ButtonType_Settings,
-    sText_ButtonType_FastMode,
-    sText_ButtonType_Follower
     };
 static void DrawChoices_ButtonMode(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_MAIN_BUTTONMODE);
-    DrawOptionMenuChoiceStrings(selection, y, active, sButtonModeStrings, 10);
+    DrawOptionMenuChoiceStrings(selection, y, active, sButtonModeStrings, 2);
 }
 
 static const u8 sText_Normal[]  = _("NORMAL");
