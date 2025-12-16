@@ -98,16 +98,19 @@ enum
 
 static const u8 sCreditsText_PkmnEmeraldVersionEnhanced[]    = _("POKéMON EMERALD VERITAS");
 static const u8 sCreditsText_Developer[]                     = _("Developer");
+static const u8 sCreditsText_Veritas[]                       = _("In:Veritas");
+static const u8 sCreditsText_gralha[]                        = _("Gralha");
 static const u8 sCreditsText_Exclsior[]                      = _("Exclsior");
-static const u8 sCreditsText_AZ2K[]                          = _("In:Veritas");
-static const u8 sCreditsText_OmegaBlazerX[]                  = _("~~~~~~~~~~");
-static const u8 sCreditsText_Saitama[]                       = _("developedby");
-static const u8 sCreditsText_zububu[]                        = _("~~~~~~~~~~");
+static const u8 sCreditsText_AZ2K[]                          = _("AZ2K");
+static const u8 sCreditsText_OmegaBlazerX[]                  = _("OmegaBlazerX");
+static const u8 sCreditsText_Saitama[]                       = _("Saitama");
+static const u8 sCreditsText_zububu[]                        = _("zububu");
 
 static const u8 sCreditsText_Pret1[]                         = _("Thank You To The");
 static const u8 sCreditsText_Pret2[]                         = _("Rickrolleurs");
 static const u8 sCreditsText_Pret3[]                         = _("Yann Matt, Niji, Emeline");
 static const u8 sCreditsText_Pret4[]                         = _("Nicolas, and le Gabs");
+
 
 static const u8 sCreditsText_TeamAqua[]                      = _("Team Aquas Hideout");
 static const u8 sCreditsText_RHHideout[]                     = _("Rom Hacking Hideout");
@@ -392,6 +395,8 @@ static const struct CreditsEntry sCreditsEntry_EmptyString                      
 static const struct CreditsEntry sCreditsEntry_PkmnEmeraldLegacyEnhanced        = { 7,  TRUE, sCreditsText_PkmnEmeraldVersionEnhanced};
 static const struct CreditsEntry sCreditsEntry_Developer                        = { 9,  TRUE, sCreditsText_Developer};
 static const struct CreditsEntry sCreditsEntry_Exclsior                         = {10,  FALSE, sCreditsText_Exclsior};
+static const struct CreditsEntry sCreditsEntry_Veritas                          = {10,  FALSE, sCreditsText_Veritas};
+static const struct CreditsEntry sCreditsEntry_gralha                           = {10,  FALSE, sCreditsText_gralha};
 static const struct CreditsEntry sCreditsEntry_AZ2K                             = { 9,  FALSE, sCreditsText_AZ2K};
 static const struct CreditsEntry sCreditsEntry_OmegaBlazerX                     = { 9,  FALSE, sCreditsText_OmegaBlazerX};
 static const struct CreditsEntry sCreditsEntry_Saitama                          = { 9,  FALSE, sCreditsText_Saitama};
@@ -676,9 +681,9 @@ static const struct CreditsEntry *const sCreditsEntryPointerTable[PAGE_COUNT][EN
     [PAGE_ELE_CREDIT] = {
         _,
         &sCreditsEntry_Developer,
+        &sCreditsEntry_Veritas,
+        &sCreditsEntry_gralha,
         &sCreditsEntry_Exclsior,
-        _,
-        _
     },
     [PAGE_ELE_PLAYTESTERS] = {
         &sCreditsEntry_Playtesters,
