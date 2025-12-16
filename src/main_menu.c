@@ -222,7 +222,7 @@ static void Task_NewGameBirchSpeech_StartPlayerFadeIn(u8);
 static void Task_NewGameBirchSpeech_WaitForPlayerFadeIn(u8);
 static void Task_NewGameBirchSpeech_BoyOrGirl(u8);
 static void Task_NewGameBirchSpeech_Nuzlocke(u8);
-static void Task_NewGameBirchSpeech_DexType(u8);
+//static void Task_NewGameBirchSpeech_DexType(u8);
 static void LoadMainMenuWindowFrameTiles(u8, u16);
 static void DrawMainMenuWindowBorder(const struct WindowTemplate *, u16);
 static void Task_HighlightSelectedMainMenuItem(u8);
@@ -1741,7 +1741,13 @@ static void Task_NewGameBirchSpeech_AreYouSureSelection(u8 taskId)
             gSprites[gTasks[taskId].tPlayerSpriteId].oam.objMode = ST_OAM_OBJ_BLEND;
             //NewGameBirchSpeech_StartFadeOutTarget1InTarget2(taskId, 2);
             //NewGameBirchSpeech_StartFadePlatformIn(taskId, 1);
-            gTasks[taskId].func = Task_NewGameBirchSpeech_DexType;
+            //gTasks[taskId].func = Task_NewGameBirchSpeech_DexType;
+            //            PlaySE(SE_SELECT);
+//            gSprites[gTasks[taskId].tPlayerSpriteId].oam.objMode = ST_OAM_OBJ_BLEND;
+            NewGameBirchSpeech_StartFadeOutTarget1InTarget2(taskId, 2);
+            NewGameBirchSpeech_StartFadePlatformIn(taskId, 1);
+            FlagClear(FLAG_NATIONAL_DEX_MODE);
+            gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
             break;
         case MENU_B_PRESSED:
         case 1:
@@ -1752,87 +1758,87 @@ static void Task_NewGameBirchSpeech_AreYouSureSelection(u8 taskId)
 }
 
 // National Dex Mode
-static void Task_NewGameBirchSpeech_DexType(u8 taskId)
-{
-    NewGameBirchSpeech_ClearWindow(0);
-    StringExpandPlaceholders(gStringVar4, gText_Birch_DexType);
-    AddTextPrinterForMessage(TRUE);
-    gTasks[taskId].func = Task_NewGameBirchSpeech_WaitToShowNationalDexMenu;
-}
+//static void Task_NewGameBirchSpeech_DexType(u8 taskId)
+//{
+//    NewGameBirchSpeech_ClearWindow(0);
+//    StringExpandPlaceholders(gStringVar4, gText_Birch_DexType);
+//    AddTextPrinterForMessage(TRUE);
+//    gTasks[taskId].func = Task_NewGameBirchSpeech_WaitToShowNationalDexMenu;
+//}
 
-static void Task_NewGameBirchSpeech_WaitToShowNationalDexMenu(u8 taskId)
-{
-    if (!RunTextPrintersAndIsPrinter0Active())
-    {
-        NewGameBirchSpeech_ShowDexTypeMenu();
-        gTasks[taskId].func = Task_NewGameBirchSpeech_ChooseDexType;
-    }
-}
+//static void Task_NewGameBirchSpeech_WaitToShowNationalDexMenu(u8 taskId)
+//{
+//    if (!RunTextPrintersAndIsPrinter0Active())
+//    {
+//        NewGameBirchSpeech_ShowDexTypeMenu();
+//        gTasks[taskId].func = Task_NewGameBirchSpeech_ChooseDexType;
+//    }
+//}
 
-static void Task_NewGameBirchSpeech_ChooseDexType(u8 taskId)
-{
-    int dexType = NewGameBirchSpeech_ProcessDexTypeMenuInput();
-    switch (dexType)
-    {
-        case 0:
-            NewGameBirchSpeech_ClearDexTypeWindow(4, 1);
-            PlaySE(SE_SELECT);
-            FlagClear(FLAG_NATIONAL_DEX_MODE);
-            gTasks[taskId].func = Task_NewGameBirchSpeech_HoennDexText;
-            break;
-    
-        case 1:
-            NewGameBirchSpeech_ClearDexTypeWindow(4, 1);
-            PlaySE(SE_SELECT);
-            FlagSet(FLAG_NATIONAL_DEX_MODE);
-            gTasks[taskId].func = Task_NewGameBirchSpeech_NationalDexText;
-            break;
-    }
-}
+//static void Task_NewGameBirchSpeech_ChooseDexType(u8 taskId)
+//{
+//    int dexType = NewGameBirchSpeech_ProcessDexTypeMenuInput();
+//    switch (dexType)
+//    {
+//        case 0:
+//            NewGameBirchSpeech_ClearDexTypeWindow(4, 1);
+//            PlaySE(SE_SELECT);
+//            FlagClear(FLAG_NATIONAL_DEX_MODE);
+//            gTasks[taskId].func = Task_NewGameBirchSpeech_HoennDexText;
+//            break;
+//    
+//        case 1:
+//            NewGameBirchSpeech_ClearDexTypeWindow(4, 1);
+//            PlaySE(SE_SELECT);
+//            FlagClear(FLAG_NATIONAL_DEX_MODE); // Ensures Hoenn Dex is always picked
+//            gTasks[taskId].func = Task_NewGameBirchSpeech_NationalDexText;
+//            break;
+//    }
+//}
 
-static void Task_NewGameBirchSpeech_HoennDexText(u8 taskId)
-{
-    NewGameBirchSpeech_ClearWindow(0);
-    StringExpandPlaceholders(gStringVar4, gText_Birch_AreYouSure_HoennDex);
-    AddTextPrinterForMessage(TRUE);
-    gTasks[taskId].func = Task_NewGameBirchSpeech_AreYouSure_Dex;
-}
-
-static void Task_NewGameBirchSpeech_NationalDexText(u8 taskId)
-{
-    NewGameBirchSpeech_ClearWindow(0);
-    StringExpandPlaceholders(gStringVar4, gText_Birch_AreYouSure_NationalDex);
-    AddTextPrinterForMessage(TRUE);
-    gTasks[taskId].func = Task_NewGameBirchSpeech_AreYouSure_Dex;
-}
-
-static void Task_NewGameBirchSpeech_AreYouSure_Dex(u8 taskId)
-{
-    if (!RunTextPrintersAndIsPrinter0Active())
-    {
-        CreateYesNoMenuParameterized(2, 1, 0xF3, 0xDF, 2, 15);
-        gTasks[taskId].func = Task_NewGameBirchSpeech_AreYouSureSelection_Dex;
-    }
-}
-
-static void Task_NewGameBirchSpeech_AreYouSureSelection_Dex(u8 taskId)
-{
-    switch (Menu_ProcessInputNoWrapClearOnChoose())
-    {
-        case 0:
-            PlaySE(SE_SELECT);
-            gSprites[gTasks[taskId].tPlayerSpriteId].oam.objMode = ST_OAM_OBJ_BLEND;
-            NewGameBirchSpeech_StartFadeOutTarget1InTarget2(taskId, 2);
-            NewGameBirchSpeech_StartFadePlatformIn(taskId, 1);
-            gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
-            break;
-        case MENU_B_PRESSED:
-        case 1:
-            PlaySE(SE_SELECT);
-            gTasks[taskId].func = Task_NewGameBirchSpeech_DexType;
-            break;
-    }
-}
+//static void Task_NewGameBirchSpeech_HoennDexText(u8 taskId)
+//{
+//    NewGameBirchSpeech_ClearWindow(0);
+//    StringExpandPlaceholders(gStringVar4, gText_Birch_AreYouSure_HoennDex);
+//    AddTextPrinterForMessage(TRUE);
+//    gTasks[taskId].func = Task_NewGameBirchSpeech_AreYouSure_Dex;
+//}
+//
+//static void Task_NewGameBirchSpeech_NationalDexText(u8 taskId)
+//{
+//    NewGameBirchSpeech_ClearWindow(0);
+//    StringExpandPlaceholders(gStringVar4, gText_Birch_AreYouSure_NationalDex);
+//    AddTextPrinterForMessage(TRUE);
+//    gTasks[taskId].func = Task_NewGameBirchSpeech_AreYouSure_Dex;
+//}
+//
+//static void Task_NewGameBirchSpeech_AreYouSure_Dex(u8 taskId)
+//{
+//    if (!RunTextPrintersAndIsPrinter0Active())
+//    {
+//        CreateYesNoMenuParameterized(2, 1, 0xF3, 0xDF, 2, 15);
+//        gTasks[taskId].func = Task_NewGameBirchSpeech_AreYouSureSelection_Dex;
+//    }
+//}
+//
+//static void Task_NewGameBirchSpeech_AreYouSureSelection_Dex(u8 taskId)
+//{
+//    switch (Menu_ProcessInputNoWrapClearOnChoose())
+//    {
+//        case 0:
+//            PlaySE(SE_SELECT);
+//            gSprites[gTasks[taskId].tPlayerSpriteId].oam.objMode = ST_OAM_OBJ_BLEND;
+//            NewGameBirchSpeech_StartFadeOutTarget1InTarget2(taskId, 2);
+//            NewGameBirchSpeech_StartFadePlatformIn(taskId, 1);
+//            gTasks[taskId].func = Task_NewGameBirchSpeech_WhatsYourName;
+//            break;
+//        case MENU_B_PRESSED:
+//        case 1:
+//            PlaySE(SE_SELECT);
+//            gTasks[taskId].func = Task_NewGameBirchSpeech_DexType;
+//            break;
+//    }
+//}
 
 static void Task_NewGameBirchSpeech_WhatsYourName(u8 taskId)
 {
