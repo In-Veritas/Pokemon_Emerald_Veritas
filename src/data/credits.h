@@ -96,14 +96,18 @@ enum
 
 #define ENTRIES_PER_PAGE 5
 
-static const u8 sCreditsText_PkmnEmeraldVersionEnhanced[]    = _("POKéMON EMERALD LEGACY ENHANCED");
-
+static const u8 sCreditsText_PkmnEmeraldVersionEnhanced[]    = _("POKéMON EMERALD VERITAS");
 static const u8 sCreditsText_Developer[]                     = _("Developer");
 static const u8 sCreditsText_Exclsior[]                      = _("Exclsior");
-static const u8 sCreditsText_AZ2K[]                          = _("AZ2K");
-static const u8 sCreditsText_OmegaBlazerX[]                  = _("OmegaBlazerX");
-static const u8 sCreditsText_Saitama[]                       = _("Saitama");
-static const u8 sCreditsText_zububu[]                        = _("zububu");
+static const u8 sCreditsText_AZ2K[]                          = _("In:Veritas");
+static const u8 sCreditsText_OmegaBlazerX[]                  = _("~~~~~~~~~~");
+static const u8 sCreditsText_Saitama[]                       = _("developedby");
+static const u8 sCreditsText_zububu[]                        = _("~~~~~~~~~~");
+
+static const u8 sCreditsText_Pret1[]                         = _("Thank You To The");
+static const u8 sCreditsText_Pret2[]                         = _("Rickrolleurs");
+static const u8 sCreditsText_Pret3[]                         = _("Yann Matt, Niji, Emeline");
+static const u8 sCreditsText_Pret4[]                         = _("Nicolas, and le Gabs");
 
 static const u8 sCreditsText_TeamAqua[]                      = _("Team Aquas Hideout");
 static const u8 sCreditsText_RHHideout[]                     = _("Rom Hacking Hideout");
@@ -188,10 +192,7 @@ static const u8 sCreditsText_Idain[]                         = _("Idain");
 static const u8 sCreditsText_Nayru62[]                       = _("Nayru62");
 static const u8 sCreditsText_JaaShooUhh[]                    = _("JaaShooUhh");
 
-static const u8 sCreditsText_Pret1[]                         = _("Thank You To The");
-static const u8 sCreditsText_Pret2[]                         = _("Pret Team");
-static const u8 sCreditsText_Pret3[]                         = _("For The");
-static const u8 sCreditsText_Pret4[]                         = _("Pokeemerald Disassembly");
+
 
 static const u8 sCreditsText_CodeCredits[]                   = _("Code Credits");
 static const u8 sCreditsText_Voloved[]                       = _("Voloved");
