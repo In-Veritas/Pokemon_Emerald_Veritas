@@ -21,6 +21,7 @@
 #include "trig.h"
 #include "graphics.h"
 #include "random.h"
+#include "save.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
 
@@ -629,8 +630,19 @@ void CB2_InitTitleScreen(void)
         DmaFill32(3, 0, (void *)OAM, OAM_SIZE);
         DmaFill16(3, 0, (void *)(PLTT + 2), PLTT_SIZE - 2);
         ResetPaletteFade();
-        // Pick which legendary/title variant to display this time
-        sTitleLegendary = Random() % 3;
+        // Pick which legendary/title variant to display this time.
+        // Only randomize if a valid/usable save exists; otherwise force Rayquaza.
+        // Treat OK/UPDATED/ERROR as "has save" (matches main menu handling).
+        if (gSaveFileStatus == SAVE_STATUS_OK
+         || gSaveFileStatus == SAVE_STATUS_UPDATED
+         || gSaveFileStatus == SAVE_STATUS_ERROR)
+        {
+            sTitleLegendary = Random() % 3; // 0=Rayquaza, 1=Kyogre, 2=Groudon
+        }
+        else
+        {
+            sTitleLegendary = 0; // Rayquaza when no usable save is present
+        }
         gMain.state = 1;
         break;
     case 1:
@@ -645,16 +657,22 @@ void CB2_InitTitleScreen(void)
             LZ77UnCompVram(gTitleScreenCloudsTilemap, (void *)(BG_SCREEN_ADDR(27))); 
         } else if (sTitleLegendary == 1) { // Kyogre        
             LoadPalette(sTitleScreenKyogrePalettes, 0xE0, sizeof(sTitleScreenKyogrePalettes)); //ta funcionando e ta carregando a paleta certa  
+            // Load Kyogre tiles into both BG0 and BG1 charbases so the RS overlay
+            // (water_map) can reference the same tiles on BG1.
             LZ77UnCompVram(sTitleScreenKyogrePixelData, (void *)(BG_CHAR_ADDR(2)));
+            LZ77UnCompVram(sTitleScreenKyogrePixelData, (void *)(BG_CHAR_ADDR(3)));
             LZ77UnCompVram(sTitleScreenKyogreTilemap, (void *)(BG_SCREEN_ADDR(26)));
-            LZ77UnCompVram(sTitleScreenCloudsGfx, (void *)(BG_CHAR_ADDR(3))); 
-            LZ77UnCompVram(gTitleScreenCloudsTilemap, (void *)(BG_SCREEN_ADDR(27))); 
+            // Use RS water overlay tilemap on BG1 instead of Emerald clouds
+            LZ77UnCompVram(sTitleScreenKyogreBackdropTilemap, (void *)(BG_SCREEN_ADDR(27))); 
         } else { // sTitleLegendary == 2, Groudon
             LoadPalette(sTitleScreenGroudonPalettes, 0xE0, sizeof(sTitleScreenGroudonPalettes));  //ta funcionando e ta carregando a paleta certa   
+            // Load Groudon tiles into both BG0 and BG1 charbases so the RS overlay
+            // (lava_map) can reference the same tiles on BG1.
             LZ77UnCompVram(sTitleScreenGroudonPixelData, (void *)(BG_CHAR_ADDR(2))); 
+            LZ77UnCompVram(sTitleScreenGroudonPixelData, (void *)(BG_CHAR_ADDR(3))); 
             LZ77UnCompVram(sTitleScreenGroudonTilemap, (void *)(BG_SCREEN_ADDR(26))); 
-            LZ77UnCompVram(sTitleScreenCloudsGfx, (void *)(BG_CHAR_ADDR(3))); 
-            LZ77UnCompVram(gTitleScreenCloudsTilemap, (void *)(BG_SCREEN_ADDR(27))); 
+            // Use RS lava overlay tilemap on BG1 instead of Emerald clouds
+            LZ77UnCompVram(sTitleScreenGroudonBackdropTilemap, (void *)(BG_SCREEN_ADDR(27))); 
         }
         
         ScanlineEffect_Stop();
