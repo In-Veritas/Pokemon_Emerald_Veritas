@@ -20,6 +20,7 @@
 #include "gpu_regs.h"
 #include "trig.h"
 #include "graphics.h"
+#include "random.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
 
@@ -68,8 +69,9 @@ static const u32 sTitleScreenRayquazaTilemap[] = INCBIN_U32("graphics/title_scre
 static const u32 sTitleScreenLogoShineGfx[] = INCBIN_U32("graphics/title_screen/logo_shine.4bpp.lz");
 static const u32 sTitleScreenCloudsGfx[] = INCBIN_U32("graphics/title_screen/clouds.4bpp.lz");
 
-//random title number
-//static u16 aleatorio = 2; //0-rayquaza 1-kyogre 2-groudon
+// Randomized title selection for background/animation
+// 0 = Rayquaza, 1 = Kyogre, 2 = Groudon
+static u8 sTitleLegendary;
 
 //sapphire title const data
 static const u16 sTitleScreenKyogrePalettes[][16] =
@@ -604,7 +606,6 @@ static void VBlankCB(void)
 
 void CB2_InitTitleScreen(void)
 {
-    u16 aleatorio = 1; //0-rayquaza 1-kyogre 2-groudon
     switch (gMain.state)
     {
     default:
@@ -628,6 +629,8 @@ void CB2_InitTitleScreen(void)
         DmaFill32(3, 0, (void *)OAM, OAM_SIZE);
         DmaFill16(3, 0, (void *)(PLTT + 2), PLTT_SIZE - 2);
         ResetPaletteFade();
+        // Pick which legendary/title variant to display this time
+        sTitleLegendary = Random() % 3;
         gMain.state = 1;
         break;
     case 1:
@@ -635,18 +638,18 @@ void CB2_InitTitleScreen(void)
         LZ77UnCompVram(gTitleScreenPokemonLogoGfx, (void *)(BG_CHAR_ADDR(0)));
         LZ77UnCompVram(gTitleScreenPokemonLogoTilemap, (void *)(BG_SCREEN_ADDR(9)));
         LoadPalette(gTitleScreenBgPalettes, BG_PLTT_ID(0), 15 * PLTT_SIZE_4BPP);
-        if (aleatorio == 0) { //rayquaza
+        if (sTitleLegendary == 0) { // Rayquaza
             LZ77UnCompVram(sTitleScreenRayquazaGfx, (void *)(BG_CHAR_ADDR(2))); 
             LZ77UnCompVram(sTitleScreenRayquazaTilemap, (void *)(BG_SCREEN_ADDR(26))); 
             LZ77UnCompVram(sTitleScreenCloudsGfx, (void *)(BG_CHAR_ADDR(3))); 
             LZ77UnCompVram(gTitleScreenCloudsTilemap, (void *)(BG_SCREEN_ADDR(27))); 
-        } else if (aleatorio == 1) { //kyogre        
+        } else if (sTitleLegendary == 1) { // Kyogre        
             LoadPalette(sTitleScreenKyogrePalettes, 0xE0, sizeof(sTitleScreenKyogrePalettes)); //ta funcionando e ta carregando a paleta certa  
             LZ77UnCompVram(sTitleScreenKyogrePixelData, (void *)(BG_CHAR_ADDR(2)));
             LZ77UnCompVram(sTitleScreenKyogreTilemap, (void *)(BG_SCREEN_ADDR(26)));
             LZ77UnCompVram(sTitleScreenCloudsGfx, (void *)(BG_CHAR_ADDR(3))); 
             LZ77UnCompVram(gTitleScreenCloudsTilemap, (void *)(BG_SCREEN_ADDR(27))); 
-        } else if (aleatorio == 2) { //groudon
+        } else { // sTitleLegendary == 2, Groudon
             LoadPalette(sTitleScreenGroudonPalettes, 0xE0, sizeof(sTitleScreenGroudonPalettes));  //ta funcionando e ta carregando a paleta certa   
             LZ77UnCompVram(sTitleScreenGroudonPixelData, (void *)(BG_CHAR_ADDR(2))); 
             LZ77UnCompVram(sTitleScreenGroudonTilemap, (void *)(BG_SCREEN_ADDR(26))); 
@@ -829,7 +832,6 @@ static void Task_TitleScreenPhase2(u8 taskId)
 // Show Rayquaza silhouette and process main title screen input
 static void Task_TitleScreenPhase3(u8 taskId)
 {
-    u16 aleatorio = 1; //0-rayquaza 1-kyogre 2-groudon
     if (JOY_NEW(A_BUTTON) || JOY_NEW(START_BUTTON))
     {
         FadeOutBGM(4);
@@ -863,13 +865,13 @@ static void Task_TitleScreenPhase3(u8 taskId)
             gBattle_BG1_Y = gTasks[taskId].tBg1Y / 2;
             gBattle_BG1_X = 0;
         }
-        if (aleatorio == 0) {
-            UpdateLegendaryMarkingColorYellow(gTasks[taskId].tCounter); //Rayquaza
-        } else if (aleatorio == 1) {
-            UpdateLegendaryMarkingColorRed(gTasks[taskId].tCounter); //Kyogre
-        } else if (aleatorio == 2) {
-            UpdateLegendaryMarkingColorBlue(gTasks[taskId].tCounter); //Groudon
-        }
+        // Update the color pulse for the selected legendary
+        if (sTitleLegendary == 0)
+            UpdateLegendaryMarkingColorYellow(gTasks[taskId].tCounter); // Rayquaza
+        else if (sTitleLegendary == 1)
+            UpdateLegendaryMarkingColorRed(gTasks[taskId].tCounter);  // Kyogre
+        else
+            UpdateLegendaryMarkingColorBlue(gTasks[taskId].tCounter);   // Groudon
         if ((gMPlayInfo_BGM.status & 0xFFFF) == 0)
         {
             BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_WHITEALPHA);
