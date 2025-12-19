@@ -6684,6 +6684,16 @@ void PlayMapChosenOrBattleBGM(u16 songId)
         PlayNewMapMusic(GetBattleBGM());
 }
 
+u16 GetPlayerPreferredBackPicId(void)
+{
+    // Returns the player's trainer back pic id based on selected look style.
+    // 0 = Emerald (BRENDAN/MAY), 1 = RS (RUBY_SAPPHIRE_BRENDAN/MAY)
+    if (gSaveBlock2Ptr != NULL && gSaveBlock2Ptr->playerLookStyle != 0)
+        return gSaveBlock2Ptr->playerGender + TRAINER_BACK_PIC_RUBY_SAPPHIRE_BRENDAN;
+    else
+        return gSaveBlock2Ptr->playerGender + TRAINER_BACK_PIC_BRENDAN;
+}
+
 // Identical to PlayMapChosenOrBattleBGM, but uses a task instead
 // Only used by Battle Dome
 #define tSongId data[0]

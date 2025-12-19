@@ -506,6 +506,8 @@ struct SaveBlock2
     u16 saveVersion;
     u8 playerName[PLAYER_NAME_LENGTH + 1];
     u8 playerGender; // MALE, FEMALE
+    // Player look style: 0 = Emerald (default), 1 = Ruby/Sapphire
+    u8 playerLookStyle;
     u8 specialSaveWarpFlags;
     u8 playerTrainerId[TRAINER_ID_LENGTH];
     u16 playTimeHours;
