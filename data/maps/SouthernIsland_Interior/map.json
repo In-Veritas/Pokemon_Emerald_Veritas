@@ -41,7 +41,7 @@
       "flag": "FLAG_HIDE_SOUTHERN_ISLAND_UNCHOSEN_EON_DUO_MON"
     },
     {
-      "graphics_id": "OBJ_EVENT_GFX_RED",
+      "graphics_id": "OBJ_EVENT_GFX_LINK_RS_BRENDAN",
       "x": 13,
       "y": 12,
       "elevation": 0,
@@ -54,7 +54,7 @@
       "flag": "FLAG_DEFEATED_EXCLSIOR"
     },
     {
-      "graphics_id": "OBJ_EVENT_GFX_MON_BASE+SPECIES_TYPHLOSION",
+      "graphics_id": "OBJ_EVENT_GFX_MON_BASE+SPECIES_FERALIGATR",
       "x": 14,
       "y": 12,
       "elevation": 0,

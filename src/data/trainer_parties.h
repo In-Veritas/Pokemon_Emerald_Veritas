@@ -15062,68 +15062,68 @@ static const struct TrainerMon sParty_Weebra[] = {
     }
 };
 
-// Exclsior
-static const struct TrainerMon sParty_Exclsior[] = {
+// Veritas
+static const struct TrainerMon sParty_Veritas[] = {
     {
     .ivs = BEST_IV_SPREAD,
     .lvl = 80,
-    .species = SPECIES_TYPHLOSION,
-    .heldItem = ITEM_CHARCOAL,
+    .species = SPECIES_MANTINE,
+    .heldItem = ITEM_LEFTOVERS,
     .ability = ABILITY_SLOT_1,
-    .evs = {4, 0, 0, 252, 252, 0},
-    .moves = {MOVE_THUNDER_PUNCH, MOVE_FLAMETHROWER, MOVE_ERUPTION, MOVE_EXTRASENSORY},
+    .evs = {252, 0, 108, 8, 0, 140},
+    .moves = {MOVE_SURF, MOVE_BLIZZARD, MOVE_RAIN_DANCE, MOVE_CONFUSE_RAY},
+    .nature = NATURE_CALM
+    },
+    {
+    .ivs = BEST_IV_SPREAD,
+    .lvl = 85,
+    .species = SPECIES_FERALIGATR,
+    .heldItem = ITEM_LIECHI_BERRY,
+    .ability = ABILITY_SLOT_1,
+    .evs = {4, 152, 0, 252, 100, 0},
+    .moves = {MOVE_DRAGON_DANCE, MOVE_SURF, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE},
+    .nature = NATURE_NAIVE
+    },
+    {
+    .ivs = BEST_IV_SPREAD,
+    .lvl = 82,
+    .species = SPECIES_KINGDRA,
+    .heldItem = ITEM_MYSTIC_WATER,
+    .ability = ABILITY_SLOT_1,
+    .evs = {104, 0, 0, 152, 252, 0},
+    .moves = {MOVE_SURF, MOVE_DRAGON_BREATH, MOVE_RAIN_DANCE, MOVE_OCTAZOOKA},
     .nature = NATURE_RASH
     },
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 80,
-    .species = SPECIES_BRELOOM,
-    .heldItem = ITEM_BRIGHT_POWDER,
+    .lvl = 82,
+    .species = SPECIES_JUMPLUFF,
+    .heldItem = ITEM_LEFTOVERS,
     .ability = ABILITY_SLOT_1,
-    .evs = {4, 252, 0, 252, 0, 0},
-    .moves = {MOVE_SPORE, MOVE_SKY_UPPERCUT, MOVE_MACH_PUNCH, MOVE_SLUDGE_BOMB},
+    .evs = {252, 0, 0, 4, 0, 252},
+    .moves = {MOVE_SLEEP_POWDER, MOVE_LEECH_SEED, MOVE_ATTRACT, MOVE_HELPING_HAND},
     .nature = NATURE_JOLLY
     },
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 80,
-    .species = SPECIES_SCIZOR,
-    .heldItem = ITEM_SILVER_POWDER,
+    .lvl = 83,
+    .species = SPECIES_WAILORD,
+    .heldItem = ITEM_QUICK_CLAW,
     .ability = ABILITY_SLOT_1,
-    .evs = {4, 252, 126, 0, 126, 0},
-    .moves = {MOVE_TWINEEDLE, MOVE_STEEL_WING, MOVE_AERIAL_ACE, MOVE_SWORDS_DANCE},
-    .nature = NATURE_ADAMANT
+    .evs = {252, 4, 0, 0, 252, 0},
+    .moves = {MOVE_BLIZZARD, MOVE_WATER_SPOUT, MOVE_SELF_DESTRUCT, MOVE_RAIN_DANCE},
+    .nature = NATURE_RASH
     },
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 80,
-    .species = SPECIES_GARDEVOIR,
-    .heldItem = ITEM_TWISTED_SPOON,
+    .lvl = 90,
+    .species = SPECIES_LUGIA,
+    .heldItem = ITEM_SCOPE_LENS,
     .ability = ABILITY_SLOT_1,
-    .evs = {4, 0, 0, 252, 252, 0},
-    .moves = {MOVE_PSYCHIC, MOVE_THUNDERBOLT, MOVE_SHADOW_BALL, MOVE_CALM_MIND},
-    .nature = NATURE_MODEST
-    },
-    {
-    .ivs = BEST_IV_SPREAD,
-    .lvl = 80,
-    .species = SPECIES_TYRANITAR,
-    .heldItem = ITEM_LEFTOVERS,
-    .ability = ABILITY_SLOT_1,
-    .evs = {4, 252, 0, 252, 0, 0},
-    .moves = {MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_CRUNCH, MOVE_BRICK_BREAK},
-    .nature = NATURE_ADAMANT
-    },
-    {
-    .ivs = BEST_IV_SPREAD,
-    .lvl = 80,
-    .species = SPECIES_LATIOS,
-    .heldItem = ITEM_SOUL_DEW,
-    .ability = ABILITY_SLOT_1,
-    .evs = {0, 0, 0, 252, 252, 0},
-    .moves = {MOVE_LUSTER_PURGE, MOVE_DRAGON_CLAW, MOVE_THUNDERBOLT, MOVE_SURF},
-    .nature = NATURE_MODEST,
-    .shiny = TRUE
+    .evs = {252, 252, 0, 0, 4, 0},
+    .moves = {MOVE_AEROBLAST, MOVE_SHADOW_BALL, MOVE_THUNDER, MOVE_RECOVER},
+    .nature = NATURE_LONELY,
+    .shiny = FALSE
     }
 };
 

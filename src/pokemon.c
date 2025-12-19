@@ -6622,7 +6622,8 @@ u16 GetBattleBGM(void)
             trainerClass = TRAINER_CLASS_EXPERT;
         else
             trainerClass = gTrainers[gTrainerBattleOpponent_A].trainerClass;
-
+        if (gTrainerBattleOpponent_A == TRAINER_EXCLSIOR) 
+            return MUS_C_VS_LEGEND_BEAST;
         switch (trainerClass)
         {
         case TRAINER_CLASS_AQUA_LEADER:

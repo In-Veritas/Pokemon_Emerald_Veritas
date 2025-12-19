@@ -44,27 +44,20 @@ SouthernIsland_Interior_EventScript_SetUpPlayerGfx::
 SouthernIsland_Interior_EventScript_CheckExclsior::
 	goto_if_set FLAG_DEFEATED_EXCLSIOR, SouthernIsland_Interior_EventScript_HideExclsior
 	goto_if_unset FLAG_CAUGHT_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_HideExclsior
-	goto_if_unset FLAG_COLLECTED_ALL_SILVER_SYMBOLS, SouthernIsland_Interior_EventScript_HideExclsior
-	goto_if_unset FLAG_RIVAL_GOT_ALL_KANTO_MONS, SouthernIsland_Interior_EventScript_HideExclsior
-	goto_if_unset FLAG_DEFEATED_WEEBRA, SouthernIsland_Interior_EventScript_HideExclsior
-	goto_if_unset FLAG_DEFEATED_CRAIG, SouthernIsland_Interior_EventScript_HideExclsior
-	goto_if_unset FLAG_DEFEATED_SMITH, SouthernIsland_Interior_EventScript_HideExclsior
-	goto_if_unset FLAG_DEFEATED_METEOR_FALLS_STEVEN, SouthernIsland_Interior_EventScript_HideExclsior
-	goto_if_unset FLAG_BATTLED_JIRACHI, SouthernIsland_Interior_EventScript_HideExclsior
 	addobject LOCALID_EXCLSIOR
-	addobject LOCALID_TYPHLOSION
+	addobject LOCALID_TYPHLOSION //Change to Feraligatr
 	end
 
 SouthernIsland_Interior_EventScript_HideExclsior::
 	removeobject LOCALID_EXCLSIOR
-	removeobject LOCALID_TYPHLOSION
+	removeobject LOCALID_TYPHLOSION //Change to Feraligatr
 	return
 
 SouthernIsland_Interior_EventScript_Typhlosion::
 	lock
 	faceplayer
 	waitse
-	playmoncry SPECIES_TYPHLOSION, CRY_MODE_NORMAL
+	playmoncry SPECIES_FERALIGATR, CRY_MODE_NORMAL
 	msgbox SouthernIsland_Interior_Text_Typhlosion, MSGBOX_DEFAULT
 	waitmoncry
 	release
@@ -245,30 +238,33 @@ SouthernIsland_Interior_EventScript_ShinyLatiDefeated::
 	end
 
 SouthernIsland_Interior_Text_Exclsior_ImCurious:
-	.string "Hmm...\n"
+	.string "Hmm... Curious...\n"
 	.string "Few trainers know of this place...\p"
-	.string "I'm curious...\p"
-	.string "Would you like to battle?$"
+	.string "Do I know you? I feel like we already...\p"
+	.string "No. It's not possible. I lost that part of me long ago.\p"
+	.string "Maybe I'm not as alone as I used to\n" 
+	.string "be. Well.. only one way to find out.$"
 
 SouthernIsland_Interior_Text_ExclsiorIntro:
-	.string "Let's see the abilities of you and\n"
-	.string "your POKéMON.$"
+	.string "Show me where your friendships\n"
+	.string "led you.$"
 
 SouthernIsland_Interior_Text_ExclsiorDefeated:
-	.string "Very impressive...$"
+	.string "Perhaps I am not... as alone as\n"
+	.string "I thought..$"
 
 SouthernIsland_Interior_Text_Exclsior_MaybeAnotherTime::
-	.string "Maybe another time then.$"
+	.string "Take your time, I'll be waiting.$"
 
 SouthernIsland_Interior_Text_ExclsiorPostBattle:
-	.string "Thank you for the battle.\p"
-	.string "...\p"
+	.string "Thank you for coming all this way.\p"
+	.string "And for keeping my memory alive...\p"
 	.string "You may want to have a closer look at\n"
 	.string "this stone...\p"
 	.string "Goodbye.$"
 
 SouthernIsland_Interior_Text_Typhlosion:
-	.string "TYPHLOSION: Grooar!$"
+	.string "FERALIGATR: Graaah!$"
 
 SouthernIsland_Interior_Text_CloserLookAtStone:
 	.string "You look closer at the strange stone.\p"
