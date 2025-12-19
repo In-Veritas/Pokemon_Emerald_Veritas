@@ -58,6 +58,11 @@
 #include "bike.h"
 // this file was known as evobjmv.c in Game Freak's original source
 
+// Forward declarations for graphics info pointer tables
+struct ObjectEventGraphicsInfo;
+extern const struct ObjectEventGraphicsInfo *const gObjectEventGraphicsInfoPointers[NUM_OBJ_EVENT_GFX];
+extern const struct ObjectEventGraphicsInfo *const gMauvilleOldManGraphicsInfoPointers[];
+
 enum {
     MOVE_SPEED_NORMAL, // walking
     MOVE_SPEED_FAST_1, // running / surfing / sliding (ice tile)
