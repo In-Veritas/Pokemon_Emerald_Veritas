@@ -671,6 +671,9 @@ static const u16 sReflectionPaletteTags_PlayerUnderwater[] = {
 static const struct PairedPalettes sPlayerReflectionPaletteSets[] = {
     {OBJ_EVENT_PAL_TAG_BRENDAN,           sReflectionPaletteTags_Brendan},
     {OBJ_EVENT_PAL_TAG_MAY,               sReflectionPaletteTags_May},
+    // Reuse the vanilla reflections for RS player palettes
+    {OBJ_EVENT_PAL_TAG_RS_BRENDAN,        sReflectionPaletteTags_Brendan},
+    {OBJ_EVENT_PAL_TAG_RS_MAY,            sReflectionPaletteTags_May},
     {OBJ_EVENT_PAL_TAG_PLAYER_UNDERWATER, sReflectionPaletteTags_PlayerUnderwater},
     {OBJ_EVENT_PAL_TAG_NONE,              NULL},
 };
