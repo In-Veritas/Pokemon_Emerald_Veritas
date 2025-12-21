@@ -241,9 +241,13 @@ SouthernIsland_Interior_Text_Exclsior_ImCurious:
 	.string "Hmm... Curious...\n"
 	.string "Few trainers know of this place...\p"
 	.string "Do I know you? I feel like we already...\p"
-	.string "No. It's not possible. I lost that part of me long ago.\p"
+	.string "No.\n" 
+	.string "I lost that part of me long ago.\p"
+	.string "Yet....\p"
 	.string "Maybe I'm not as alone as I used to\n" 
-	.string "be. Well.. only one way to find out.$"
+	.string "be.\p" 
+	.string "Well.. only one way to find out.\p"
+	.string "Are you ready?$"
 
 SouthernIsland_Interior_Text_ExclsiorIntro:
 	.string "Show me where your friendships\n"

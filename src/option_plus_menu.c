@@ -1,5 +1,6 @@
 #include "global.h"
 #include "option_plus_menu.h"
+#include "debug.h"
 #include "main.h"
 #include "menu.h"
 #include "scanline_effect.h"
@@ -62,6 +63,7 @@ enum
     MENUITEM_WORLD_BIKEMUSIC,
     MENUITEM_WORLD_AUTORUN,
     MENUITEM_WORLD_IMPROVEDFISHING,
+    MENUITEM_WORLD_PLAYERSTYLE,
     MENUITEM_WORLD_CANCEL,
     MENUITEM_WORLD_COUNT,
 };
@@ -72,7 +74,7 @@ enum
     MENUITEM_SURF_SURFOVERWORLD,
     MENUITEM_SURF_SURFMUSIC,
     MENUITEM_SURF_FASTSURF,
-    MENUITEM_SURF_DIVESPEED,
+    // MENUITEM_SURF_DIVESPEED, // Hidden - removed from menu
     MENUITEM_SURF_CANCEL,
     MENUITEM_SURF_COUNT,
 };
@@ -197,11 +199,12 @@ static void DrawChoices_BarSpeed(int selection, int y); //HP and EXP
 static void DrawChoices_Nickname(int selection, int y);
 static void DrawChoices_AutoRun(int selection, int y);
 static void DrawChoices_FastSurf(int selection, int y);
-static void DrawChoices_DiveSpeed(int selection, int y);
+// static void DrawChoices_DiveSpeed(int selection, int y); // Hidden - removed from menu
 static void DrawChoices_ImprovedFishing(int selection, int y);
 static void DrawChoices_BikeMusic(int selection, int y);
 static void DrawChoices_SurfMusic(int selection, int y);
 static void DrawChoices_MonOverworld(int selection, int y);
+static void DrawChoices_PlayerStyle(int selection, int y);
 static void DrawChoices_SurfOverworld(int selection, int y);
 static void DrawChoices_ItemAnimate(int selection, int y);
 static void DrawChoices_TypeEffect(int selection, int y);
@@ -275,6 +278,7 @@ struct // MENU_WORLD
     [MENUITEM_WORLD_IMPROVEDFISHING]    = {DrawChoices_ImprovedFishing, ProcessInput_Options_Two},
     [MENUITEM_WORLD_BIKEMUSIC]          = {DrawChoices_BikeMusic,       ProcessInput_Options_Two},
     [MENUITEM_WORLD_MONOVERWORLD]       = {DrawChoices_MonOverworld,    ProcessInput_Options_Two},
+    [MENUITEM_WORLD_PLAYERSTYLE]        = {DrawChoices_PlayerStyle,     ProcessInput_Options_Two},
     [MENUITEM_WORLD_CANCEL]             = {NULL, NULL},
 };
 
@@ -286,7 +290,7 @@ struct // MENU_SURF
 {
     [MENUITEM_SURF_SURFOVERWORLD]   = {DrawChoices_SurfOverworld,   ProcessInput_Options_Two},
     [MENUITEM_SURF_FASTSURF]        = {DrawChoices_FastSurf,        ProcessInput_Options_Two},
-    [MENUITEM_SURF_DIVESPEED]       = {DrawChoices_DiveSpeed,       ProcessInput_Options_Three},
+    // [MENUITEM_SURF_DIVESPEED]       = {DrawChoices_DiveSpeed,       ProcessInput_Options_Three}, // Hidden
     [MENUITEM_SURF_SURFMUSIC]       = {DrawChoices_SurfMusic,       ProcessInput_Options_Two},
     [MENUITEM_SURF_CANCEL]          = {NULL, NULL},
 };
@@ -326,26 +330,28 @@ static const u8 sText_MonOverworld[]        = _("POKéMON FOLLOWER");
 static const u8 sText_BikeMusic[]           = _("BIKE MUSIC");
 static const u8 sText_AutoRun[]             = _("AUTO RUN");
 static const u8 sText_ImprovedFishing[]     = _("IMPROVED FISHING");
+static const u8 sText_PlayerStyle[]         = _("PLAYER STYLE");
 static const u8 *const sOptionMenuItemsNamesWorld[MENUITEM_WORLD_COUNT] =
 {
     [MENUITEM_WORLD_MONOVERWORLD]       = sText_MonOverworld,
     [MENUITEM_WORLD_BIKEMUSIC]          = sText_BikeMusic,
     [MENUITEM_WORLD_AUTORUN]            = sText_AutoRun,
     [MENUITEM_WORLD_IMPROVEDFISHING]    = sText_ImprovedFishing,
+    [MENUITEM_WORLD_PLAYERSTYLE]        = sText_PlayerStyle,
     [MENUITEM_WORLD_CANCEL]             = gText_OptionMenuSave,
 };
 
 static const u8 sText_SurfOverworld[]   = _("POKéMON SURFER");
 static const u8 sText_FastSurf[]        = _("FAST SURF");
 static const u8 sText_SurfMusic[]       = _("SURF MUSIC");
-static const u8 sText_DiveSpeed[]       = _("DIVE SPEED");
+// static const u8 sText_DiveSpeed[]       = _("DIVE SPEED"); // Hidden
 
 static const u8 *const sOptionMenuItemsNamesSurf[MENUITEM_SURF_COUNT] =
 {
     [MENUITEM_SURF_SURFOVERWORLD]   = sText_SurfOverworld,
     [MENUITEM_SURF_SURFMUSIC]       = sText_SurfMusic,
     [MENUITEM_SURF_FASTSURF]        = sText_FastSurf,
-    [MENUITEM_SURF_DIVESPEED]       = sText_DiveSpeed,
+    // [MENUITEM_SURF_DIVESPEED]       = sText_DiveSpeed, // Hidden
     [MENUITEM_SURF_CANCEL]          = gText_OptionMenuSave,
 };
 
@@ -419,6 +425,12 @@ static bool8 CheckConditions(int selection)
         case MENUITEM_WORLD_IMPROVEDFISHING: return TRUE;
         case MENUITEM_WORLD_BIKEMUSIC:       return TRUE;
         case MENUITEM_WORLD_MONOVERWORLD:    return TRUE;
+        case MENUITEM_WORLD_PLAYERSTYLE:
+#if TX_DEBUG_SYSTEM_ENABLE == TRUE
+            return TRUE;
+#else
+            return FlagGet(FLAG_SYS_GAME_CLEAR);
+#endif
         case MENUITEM_WORLD_CANCEL:          return TRUE;
         case MENUITEM_WORLD_COUNT:           return TRUE;
         }
@@ -426,7 +438,7 @@ static bool8 CheckConditions(int selection)
         switch(selection)
         {
         case MENUITEM_SURF_FASTSURF:        return TRUE;
-        case MENUITEM_SURF_DIVESPEED:       return FALSE;
+        // case MENUITEM_SURF_DIVESPEED:       return FALSE; // Hidden
         case MENUITEM_SURF_SURFMUSIC:       return TRUE;
         case MENUITEM_SURF_SURFOVERWORLD:   return TRUE;
         case MENUITEM_SURF_CANCEL:          return TRUE;
@@ -495,20 +507,24 @@ static const u8 sText_Desc_BikeOff[]                    = _("Disables the BIKE m
 static const u8 sText_Desc_BikeOn[]                     = _("Enables the BIKE music when you\nstart riding the BIKE.");
 static const u8 sText_Desc_MonOverworldOff[]            = _("Disables following for the first\nPOKéMON in your party.");
 static const u8 sText_Desc_MonOverworldOn[]             = _("Enables following for the first\nPOKéMON in your party.");
+static const u8 sText_Desc_PlayerStyle_Emerald[]        = _("Use the POKéMON EMERALD player\nsprite style.");
+static const u8 sText_Desc_PlayerStyle_RS[]             = _("Use the POKéMON RUBY/SAPPHIRE\nplayer sprite style.");
+static const u8 sText_Desc_PlayerStyle_Disabled[]       = _("PLAYER STYLE setting locked.\nDefeat the ELITE 4 to unlock.");
 static const u8 *const sOptionMenuItemDescriptionsWorld[MENUITEM_WORLD_COUNT][4] =
 {
     [MENUITEM_WORLD_AUTORUN]            = {sText_Desc_AutoRun_On,           sText_Desc_AutoRun_Off},
     [MENUITEM_WORLD_IMPROVEDFISHING]    = {sText_Desc_ImprovedFishing_On,   sText_Desc_ImprovedFishing_Off},
     [MENUITEM_WORLD_BIKEMUSIC]          = {sText_Desc_BikeOn,               sText_Desc_BikeOff},
     [MENUITEM_WORLD_MONOVERWORLD]       = {sText_Desc_MonOverworldOn,       sText_Desc_MonOverworldOff},
+    [MENUITEM_WORLD_PLAYERSTYLE]        = {sText_Desc_PlayerStyle_Emerald,  sText_Desc_PlayerStyle_RS},
     [MENUITEM_WORLD_CANCEL]             = {sText_Desc_Save,                 sText_Empty},
 };
 
 static const u8 sText_Desc_FastSurf_On[]                = _("SURF faster than normal.\nHold {B_BUTTON} to SURF at normal speed.");
 static const u8 sText_Desc_FastSurf_Off[]               = _("SURF at normal speed.\nHold {B_BUTTON} to SURF faster.");
-static const u8 sText_Desc_DiveSpeed_Slow[]             = _("Original experience, underwater speed\nis unchanged from original game.");
-static const u8 sText_Desc_DiveSpeed_Med[]              = _("Travel underwater faster.\nSame speed as SURF.");
-static const u8 sText_Desc_DiveSpeed_Fast[]             = _("Travel underwater much faster.\nSame speed as FAST SURF.");
+// static const u8 sText_Desc_DiveSpeed_Slow[]             = _("Original experience, underwater speed\nis unchanged from original game."); // Hidden
+// static const u8 sText_Desc_DiveSpeed_Med[]              = _("Travel underwater faster.\nSame speed as SURF."); // Hidden
+// static const u8 sText_Desc_DiveSpeed_Fast[]             = _("Travel underwater much faster.\nSame speed as FAST SURF."); // Hidden
 static const u8 sText_Desc_SurfOff[]                    = _("Disables the SURF music when you\nstart surfing on a POKéMON.");
 static const u8 sText_Desc_SurfOn[]                     = _("Enables the SURF music when you\nstart surfing on a POKéMON.");
 static const u8 sText_Desc_SurfOverworld_On[]           = _("SURF using the relevant POKéMON\ninstead of the generic surfer.");
@@ -516,7 +532,7 @@ static const u8 sText_Desc_SurfOverworld_Off[]          = _("Original experience
 static const u8 *const sOptionMenuItemDescriptionsSurf[MENUITEM_SURF_COUNT][3] =
 {
     [MENUITEM_SURF_FASTSURF]            = {sText_Desc_FastSurf_On,          sText_Desc_FastSurf_Off},
-    [MENUITEM_SURF_DIVESPEED]           = {sText_Desc_DiveSpeed_Slow,       sText_Desc_DiveSpeed_Med,   sText_Desc_DiveSpeed_Fast},
+    // [MENUITEM_SURF_DIVESPEED]           = {sText_Desc_DiveSpeed_Slow,       sText_Desc_DiveSpeed_Med,   sText_Desc_DiveSpeed_Fast}, // Hidden
     [MENUITEM_SURF_SURFMUSIC]           = {sText_Desc_SurfOn,               sText_Desc_SurfOff},
     [MENUITEM_SURF_SURFOVERWORLD]       = {sText_Desc_SurfOverworld_On,     sText_Desc_SurfOverworld_Off},
     [MENUITEM_SURF_CANCEL]              = {sText_Desc_Save,                 sText_Empty},
@@ -546,7 +562,18 @@ static const u8 *const sOptionMenuItemDescriptionsDisabledBattle[MENUITEM_BATTLE
     [MENUITEM_MAIN_BATTLESTYLE] = sText_Desc_Disabled_BattleStyle,
     [MENUITEM_BATTLE_HARDMODE] = sText_Desc_Disabled_Hardmode,
     [MENUITEM_BATTLE_CANCEL]      = sText_Empty,
-    
+
+};
+
+// Disabled World
+static const u8 *const sOptionMenuItemDescriptionsDisabledWorld[MENUITEM_WORLD_COUNT] =
+{
+    [MENUITEM_WORLD_AUTORUN]            = sText_Empty,
+    [MENUITEM_WORLD_IMPROVEDFISHING]    = sText_Empty,
+    [MENUITEM_WORLD_BIKEMUSIC]          = sText_Empty,
+    [MENUITEM_WORLD_MONOVERWORLD]       = sText_Empty,
+    [MENUITEM_WORLD_PLAYERSTYLE]        = sText_Desc_PlayerStyle_Disabled,
+    [MENUITEM_WORLD_CANCEL]             = sText_Empty,
 };
 
 static const u8 *const OptionTextDescription(void)
@@ -572,7 +599,7 @@ static const u8 *const OptionTextDescription(void)
         return sOptionMenuItemDescriptionsBattle[menuItem][selection];
     case MENU_WORLD:
         if (!CheckConditions(menuItem))
-            return sOptionMenuItemDescriptionsDisabledMain[menuItem];
+            return sOptionMenuItemDescriptionsDisabledWorld[menuItem];
         selection = sOptions->sel_world[menuItem];
         return sOptionMenuItemDescriptionsWorld[menuItem][selection];
     case MENU_SURF:
@@ -853,10 +880,11 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel_world[MENUITEM_WORLD_IMPROVEDFISHING]     = !FlagGet(FLAG_ENABLE_FISHCANTESCAPE);     // Used the inverse to align with ON/OFF Buttons
         sOptions->sel_world[MENUITEM_WORLD_BIKEMUSIC]           = FlagGet(FLAG_DISABLE_BIKEMUSIC);
         sOptions->sel_world[MENUITEM_WORLD_MONOVERWORLD]        = !FlagGet(FLAG_ENABLE_FOLLOWER);
+        sOptions->sel_world[MENUITEM_WORLD_PLAYERSTYLE]         = gSaveBlock2Ptr->playerLookStyle;
 
         //Surf
         sOptions->sel_surf[MENUITEM_SURF_FASTSURF]            = !FlagGet(FLAG_ENABLE_FASTSURF);           // Used the inverse to align with ON/OFF Buttons
-        sOptions->sel_surf[MENUITEM_SURF_DIVESPEED]           = gSaveBlock2Ptr->optionsDiveSpeed;
+        // sOptions->sel_surf[MENUITEM_SURF_DIVESPEED]           = gSaveBlock2Ptr->optionsDiveSpeed; // Hidden
         sOptions->sel_surf[MENUITEM_SURF_SURFOVERWORLD]       = !FlagGet(FLAG_ENABLE_SURFOVERWORLD);      // Used the inverse to align with ON/OFF Buttons
         sOptions->sel_surf[MENUITEM_SURF_SURFMUSIC]           = FlagGet(FLAG_DISABLE_SURFMUSIC);
 
@@ -1141,10 +1169,11 @@ static void Task_OptionMenuSave(u8 taskId)
     sOptions->sel_world[MENUITEM_WORLD_IMPROVEDFISHING]     == 0 ? FlagSet(FLAG_ENABLE_FISHCANTESCAPE)  : FlagClear(FLAG_ENABLE_FISHCANTESCAPE);    // Used the inverse to align with other similar options.
     sOptions->sel_world[MENUITEM_WORLD_BIKEMUSIC]           == 0 ? FlagClear(FLAG_DISABLE_BIKEMUSIC)    : FlagSet(FLAG_DISABLE_BIKEMUSIC);
     sOptions->sel_world[MENUITEM_WORLD_MONOVERWORLD]        == 0 ? FlagSet(FLAG_ENABLE_FOLLOWER)        : FlagClear(FLAG_ENABLE_FOLLOWER);          // Used the inverse to align with other similar options.
+    gSaveBlock2Ptr->playerLookStyle                         = sOptions->sel_world[MENUITEM_WORLD_PLAYERSTYLE];
 
     //Surf
     sOptions->sel_surf[MENUITEM_SURF_FASTSURF]              == 0 ? FlagSet(FLAG_ENABLE_FASTSURF)        : FlagClear(FLAG_ENABLE_FASTSURF);          // Used the inverse to align with other similar options.
-    gSaveBlock2Ptr->optionsDiveSpeed                        = sOptions->sel_surf[MENUITEM_SURF_DIVESPEED];
+    // gSaveBlock2Ptr->optionsDiveSpeed                        = sOptions->sel_surf[MENUITEM_SURF_DIVESPEED]; // Hidden
     sOptions->sel_surf[MENUITEM_SURF_SURFMUSIC]             == 0 ? FlagClear(FLAG_DISABLE_SURFMUSIC)    : FlagSet(FLAG_DISABLE_SURFMUSIC);
     sOptions->sel_surf[MENUITEM_SURF_SURFOVERWORLD]         == 0 ? FlagSet(FLAG_ENABLE_SURFOVERWORLD)   : FlagClear(FLAG_ENABLE_SURFOVERWORLD);     // Used the inverse to align with other similar options.
 
@@ -1614,6 +1643,15 @@ static void DrawChoices_MonOverworld(int selection, int y)
     DrawOptionMenuChoiceStrings(selection, y, active, sMonOverworldStrings, 2);
 }
 
+static const u8 sText_PlayerStyle_Emerald[] = _("EMERALD");
+static const u8 sText_PlayerStyle_RS[] = _("RUBY/SAPPH");
+static const u8 *const sPlayerStyleStrings[] = {sText_PlayerStyle_Emerald, sText_PlayerStyle_RS};
+static void DrawChoices_PlayerStyle(int selection, int y)
+{
+    bool8 active = CheckConditions(MENUITEM_WORLD_PLAYERSTYLE);
+    DrawOptionMenuChoiceStrings(selection, y, active, sPlayerStyleStrings, 2);
+}
+
 static const u8 sText_FastSurf_On[]   = _("ON");
 static const u8 sText_FastSurf_Off[]   = _("OFF");
 static const u8 *const sFastSurfStrings[] = {sText_FastSurf_On, sText_FastSurf_Off};
@@ -1623,15 +1661,16 @@ static void DrawChoices_FastSurf(int selection, int y)
     DrawOptionMenuChoiceStrings(selection, y, active, sFastSurfStrings, 2);
 }
 
-static const u8 sText_DiveSpeed_Slow[] = _("SLOW");
-static const u8 sText_DiveSpeed_Med[] = _("MEDIUM");
-static const u8 sText_DiveSpeed_Fast[] = _("FAST");
-static const u8 *const sDiveSpeedStrings[] = {sText_DiveSpeed_Slow, sText_DiveSpeed_Med, sText_DiveSpeed_Fast};
-static void DrawChoices_DiveSpeed(int selection, int y)
-{
-    bool8 active = CheckConditions(MENUITEM_SURF_DIVESPEED);
-    DrawOptionMenuChoiceStrings(selection, y, active, sDiveSpeedStrings, 3);
-}
+// Hidden - Dive Speed option removed from menu
+// static const u8 sText_DiveSpeed_Slow[] = _("SLOW");
+// static const u8 sText_DiveSpeed_Med[] = _("MEDIUM");
+// static const u8 sText_DiveSpeed_Fast[] = _("FAST");
+// static const u8 *const sDiveSpeedStrings[] = {sText_DiveSpeed_Slow, sText_DiveSpeed_Med, sText_DiveSpeed_Fast};
+// static void DrawChoices_DiveSpeed(int selection, int y)
+// {
+//     bool8 active = CheckConditions(MENUITEM_SURF_DIVESPEED);
+//     DrawOptionMenuChoiceStrings(selection, y, active, sDiveSpeedStrings, 3);
+// }
 
 static const u8 sText_SurfMusic_On[]   = _("ON");
 static const u8 sText_SurfMusic_Off[]   = _("OFF");

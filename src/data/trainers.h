@@ -10647,7 +10647,7 @@ const struct Trainer gTrainers[] = {
 
     [TRAINER_EXCLSIOR] = //Actually calls trainer Veritas now
     {
-        .trainerClass = TRAINER_CLASS_PKMN_TRAINER_2,
+        .trainerClass = TRAINER_CLASS_RS_PROTAG,
         .encounterMusic_gender = TRAINER_ENCOUNTER_MUSIC_MALE,
         .trainerPic = TRAINER_PIC_RS_BRENDAN,
         .trainerName = _("Gaby"),

@@ -45,6 +45,7 @@
 #include "constants/map_types.h"
 #include "constants/trainers.h"
 #include "constants/trainer_hill.h"
+#include "constants/opponents.h"
 #include "constants/weather.h"
 
 enum {
@@ -707,6 +708,10 @@ u8 BattleSetup_GetTerrainId(void)
 {
     u16 tileBehavior;
     s16 x, y;
+
+    // Special terrain for Veritas/Exclsior battle
+    if (gTrainerBattleOpponent_A == TRAINER_EXCLSIOR)
+        return BATTLE_TERRAIN_UNDERWATER;
 
     PlayerGetDestCoords(&x, &y);
     tileBehavior = MapGridGetMetatileBehaviorAt(x, y);

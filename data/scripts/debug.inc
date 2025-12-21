@@ -42,7 +42,16 @@ Debug_CheatStart::
 	release
 	end
 
+@ Debug script to test Veritas (Exclsior) battle on Southern Island
+@ Sets flags so that Exclsior appears and warps player to Southern Island Interior
 Debug_Script_1::
+	clearflag FLAG_DEFEATED_EXCLSIOR
+	setflag FLAG_CAUGHT_LATIAS_OR_LATIOS
+	setflag FLAG_ENABLE_SHIP_SOUTHERN_ISLAND
+	setflag FLAG_TEMP_2
+	setflag FLAG_DEFEATED_LATIAS_OR_LATIOS
+	warpsilent MAP_SOUTHERN_ISLAND_INTERIOR, 8, 13
+	waitstate
 	end
 
 Debug_Script_2::

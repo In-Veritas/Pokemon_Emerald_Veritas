@@ -17,6 +17,7 @@
 #include "debug_pokemon_creator.h"
 #include "event_data.h"
 #include "event_object_movement.h"
+#include "field_player_avatar.h"
 #include "event_scripts.h"
 #include "field_message_box.h"
 #include "field_screen_effect.h"
@@ -444,7 +445,7 @@ static const u8 sDebugText_Sound[] =            _("Sound…{CLEAR_TO 110}{RIGHT_
 static const u8 sDebugText_AccessPC[] =         _("Access PC…{CLEAR_TO 110}{RIGHT_ARROW}");
 static const u8 sDebugText_Cancel[] =           _("Cancel");
 // Script menu
-static const u8 sDebugText_Util_Script_1[] =               _("Script 1");
+static const u8 sDebugText_Util_Script_1[] =               _("Veritas Battle Test");
 static const u8 sDebugText_Util_Script_2[] =               _("Script 2");
 static const u8 sDebugText_Util_Script_3[] =               _("Script 3");
 static const u8 sDebugText_Util_Script_4[] =               _("Script 4");
@@ -2055,10 +2056,18 @@ static void DebugAction_Util_Trainer_Name(u8 taskId)
 }
 static void DebugAction_Util_Trainer_Gender(u8 taskId)
 {
-    if (gSaveBlock2Ptr->playerGender == 0) // 0 Male, 1 Female
-        gSaveBlock2Ptr->playerGender = 1;
+    // Toggle gender in save data
+    if (gSaveBlock2Ptr->playerGender == MALE)
+        gSaveBlock2Ptr->playerGender = FEMALE;
     else
-        gSaveBlock2Ptr->playerGender = 0;
+        gSaveBlock2Ptr->playerGender = MALE;
+
+    // Update runtime gender
+    gPlayerAvatar.gender = gSaveBlock2Ptr->playerGender;
+
+    // Update the overworld sprite
+    ObjectEventSetGraphicsId(&gObjectEvents[gPlayerAvatar.objectEventId], GetPlayerAvatarGraphicsIdByCurrentState());
+
     ScriptContext_Enable();
     Debug_DestroyMenu_Full(taskId);
 }
