@@ -44,6 +44,7 @@ SouthernIsland_Interior_EventScript_SetUpPlayerGfx::
 SouthernIsland_Interior_EventScript_CheckExclsior::
 	goto_if_set FLAG_DEFEATED_EXCLSIOR, SouthernIsland_Interior_EventScript_HideExclsior
 	goto_if_unset FLAG_CAUGHT_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_HideExclsior
+	goto_if_unset FLAG_DEFEATED_ZINNIA, SouthernIsland_Interior_EventScript_HideExclsior
 	addobject LOCALID_EXCLSIOR
 	addobject LOCALID_TYPHLOSION //Change to Feraligatr
 	end
@@ -238,15 +239,17 @@ SouthernIsland_Interior_EventScript_ShinyLatiDefeated::
 	end
 
 SouthernIsland_Interior_Text_Exclsior_ImCurious:
-	.string "Hmm... Curious...\n"
-	.string "Few trainers know of this place...\p"
+	.string "Hmm.. I wonder what made her come here\p"
+	.string "Sorry.. I was lost in thoughts.\p"
+	.string "Few trainers know of this place..\n"
+	.string "Did she tell you- Wait...\p"
 	.string "Do I know you? I feel like we already...\p"
 	.string "No.\n" 
 	.string "I lost that part of me long ago.\p"
 	.string "Yet....\p"
 	.string "Maybe I'm not as alone as I used to\n" 
 	.string "be.\p" 
-	.string "Well.. only one way to find out.\p"
+	.string "Only one way to find out.\p"
 	.string "Are you ready?$"
 
 SouthernIsland_Interior_Text_ExclsiorIntro:

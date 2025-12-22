@@ -50,11 +50,18 @@ Debug_Script_1::
 	setflag FLAG_ENABLE_SHIP_SOUTHERN_ISLAND
 	setflag FLAG_TEMP_2
 	setflag FLAG_DEFEATED_LATIAS_OR_LATIOS
+	setflag FLAG_DEFEATED_ZINNIA
 	warpsilent MAP_SOUTHERN_ISLAND_INTERIOR, 8, 13
 	waitstate
 	end
 
+@ Debug script to test Zinnia battle and post-battle dialog at Sky Pillar Top
 Debug_Script_2::
+	clearflag FLAG_DEFEATED_ZINNIA
+	clearflag FLAG_HIDE_ZINNIA_TOP
+	setvar VAR_SKY_PILLAR_RAYQUAZA_CRY_DONE, 1
+	warpsilent MAP_SKY_PILLAR_TOP, 14, 11
+	waitstate
 	end
 
 Debug_Script_3::

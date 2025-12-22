@@ -257,6 +257,9 @@ SkyPillar_Top_Text_ZinniaPostBattle3:
 	.string "I think I'll spend some time now trying\n"
 	.string "to find out if it's possible to forge a\l"
 	.string "new beginning for something once lost.\p"
+	.string "I'll stop by the Southern Islands.\n"
+	.string "I want to see him again...\p"
+	.string "See how he dealt with his loss...\p"
 	.string "Until we meet again…$"
 
 SkyPillar_Top_Text_Whismur:
