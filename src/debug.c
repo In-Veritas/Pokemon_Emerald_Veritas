@@ -63,7 +63,7 @@
 #include "constants/weather.h"
 
 
-#if TX_DEBUG_SYSTEM_ENABLE == FALSE
+#if TX_DEBUG_SYSTEM_ENABLE == TRUE
 // *******************************
 // Enums
 enum { // Main
