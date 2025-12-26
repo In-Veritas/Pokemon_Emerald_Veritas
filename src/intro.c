@@ -1204,12 +1204,14 @@ static void Task_Scene1_Load(u8 taskId)
 
     sIntroCharacterGender = gSaveBlock2Ptr->playerGender; // Loads the gender in the save file to show in into. If no save file, defaults to male
     // Randomly select intro style: 0 = Emerald (Flygon), 1 = Ruby (Latios), 2 = Sapphire (Latias)
-    // Add vblank counter entropy for variation even when resetting quickly
-    {
-        u32 entropy = Random() ^ (gMain.vblankCounter1 << 8) ^ gMain.vblankCounter2;
-        sIntroStyle = entropy % 3;
-        sPlayerSpriteStyle = (entropy >> 4) % 4;  // Use different bits for sprite selection
-    }
+    sIntroStyle = Random() % 3;
+    // Randomly select player sprite style
+    // For Flygon intro: use Emerald sprites only (0-1) to avoid VRAM issues with multiple sprites
+    // For Lati intros: use RS sprites only (2-3) for looking back animation
+    if (sIntroStyle == 0)
+        sPlayerSpriteStyle = Random() % 2;  // 50% Emerald Brendan, 50% Emerald May
+    else
+        sPlayerSpriteStyle = 2 + (Random() % 2);  // 50% RS Brendan, 50% RS May
     IntroResetGpuRegs();
     SetGpuReg(REG_OFFSET_BG3VOFS, 0);
     SetGpuReg(REG_OFFSET_BG2VOFS, 80);
@@ -1566,16 +1568,20 @@ static void Task_Scene2_BikeRide(u8 taskId)
     u16 offset;
 
     // Emerald style: Stop scenery when Torchic exits
-    if (gIntroFrameCounter == TIMER_TORCHIC_EXIT)
+    if (sIntroStyle == 0 && gIntroFrameCounter == TIMER_TORCHIC_EXIT)
     {
         gIntroCredits_MovingSceneryState = INTROCRED_SCENERY_FROZEN;
         DestroyTask(gTasks[taskId].tBgAnimTaskId);
     }
 
+    // Both intros end at same time for consistent Scene 3 transition
     if (gIntroFrameCounter > TIMER_END_SCENE_2)
     {
-        // Fade out to next scene
-        BeginNormalPaletteFade(PALETTES_ALL, 8, 0, 16, RGB_WHITEALPHA);
+        // Slower fade for Lati intros
+        if (sIntroStyle == 0)
+            BeginNormalPaletteFade(PALETTES_ALL, 8, 0, 16, RGB_WHITEALPHA);
+        else
+            BeginNormalPaletteFade(PALETTES_ALL, 3, 0, 16, RGB_WHITEALPHA);
         gTasks[taskId].func = Task_Scene2_End;
     }
 
@@ -1608,8 +1614,22 @@ static void Task_Scene2_BikeRide(u8 taskId)
 
 static void Task_Scene2_End(u8 taskId)
 {
-    if (gIntroFrameCounter > TIMER_START_SCENE_3)
+    // Both intros now end at same time, so Scene 3 starts at same time
+    // Wait for both frame counter AND fade to complete before starting Scene 3
+    if (gIntroFrameCounter > TIMER_START_SCENE_3 && !gPaletteFade.active)
+    {
+        // CRITICAL: Destroy BG animation task for Lati intros right before Scene 3
+        // Flygon intro already destroyed it at TIMER_TORCHIC_EXIT
+        // This keeps camera moving during fade but prevents Scene 3 corruption
+        if (sIntroStyle != 0)
+        {
+            gIntroCredits_MovingSceneryState = INTROCRED_SCENERY_FROZEN;
+            DestroyTask(gTasks[taskId].tBgAnimTaskId);
+        }
+
+        // Transition to Scene 3
         gTasks[taskId].func = Task_Scene3_Load;
+    }
 }
 
 #define sStateDelay data[1]
@@ -1871,10 +1891,12 @@ static void Task_Scene3_Load(u8 taskId)
     LZ77UnCompVram(sIntroPokeball_Tilemap, (void *)(BG_CHAR_ADDR(1)));
     LoadPalette(sIntroPokeball_Pal, BG_PLTT_ID(0), sizeof(sIntroPokeball_Pal));
     gTasks[taskId].tAlpha = 0;
-    gTasks[taskId].tZoomDiv = 0;
+    // Initialize tZoomDiv to 0x100 to prevent SAFE_DIV from returning 0 in first frames
+    // This ensures zoom starts at 0x100 (normal scale) instead of 0 (invalid)
+    gTasks[taskId].tZoomDiv = 0x100;
     gTasks[taskId].tZoomDivSpeed = 0;
     gTasks[taskId].data[3] = 0;
-    PanFadeAndZoomScreen(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2, 0, 0);
+    PanFadeAndZoomScreen(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2, 0x100, 0);
     ResetSpriteData();
     FreeAllSpritePalettes();
     BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_WHITEALPHA);
@@ -2855,6 +2877,17 @@ static void IntroResetGpuRegs(void)
     SetGpuReg(REG_OFFSET_BLDCNT, 0);
     SetGpuReg(REG_OFFSET_BLDALPHA, 0);
     SetGpuReg(REG_OFFSET_BLDY, 0);
+
+    // Reset BG2 affine transformation registers to prevent pokeball teleporting
+    // These hold leftover values from Scene 2 causing incorrect screen positioning
+    SetGpuReg(REG_OFFSET_BG2PA, 0x100);  // Identity matrix (1.0 scale)
+    SetGpuReg(REG_OFFSET_BG2PB, 0);
+    SetGpuReg(REG_OFFSET_BG2PC, 0);
+    SetGpuReg(REG_OFFSET_BG2PD, 0x100);  // Identity matrix (1.0 scale)
+    SetGpuReg(REG_OFFSET_BG2X_L, 0);
+    SetGpuReg(REG_OFFSET_BG2X_H, 0);
+    SetGpuReg(REG_OFFSET_BG2Y_L, 0);
+    SetGpuReg(REG_OFFSET_BG2Y_H, 0);
 }
 
 static void Task_BlendLogoIn(u8 taskId)
@@ -3233,15 +3266,24 @@ static void SpriteCB_PlayerOnBicycle(struct Sprite *sprite)
         sprite->x++;
         break;
     case 2:
-        // Move backwards
+        // Move backwards and start looking back (RS sprites only)
+        if (sPlayerSpriteStyle >= 2)
+            StartSpriteAnimIfDifferent(sprite, 2);
+        else
+            StartSpriteAnimIfDifferent(sprite, 0);
         if (sprite->x <= 120 || gIntroFrameCounter & 7)
             sprite->x++;
         break;
     case 3:
-        // Bike in place
+        // Bike in place, looking back at legendary (RS sprites only)
+        if (sPlayerSpriteStyle >= 2)
+            StartSpriteAnimIfDifferent(sprite, 3);
+        else
+            StartSpriteAnimIfDifferent(sprite, 0);
         break;
     case 4:
-        // Exit to the left
+        // Exit to the left, return to normal cycling
+        StartSpriteAnimIfDifferent(sprite, 0);
         if (sprite->x > -32)
             sprite->x -= 2;
         break;
@@ -3294,9 +3336,25 @@ static void SpriteCB_Flygon(struct Sprite *sprite)
         if (sprite->x2 + sprite->x > 120)
             sprite->x2 -= 1;
         else
-            sprite->sState = 3;
+        {
+            // Latis hold position longer to match Emerald scene duration
+            if (sIntroStyle == 0)
+                sprite->sState = 4;  // Flygon: exit immediately
+            else
+            {
+                sprite->sState = 3;  // Lati: hold position
+                sprite->data[2] = 0;  // Reset hold timer
+            }
+        }
         break;
     case 3:
+        // Hold at position 120 (Lati only, extends scene duration)
+        sprite->data[2]++;
+        if (sprite->data[2] > 40)  // Hold for 40 frames, then fly off
+            sprite->sState = 4;
+        break;
+    case 4:
+        // Fly off screen
         if (sprite->x2 > 0)
             sprite->x2 -= 2;
         break;
