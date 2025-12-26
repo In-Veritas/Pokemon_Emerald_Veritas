@@ -659,7 +659,7 @@ const struct CompressedSpriteSheet gSpriteSheet_IntroBrendanRS[] =
 {
     {
         .data = gIntroBrendanRS_Gfx,
-        .size = 0x2000,
+        .size = 0x3800,
         .tag = TAG_BRENDAN_RS
     },
     {}
@@ -669,7 +669,7 @@ const struct CompressedSpriteSheet gSpriteSheet_IntroMayRS[] =
 {
     {
         .data = gIntroMayRS_Gfx,
-        .size = 0x2000,
+        .size = 0x3800,
         .tag = TAG_MAY_RS
     },
     {}
