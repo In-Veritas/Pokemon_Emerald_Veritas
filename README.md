@@ -25,7 +25,7 @@ This is my first ROM Hack, so any suggestions and feedback are highly appreciate
 
 ## What's New in Veritas
 
-This fork includes all features from Pokémon Emerald Legacy Enhanced (see [Base Features](#base-features-from-emerald-legacy-enhanced) below), plus the following additions and changes:
+This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (see [Base Features](#base-features-from-emerald-legacy-enhanced) below), plus the following additions and changes:
 
 ### Added Features
 
@@ -72,6 +72,10 @@ This fork includes all features from Pokémon Emerald Legacy Enhanced (see [Base
 
 ### Technical Improvements
 
+* **RNG Seeding Fix**: Enabled Real-Time Clock (RTC) based RNG seeding at boot
+  * Vanilla Emerald only enables this with BUGFIX flag defined
+  * Now always active, providing truly random wild encounters, shiny rolls, and other RNG-dependent events
+  * Prevents RNG manipulation exploits that rely on predictable seed values
 * Changed flag initialization order to prevent follower/surfer defaults from being cleared
 * Improved intro scene transitions and sprite management
 
@@ -176,32 +180,6 @@ For complete documentation of all Emerald Legacy Enhanced features, please refer
 
 <details>
 <summary><b>Click to expand: National Dex Mode Details</b></summary>
-
-National Dex Mode is an alternate play mode for new games on Emerald Legacy Enhanced allowing to select from all nine starters from the start of the game as well as having all of Base Legacy's post-game route encounters available from the start of the game (i.e Rattata as a possible rare spawn on Route 101). The game **has not** been rebalanced for National Dex Pokémon, as such I do not recommend using this game mode for your first play through of Emerald Legacy Enhanced (unless you have finished Emerald Legacy already).
-
-**Key Notes:**
-
-* Able to select National Dex as an option when starting a new game.
-* National Dex wild encounters unlocked
-  * National Dex encounters are still rarer encounters than Hoenn counterparts through the game.
-* Able to choose from all 9 available Gen 1-3 starters to play
-* If you select a non-Hoenn starter:
-  * The rival will still have the Hoenn starter of the type super effective against yours (i.e. if you select Charmander, your rival will start with Mudkip)
-  * The Hoenn starters will be available in the post-game from your rival by trading the base form of your selected starter.
-  * The relevant quest or reward matching the player's starter will be shiny. (i.e. If you chose Charmander, your rival will gift you a shiny Charmander for the relevant quest.)
-* No in-game trainers or battles have been updated, the game is still Hoenn leaning.
-  * As a result, the game is "unbalanced" in favour of the player.
-* Some post-game gift National Dex encounters remain in the post-game (such as Aerodactyl for example)
-* Safari Zone is fully available to explore (meaning the Johto encounters are available in the main game)
-* One Snorlax is available somewhere in the overworld before post-game. (Respawns after each E4 clear)
-* Eevee is available as a gift before post-game from Lanette.
-* Porygon available from Game Corner.
-* First form pseudo-legendaries all available in the wild.
-  * Dratini remains available in Sootopolis city with original Base Legacy post-game location.
-  * As noted above, Larvitar moved to Route 111 (Desert) as 1% encounter.
-    * No Larvitar encounter in Victory Road **at all**.
-* All post-game legendaries from Base Legacy **remain** post-game for National Dex mode, no changes to legendary availability.
-* Starter learnsets have been updated
 
 </details>
 
