@@ -44,6 +44,7 @@
 #include "pokemon_storage_system.h"
 #include "random.h"
 #include "region_map.h"
+#include "rtc.h"
 #include "script.h"
 #include "script_pokemon_util.h"
 #include "sound.h"
@@ -60,6 +61,7 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/species.h"
+#include "constants/vars.h"
 #include "constants/weather.h"
 
 
@@ -451,8 +453,8 @@ static const u8 sDebugText_Util_Script_3[] =               _("Script 3");
 static const u8 sDebugText_Util_Script_4[] =               _("Script 4");
 static const u8 sDebugText_Util_Script_5[] =               _("Script 5");
 static const u8 sDebugText_Util_Script_6[] =               _("Script 6");
-static const u8 sDebugText_Util_Script_7[] =               _("Script 7");
-static const u8 sDebugText_Util_Script_8[] =               _("Script 8");
+static const u8 sDebugText_Util_Script_7[] =               _("Credits (Random)");
+static const u8 sDebugText_Util_Script_8[] =               _("Credits (Save Data)");
 // Util Menu
 static const u8 sDebugText_Util_HealParty[] =               _("Heal Party");
 static const u8 sDebugText_Util_Fly[] =                     _("Fly to map…{CLEAR_TO 110}{RIGHT_ARROW}");
@@ -2125,15 +2127,59 @@ static void DebugAction_Util_Script_6(u8 taskId)
 }
 static void DebugAction_Util_Script_7(u8 taskId)
 {
+    u32 rtcSeed;
+    u32 seed;
+
+    // Credits with random gender/style
     Debug_DestroyMenu_Full(taskId);
-    LockPlayerFieldControls();
-    ScriptContext_SetupScript(Debug_Script_7);
+
+    // Initialize save blocks
+    CpuFill32(0, gSaveBlock2Ptr, sizeof(struct SaveBlock2));
+    CpuFill32(0, gSaveBlock1Ptr, sizeof(struct SaveBlock1));
+
+    // Initialize RNG with RTC
+    rtcSeed = RtcGetMinuteCount();
+    seed = rtcSeed ^ (rtcSeed << 16) ^ (Random() * 1103515245);
+    SeedRng(seed);
+
+    // Set basic options
+    gSaveBlock2Ptr->optionsTextSpeed = OPTIONS_TEXT_SPEED_FAST;
+    gSaveBlock2Ptr->optionsButtonMode = OPTIONS_BUTTON_MODE_NORMAL;
+
+    // Randomize gender and style
+    gSaveBlock2Ptr->playerGender = Random() % 2;
+    gSaveBlock2Ptr->playerLookStyle = Random() % 2;
+
+    // Initialize Pokédex with some Pokemon for credits
+    VarSet(VAR_STARTER_MON, 0);
+    GetSetPokedexFlag(NATIONAL_DEX_TREECKO, FLAG_SET_SEEN);
+    GetSetPokedexFlag(NATIONAL_DEX_TREECKO, FLAG_SET_CAUGHT);
+    GetSetPokedexFlag(NATIONAL_DEX_TORCHIC, FLAG_SET_SEEN);
+    GetSetPokedexFlag(NATIONAL_DEX_TORCHIC, FLAG_SET_CAUGHT);
+    GetSetPokedexFlag(NATIONAL_DEX_MUDKIP, FLAG_SET_SEEN);
+    GetSetPokedexFlag(NATIONAL_DEX_MUDKIP, FLAG_SET_CAUGHT);
+    GetSetPokedexFlag(NATIONAL_DEX_PIKACHU, FLAG_SET_SEEN);
+    GetSetPokedexFlag(NATIONAL_DEX_PIKACHU, FLAG_SET_CAUGHT);
+    GetSetPokedexFlag(NATIONAL_DEX_ZIGZAGOON, FLAG_SET_SEEN);
+    GetSetPokedexFlag(NATIONAL_DEX_ZIGZAGOON, FLAG_SET_CAUGHT);
+    GetSetPokedexFlag(NATIONAL_DEX_POOCHYENA, FLAG_SET_SEEN);
+    GetSetPokedexFlag(NATIONAL_DEX_POOCHYENA, FLAG_SET_CAUGHT);
+
+    // Set game as beaten
+    FlagSet(FLAG_SYS_GAME_CLEAR);
+
+    SetMainCallback2(CB2_StartCreditsSequence);
 }
 static void DebugAction_Util_Script_8(u8 taskId)
 {
+    // Credits with save data gender/style
     Debug_DestroyMenu_Full(taskId);
-    LockPlayerFieldControls();
-    ScriptContext_SetupScript(Debug_Script_8);
+
+    // Use existing save data - gender, style, and Pokédex entries
+    // Just set game as beaten flag
+    FlagSet(FLAG_SYS_GAME_CLEAR);
+
+    SetMainCallback2(CB2_StartCreditsSequence);
 }
 
 // *******************************

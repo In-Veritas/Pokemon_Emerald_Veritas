@@ -47,11 +47,11 @@ static const u32 sGrass_Gfx[]             = INCBIN_U32("graphics/intro/scene_2/g
 static const u32 sGrass_Tilemap[]         = INCBIN_U32("graphics/intro/scene_2/grass_map.bin.lz");
 static const u16 sCloudsBgMainPal[]       = INCBIN_U16("graphics/intro/rs_graphics/8412818.gbapal");  // Main cloud/sky background palette (96 bytes)
 static const u16 sCloudsBg_Pal[]          = INCBIN_U16("graphics/intro/rs_graphics/intro2_bgclouds.gbapal");
-static const u16 sCloudsBgSunset_Pal[]    = INCBIN_U16("graphics/intro/rs_graphics/intro2_bgclouds_afternoon.pal");
+static const u16 sCloudsBgSunset_Pal[]    = INCBIN_U16("graphics/intro/rs_graphics/8412878.gbapal");  // Afternoon BG palette (will be converted from .pal)
 static const u32 sCloudsBg_Gfx[]          = INCBIN_U32("graphics/intro/rs_graphics/intro2_bgclouds.4bpp.lz");
 static const u32 sCloudsBg_Tilemap[]      = INCBIN_U32("graphics/intro/rs_graphics/intro2_bgclouds_map.bin.lz");
 static const u16 sClouds_Pal[]            = INCBIN_U16("graphics/intro/rs_graphics/intro2_bgclouds2.gbapal");
-static const u16 sCloudsSunset_Pal[]      = INCBIN_U16("graphics/intro/rs_graphics/intro2_bgclouds_afternoon.pal");
+static const u16 sCloudsSunset_Pal[]      = INCBIN_U16("graphics/intro/rs_graphics/intro2_bgclouds_afternoon.gbapal");  // Afternoon sprite clouds (light orange)
 static const u32 sClouds_Gfx[]            = INCBIN_U32("graphics/intro/rs_graphics/intro2_bgclouds2.4bpp.lz");
 static const u16 sTrees_Pal[]             = INCBIN_U16("graphics/intro/scene_2/trees.gbapal");
 static const u16 sTreesSunset_Pal[]       = INCBIN_U16("graphics/intro/scene_2/trees_sunset.gbapal");
@@ -784,6 +784,8 @@ const struct SpritePalette gSpritePalettes_Credits[] =
 {
     { .data = sBrendanCredits_Pal, .tag = TAG_BRENDAN },
     { .data = sMayCredits_Pal,     .tag = TAG_MAY },
+    { .data = gIntroBrendanRS_Pal, .tag = TAG_BRENDAN_RS },
+    { .data = gIntroMayRS_Pal,     .tag = TAG_MAY_RS },
     { .data = sLatios_Pal,         .tag = TAG_FLYGON_LATIOS },
     { .data = sLatias_Pal,         .tag = TAG_FLYGON_LATIAS },
     {}
@@ -937,20 +939,20 @@ void LoadCreditsSceneGraphics(u8 scene)
         LoadPalette(&sGrass_Pal, BG_PLTT_ID(15), sizeof(sGrass_Pal));
         LZ77UnCompVram(sCloudsBg_Gfx, (void *)(VRAM));
         LZ77UnCompVram(sCloudsBg_Tilemap, (void *)(BG_SCREEN_ADDR(6)));
-        LoadPalette(&sCloudsBg_Pal, BG_PLTT_ID(0), sizeof(sCloudsBg_Pal));
+        LoadPalette(&sCloudsBgMainPal, BG_PLTT_ID(0), 96);  // Match intro: use main palette (96 bytes)
         LoadCompressedSpriteSheet(sSpriteSheet_Clouds);
         LZ77UnCompVram(sClouds_Gfx, (void *)(OBJ_VRAM0));
-        LoadPalette(&sClouds_Pal, OBJ_PLTT_ID(0), sizeof(sClouds_Pal));
+        LoadPalette(&sClouds_Pal, OBJ_PLTT_ID(0), 32);  // Match intro: 32 bytes
         CreateCloudSprites();
         break;
     case SCENE_OCEAN_SUNSET:
         LoadPalette(&sGrassSunset_Pal, BG_PLTT_ID(15), sizeof(sGrassSunset_Pal));
         LZ77UnCompVram(sCloudsBg_Gfx, (void *)(VRAM));
         LZ77UnCompVram(sCloudsBg_Tilemap, (void *)(BG_SCREEN_ADDR(6)));
-        LoadPalette(&sCloudsBgSunset_Pal, BG_PLTT_ID(0), sizeof(sCloudsBgSunset_Pal));
+        LoadPalette(&sCloudsBgSunset_Pal, BG_PLTT_ID(0), 96);  // Load only BG palette (48 colors)
         LoadCompressedSpriteSheet(sSpriteSheet_Clouds);
         LZ77UnCompVram(sClouds_Gfx, (void *)(OBJ_VRAM0));
-        LoadPalette(&sCloudsSunset_Pal, OBJ_PLTT_ID(0), sizeof(sCloudsSunset_Pal));
+        LoadPalette(&sCloudsSunset_Pal, OBJ_PLTT_ID(0), 32);  // White clouds palette
         CreateCloudSprites();
         break;
     case SCENE_FOREST_RIVAL_ARRIVE:

@@ -23,7 +23,14 @@
 #include "intro.h"
 #include "main.h"
 #include "trainer_hill.h"
+#include "credits.h"
+#include "pokedex.h"
+#include "event_data.h"
+#include "load_save.h"
 #include "constants/rgb.h"
+#include "constants/flags.h"
+#include "constants/vars.h"
+#include "constants/species.h"
 
 static void VBlankIntr(void);
 static void HBlankIntr(void);
@@ -171,15 +178,20 @@ static void UpdateLinkAndCallCallbacks(void)
         CallCallbacks();
 }
 
+// TESTING: Boot counter for RNG seed variability
+EWRAM_DATA static u32 sBootCount = 0;
+
 static void InitMainCallbacks(void)
 {
     gMain.vblankCounter1 = 0;
     gTrainerHillVBlankCounter = NULL;
     gMain.vblankCounter2 = 0;
     gMain.callback1 = NULL;
-    SetMainCallback2(CB2_InitCopyrightScreenAfterBootup);
     gSaveBlock2Ptr = &gSaveblock2.block;
+    gSaveBlock1Ptr = &gSaveblock1.block;
     gPokemonStoragePtr = &gPokemonStorage.block;
+
+    SetMainCallback2(CB2_InitCopyrightScreenAfterBootup);
 }
 
 static void CallCallbacks(void)

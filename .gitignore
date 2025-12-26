@@ -58,3 +58,7 @@ prefabs.json
 *.ss8
 *.ss9
 *.cheats
+
+# Claude Code
+.claude/
+summary.md

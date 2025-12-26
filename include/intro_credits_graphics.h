@@ -29,6 +29,8 @@ extern const struct CompressedSpriteSheet gSpriteSheet_CreditsMay[];
 extern const struct CompressedSpriteSheet gSpriteSheet_CreditsBicycle[];
 extern const struct CompressedSpriteSheet gSpriteSheet_CreditsRivalBrendan[];
 extern const struct CompressedSpriteSheet gSpriteSheet_CreditsRivalMay[];
+extern const struct CompressedSpriteSheet gSpriteSheet_IntroBrendanRS[];
+extern const struct CompressedSpriteSheet gSpriteSheet_IntroMayRS[];
 extern const struct SpritePalette gSpritePalettes_Credits[];
 
 void LoadIntroPart2Graphics(u8 scenery);
