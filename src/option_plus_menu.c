@@ -1644,7 +1644,7 @@ static void DrawChoices_MonOverworld(int selection, int y)
 }
 
 static const u8 sText_PlayerStyle_Emerald[] = _("EMERALD");
-static const u8 sText_PlayerStyle_RS[] = _("RUBY/SAPPH");
+static const u8 sText_PlayerStyle_RS[] = _("CLASSIC");
 static const u8 *const sPlayerStyleStrings[] = {sText_PlayerStyle_Emerald, sText_PlayerStyle_RS};
 static void DrawChoices_PlayerStyle(int selection, int y)
 {
