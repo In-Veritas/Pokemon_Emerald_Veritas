@@ -119,8 +119,8 @@ LilycoveCity_ContestLobby_EventScript_TryBeautyReward::
 	call_if_set FLAG_BEAUTY_PAINTING_MADE, LilycoveCity_ContestLobby_EventScript_EndTakePaintingToMuseum
 	applymovement OBJ_EVENT_ID_PLAYER, Common_Movement_FaceUp
 	msgbox LilycoveCity_ContestLobby_Text_Reward, MSGBOX_DEFAULT
-	setvar VAR_TEMP_TRANSFERRED_SPECIES, SPECIES_MILOTIC
-	givemon SPECIES_MILOTIC, 50
+	setvar VAR_TEMP_TRANSFERRED_SPECIES, SPECIES_MISDREAVUS
+	givemon SPECIES_MISDREAVUS, 50
 	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PARTY, LilycoveCity_ContestLobby_EventScript_ReceiveBeautyParty
 	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PC, LilycoveCity_ContestLobby_EventScript_ReceiveBeautyPC
 	goto Common_EventScript_NoMoreRoomForPokemon
@@ -141,11 +141,11 @@ LilycoveCity_ContestLobby_EventScript_ReceivedBeautyFanfare::
 	message LilycoveCity_ContestLobby_Text_PlayerReceivedBeautyReward
 	waitmessage
 	waitfanfare
-	bufferspeciesname STR_VAR_1, SPECIES_MILOTIC
+	bufferspeciesname STR_VAR_1, SPECIES_MISDREAVUS
 	return
 
 LilycoveCity_ContestLobby_Text_PlayerReceivedBeautyReward:
-	.string "{PLAYER} received MILOTIC!$"
+	.string "{PLAYER} received MISDREAVUS!$"
 
 
 

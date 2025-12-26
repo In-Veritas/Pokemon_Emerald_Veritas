@@ -1,10 +1,20 @@
 # Pokémon Emerald Veritas
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Hey thanks for checking this out! Emerald Veritas is a rom hack I made based on Exclsior's Emerald Enhanced. I made this mostly to play with my friends but feel free to try it if you want to.
 
 ## About This Project
 
+I believe that Legacy and Enhanced both do an excellent job in capturing Emerald's essence, but since I wanted something more abstract as in "Hoenn's" essence, I made some slight changes. In Veritas, title screens and intros both share cutscenes and elements from Ruby and Sapphire, and the player may choose to get a Ruby/Sapphire look for their character.
+
+After creating a save game, the player also unlocks Groudon and Kyogre for the title screen. 
+
+This version also removes some things from enhanced, such as the gift shiny Pokemon, Stat editor, and Dive speed. The general idea is to give a bit less control to the player and make the experience more noob friendly for casuals whilst also giving enough options so that experienced players can get a kick out of it. 
+
+I also removed the gift Milotic from Legacy in order to make feebas more unique.
+
 Pokémon Emerald Veritas is a fork of [Pokémon Emerald Legacy Enhanced](https://github.com/Exclsior/Pokemon_Emerald_Legacy_Enhanced) by Exclsior, which itself is based on [Pokémon Emerald Legacy](https://github.com/cRz-Shadows/Pokemon_Emerald_Legacy) by TheSmithPlays and the Legacy team. This ROM hack builds upon the excellent foundation of both projects while adding its own unique flavor and modifications.
+
+This is my first ROM Hack, so any suggestions and feedback are highly appreciated!
 
 **Base Version**: Emerald Legacy Enhanced v1.1.4
 
@@ -53,9 +63,6 @@ This fork includes all features from Pokémon Emerald Legacy Enhanced (see [Base
   * Emerald May + Emerald Brendan (rival)
   * RS May + Emerald Brendan (rival)
 * Credits timing optimized to match 2:55 soundtrack length
-* Pokemon showcase uses only Pokemon from player's actual Pokedex
-
-### Changed Features
 
 #### Default Options for New Games
 
@@ -71,24 +78,46 @@ This fork includes all features from Pokémon Emerald Legacy Enhanced (see [Base
 ### Removed Features
 
 #### Debug System
-* Debug menu access (R+Start trigger removed)
-* Debug menu option from Start menu
-* All debug functionality disabled in production builds
+
+- Debug menu access (R+Start trigger removed)
+- Debug menu option from Start menu
+- All debug functionality disabled in production builds
+
+#### Game Modes
+
+- Removed Nuzlocke(Hardcore) mode
+
+- Removed National Dex mode
 
 #### Options Menu Simplifications
+
 * **Dive Speed option** removed from Surf submenu
 * **Stat Editor visibility toggle** removed (Stat Editor itself remains functional)
 * **Button Mode simplified** - Removed "LR" mode option, now only offers "NORMAL" and "L=A" modes
 
 #### Gift Pokémon Changes
+
 The following gift Pokémon are **no longer guaranteed shiny** (changed from Enhanced base):
+
 * **Eevee from Lanette** (Route114) - changed to regular encounter
 * **Eevee from Trick House** (completion reward) - changed to regular encounter
 * **Snorlax from Trainer Hill** (completion reward) - changed to regular encounter
 
 Still shiny gift Pokémon (unchanged from Enhanced):
+
 * **Beldum from Scott** (Battle Frontier Gold Symbols reward) - remains shiny
 * **Latios/Latias** (Southern Island) - remains shiny
+
+#### Contest Reward Changes
+
+Contest painting rewards have been modified:
+
+* **Master Beauty Contest reward** - Changed from Milotic to Misdreavus (Level 50)
+* Other contest rewards remain unchanged:
+  * Cool Contest: Slaking (Level 50)
+  * Cute Contest: Delcatty (Level 50)
+  * Smart Contest: Gardevoir (Level 50)
+  * Tough Contest: Aggron (Level 50)
 
 ## Base Features from Emerald Legacy Enhanced
 
