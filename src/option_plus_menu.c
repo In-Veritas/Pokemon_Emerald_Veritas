@@ -722,7 +722,7 @@ static u8 MenuItemCancel(void)
     {
     case MENU_MAIN:             return MENUITEM_MAIN_CANCEL;
     case MENU_BATTLE:           return MENUITEM_BATTLE_CANCEL;
-    case MENU_BATTLE_SPEED:     return MENUITEM_BATTLE_SPEED_COUNT;
+    case MENU_BATTLE_SPEED:     return MENUITEM_BATTLE_SPEED_CANCEL;
     case MENU_WORLD:            return MENUITEM_WORLD_CANCEL;
     case MENU_SURF:             return MENUITEM_SURF_CANCEL;
     }
@@ -1195,7 +1195,7 @@ static void Task_OptionMenuProcessInput(u8 taskId)
             u8 previousOption = sOptions->sel_surf[cursor];
             if (CheckConditions(cursor))
             {
-                if (sItemFunctionsWorld[cursor].processInput != NULL)
+                if (sItemFunctionsSurf[cursor].processInput != NULL)
                 {
                     sOptions->sel_surf[cursor] = sItemFunctionsSurf[cursor].processInput(previousOption);
                     ReDrawAll();
