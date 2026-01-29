@@ -14,6 +14,7 @@
 #include "text_window.h"
 #include "international_string_util.h"
 #include "strings.h"
+#include "string_util.h"
 #include "gba/m4a_internal.h"
 #include "constants/rgb.h"
 #include "event_data.h"
@@ -58,6 +59,7 @@ enum
 enum
 {
     MENUITEM_MAIN_BATTLESCENE,
+    MENUITEM_BATTLE_SPEED,
     MENUITEM_BATTLE_ITEMANIMATE,
     MENUITEM_BATTLE_FAST_INTRO,
     MENUITEM_BATTLE_FAST_BATTLES,
@@ -224,6 +226,7 @@ static void DrawChoices_SurfOverworld(int selection, int y);
 static void DrawChoices_ItemAnimate(int selection, int y);
 static void DrawChoices_TypeEffect(int selection, int y);
 static void DrawChoices_PickupText(int selection, int y);
+static void DrawChoices_BattleSpeed(int selection, int y);
 static void DrawChoices_FastIntro(int selection, int y);
 static void DrawChoices_FastBattles(int selection, int y);
 static void DrawChoices_HardMode(int selection, int y);
@@ -291,6 +294,7 @@ struct // MENU_BATTLE_SPEED
 } static const sItemFunctionsBattSpeed[MENUITEM_BATTLE_SPEED_COUNT] =
 {
     [MENUITEM_MAIN_BATTLESCENE]         = {DrawChoices_BattleScene,         ProcessInput_Options_Two},
+    [MENUITEM_BATTLE_SPEED]             = {DrawChoices_BattleSpeed,         ProcessInput_Options_Four},
     [MENUITEM_BATTLE_FAST_INTRO]        = {DrawChoices_FastIntro,           ProcessInput_Options_Two},
     [MENUITEM_BATTLE_FAST_BATTLES]      = {DrawChoices_FastBattles,         ProcessInput_Options_Two},
     [MENUITEM_CUSTOM_HP_BAR]            = {DrawChoices_BarSpeed,            ProcessInput_Options_Eleven},
@@ -355,6 +359,7 @@ static const u8 *const sOptionMenuItemsNamesBattle[MENUITEM_BATTLE_COUNT] =
     [MENUITEM_BATTLE_CANCEL]                = gText_OptionMenuSave,
 };
 
+static const u8 sText_OptionBattleSpeed[]   = _("BATTLE SPEED");
 static const u8 sText_HpBar[]               = _("HP BAR SPEED");
 static const u8 sText_ExpBar[]              = _("EXP BAR SPEED");
 static const u8 sText_ItemAnimate[]         = _("ITEM ANIMATION");
@@ -363,6 +368,7 @@ static const u8 sText_FastBattles[]         = _("FAST BATTLES");
 static const u8 *const sOptionMenuItemsNamesBattleSpeed[MENUITEM_BATTLE_SPEED_COUNT] =
 {
     [MENUITEM_MAIN_BATTLESCENE]             = gText_BattleScene,
+    [MENUITEM_BATTLE_SPEED]                 = sText_OptionBattleSpeed,
     [MENUITEM_CUSTOM_HP_BAR]                = sText_HpBar,
     [MENUITEM_CUSTOM_EXP_BAR]               = sText_ExpBar,
     [MENUITEM_BATTLE_ITEMANIMATE]           = sText_ItemAnimate,
@@ -478,6 +484,7 @@ static bool8 CheckConditions(int selection)
         switch(selection)
         {
         case MENUITEM_MAIN_BATTLESCENE:         return TRUE;
+        case MENUITEM_BATTLE_SPEED:             return TRUE;
         case MENUITEM_CUSTOM_HP_BAR:            return TRUE;
         case MENUITEM_CUSTOM_EXP_BAR:           return TRUE;
         case MENUITEM_BATTLE_ITEMANIMATE:       return TRUE;
@@ -571,6 +578,10 @@ static const u8 *const sOptionMenuItemDescriptionsBattle[MENUITEM_BATTLE_COUNT][
 // Battle Speed
 static const u8 sText_Desc_BattleScene_On[]         = _("Show the POKéMON battle animations.");
 static const u8 sText_Desc_BattleScene_Off[]        = _("Skip the POKéMON battle animations.");
+static const u8 sText_Desc_BattleSpeed_1x[]         = _("Standard battle animations speed.\nNo change from original Emerald.");
+static const u8 sText_Desc_BattleSpeed_2x[]         = _("2x battle animations speed.\nHold {R_BUTTON} button for standard speed.");
+static const u8 sText_Desc_BattleSpeed_3x[]         = _("3x battle animations speed.\nHold {R_BUTTON} button for standard speed.");
+static const u8 sText_Desc_BattleSpeed_4x[]         = _("4x battle animations speed.\nHold {R_BUTTON} button for standard speed.");
 static const u8 sText_Desc_BattleHPBar[]            = _("Choose how fast the HP BAR will get\ndrained in battles.");
 static const u8 sText_Desc_BattleExpBar[]           = _("Choose how fast the EXP BAR will get\nfilled in battles.");
 static const u8 sText_Desc_ItemAnimateNormal[]      = _("Original in-battle item animation.\nNo change from original Emerald.");
@@ -584,6 +595,7 @@ static const u8 sText_Desc_FastBattleOff[]          = _("Original Experience.\nY
 static const u8 *const sOptionMenuItemDescriptionsBatSpeed[MENUITEM_BATTLE_SPEED_COUNT][4] =
 {
     [MENUITEM_MAIN_BATTLESCENE]         = {sText_Desc_BattleScene_On,       sText_Desc_BattleScene_Off},
+    [MENUITEM_BATTLE_SPEED]             = {sText_Desc_BattleSpeed_1x,       sText_Desc_BattleSpeed_2x,      sText_Desc_BattleSpeed_3x,      sText_Desc_BattleSpeed_4x},
     [MENUITEM_CUSTOM_HP_BAR]            = {sText_Desc_BattleHPBar},
     [MENUITEM_CUSTOM_EXP_BAR]           = {sText_Desc_BattleExpBar},
     [MENUITEM_BATTLE_ITEMANIMATE]       = {sText_Desc_ItemAnimateNormal,    sText_Desc_ItemAnimateReduced,  sText_Desc_ItemAnimateMinimal,  sText_Desc_ItemAnimateNone},
@@ -983,6 +995,7 @@ void CB2_InitOptionPlusMenu(void)
         
         //Battle Speed
         sOptions->sel_batt_speed[MENUITEM_MAIN_BATTLESCENE]     = gSaveBlock2Ptr->optionsBattleSceneOff;
+        sOptions->sel_batt_speed[MENUITEM_BATTLE_SPEED]         = VarGet(VAR_BATTLE_SPEED);
         sOptions->sel_batt_speed[MENUITEM_CUSTOM_HP_BAR]        = gSaveBlock2Ptr->optionsHpBarSpeed;
         sOptions->sel_batt_speed[MENUITEM_CUSTOM_EXP_BAR]       = gSaveBlock2Ptr->optionsExpBarSpeed;
         sOptions->sel_batt_speed[MENUITEM_BATTLE_ITEMANIMATE]   = gSaveBlock2Ptr->optionsBattleItemAnimation;
@@ -1303,6 +1316,7 @@ static void Task_OptionMenuSave(u8 taskId)
 
     //Battle Speed
     gSaveBlock2Ptr->optionsBattleSceneOff                   = sOptions->sel_batt_speed[MENUITEM_MAIN_BATTLESCENE];
+    *GetVarPointer(VAR_BATTLE_SPEED)                        = sOptions->sel_batt_speed[MENUITEM_BATTLE_SPEED];
     gSaveBlock2Ptr->optionsHpBarSpeed                       = sOptions->sel_batt_speed[MENUITEM_CUSTOM_HP_BAR];
     gSaveBlock2Ptr->optionsExpBarSpeed                      = sOptions->sel_batt_speed[MENUITEM_CUSTOM_EXP_BAR];
     gSaveBlock2Ptr->optionsBattleItemAnimation              = sOptions->sel_batt_speed[MENUITEM_BATTLE_ITEMANIMATE];
@@ -1611,6 +1625,17 @@ static void DrawChoices_PickupText(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_BATTLE_PICKUPTEXT);
     DrawOptionMenuChoiceStrings(selection, y, active, sPickupTextStrings, 2);
+}
+
+const u8 sText_BattleSpeed1x[] = _("ORIGINAL");
+const u8 sText_BattleSpeed2x[] = _("2x");
+const u8 sText_BattleSpeed3x[] = _("3x");
+const u8 sText_BattleSpeed4x[] = _("4x");
+static const u8 *const sBattleSpeedStrings[] = {sText_BattleSpeed1x, sText_BattleSpeed2x, sText_BattleSpeed3x, sText_BattleSpeed4x};
+static void DrawChoices_BattleSpeed(int selection, int y)
+{
+    bool8 active = CheckConditions(MENUITEM_BATTLE_SPEED);
+    DrawOptionMenuChoiceStrings(selection, y, active, sBattleSpeedStrings, 4);
 }
 
 static const u8 sText_FastIntro_On[]   = _("ON");
