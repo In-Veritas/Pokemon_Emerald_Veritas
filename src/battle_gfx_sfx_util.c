@@ -78,11 +78,19 @@ static const struct CompressedSpriteSheet sSpriteSheets_HealthBar[MAX_BATTLERS_C
     {gBlankGfxCompressed, 0x0120, TAG_HEALTHBAR_OPPONENT2_TILE}
 };
 
-static const struct SpritePalette sSpritePalettes_HealthBoxHealthBar[2] =
+static void GetHealthBoxHealthBarPalettes(struct SpritePalette out[2])
 {
-    {gBattleInterface_BallStatusBarPal, TAG_HEALTHBOX_PAL},
-    {gBattleInterface_BallDisplayPal, TAG_HEALTHBAR_PAL}
-};
+    if (VarGet(VAR_BATTLE_INTERFACE) == 0)
+    {
+        out[0] = (struct SpritePalette){ gBattleInterface_BallStatusBarPal, TAG_HEALTHBOX_PAL };
+        out[1] = (struct SpritePalette){ gBattleInterface_BallDisplayPal, TAG_HEALTHBAR_PAL };
+    }
+    else
+    {
+        out[0] = (struct SpritePalette){ gBattleInterface_BallStatusBarPalWhite, TAG_HEALTHBOX_PAL };
+        out[1] = (struct SpritePalette){ gBattleInterface_BallDisplayPal, TAG_HEALTHBAR_PAL };
+    }
+}
 
 // code
 void AllocateBattleSpritesData(void)
@@ -724,9 +732,12 @@ void BattleLoadAllHealthBoxesGfxAtOnce(void)
 {
     u8 numberOfBattlers = 0;
     u8 i;
+    
+    struct SpritePalette palettes[2];
+    GetHealthBoxHealthBarPalettes(palettes);
+    LoadSpritePalette(&palettes[0]);
+    LoadSpritePalette(&palettes[1]);
 
-    LoadSpritePalette(&sSpritePalettes_HealthBoxHealthBar[0]);
-    LoadSpritePalette(&sSpritePalettes_HealthBoxHealthBar[1]);
     if (!IsDoubleBattle())
     {
         LoadCompressedSpriteSheet(&sSpriteSheet_SinglesPlayerHealthbox);
@@ -753,8 +764,10 @@ bool8 BattleLoadAllHealthBoxesGfx(u8 state)
     {
         if (state == 1)
         {
-            LoadSpritePalette(&sSpritePalettes_HealthBoxHealthBar[0]);
-            LoadSpritePalette(&sSpritePalettes_HealthBoxHealthBar[1]);
+            struct SpritePalette palettes[2];
+            GetHealthBoxHealthBarPalettes(palettes);
+            LoadSpritePalette(&palettes[0]);
+            LoadSpritePalette(&palettes[1]);
         }
         else if (!IsDoubleBattle())
         {
