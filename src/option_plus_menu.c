@@ -1672,7 +1672,7 @@ static const u8 sText_FastBattle_Off[]  = _("OFF");
 static const u8 *const sFastBattleStrings[] = {sText_FastBattle_On, sText_FastBattle_Off};
 static void DrawChoices_FastBattles(int selection, int y)
 {
-    bool8 active = CheckConditions(FLAG_ENABLE_FAST_BATTLE);
+    bool8 active = CheckConditions(MENUITEM_BATTLE_FAST_BATTLES);
     DrawOptionMenuChoiceStrings(selection, y, active, sFastBattleStrings, 2);
 }
 
