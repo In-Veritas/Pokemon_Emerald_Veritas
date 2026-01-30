@@ -26,6 +26,7 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "battle_setup.h"
+#include "event_data.h"
 
 struct TestingBar
 {
@@ -643,10 +644,13 @@ static const struct CompressedSpriteSheet sStatusSummaryBarSpriteSheet =
     gBattleInterface_BallStatusBarGfx, 0x200, TAG_STATUS_SUMMARY_BAR_TILE
 };
 
-static const struct SpritePalette sStatusSummaryBarSpritePal =
+static struct SpritePalette GetStatusSummaryBarSpritePal(void)
 {
-    gBattleInterface_BallStatusBarPal, TAG_STATUS_SUMMARY_BAR_PAL
-};
+    if (VarGet(VAR_BATTLE_INTERFACE) == 0)
+        return (struct SpritePalette){ gBattleInterface_BallStatusBarPal, TAG_STATUS_SUMMARY_BAR_PAL };
+    else
+        return (struct SpritePalette){ gBattleInterface_BallStatusBarPalWhite, TAG_STATUS_SUMMARY_BAR_PAL };
+}
 
 static const struct SpritePalette sStatusSummaryBallsSpritePal =
 {
@@ -1487,9 +1491,11 @@ u8 CreatePartyStatusSummarySprites(u8 battlerId, struct HpAndStatus *partyInfo, 
         bar_data0 = 5;
     }
 
+    struct SpritePalette statusSummaryBarPal = GetStatusSummaryBarSpritePal();
+
     LoadCompressedSpriteSheetUsingHeap(&sStatusSummaryBarSpriteSheet);
     LoadSpriteSheet(&sStatusSummaryBallsSpriteSheet);
-    LoadSpritePalette(&sStatusSummaryBarSpritePal);
+    LoadSpritePalette(&statusSummaryBarPal);
     LoadSpritePalette(&sStatusSummaryBallsSpritePal);
 
     summaryBarSpriteId = CreateSprite(&sStatusSummaryBarSpriteTemplates[isOpponent], bar_X, bar_Y, 10);

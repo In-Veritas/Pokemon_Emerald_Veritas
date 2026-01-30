@@ -109,7 +109,7 @@
 #define VAR_MAUVILLE_CITY_STATE                          0x4059
 #define VAR_RUSTBORO_CITY_STATE                          0x405A
 #define VAR_BATTLE_SPEED                                 0x405B // Replaced unused 'VAR_FORTREE_CITY_STATE' for Battle Speedup
-#define VAR_LILYCOVE_CITY_STATE                          0x405C // Unused Var
+#define VAR_BATTLE_INTERFACE                             0x405C // Replaced unused 'VAR_LILYCOVE_CITY_STATE' for Battle Interface
 #define VAR_MOSSDEEP_CITY_STATE                          0x405D
 #define VAR_SOOTOPOLIS_CITY_STATE                        0x405E
 #define VAR_EVER_GRANDE_CITY_STATE                       0x405F
