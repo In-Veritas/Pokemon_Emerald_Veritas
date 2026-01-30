@@ -49,6 +49,7 @@ enum
 {
     MENUITEM_BATTLE_HARDMODE,
     MENUITEM_MAIN_BATTLESTYLE,
+    MENUITEM_BATTLE_LEVELCAPS,
     MENUITEM_BATTLE_INTERFACE,
     MENUITEM_BATTLE_TYPEEFFECT,
     MENUITEM_BATTLE_PICKUPTEXT,
@@ -225,6 +226,7 @@ static void DrawChoices_SurfMusic(int selection, int y);
 static void DrawChoices_MonOverworld(int selection, int y);
 static void DrawChoices_SurfOverworld(int selection, int y);
 static void DrawChoices_ItemAnimate(int selection, int y);
+static void DrawChoices_BattleLevelCaps(int selection, int y);
 static void DrawChoices_BattleInterface(int selection, int y);
 static void DrawChoices_TypeEffect(int selection, int y);
 static void DrawChoices_PickupText(int selection, int y);
@@ -283,6 +285,7 @@ struct // MENU_BATTLE
 } static const sItemFunctionsBattle[MENUITEM_BATTLE_COUNT] =
 {
     [MENUITEM_MAIN_BATTLESTYLE]         = {DrawChoices_BattleStyle,         ProcessInput_Options_Two},
+    [MENUITEM_BATTLE_LEVELCAPS]         = {DrawChoices_BattleLevelCaps,     ProcessInput_Options_Two},
     [MENUITEM_BATTLE_INTERFACE]         = {DrawChoices_BattleInterface,     ProcessInput_Options_Two},
     [MENUITEM_BATTLE_TYPEEFFECT]        = {DrawChoices_TypeEffect,          ProcessInput_Options_Two},
     [MENUITEM_BATTLE_PICKUPTEXT]        = {DrawChoices_PickupText,          ProcessInput_Options_Two},
@@ -351,12 +354,14 @@ static const u8 *const sOptionMenuItemsNamesMain[MENUITEM_MAIN_COUNT] =
 };
 
 static const u8 sText_HardMode[]            = _("BATTLE MODE");
+static const u8 sText_BattleLevelCaps[]     = _("LEVEL CAPS");
 static const u8 sText_BattleInterface[]     = _("BATTLE INTERFACE");
 static const u8 sText_TypeEffect[]          = _("TYPE EFFECTS");
 static const u8 sText_PickupText[]          = _("PICKUP MESSAGE");
 static const u8 *const sOptionMenuItemsNamesBattle[MENUITEM_BATTLE_COUNT] =
 {
     [MENUITEM_MAIN_BATTLESTYLE]             = gText_BattleStyle,
+    [MENUITEM_BATTLE_LEVELCAPS]             = sText_BattleLevelCaps,
     [MENUITEM_BATTLE_INTERFACE]             = sText_BattleInterface,
     [MENUITEM_BATTLE_TYPEEFFECT]            = sText_TypeEffect,
     [MENUITEM_BATTLE_PICKUPTEXT]            = sText_PickupText,
@@ -468,6 +473,18 @@ static bool8 CheckConditions(int selection)
             }
 
         }
+        case MENUITEM_BATTLE_LEVELCAPS:
+        {
+            if (FlagGet(FLAG_IS_CHAMPION) || FlagGet(FLAG_HARD) || FlagGet(FLAG_NUZLOCKE))
+            {
+                return FALSE;
+            }
+            else
+            {
+                return TRUE;
+            }
+
+        }
         case MENUITEM_BATTLE_INTERFACE:         return TRUE;
         case MENUITEM_BATTLE_TYPEEFFECT:        return TRUE;
         case MENUITEM_BATTLE_PICKUPTEXT:        return TRUE;
@@ -565,6 +582,8 @@ static const u8 *const sOptionMenuItemDescriptionsMain[MENUITEM_MAIN_COUNT][10] 
 // Battle
 static const u8 sText_Desc_BattleStyle_Shift[]      = _("Get the option to switch your\nPOKéMON after the enemy's faints.");
 static const u8 sText_Desc_BattleStyle_Set[]        = _("No free switch after fainting the\nenemy's POKéMON.");
+static const u8 sText_Desc_BattleLevelCaps_On[]     = _("POKéMON cannot gain experience above\nthe next Gym Leader's top level.");
+static const u8 sText_Desc_BattleLevelCaps_Off[]    = _("Original experience.\nNo Level Caps enforced.");
 static const u8 sText_Desc_BattleInterface_Orig[]   = _("Standard battle interface.\nNo change from original Emerald.");
 static const u8 sText_Desc_BattleInterface_White[]  = _("White battle interface.\nChanges background of interface.");
 static const u8 sText_Desc_TypeEffect_On[]          = _("Show move type effect in battle.\nGreen: Super, Red: Not very, Grey: No");
@@ -577,6 +596,7 @@ static const u8 sText_Desc_HardMode_Hardcore[]      = _("Hard mode, but POKéMON
 static const u8 *const sOptionMenuItemDescriptionsBattle[MENUITEM_BATTLE_COUNT][3] =
 {
     [MENUITEM_MAIN_BATTLESTYLE]         = {sText_Desc_BattleStyle_Shift,    sText_Desc_BattleStyle_Set},
+    [MENUITEM_BATTLE_LEVELCAPS]         = {sText_Desc_BattleLevelCaps_On,   sText_Desc_BattleLevelCaps_Off},
     [MENUITEM_BATTLE_INTERFACE]         = {sText_Desc_BattleInterface_Orig, sText_Desc_BattleInterface_White},
     [MENUITEM_BATTLE_TYPEEFFECT]        = {sText_Desc_TypeEffect_On,        sText_Desc_TypeEffect_Off},
     [MENUITEM_BATTLE_PICKUPTEXT]        = {sText_Desc_PickupText_On,        sText_Desc_PickupText_Off},
@@ -672,10 +692,13 @@ static const u8 *const sOptionMenuItemDescriptionsDisabledMain[MENUITEM_MAIN_COU
 
 // Disabled Battle
 static const u8 sText_Desc_Disabled_BattleStyle[]   = _("BATTLE STYLE cannot be changed if\nHARD or HARDCORE difficulty active.");
+static const u8 sText_Desc_Disabled_LevelCaps[]     = _("LEVEL CAPS cannot be changed if\nHARD, HARDCORE, or are the CHAMPION.");
+//static const u8 sText_Desc_Disabled_LevelCaps[]     = _("LEVEL CAPS option is disabled in HARD,\nHARDCORE, or becoming the CHAMPION.");
 static const u8 sText_Desc_Disabled_Hardmode[]      = _("BATTLE MODE setting locked. Defeat \nSTEVEN in METEOR FALLS to unlock.");
 static const u8 *const sOptionMenuItemDescriptionsDisabledBattle[MENUITEM_BATTLE_COUNT] =
 {
     [MENUITEM_MAIN_BATTLESTYLE]         = sText_Desc_Disabled_BattleStyle,
+    [MENUITEM_BATTLE_LEVELCAPS]         = sText_Desc_Disabled_LevelCaps,
     [MENUITEM_BATTLE_HARDMODE]          = sText_Desc_Disabled_Hardmode,
     [MENUITEM_BATTLE_CANCEL]            = sText_Empty,    
 };
@@ -1002,6 +1025,13 @@ void CB2_InitOptionPlusMenu(void)
             sOptions->sel_battle[MENUITEM_BATTLE_HARDMODE]      = 1;
         else
             sOptions->sel_battle[MENUITEM_BATTLE_HARDMODE]      = 0;
+
+        if(FlagGet(FLAG_IS_CHAMPION))
+            sOptions->sel_battle[MENUITEM_BATTLE_LEVELCAPS]     = OPTIONS_LEVEL_CAP_DISABLED;
+        else if(FlagGet(FLAG_HARD) || FlagGet(FLAG_NUZLOCKE))
+            sOptions->sel_battle[MENUITEM_BATTLE_LEVELCAPS]     = OPTIONS_LEVEL_CAP_ENABLED;
+        else
+            sOptions->sel_battle[MENUITEM_BATTLE_LEVELCAPS]     = !FlagGet(FLAG_ENABLE_LEVEL_CAPS);
         
         //Battle Speed
         sOptions->sel_batt_speed[MENUITEM_MAIN_BATTLESCENE]     = gSaveBlock2Ptr->optionsBattleSceneOff;
@@ -1305,6 +1335,7 @@ static void Task_OptionMenuSave(u8 taskId)
     //Battle
     *GetVarPointer(VAR_BATTLE_INTERFACE)                    = sOptions->sel_battle[MENUITEM_BATTLE_INTERFACE];
     gSaveBlock2Ptr->optionsBattleStyle                      = sOptions->sel_battle[MENUITEM_MAIN_BATTLESTYLE];
+    sOptions->sel_battle[MENUITEM_BATTLE_LEVELCAPS] == 0    ? FlagSet(FLAG_ENABLE_LEVEL_CAPS)         : FlagClear(FLAG_ENABLE_LEVEL_CAPS);          // Used the inverse to align with other similar options.
     sOptions->sel_battle[MENUITEM_BATTLE_TYPEEFFECT] == 0   ? FlagClear(FLAG_HIDE_TYPE_EFFECT_BATTLE) : FlagSet(FLAG_HIDE_TYPE_EFFECT_BATTLE);
     sOptions->sel_battle[MENUITEM_BATTLE_PICKUPTEXT] == 0   ? FlagSet(FLAG_ENABLE_PICKUP_TEXT)        : FlagClear(FLAG_ENABLE_PICKUP_TEXT);         // Used the inverse to align with other similar options.
 
@@ -1684,6 +1715,15 @@ static void DrawChoices_HardMode(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_BATTLE_HARDMODE);
     DrawOptionMenuChoiceStrings(selection, y, active, sHardModeStrings, 3);
+}
+
+static const u8 sText_LevelCaps_On[]   = _("ON");
+static const u8 sText_LevelCaps_Off[]  = _("OFF");
+static const u8 *const sLevelCapStrings[] = {sText_LevelCaps_On, sText_LevelCaps_Off};
+static void DrawChoices_BattleLevelCaps(int selection, int y)
+{
+    bool8 active = CheckConditions(MENUITEM_BATTLE_LEVELCAPS);
+    DrawOptionMenuChoiceStrings(selection, y, active, sLevelCapStrings, 2);
 }
 
 static const u8 sText_ItemAnimate_Normal[]   = _("NORMAL");
