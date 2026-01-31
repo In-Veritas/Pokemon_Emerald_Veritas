@@ -8,6 +8,12 @@
 #include "graphics.h"
 #include "constants/rgb.h"
 
+// RS intro player sprite graphics (defined in graphics.c via intro_scene.h)
+extern const u32 gIntroBrendanRS_Gfx[];
+extern const u32 gIntroMayRS_Gfx[];
+extern const u16 gIntroBrendanRS_Pal[];
+extern const u16 gIntroMayRS_Pal[];
+
 /*
     The graphics here are used by both the second scene of the intro
     and the credit sequence, where the player bikes along a grassy path.
