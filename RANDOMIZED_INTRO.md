@@ -16,11 +16,12 @@ This gives 12 different possible animations.
 
 ## How It Works
 
-1. **VBlank Counter**: The intro uses `gMain.vblankCounter1` for randomization, which increments every frame (60 times per second)
-2. **Style Selection**: `sIntroStyle = gMain.vblankCounter1 % 3` determines which legendary and background to use
-3. **Player Selection**: `(gMain.vblankCounter1 / 3) % 2` determines which player sprite variant appears
+1. **RTC-Based Randomness**: Uses `RtcGetMinuteCount()` to get a value that changes every minute
+2. **Separate from Game RNG**: The `GetIntroRtcRandom()` function is cloned from the BUGFIX `SeedRngWithRtc` but returns a value instead of seeding the game RNG
+3. **Style Selection**: `sIntroStyle = rtcRandom % 3` determines which legendary and background to use
+4. **Player Selection**: `(rtcRandom / 3) % 2` determines which player sprite variant appears
 
-This approach ensures visual variety without affecting the main game RNG, preserving RNG manipulation compatibility for speedrunners and challenge players.
+This approach ensures the intro animation changes every minute while preserving RNG manipulation compatibility for speedrunners and challenge players - the game's main RNG remains completely untouched.
 
 ## Technical Changes
 
