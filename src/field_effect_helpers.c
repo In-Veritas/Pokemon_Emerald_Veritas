@@ -347,8 +347,10 @@ u32 FldEff_Shadow(void)
         gSprites[spriteId].sLocalId = gFieldEffectArguments[0];
         gSprites[spriteId].sMapNum = gFieldEffectArguments[1];
         gSprites[spriteId].sMapGroup = gFieldEffectArguments[2];
-        // Copy palette from linked sprite to ensure shadow uses correct colors for RS/Emerald style
-        gSprites[spriteId].oam.paletteNum = linkedSprite->oam.paletteNum;
+        // Copy palette from linked sprite for player only (for RS/Emerald style support)
+        // Don't copy for followers as they use dynamic Pokemon palettes without shadow colors
+        if (objectEvent->localId == OBJ_EVENT_ID_PLAYER)
+            gSprites[spriteId].oam.paletteNum = linkedSprite->oam.paletteNum;
         #if LARGE_OW_SUPPORT
         gSprites[spriteId].sYOffset = gShadowVerticalOffsets[graphicsInfo->shadowSize];
         #else
@@ -371,8 +373,10 @@ void UpdateShadowFieldEffect(struct Sprite *sprite)
         struct ObjectEvent *objectEvent = &gObjectEvents[objectEventId];
         struct Sprite *linkedSprite = &gSprites[objectEvent->spriteId];
         sprite->oam.priority = linkedSprite->oam.priority;
-        // Copy palette from linked sprite to ensure shadow uses correct colors
-        sprite->oam.paletteNum = linkedSprite->oam.paletteNum;
+        // Copy palette from linked sprite for player only (for RS/Emerald style support)
+        // Don't copy for followers as they use dynamic Pokemon palettes without shadow colors
+        if (objectEvent->localId == OBJ_EVENT_ID_PLAYER)
+            sprite->oam.paletteNum = linkedSprite->oam.paletteNum;
         sprite->x = linkedSprite->x;
 
         #if LARGE_OW_SUPPORT
