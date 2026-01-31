@@ -371,13 +371,15 @@ void UpdateShadowFieldEffect(struct Sprite *sprite)
         struct ObjectEvent *objectEvent = &gObjectEvents[objectEventId];
         struct Sprite *linkedSprite = &gSprites[objectEvent->spriteId];
         sprite->oam.priority = linkedSprite->oam.priority;
+        // Copy palette from linked sprite to ensure shadow uses correct colors
+        sprite->oam.paletteNum = linkedSprite->oam.paletteNum;
         sprite->x = linkedSprite->x;
-        
+
         #if LARGE_OW_SUPPORT
         // Read 'live' size from linked sprite
         sprite->y = linkedSprite->y - linkedSprite->centerToCornerVecY - sprite->sYOffset;
         #else
-        sprite->y = linkedSprite->y + sprite->sYOffset;        
+        sprite->y = linkedSprite->y + sprite->sYOffset;
         #endif
         sprite->invisible = linkedSprite->invisible;
 
