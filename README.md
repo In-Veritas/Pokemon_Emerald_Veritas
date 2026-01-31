@@ -101,7 +101,7 @@ This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (
 * **Fast Surf Speed Reduction**: Reduced fast surfing speed by approximately 30%
   * Now uses 6-frame movement cycles instead of 4-frame cycles
   * Provides smoother surfing experience while still being faster than normal
-* **Pokérus Rate Increase**: Increased Pokérus encounter rate from ~1/21845 to **1/1024**
+* **Pokérus Rate Increase**: Increased Pokérus encounter rate from ~1/21845 to **1/2048**
   * Makes this beneficial mechanic more accessible to players
 
 ### New Options Menu Items

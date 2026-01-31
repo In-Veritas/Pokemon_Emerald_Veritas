@@ -6216,8 +6216,8 @@ u16 GetMonEVCount(struct Pokemon *mon)
 void RandomlyGivePartyPokerus(struct Pokemon *party)
 {
     u16 rnd = Random();
-    // Veritas: Increased Pokerus rate from ~1/21845 to 1/1024 (64/65536)
-    if (rnd < 64)
+    // Veritas: Increased Pokerus rate from ~1/21845 to 1/2048 (32/65536)
+    if (rnd < 32)
     {
         struct Pokemon *mon;
 
