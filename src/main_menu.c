@@ -447,7 +447,7 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
         .tilemapLeft = 3,
         .tilemapTop = 5,
         .width = 8,
-        .height = 6,
+        .height = 4,
         .paletteNum = 15,
         .baseBlock = 0x6D
     },
@@ -1717,6 +1717,11 @@ static void Task_NewGameBirchSpeech_ChooseLook(u8 taskId)
     }
     switch (choice)
     {
+        case MENU_B_PRESSED: // Go back to gender selection
+            NewGameBirchSpeech_ClearLookWindow(3, 1);
+            PlaySE(SE_SELECT);
+            gTasks[taskId].func = Task_NewGameBirchSpeech_BoyOrGirl;
+            break;
         case 0: // Emerald
             NewGameBirchSpeech_ClearLookWindow(3, 1);
             PlaySE(SE_SELECT);
@@ -2316,7 +2321,6 @@ static void AddBirchSpeechObjects(u8 taskId)
     u8 lotadSpriteId;
     u8 brendanSpriteId;
     u8 maySpriteId;
-    u8 style = gSaveBlock2Ptr->playerLookStyle; // 0 = Emerald, 1 = RS
 
     birchSpriteId = AddNewGameBirchObject(0x88, 0x3C, 1);
     gSprites[birchSpriteId].callback = SpriteCB_Null;
@@ -2328,12 +2332,13 @@ static void AddBirchSpeechObjects(u8 taskId)
     gSprites[lotadSpriteId].oam.priority = 0;
     gSprites[lotadSpriteId].invisible = TRUE;
     gTasks[taskId].tLotadSpriteId = lotadSpriteId;
-    brendanSpriteId = CreateTrainerSprite(FacilityClassToPicIndex(style ? FACILITY_CLASS_RS_BRENDAN : FACILITY_CLASS_BRENDAN), 120, 60, 0, &gDecompressionBuffer[0]);
+    // Always use Emerald style sprites for gender selection
+    brendanSpriteId = CreateTrainerSprite(FacilityClassToPicIndex(FACILITY_CLASS_BRENDAN), 120, 60, 0, &gDecompressionBuffer[0]);
     gSprites[brendanSpriteId].callback = SpriteCB_Null;
     gSprites[brendanSpriteId].invisible = TRUE;
     gSprites[brendanSpriteId].oam.priority = 0;
     gTasks[taskId].tBrendanSpriteId = brendanSpriteId;
-    maySpriteId = CreateTrainerSprite(FacilityClassToPicIndex(style ? FACILITY_CLASS_RS_MAY : FACILITY_CLASS_MAY), 120, 60, 0, &gDecompressionBuffer[TRAINER_PIC_SIZE]);
+    maySpriteId = CreateTrainerSprite(FacilityClassToPicIndex(FACILITY_CLASS_MAY), 120, 60, 0, &gDecompressionBuffer[TRAINER_PIC_SIZE]);
     gSprites[maySpriteId].callback = SpriteCB_Null;
     gSprites[maySpriteId].invisible = TRUE;
     gSprites[maySpriteId].oam.priority = 0;
