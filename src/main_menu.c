@@ -2273,6 +2273,36 @@ static void CB2_NewGameBirchSpeech_ReturnFromNamingScreen(void)
     gSprites[spriteId].y = 60;
     gSprites[spriteId].invisible = FALSE;
     gTasks[taskId].tPlayerSpriteId = spriteId;
+
+    // Apply the player's chosen look style (RS or Emerald)
+    if (gSaveBlock2Ptr->playerLookStyle != 0)
+    {
+        // Player chose RS style, need to replace the Emerald sprite
+        u8 gender = gSaveBlock2Ptr->playerGender;
+        u8 newClass;
+        u8 oldSpriteId = spriteId;
+        u8 newSpriteId;
+        s16 x = gSprites[oldSpriteId].x;
+        s16 y = gSprites[oldSpriteId].y;
+
+        if (gender == MALE)
+            newClass = FacilityClassToPicIndex(FACILITY_CLASS_RS_BRENDAN);
+        else
+            newClass = FacilityClassToPicIndex(FACILITY_CLASS_RS_MAY);
+
+        DestroySprite(&gSprites[oldSpriteId]);
+
+        newSpriteId = CreateTrainerSprite(newClass, x, y, 0, &gDecompressionBuffer[0]);
+        gSprites[newSpriteId].callback = SpriteCB_Null;
+        gSprites[newSpriteId].oam.priority = 0;
+        gSprites[newSpriteId].invisible = FALSE;
+        gTasks[taskId].tPlayerSpriteId = newSpriteId;
+        if (gender == MALE)
+            gTasks[taskId].tBrendanSpriteId = newSpriteId;
+        else
+            gTasks[taskId].tMaySpriteId = newSpriteId;
+    }
+
     SetGpuReg(REG_OFFSET_BG1HOFS, -60);
     BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
     SetGpuReg(REG_OFFSET_WIN0H, 0);
