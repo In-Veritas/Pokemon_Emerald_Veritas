@@ -55,22 +55,28 @@ Note: The initial implementation used a new SaveBlock2 field, but this was chang
 | `include/constants/flags.h` | Added `FLAG_PLAYER_STYLE_RS` (0x296) |
 | `include/constants/event_objects.h` | Added RS sprite object event IDs |
 | `src/field_player_avatar.c` | RS sprite selection for overworld states |
-| `src/main_menu.c` | New game style selection UI |
+| `src/main_menu.c` | New game style selection UI with proper window sizing |
 | `src/option_plus_menu.c` | Post-game style toggle option |
 | `src/pokemon.c` | Battle back sprite selection |
 | `src/trainer_card.c` | Trainer card portrait selection |
 | `src/region_map.c` | Region map player icon selection |
+| `src/new_game.c` | Preserve style flag through game initialization |
+| `src/field_effect_helpers.c` | Shadow palette fix for RS style |
+| `src/event_object_movement.c` | RS palette reflection tags |
+| `src/data/object_events/object_event_graphics_info.h` | RS sprite graphics info with correct animation tables |
+| `src/data/object_events/object_event_pic_tables.h` | RS sprite frame tables including running frames |
 
 #### Graphics Added
 
 ```
 graphics/object_events/pics/people/ruby_sapphire_brendan/
+├── walking.png
+├── running.png
 ├── acro_bike.png
 ├── decorating.png
 ├── field_move.png
 ├── fishing.png
 ├── mach_bike.png
-├── normal.png
 ├── surfing.png
 ├── underwater.png
 └── watering.png
@@ -79,8 +85,8 @@ graphics/object_events/pics/people/ruby_sapphire_may/
 └── (same structure as brendan)
 
 graphics/pokenav/region_map/
-├── brendan_icon_rs.png
-└── may_icon_rs.png
+├── brendan_rs_icon.png
+└── may_rs_icon.png
 ```
 
 #### Data Files Modified
@@ -88,15 +94,15 @@ graphics/pokenav/region_map/
 | File | Changes |
 |------|---------|
 | `src/data/object_events/object_event_graphics.h` | RS sprite graphics references |
-| `src/data/object_events/object_event_graphics_info.h` | RS sprite metadata |
+| `src/data/object_events/object_event_graphics_info.h` | RS sprite metadata with `sAnimTable_BrendanMayNormal` |
 | `src/data/object_events/object_event_graphics_info_pointers.h` | RS sprite pointers |
-| `src/data/object_events/object_event_pic_tables.h` | RS sprite animation tables |
+| `src/data/object_events/object_event_pic_tables.h` | RS sprite animation tables (walking + running) |
 | `spritesheet_rules.mk` | Build rules for RS sprites |
 
 ### Option Menu Integration
 
 The Player Style option:
-- Located in: Options+ Menu → World
+- Located in: Options+ Menu -> World
 - Available: Anytime (no unlock requirement)
 - Options: "EMERALD" / "CLASSIC"
 
@@ -104,15 +110,15 @@ The Player Style option:
 
 ```
 Gender Selection (Boy/Girl)
-        ↓
-Style Selection (Emerald/Classic)  ← NEW
-        ↓
-Nuzlocke Selection
-        ↓
+        |
+Style Selection (Emerald/Classic)  <- NEW
+        |
+Difficulty Selection (Normal/Hard/Hardcore)
+        |
 National Dex Selection
-        ↓
+        |
 Name Entry
-        ↓
+        |
 Game Start
 ```
 
@@ -122,6 +128,14 @@ The style selection screen:
 - Press B to go back to gender selection
 - Press A to confirm and continue
 
-## Credits
+## Key Technical Details
 
-Feature ported from Pokemon Emerald Veritas by AxolotlOfTruth (Gabriel)
+### Animation Tables
+RS sprites use `sAnimTable_BrendanMayNormal` instead of `sAnimTable_Standard` to properly support both walking (frames 0-8) and running (frames 9-17) animations.
+
+### Shadow Fix
+The shadow field effect copies the palette from the linked player sprite to ensure correct shadow colors regardless of which style is active.
+
+### Flag Preservation
+`FLAG_PLAYER_STYLE_RS` is preserved through `NewGameInitData()` alongside other new game flags (nuzlocke, hard mode, national dex mode).
+

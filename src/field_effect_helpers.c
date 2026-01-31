@@ -339,11 +339,16 @@ u32 FldEff_Shadow(void)
 
     if (spriteId != MAX_SPRITES)
     {
+        struct ObjectEvent *objectEvent = &gObjectEvents[objectEventId];
+        struct Sprite *linkedSprite = &gSprites[objectEvent->spriteId];
+
         gSprites[spriteId].oam.objMode = 1; // BLEND
         gSprites[spriteId].coordOffsetEnabled = TRUE;
         gSprites[spriteId].sLocalId = gFieldEffectArguments[0];
         gSprites[spriteId].sMapNum = gFieldEffectArguments[1];
         gSprites[spriteId].sMapGroup = gFieldEffectArguments[2];
+        // Copy palette from linked sprite to ensure shadow uses correct colors for RS/Emerald style
+        gSprites[spriteId].oam.paletteNum = linkedSprite->oam.paletteNum;
         #if LARGE_OW_SUPPORT
         gSprites[spriteId].sYOffset = gShadowVerticalOffsets[graphicsInfo->shadowSize];
         #else

@@ -447,7 +447,7 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
         .tilemapLeft = 3,
         .tilemapTop = 5,
         .width = 8,
-        .height = 4,
+        .height = 6,
         .paletteNum = 15,
         .baseBlock = 0x6D
     },
@@ -456,6 +456,16 @@ static const struct WindowTemplate sNewGameBirchSpeechTextWindows[] =
         .tilemapLeft = 3,
         .tilemapTop = 5,
         .width = 10,
+        .height = 4,
+        .paletteNum = 15,
+        .baseBlock = 0x6D
+    },
+    // Window 5: Look menu (same width as difficulty, height for 2 options)
+    {
+        .bg = 0,
+        .tilemapLeft = 3,
+        .tilemapTop = 5,
+        .width = 8,
         .height = 4,
         .paletteNum = 15,
         .baseBlock = 0x6D
@@ -1718,19 +1728,19 @@ static void Task_NewGameBirchSpeech_ChooseLook(u8 taskId)
     switch (choice)
     {
         case MENU_B_PRESSED: // Go back to gender selection
-            NewGameBirchSpeech_ClearLookWindow(3, 1);
+            NewGameBirchSpeech_ClearLookWindow(5, 1);
             PlaySE(SE_SELECT);
             gTasks[taskId].func = Task_NewGameBirchSpeech_BoyOrGirl;
             break;
         case 0: // Emerald
-            NewGameBirchSpeech_ClearLookWindow(3, 1);
+            NewGameBirchSpeech_ClearLookWindow(5, 1);
             PlaySE(SE_SELECT);
             FlagClear(FLAG_PLAYER_STYLE_RS);
             NewGameBirchSpeech_ApplyLookStyleToPlayerSprite(taskId);
             gTasks[taskId].func = Task_NewGameBirchSpeech_Nuzlocke;
             break;
         case 1: // Ruby/Sapphire
-            NewGameBirchSpeech_ClearLookWindow(3, 1);
+            NewGameBirchSpeech_ClearLookWindow(5, 1);
             PlaySE(SE_SELECT);
             FlagSet(FLAG_PLAYER_STYLE_RS);
             NewGameBirchSpeech_ApplyLookStyleToPlayerSprite(taskId);
@@ -2582,13 +2592,13 @@ static void NewGameBirchSpeech_ShowNuzlockeMenu(void)
 
 static void NewGameBirchSpeech_ShowLookMenu(void)
 {
-    // Reuse window 3 for placement similar to Nuzlocke menu
-    DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[3], 0xF3);
-    FillWindowPixelBuffer(3, PIXEL_FILL(1));
-    PrintMenuTable(3, ARRAY_COUNT(sMenuActions_Look), sMenuActions_Look);
-    InitMenuInUpperLeftCornerNormal(3, ARRAY_COUNT(sMenuActions_Look), 0);
-    PutWindowTilemap(3);
-    CopyWindowToVram(3, COPYWIN_FULL);
+    // Use window 5 (same width as difficulty menu, height for 2 options)
+    DrawMainMenuWindowBorder(&sNewGameBirchSpeechTextWindows[5], 0xF3);
+    FillWindowPixelBuffer(5, PIXEL_FILL(1));
+    PrintMenuTable(5, ARRAY_COUNT(sMenuActions_Look), sMenuActions_Look);
+    InitMenuInUpperLeftCornerNormal(5, ARRAY_COUNT(sMenuActions_Look), 0);
+    PutWindowTilemap(5);
+    CopyWindowToVram(5, COPYWIN_FULL);
 
     // No separate preview sprites; swap the existing player sprite on selection.
     sLookPreviewEmeraldSpriteId = 0xFF;
