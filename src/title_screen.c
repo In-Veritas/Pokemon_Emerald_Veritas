@@ -23,6 +23,7 @@
 #include "random.h"
 #include "save.h"
 #include "constants/rgb.h"
+#include "constants/flags.h"
 #include "constants/songs.h"
 
 enum {
@@ -631,13 +632,32 @@ void CB2_InitTitleScreen(void)
         DmaFill16(3, 0, (void *)(PLTT + 2), PLTT_SIZE - 2);
         ResetPaletteFade();
         // Pick which legendary/title variant to display this time.
-        // Only randomize if a valid/usable save exists; otherwise force Rayquaza.
-        // Treat OK/UPDATED/ERROR as "has save" (matches main menu handling).
+        // Selection depends on story progression:
+        // - No save or no legendaries awakened: Rayquaza only
+        // - Groudon awakened (Magma Hideout): Random between Rayquaza and Groudon
+        // - Kyogre escaped (Seafloor Cavern): Random between all three
         if (gSaveFileStatus == SAVE_STATUS_OK
          || gSaveFileStatus == SAVE_STATUS_UPDATED
          || gSaveFileStatus == SAVE_STATUS_ERROR)
         {
-            sTitleLegendary = Random() % 3; // 0=Rayquaza, 1=Kyogre, 2=Groudon
+            bool8 groudonAwakened = FlagGet(FLAG_GROUDON_AWAKENED_MAGMA_HIDEOUT);
+            bool8 kyogreEscaped = FlagGet(FLAG_KYOGRE_ESCAPED_SEAFLOOR_CAVERN);
+
+            if (kyogreEscaped)
+            {
+                // All three legendaries available
+                sTitleLegendary = Random() % 3; // 0=Rayquaza, 1=Kyogre, 2=Groudon
+            }
+            else if (groudonAwakened)
+            {
+                // Only Rayquaza and Groudon available
+                sTitleLegendary = (Random() % 2) ? 2 : 0; // 0=Rayquaza, 2=Groudon
+            }
+            else
+            {
+                // No legendaries awakened yet
+                sTitleLegendary = 0; // Rayquaza only
+            }
         }
         else
         {
