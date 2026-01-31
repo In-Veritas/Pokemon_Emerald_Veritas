@@ -39,5 +39,3 @@ This approach ensures the intro animation changes every minute while preserving 
   - Background and cloud assets for ocean scenery
 
 ---
-
-Feature ported from Pokémon Emerald Veritas by In-Veritas.
