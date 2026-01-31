@@ -1,0 +1,108 @@
+TrainerHill_Roof_MapScripts::
+	map_script MAP_SCRIPT_ON_RESUME, TrainerHill_OnResume
+	map_script MAP_SCRIPT_ON_FRAME_TABLE, TrainerHill_OnFrame
+	.byte 0
+
+TrainerHill_Roof_EventScript_Owner::
+	trainerhill_settrainerflags
+	lock
+	faceplayer
+	trainerhill_getownerstate
+	switch VAR_RESULT
+	case 0, TrainerHill_Roof_EventScript_Arrived
+	case 1, TrainerHill_Roof_EventScript_GivePrize
+	case 2, TrainerHill_Roof_EventScript_AlreadyReceivedPrize
+TrainerHill_Roof_EventScript_Arrived::
+	msgbox TrainerHill_Roof_Text_YouFinallyCameBravo, MSGBOX_DEFAULT
+TrainerHill_Roof_EventScript_GivePrize::
+	goto_if_set FLAG_GOT_TRAINER_HILL_SNORLAX, TrainerHill_Roof_EventScript_DoneSnorlax
+	call_if_set FLAG_TRAINER_HILL_SNORLAX_READY, TrainerHill_Roof_EventScript_GiveSnorlax
+TrainerHill_Roof_EventScript_DoneSnorlax::
+	trainerhill_giveprize
+	switch VAR_RESULT
+	case 0, TrainerHill_Roof_EventScript_ReceivePrize
+	case 1, TrainerHill_Roof_EventScript_NoRoomForPrize
+	case 2, TrainerHill_Roof_EventScript_CheckFinalTime
+TrainerHill_Roof_EventScript_ReceivePrize::
+	msgbox TrainerHill_Roof_Text_HaveTheMostMarvelousGift, MSGBOX_DEFAULT
+	playfanfare MUS_LEVEL_UP
+	message gText_ObtainedTheItem
+	waitfanfare
+	waitmessage
+	goto TrainerHill_Roof_EventScript_CheckFinalTime
+
+TrainerHill_Roof_EventScript_NoRoomForPrize::
+	msgbox TrainerHill_Roof_Text_HaveTheMostMarvelousGift, MSGBOX_DEFAULT
+	msgbox gText_TheBagIsFull, MSGBOX_DEFAULT
+	msgbox TrainerHill_Roof_Text_FullUpBeBackLaterForThis, MSGBOX_DEFAULT
+	goto TrainerHill_Roof_EventScript_CheckFinalTime
+
+TrainerHill_Roof_EventScript_CheckFinalTime::
+	trainerhill_finaltime
+	switch VAR_RESULT
+	case 0, TrainerHill_Roof_EventScript_NewRecord
+	case 1, TrainerHill_Roof_EventScript_NoNewRecord
+	case 2, TrainerHill_Roof_EventScript_EndSpeakToOwner
+TrainerHill_Roof_EventScript_NewRecord::
+	msgbox TrainerHill_Roof_Text_GotHereMarvelouslyQuickly, MSGBOX_DEFAULT
+	goto TrainerHill_Roof_EventScript_EndSpeakToOwner
+	end
+
+TrainerHill_Roof_EventScript_NoNewRecord::
+	msgbox TrainerHill_Roof_Text_YouWerentVeryQuick, MSGBOX_DEFAULT
+	goto TrainerHill_Roof_EventScript_EndSpeakToOwner
+	end
+
+TrainerHill_Roof_EventScript_EndSpeakToOwner::
+	msgbox TrainerHill_Roof_Text_ArriveZippierNextTime, MSGBOX_DEFAULT
+	release
+	end
+
+TrainerHill_Roof_EventScript_AlreadyReceivedPrize::
+	msgbox TrainerHill_Roof_Text_ArriveZippierNextTime, MSGBOX_DEFAULT
+	release
+	end
+
+TrainerHill_Roof_EventScript_GiveSnorlax::
+	msgbox TrainerHill_Roof_Text_SnorlaxReward, MSGBOX_DEFAULT
+	waitmessage
+	setvar VAR_TEMP_TRANSFERRED_SPECIES, SPECIES_SNORLAX
+	givemon SPECIES_SNORLAX, 25
+	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PARTY, TrainerHill_Roof_EventScript_ReceiveSnorlaxParty
+	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PC, TrainerHill_Roof_EventScript_ReceiveSnorlaxPC
+	msgbox gText_NoMoreRoomForPokemon, MSGBOX_DEFAULT
+	return
+
+TrainerHill_Roof_EventScript_ReceiveSnorlaxParty::
+	call TrainerHill_Roof_EventScript_ReceivedSnorlaxFanfare
+	msgbox gText_NicknameThisPokemon, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, TrainerHill_Roof_EventScript_Return
+	call Common_EventScript_GetGiftMonPartySlot
+	call Common_EventScript_NameReceivedPartyMon
+	goto TrainerHill_Roof_EventScript_Return
+	end
+
+TrainerHill_Roof_EventScript_ReceiveSnorlaxPC::
+	call TrainerHill_Roof_EventScript_ReceivedSnorlaxFanfare
+	msgbox gText_NicknameThisPokemon, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, TrainerHill_Roof_EventScript_SendSnorlaxToPC
+	call Common_EventScript_NameReceivedBoxMon
+	goto TrainerHill_Roof_EventScript_SendSnorlaxToPC
+	end
+
+TrainerHill_Roof_EventScript_SendSnorlaxToPC::
+	call Common_EventScript_TransferredToPC
+	goto TrainerHill_Roof_EventScript_Return
+	end
+
+TrainerHill_Roof_EventScript_ReceivedSnorlaxFanfare::
+	playfanfare MUS_OBTAIN_ITEM
+	message TrainerHill_Roof_Text_PlayerReceivedSnorlax
+	waitmessage
+	waitfanfare
+	bufferspeciesname STR_VAR_1, SPECIES_SNORLAX
+	return
+
+TrainerHill_Roof_EventScript_Return::
+	setflag FLAG_GOT_TRAINER_HILL_SNORLAX
+	return

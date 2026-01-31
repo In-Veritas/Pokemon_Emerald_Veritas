@@ -1,0 +1,12 @@
+Underwater_Route128_MapScripts::
+	map_script MAP_SCRIPT_ON_RESUME, Underwater_Route128_OnResume
+	.byte 0
+
+Underwater_Route128_OnResume:
+	call Underwater_Route128_CheckPurityReading
+	end
+
+Underwater_Route128_CheckPurityReading::
+	goto_if_unset FLAG_STARTED_FIRST_PURITY_READING, Common_EventScript_NopReturn
+	setflag FLAG_GOT_FIRST_PURITY_READING
+	return
