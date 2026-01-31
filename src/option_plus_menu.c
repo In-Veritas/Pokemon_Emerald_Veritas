@@ -17,6 +17,7 @@
 #include "strings.h"
 #include "gba/m4a_internal.h"
 #include "constants/rgb.h"
+#include "constants/flags.h"
 #include "event_data.h"
 #include "overworld.h"
 
@@ -921,7 +922,7 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel_world[MENUITEM_WORLD_BIKEMUSIC]           = FlagGet(FLAG_DISABLE_BIKEMUSIC);
         sOptions->sel_world[MENUITEM_WORLD_MONOVERWORLD]        = !FlagGet(FLAG_ENABLE_FOLLOWER);
         sOptions->sel_world[MENUITEM_WORLD_OVERWORLDSPEED]      = VarGet(VAR_OVERWORLD_SPEEDUP);
-        sOptions->sel_world[MENUITEM_WORLD_PLAYERSTYLE]         = gSaveBlock2Ptr->playerLookStyle;
+        sOptions->sel_world[MENUITEM_WORLD_PLAYERSTYLE]         = FlagGet(FLAG_PLAYER_STYLE_RS);
 
         //Surf
         sOptions->sel_surf[MENUITEM_SURF_FASTSURF]            = !FlagGet(FLAG_ENABLE_FASTSURF);           // Used the inverse to align with ON/OFF Buttons
@@ -1212,7 +1213,7 @@ static void Task_OptionMenuSave(u8 taskId)
     sOptions->sel_world[MENUITEM_WORLD_BIKEMUSIC]           == 0 ? FlagClear(FLAG_DISABLE_BIKEMUSIC)    : FlagSet(FLAG_DISABLE_BIKEMUSIC);
     sOptions->sel_world[MENUITEM_WORLD_MONOVERWORLD]        == 0 ? FlagSet(FLAG_ENABLE_FOLLOWER)        : FlagClear(FLAG_ENABLE_FOLLOWER);          // Used the inverse to align with other similar options.
     *GetVarPointer(VAR_OVERWORLD_SPEEDUP)                   = sOptions->sel_world[MENUITEM_WORLD_OVERWORLDSPEED];
-    gSaveBlock2Ptr->playerLookStyle                         = sOptions->sel_world[MENUITEM_WORLD_PLAYERSTYLE];
+    sOptions->sel_world[MENUITEM_WORLD_PLAYERSTYLE]         == 0 ? FlagClear(FLAG_PLAYER_STYLE_RS)      : FlagSet(FLAG_PLAYER_STYLE_RS);
 
     //Surf
     sOptions->sel_surf[MENUITEM_SURF_FASTSURF]              == 0 ? FlagSet(FLAG_ENABLE_FASTSURF)        : FlagClear(FLAG_ENABLE_FASTSURF);          // Used the inverse to align with other similar options.

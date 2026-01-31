@@ -27,6 +27,7 @@
 #include "constants/map_types.h"
 #include "constants/rgb.h"
 #include "constants/weather.h"
+#include "constants/flags.h"
 
 /*
  *  This file handles region maps generally, and the map used when selecting a fly destination.
@@ -1472,7 +1473,7 @@ void CreateRegionMapPlayerIcon(u16 tileTag, u16 paletteTag)
     struct SpriteSheet sheet = {sRegionMapPlayerIcon_BrendanGfx, 0x80, tileTag};
     struct SpritePalette palette = {sRegionMapPlayerIcon_BrendanPal, paletteTag};
     struct SpriteTemplate template = {tileTag, paletteTag, &sRegionMapPlayerIconOam, sRegionMapPlayerIconAnimTable, NULL, gDummySpriteAffineAnimTable, SpriteCallbackDummy};
-    bool8 useRsStyle = (gSaveBlock2Ptr != NULL && gSaveBlock2Ptr->playerLookStyle != 0);
+    bool8 useRsStyle = FlagGet(FLAG_PLAYER_STYLE_RS);
 
     if (IsEventIslandMapSecId(gMapHeader.regionMapSectionId))
     {

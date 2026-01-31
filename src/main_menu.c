@@ -1725,14 +1725,14 @@ static void Task_NewGameBirchSpeech_ChooseLook(u8 taskId)
         case 0: // Emerald
             NewGameBirchSpeech_ClearLookWindow(3, 1);
             PlaySE(SE_SELECT);
-            gSaveBlock2Ptr->playerLookStyle = 0;
+            FlagClear(FLAG_PLAYER_STYLE_RS);
             NewGameBirchSpeech_ApplyLookStyleToPlayerSprite(taskId);
             gTasks[taskId].func = Task_NewGameBirchSpeech_Nuzlocke;
             break;
         case 1: // Ruby/Sapphire
             NewGameBirchSpeech_ClearLookWindow(3, 1);
             PlaySE(SE_SELECT);
-            gSaveBlock2Ptr->playerLookStyle = 1;
+            FlagSet(FLAG_PLAYER_STYLE_RS);
             NewGameBirchSpeech_ApplyLookStyleToPlayerSprite(taskId);
             gTasks[taskId].func = Task_NewGameBirchSpeech_Nuzlocke;
             break;
@@ -1798,7 +1798,7 @@ static void Task_NewGameBirchSpeech_SlideInNewStyleSprite(u8 taskId)
 static void NewGameBirchSpeech_ApplyLookStyleToPlayerSprite(u8 taskId)
 {
     u8 gender = gSaveBlock2Ptr->playerGender;
-    u8 style = gSaveBlock2Ptr->playerLookStyle; // 0 = Emerald, 1 = RS
+    bool8 useRsStyle = FlagGet(FLAG_PLAYER_STYLE_RS); // 0 = Emerald, 1 = RS
     u8 newClass;
     u8 oldSpriteId = gTasks[taskId].tPlayerSpriteId;
     s16 x = gSprites[oldSpriteId].x;
@@ -1806,9 +1806,9 @@ static void NewGameBirchSpeech_ApplyLookStyleToPlayerSprite(u8 taskId)
     u8 objMode = gSprites[oldSpriteId].oam.objMode;
 
     if (gender == MALE)
-        newClass = FacilityClassToPicIndex(style ? FACILITY_CLASS_RS_BRENDAN : FACILITY_CLASS_BRENDAN);
+        newClass = FacilityClassToPicIndex(useRsStyle ? FACILITY_CLASS_RS_BRENDAN : FACILITY_CLASS_BRENDAN);
     else
-        newClass = FacilityClassToPicIndex(style ? FACILITY_CLASS_RS_MAY : FACILITY_CLASS_MAY);
+        newClass = FacilityClassToPicIndex(useRsStyle ? FACILITY_CLASS_RS_MAY : FACILITY_CLASS_MAY);
 
     // Replace the current player sprite with the selected look
     DestroySprite(&gSprites[oldSpriteId]);
@@ -2275,7 +2275,7 @@ static void CB2_NewGameBirchSpeech_ReturnFromNamingScreen(void)
     gTasks[taskId].tPlayerSpriteId = spriteId;
 
     // Apply the player's chosen look style (RS or Emerald)
-    if (gSaveBlock2Ptr->playerLookStyle != 0)
+    if (FlagGet(FLAG_PLAYER_STYLE_RS))
     {
         // Player chose RS style, need to replace the Emerald sprite
         u8 gender = gSaveBlock2Ptr->playerGender;

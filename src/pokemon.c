@@ -47,6 +47,7 @@
 #include "constants/songs.h"
 #include "constants/trainers.h"
 #include "constants/union_room.h"
+#include "constants/flags.h"
 #include "daycare.h"
 
 #define DAY_EVO_HOUR_BEGIN       12
@@ -6688,7 +6689,7 @@ u16 GetPlayerPreferredBackPicId(void)
 {
     // Returns the player's trainer back pic id based on selected look style.
     // 0 = Emerald (BRENDAN/MAY), 1 = RS (RUBY_SAPPHIRE_BRENDAN/MAY)
-    if (gSaveBlock2Ptr != NULL && gSaveBlock2Ptr->playerLookStyle != 0)
+    if (FlagGet(FLAG_PLAYER_STYLE_RS))
         return gSaveBlock2Ptr->playerGender + TRAINER_BACK_PIC_RUBY_SAPPHIRE_BRENDAN;
     else
         return gSaveBlock2Ptr->playerGender + TRAINER_BACK_PIC_BRENDAN;

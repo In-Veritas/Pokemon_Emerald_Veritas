@@ -29,6 +29,7 @@
 #include "constants/moves.h"
 #include "constants/songs.h"
 #include "constants/trainer_types.h"
+#include "constants/flags.h"
 
 #define NUM_FORCED_MOVEMENTS 18
 #define NUM_ACRO_BIKE_COLLISIONS 5
@@ -1293,7 +1294,7 @@ u16 GetRivalAvatarGraphicsIdByStateIdAndGender(u8 state, u8 gender)
 u16 GetPlayerAvatarGraphicsIdByStateIdAndGender(u8 state, u8 gender)
 {
     // If the player selected RS look, use RS-style gfx for each state.
-    if (gSaveBlock2Ptr != NULL && gSaveBlock2Ptr->playerLookStyle != 0)
+    if (FlagGet(FLAG_PLAYER_STYLE_RS))
         return sRSPlayerAvatarGfxIds[state][gender];
     return sPlayerAvatarGfxIds[state][gender];
 }
@@ -1401,7 +1402,7 @@ void SetPlayerAvatarStateMask(u8 flags)
 
 static const struct PlayerGraphicsIdToStateFlag *GetPlayerGfxToStateFlagTable(u8 gender, u8 *count, bool8 *usingRSStyle)
 {
-    bool8 useRSStyle = (gSaveBlock2Ptr != NULL && gSaveBlock2Ptr->playerLookStyle != 0);
+    bool8 useRSStyle = FlagGet(FLAG_PLAYER_STYLE_RS);
 
     if (usingRSStyle != NULL)
         *usingRSStyle = useRSStyle;
