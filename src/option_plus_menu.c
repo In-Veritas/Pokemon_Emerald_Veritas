@@ -449,7 +449,7 @@ static bool8 CheckConditions(int selection)
         case MENUITEM_WORLD_IMPROVEDFISHING: return TRUE;
         case MENUITEM_WORLD_BIKEMUSIC:       return TRUE;
         case MENUITEM_WORLD_MONOVERWORLD:    return TRUE;
-        case MENUITEM_WORLD_PLAYERSTYLE:     return FlagGet(FLAG_SYS_GAME_CLEAR);
+        case MENUITEM_WORLD_PLAYERSTYLE:     return TRUE;
         case MENUITEM_WORLD_CANCEL:          return TRUE;
         case MENUITEM_WORLD_COUNT:           return TRUE;
         }
