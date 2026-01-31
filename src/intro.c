@@ -1203,15 +1203,16 @@ static void Task_Scene1_Load(u8 taskId)
     SetVBlankCallback(NULL);
 
     sIntroCharacterGender = gSaveBlock2Ptr->playerGender; // Loads the gender in the save file to show in into. If no save file, defaults to male
-    // Randomly select intro style: 0 = Emerald (Flygon), 1 = Ruby (Latios), 2 = Sapphire (Latias)
-    sIntroStyle = Random() % 3;
+    // Randomly select intro style using vblankCounter (doesn't affect main RNG for manipulation)
+    // 0 = Emerald (Flygon), 1 = Ruby (Latios), 2 = Sapphire (Latias)
+    sIntroStyle = gMain.vblankCounter1 % 3;
     // Randomly select player sprite style
     // For Flygon intro: use Emerald sprites only (0-1) to avoid VRAM issues with multiple sprites
     // For Lati intros: use RS sprites only (2-3) for looking back animation
     if (sIntroStyle == 0)
-        sPlayerSpriteStyle = Random() % 2;  // 50% Emerald Brendan, 50% Emerald May
+        sPlayerSpriteStyle = (gMain.vblankCounter1 / 3) % 2;  // 50% Emerald Brendan, 50% Emerald May
     else
-        sPlayerSpriteStyle = 2 + (Random() % 2);  // 50% RS Brendan, 50% RS May
+        sPlayerSpriteStyle = 2 + ((gMain.vblankCounter1 / 3) % 2);  // 50% RS Brendan, 50% RS May
     IntroResetGpuRegs();
     SetGpuReg(REG_OFFSET_BG3VOFS, 0);
     SetGpuReg(REG_OFFSET_BG2VOFS, 80);
