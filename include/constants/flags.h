@@ -701,7 +701,7 @@
 #define FLAG_DEFEATED_SHINY_RAYQUAZA                               0x296 // Flag for Shiny Rayquaza Defeated
 #define FLAG_CAUGHT_SHINY_RAYQUAZA                                 0x297 // Flag for Shiny Rayquaza Caught
 #define FLAG_ENABLE_EXP_ALL_UPGRADED_CALL                          0x298 // Flag to enable message to tell players of upgraded EXP. All
-#define FLAG_UNUSED_0x299                                          0x299 // Unused Flag
+#define FLAG_PLAYER_STYLE_RS                                       0x299 // Player uses Ruby/Sapphire style sprites (0 = Emerald, 1 = RS/Classic)
 #define FLAG_UNUSED_0x29A                                          0x29A // Unused Flag
 #define FLAG_UNUSED_0x29B                                          0x29B // Unused Flag
 #define FLAG_UNUSED_0x29C                                          0x29C // Unused Flag
