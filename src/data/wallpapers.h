@@ -509,7 +509,7 @@ static const struct SpecialWallpaperConfig sSpecialWallpapers[WALLPAPER_SPECIAL_
     // Other: Block, Pokecenter, Circles
     [WALLPAPER_SPECIAL_BLOCK - WALLPAPER_SPECIAL_START]       = {4,  3,  RGB(21, 17, 14), RGB(12, 0, 0)},   // #ae8976, #610000
     [WALLPAPER_SPECIAL_POKECENTER - WALLPAPER_SPECIAL_START]  = {6,  9,  RGB(29, 29, 29), RGB(29, 12, 14)}, // #ede9ee, #ed6576
-    [WALLPAPER_SPECIAL_CIRCLES - WALLPAPER_SPECIAL_START]     = {9,  14, RGB(7, 4, 10),   RGB(21, 17, 23)}, // #3f2253, #ad8dbd
+    [WALLPAPER_SPECIAL_CIRCLES - WALLPAPER_SPECIAL_START]     = {9,  24, RGB(28, 26, 20), RGB(11, 8, 6)},   // #e0d0a0, #584030
     // Secret
     [WALLPAPER_SPECIAL_EXCLSIOR - WALLPAPER_SPECIAL_START]   = {6,  25, RGB(6, 12, 24),  RGB(29, 12, 14)}, // #3060c0, #ed6374
     [WALLPAPER_SPECIAL_VERITAS - WALLPAPER_SPECIAL_START]     = {6,  0,  RGB(2, 7, 17),   RGB(0, 1, 8)},    // #163e8f, #000840
