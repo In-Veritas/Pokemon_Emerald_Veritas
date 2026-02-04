@@ -18,6 +18,7 @@ This pull request adds 29 new custom PC Box wallpapers organized into 7 themed c
 | **Other** | Block, Pokecenter, Circles | Always available |
 | **Secret** | Exclsior, Veritas | Defeat Pokemon Trainer Exclsior |
 
+![New wallpapers](wallpapers.png)
 ### Menu Structure
 
 - Access via: PC Box > Wallpaper > **Special**
