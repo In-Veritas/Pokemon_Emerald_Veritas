@@ -293,6 +293,13 @@
 #define EVO_LEVEL_NINJASK    13 // Pokémon reaches the specified level (special value for Ninjask)
 #define EVO_LEVEL_SHEDINJA   14 // Pokémon reaches the specified level (special value for Shedinja)
 #define EVO_BEAUTY           15 // Pokémon levels up with beauty ≥ specified value
+#define EVO_ITEM_LEVEL       16 // specified item is used on Pokémon at or above specified level
+
+// Macro to encode item and level for EVO_ITEM_LEVEL: param = EVO_ITEM_LEVEL_PARAM(item, level)
+// Item is stored in low 10 bits (0-1023), level in high 6 bits (0-63, but we only need up to 100)
+#define EVO_ITEM_LEVEL_PARAM(item, level) (((level) << 10) | (item))
+#define EVO_ITEM_LEVEL_GET_ITEM(param)    ((param) & 0x3FF)
+#define EVO_ITEM_LEVEL_GET_LEVEL(param)   ((param) >> 10)
 
 #define EVOS_PER_MON 5
 

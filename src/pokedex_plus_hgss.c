@@ -6769,6 +6769,12 @@ static u8 PrintEvolutionTargetSpeciesAndMethod(u8 taskId, u16 species, u8 depth,
             CopyItemName(item, gStringVar2);
             StringExpandPlaceholders(gStringVar4, gText_EVO_ITEM );
             break;
+        case EVO_ITEM_LEVEL:
+            item = EVO_ITEM_LEVEL_GET_ITEM(gEvolutionTable[species][i].param);
+            CopyItemName(item, gStringVar2);
+            ConvertIntToDecimalStringN(gStringVar3, EVO_ITEM_LEVEL_GET_LEVEL(gEvolutionTable[species][i].param), STR_CONV_MODE_LEADING_ZEROS, EVO_SCREEN_LVL_DIGITS);
+            StringExpandPlaceholders(gStringVar4, gText_EVO_ITEM_LEVEL );
+            break;
         case EVO_LEVEL_ATK_GT_DEF:
             ConvertIntToDecimalStringN(gStringVar2, gEvolutionTable[species][i].param, STR_CONV_MODE_LEADING_ZEROS, EVO_SCREEN_LVL_DIGITS); //level
             StringExpandPlaceholders(gStringVar4, gText_EVO_LEVEL_ATK_GT_DEF );

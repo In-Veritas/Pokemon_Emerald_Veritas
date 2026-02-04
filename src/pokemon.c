@@ -5767,10 +5767,19 @@ u16 GetEvolutionTargetSpecies(struct Pokemon *mon, u8 mode, u16 evolutionItem)
         break;
     case EVO_MODE_ITEM_USE:
     case EVO_MODE_ITEM_CHECK:
+        level = GetMonData(mon, MON_DATA_LEVEL, 0);
         for (i = 0; i < EVOS_PER_MON; i++)
         {
             if (gEvolutionTable[species][i].method == EVO_ITEM
              && gEvolutionTable[species][i].param == evolutionItem)
+            {
+                targetSpecies = gEvolutionTable[species][i].targetSpecies;
+                break;
+            }
+            // EVO_ITEM_LEVEL: Item evolution with minimum level requirement
+            if (gEvolutionTable[species][i].method == EVO_ITEM_LEVEL
+             && EVO_ITEM_LEVEL_GET_ITEM(gEvolutionTable[species][i].param) == evolutionItem
+             && level >= EVO_ITEM_LEVEL_GET_LEVEL(gEvolutionTable[species][i].param))
             {
                 targetSpecies = gEvolutionTable[species][i].targetSpecies;
                 break;

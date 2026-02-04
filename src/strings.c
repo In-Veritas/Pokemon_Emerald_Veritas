@@ -2059,6 +2059,7 @@ const u8 gText_EVO_LEVEL[]                          = _("LvlUp to {STR_VAR_2}");
 const u8 gText_EVO_TRADE[]                          = _("Trading");
 const u8 gText_EVO_TRADE_ITEM[]                     = _("Trading, holding {STR_VAR_2}");
 const u8 gText_EVO_ITEM[]                           = _("{STR_VAR_2} is used");
+const u8 gText_EVO_ITEM_LEVEL[]                     = _("{STR_VAR_2} at Lv{STR_VAR_3}+");
 const u8 gText_EVO_LEVEL_ATK_GT_DEF[]               = _("LvlUp to {STR_VAR_2}, Atk > Def");
 const u8 gText_EVO_LEVEL_ATK_EQ_DEF[]               = _("LvlUp to {STR_VAR_2}, Atk = Def");
 const u8 gText_EVO_LEVEL_ATK_LT_DEF[]               = _("LvlUp to {STR_VAR_2}, Atk < Def");

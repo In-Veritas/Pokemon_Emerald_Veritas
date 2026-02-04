@@ -79,6 +79,32 @@ This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (
 * Access special wallpapers via PC Box > Wallpaper > Special menu
 * For developers: See `docs/CUSTOM_WALLPAPERS.md` for adding new wallpapers
 
+![Custom Wallpapers](wallpapers.png)
+
+#### Trade Evolution Changes
+
+Trade evolutions have been restored while keeping alternative evolution methods for solo players:
+
+**Pure Trade Evolutions** (Trade OR Level 70):
+* Kadabra → Alakazam
+* Machoke → Machamp
+* Graveler → Golem
+* Haunter → Gengar
+
+**Trade-Item Evolutions** (Trade with Item OR Use Item at Level):
+| Pokémon | Evolution | Trade Item | Item Use Level |
+|---------|-----------|------------|----------------|
+| Poliwhirl | Politoed | King's Rock | Lv60+ |
+| Slowpoke | Slowking | King's Rock | Lv60+ |
+| Onix | Steelix | Metal Coat | Lv60+ |
+| Seadra | Kingdra | Dragon Scale | Lv60+ |
+| Scyther | Scizor | Metal Coat | Lv60+ |
+| Porygon | Porygon2 | Up-Grade | Lv40+ |
+| Clamperl | Huntail | Deep Sea Tooth | Lv60+ |
+| Clamperl | Gorebyss | Deep Sea Scale | Lv60+ |
+
+*This allows players to evolve Pokémon through trading (original method) or wait until higher levels for solo play.*
+
 #### Default Options for New Games
 
 * **Pokémon Follower**: Now enabled by default

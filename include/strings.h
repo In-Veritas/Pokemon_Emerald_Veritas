@@ -637,6 +637,7 @@ extern const u8 gText_EVO_LEVEL[];
 extern const u8 gText_EVO_TRADE[];
 extern const u8 gText_EVO_TRADE_ITEM[];
 extern const u8 gText_EVO_ITEM[];
+extern const u8 gText_EVO_ITEM_LEVEL[];
 extern const u8 gText_EVO_LEVEL_ATK_GT_DEF[];
 extern const u8 gText_EVO_LEVEL_ATK_EQ_DEF[];
 extern const u8 gText_EVO_LEVEL_ATK_LT_DEF[];
