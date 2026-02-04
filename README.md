@@ -65,6 +65,20 @@ This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (
   * RS May + Emerald Brendan (rival)
 * Credits timing optimized to match 2:55 soundtrack length
 
+#### Unlockable PC Box Wallpapers
+
+* Added 29 new custom wallpapers organized into 7 themed categories
+* Wallpapers unlock progressively as you complete in-game milestones:
+  * **Other**: Always available (Block, Pokecenter, Circles)
+  * **Pokemon 1**: Catch 100 Pokémon (Zigzagoon, Luvdisc, Togepi, Azumarill, Pikachu, Dusclops)
+  * **Pokemon 2**: Catch 200 Pokémon (Ludicolo, Whiscash, Minun, Plusle, Diglett, Pichu)
+  * **Team**: Complete Team Aqua Hideout (Aqua 1, Aqua 2, Magma 1, Magma 2)
+  * **Contest**: Receive the Pokéblock Case (Cute, Smart, Cool, Tough, Beauty)
+  * **Legends**: Catch Latias or Latios (Legendary, Latias, Latios)
+  * **Secret**: Defeat Pokémon Trainer Veritas on Southern Island (Excelsior, Veritas)
+* Access special wallpapers via PC Box > Wallpaper > Special menu
+* For developers: See `docs/CUSTOM_WALLPAPERS.md` for adding new wallpapers
+
 #### Default Options for New Games
 
 * **Pokémon Follower**: Now enabled by default

@@ -2268,6 +2268,54 @@ extern const u8 gPCText_PolkaDot[];
 extern const u8 gPCText_Pokecenter[];
 extern const u8 gPCText_Machine[];
 extern const u8 gPCText_Simple[];
+// Special wallpaper main category
+extern const u8 gPCText_Special[];
+// Special wallpaper subcategories
+extern const u8 gPCText_Contest[];
+extern const u8 gPCText_Legends[];
+extern const u8 gPCText_Other[];
+extern const u8 gPCText_Pokemon1[];
+extern const u8 gPCText_Pokemon2[];
+extern const u8 gPCText_Secret[];
+extern const u8 gPCText_Team[];
+// Special wallpaper names
+// Contest
+extern const u8 gPCText_Cute[];
+extern const u8 gPCText_Smart[];
+extern const u8 gPCText_Cool[];
+extern const u8 gPCText_Tough[];
+extern const u8 gPCText_Beauty[];
+// Legends
+extern const u8 gPCText_Legendary[];
+extern const u8 gPCText_Latias[];
+extern const u8 gPCText_Latios[];
+// Other
+extern const u8 gPCText_Block[];
+extern const u8 gPCText_Pokecenter2[];
+// Pokemon 1
+extern const u8 gPCText_Zigzagoon[];
+extern const u8 gPCText_Luvdisc[];
+extern const u8 gPCText_Togepi[];
+extern const u8 gPCText_Azumarill[];
+extern const u8 gPCText_Pikachu[];
+extern const u8 gPCText_Dusclops[];
+// Pokemon 2
+extern const u8 gPCText_Ludicolo[];
+extern const u8 gPCText_Whiscash[];
+extern const u8 gPCText_Minun[];
+extern const u8 gPCText_Plusle[];
+extern const u8 gPCText_Diglett[];
+extern const u8 gPCText_Circles[];
+// Pokemon 3
+extern const u8 gPCText_Pichu[];
+// Secret
+extern const u8 gPCText_Excelsior[];
+extern const u8 gPCText_Veritas[];
+// Special 1
+extern const u8 gPCText_Aqua1[];
+extern const u8 gPCText_Magma[];
+extern const u8 gPCText_Aqua2[];
+extern const u8 gPCText_Magma2[];
 extern const u8 gText_PartyFull[];
 extern const u8 gText_Box[];
 extern const u8 gText_JustOnePkmn[];

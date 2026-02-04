@@ -1,0 +1,79 @@
+=======================================
+WALLPAPER REFERENCE - Icons & Patterns
+=======================================
+
+PATTERN IDs (0-15)
+------------------
+ID  Name          Description
+0   Zigzagoon     Zigzagoon silhouettes
+1   Screen        Grid/screen pattern
+2   Horizontal    Horizontal stripes
+3   Diagonal      Diagonal stripes
+4   Block         Block/checker pattern
+5   Ribbon        Ribbon pattern
+6   Pokecenter2   Pokemon Center themed
+7   Frame         Frame/border pattern
+8   Blank         Solid/minimal background
+9   Circles       Circle pattern
+10  Azumarill     Azumarill silhouettes
+11  Pikachu       Pikachu silhouettes
+12  Legendary     Legendary Pokemon themed
+13  Dusclops      Dusclops silhouettes
+14  Ludicolo      Ludicolo silhouettes
+15  Whiscash      Whiscash silhouettes
+
+
+ICON IDs (0-29)
+---------------
+ID  Name          ID  Name
+0   Aqua          15  Ribbon
+1   Heart         16  Bolt
+2   FiveStar      17  FourCircles
+3   Brick         18  Lotad
+4   FourStar      19  Crystal
+5   Asterisk      20  Pichu
+6   Dot           21  Diglett
+7   Cross         22  Luvdisc
+8   LineCircle    23  StarInCircle
+9   PokeBall      24  Spinda
+10  Maze          25  Latis
+11  Footprint     26  Plusle
+12  BigAsterisk   27  Minun
+13  Circle        28  Togepi
+14  Koffing       29  Magma
+
+
+CURRENT CATEGORIES (7 total, in menu order)
+--------------------------------------------
+Pokemon 1 (6): Zigzagoon, Luvdisc, Togepi, Azumarill, Pikachu, Dusclops
+               Unlock: Catch 100 Pokemon
+Pokemon 2 (6): Ludicolo, Whiscash, Minun, Plusle, Diglett, Pichu
+               Unlock: Catch 200 Pokemon
+Team (4):      Aqua 1, Magma 1, Aqua 2, Magma 2
+               Unlock: Complete Team Aqua Hideout
+Contest (5):   Cute, Smart, Cool, Tough, Beauty
+               Unlock: Receive Pokeblock Case
+Legends (3):   Legendary, Latias, Latios
+               Unlock: Catch Latias or Latios
+Other (3):     Block, Pokecenter, Circles
+               Unlock: Always available
+Secret (2):    Excelsior, Veritas
+               Unlock: Defeat Pokemon Trainer Veritas
+
+
+COLOR FORMAT
+------------
+Use standard hex colors: #RRGGBB
+Examples:
+  #FFFFFF = White
+  #000000 = Black
+  #FF0000 = Red
+  #00FF00 = Green
+  #0000FF = Blue
+  #FFD700 = Gold
+  #515151 = Dark Gray (default shadow)
+
+Note: GBA uses 15-bit color (5 bits per channel).
+Colors will be automatically converted, but subtle
+gradients may be lost. Stick to distinct colors.
+
