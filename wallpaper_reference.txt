@@ -57,7 +57,7 @@ Legends (3):   Legendary, Latias, Latios
                Unlock: Catch Latias or Latios
 Other (3):     Block, Pokecenter, Circles
                Unlock: Always available
-Secret (2):    Excelsior, Veritas
+Secret (2):    Exclsior, Veritas
                Unlock: Defeat Pokemon Trainer Veritas
 
 

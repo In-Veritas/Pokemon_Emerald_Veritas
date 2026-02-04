@@ -75,7 +75,7 @@ This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (
   * **Team**: Complete Team Aqua Hideout (Aqua 1, Aqua 2, Magma 1, Magma 2)
   * **Contest**: Receive the Pokéblock Case (Cute, Smart, Cool, Tough, Beauty)
   * **Legends**: Catch Latias or Latios (Legendary, Latias, Latios)
-  * **Secret**: Defeat Pokémon Trainer Veritas on Southern Island (Excelsior, Veritas)
+  * **Secret**: Defeat Pokémon Trainer Veritas on Southern Island (Exclsior, Veritas)
 * Access special wallpapers via PC Box > Wallpaper > Special menu
 * For developers: See `docs/CUSTOM_WALLPAPERS.md` for adding new wallpapers
 

@@ -2309,7 +2309,7 @@ extern const u8 gPCText_Circles[];
 // Pokemon 3
 extern const u8 gPCText_Pichu[];
 // Secret
-extern const u8 gPCText_Excelsior[];
+extern const u8 gPCText_Exclsior[];
 extern const u8 gPCText_Veritas[];
 // Special 1
 extern const u8 gPCText_Aqua1[];

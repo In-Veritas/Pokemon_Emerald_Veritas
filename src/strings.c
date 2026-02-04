@@ -1019,7 +1019,7 @@ const u8 gPCText_Circles[] = _("CIRCLES");
 // Pokemon 3
 const u8 gPCText_Pichu[] = _("PICHU");
 // Secret
-const u8 gPCText_Excelsior[] = _("EXCELSIOR");
+const u8 gPCText_Exclsior[] = _("EXCLSIOR");
 const u8 gPCText_Veritas[] = _("VERITAS");
 // Special 1
 const u8 gPCText_Aqua1[] = _("AQUA 1");

@@ -46,7 +46,7 @@ enum {
     WALLPAPER_SPECIAL_DIGLETT,
     WALLPAPER_SPECIAL_PICHU,
     // Secret
-    WALLPAPER_SPECIAL_EXCELSIOR,
+    WALLPAPER_SPECIAL_EXCLSIOR,
     WALLPAPER_SPECIAL_VERITAS,
     // Special 1
     WALLPAPER_SPECIAL_AQUA1,
@@ -239,7 +239,7 @@ static const u16 sBoxTitleColors[WALLPAPER_COUNT][2] =
     [WALLPAPER_SPECIAL_DIGLETT]       = {RGB(10, 10, 10), RGB_WHITE},
     [WALLPAPER_SPECIAL_PICHU]         = {RGB(10, 10, 10), RGB_WHITE},
     // Secret
-    [WALLPAPER_SPECIAL_EXCELSIOR]     = {RGB(10, 10, 10), RGB_WHITE},
+    [WALLPAPER_SPECIAL_EXCLSIOR]     = {RGB(10, 10, 10), RGB_WHITE},
     [WALLPAPER_SPECIAL_VERITAS]       = {RGB(10, 10, 10), RGB_WHITE},
     // Special 1
     [WALLPAPER_SPECIAL_AQUA1]         = {RGB(10, 10, 10), RGB_WHITE},
@@ -490,7 +490,7 @@ static const struct SpecialWallpaperConfig sSpecialWallpapers[WALLPAPER_SPECIAL_
     // Other: Block, Pokecenter, Circles
     [WALLPAPER_SPECIAL_BLOCK - WALLPAPER_SPECIAL_START]       = {4,  3,  RGB(21, 17, 14), RGB(12, 0, 0)},   // #ae8976, #610000
     [WALLPAPER_SPECIAL_POKECENTER - WALLPAPER_SPECIAL_START]  = {6,  9,  RGB(29, 29, 29), RGB(29, 12, 14)}, // #ede9ee, #ed6576
-    [WALLPAPER_SPECIAL_CIRCLES - WALLPAPER_SPECIAL_START]     = {9,  14, RGB(7, 4, 10),   RGB(21, 17, 23)}, // #3f2253, #ad8dbd
+    [WALLPAPER_SPECIAL_CIRCLES - WALLPAPER_SPECIAL_START]     = {9,  24, RGB(28, 26, 20), RGB(11, 8, 6)},   // #e0d0a0, #584030
     // Pokemon 1: Zigzagoon, Luvdisc, Togepi, Azumarill, Pikachu, Dusclops
     [WALLPAPER_SPECIAL_ZIGZAGOON - WALLPAPER_SPECIAL_START]   = {0,  11, RGB(28, 26, 21), RGB(21, 15, 11)}, // #e0d0a8, #a87858
     [WALLPAPER_SPECIAL_LUVDISC - WALLPAPER_SPECIAL_START]     = {2,  22, RGB(9, 27, 31),  RGB(31, 11, 17)}, // #4fd9ff, #f85888
@@ -505,8 +505,8 @@ static const struct SpecialWallpaperConfig sSpecialWallpapers[WALLPAPER_SPECIAL_
     [WALLPAPER_SPECIAL_PLUSLE - WALLPAPER_SPECIAL_START]      = {4,  7,  RGB(29, 27, 21), RGB(27, 12, 14)}, // #e9ddad, #dd6374
     [WALLPAPER_SPECIAL_DIGLETT - WALLPAPER_SPECIAL_START]     = {7,  21, RGB(20, 13, 8),  RGB(28, 22, 18)}, // #a66a42, #e0b192
     [WALLPAPER_SPECIAL_PICHU - WALLPAPER_SPECIAL_START]       = {3,  20, RGB(1, 0, 0),    RGB(30, 28, 7)},  // #080700, #f6e03a
-    // Secret: Excelsior, Veritas
-    [WALLPAPER_SPECIAL_EXCELSIOR - WALLPAPER_SPECIAL_START]   = {6,  25, RGB(6, 12, 24),  RGB(29, 12, 14)}, // #3060c0, #ed6374
+    // Secret: Exclsior, Veritas
+    [WALLPAPER_SPECIAL_EXCLSIOR - WALLPAPER_SPECIAL_START]   = {6,  25, RGB(6, 12, 24),  RGB(29, 12, 14)}, // #3060c0, #ed6374
     [WALLPAPER_SPECIAL_VERITAS - WALLPAPER_SPECIAL_START]     = {6,  0,  RGB(2, 7, 17),   RGB(0, 1, 8)},    // #163e8f, #000840
     // Team: Aqua 1, Magma 1, Aqua 2, Magma 2
     [WALLPAPER_SPECIAL_AQUA1 - WALLPAPER_SPECIAL_START]       = {1,  0,  RGB(21, 25, 30), RGB(6, 12, 24)},  // #a8c8f0, #3060c0

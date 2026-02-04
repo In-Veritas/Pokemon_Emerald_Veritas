@@ -189,7 +189,7 @@ enum {
     MENU_SPECIAL_DIGLETT,
     MENU_SPECIAL_PICHU,
     // Secret
-    MENU_SPECIAL_EXCELSIOR,
+    MENU_SPECIAL_EXCLSIOR,
     MENU_SPECIAL_VERITAS,
     // Special 1
     MENU_SPECIAL_AQUA1,
@@ -4552,7 +4552,7 @@ static void AddWallpapersMenu(u8 wallpaperSet)
         break;
     // Secret
     case MENU_SECRET - MENU_WALLPAPER_SETS_START:
-        SetMenuText(MENU_SPECIAL_EXCELSIOR);
+        SetMenuText(MENU_SPECIAL_EXCLSIOR);
         SetMenuText(MENU_SPECIAL_VERITAS);
         break;
     // Special 1
@@ -8235,7 +8235,7 @@ static const u8 *const sMenuTexts[] =
     [MENU_SPECIAL_DIGLETT]      = gPCText_Diglett,
     [MENU_SPECIAL_PICHU]        = gPCText_Pichu,
     // Secret
-    [MENU_SPECIAL_EXCELSIOR]    = gPCText_Excelsior,
+    [MENU_SPECIAL_EXCLSIOR]    = gPCText_Exclsior,
     [MENU_SPECIAL_VERITAS]      = gPCText_Veritas,
     // Special 1
     [MENU_SPECIAL_AQUA1]        = gPCText_Aqua1,
