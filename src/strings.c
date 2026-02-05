@@ -1013,7 +1013,7 @@ const u8 gPCText_Dusclops[] = _("DUSCLOPS");
 const u8 gPCText_Ludicolo[] = _("LUDICOLO");
 const u8 gPCText_Whiscash[] = _("WHISCASH");
 const u8 gPCText_Minun[] = _("MINUN");
-const u8 gPCText_Plusle[] = _("PLUSLE");
+const u8 gPCText_Classic1[] = _("CLASSIC 1");
 const u8 gPCText_Diglett[] = _("DIGLETT");
 const u8 gPCText_Circles[] = _("CIRCLES");
 // Pokemon 3
@@ -1026,6 +1026,7 @@ const u8 gPCText_Aqua1[] = _("AQUA 1");
 const u8 gPCText_Magma[] = _("MAGMA 1");
 const u8 gPCText_Aqua2[] = _("AQUA 2");
 const u8 gPCText_Magma2[] = _("MAGMA 2");
+const u8 gPCText_Classic2[] = _("CLASSIC 2");
 const u8 gText_WhatWouldYouLikeToDo[] = _("What would you like to do?"); // Unused
 const u8 gText_WithdrawPokemon[] = _("WITHDRAW POKéMON");
 const u8 gText_DepositPokemon[] = _("DEPOSIT POKéMON");

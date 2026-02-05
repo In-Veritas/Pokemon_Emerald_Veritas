@@ -2304,7 +2304,7 @@ extern const u8 gPCText_Dusclops[];
 extern const u8 gPCText_Ludicolo[];
 extern const u8 gPCText_Whiscash[];
 extern const u8 gPCText_Minun[];
-extern const u8 gPCText_Plusle[];
+extern const u8 gPCText_Classic1[];
 extern const u8 gPCText_Diglett[];
 extern const u8 gPCText_Circles[];
 // Pokemon 3
@@ -2317,6 +2317,7 @@ extern const u8 gPCText_Aqua1[];
 extern const u8 gPCText_Magma[];
 extern const u8 gPCText_Aqua2[];
 extern const u8 gPCText_Magma2[];
+extern const u8 gPCText_Classic2[];
 extern const u8 gText_PartyFull[];
 extern const u8 gText_Box[];
 extern const u8 gText_JustOnePkmn[];

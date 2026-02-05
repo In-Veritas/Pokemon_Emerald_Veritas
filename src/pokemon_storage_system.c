@@ -185,17 +185,21 @@ enum {
     MENU_SPECIAL_LUDICOLO,
     MENU_SPECIAL_WHISCASH,
     MENU_SPECIAL_MINUN,
-    MENU_SPECIAL_PLUSLE,
+    // Other
+    MENU_SPECIAL_CLASSIC1,
+    // Pokemon 2
     MENU_SPECIAL_DIGLETT,
     MENU_SPECIAL_PICHU,
     // Secret
     MENU_SPECIAL_EXCLSIOR,
     MENU_SPECIAL_VERITAS,
-    // Special 1
+    // Team
     MENU_SPECIAL_AQUA1,
     MENU_SPECIAL_MAGMA1,
     MENU_SPECIAL_AQUA2,
     MENU_SPECIAL_MAGMA2,
+    // Other
+    MENU_SPECIAL_CLASSIC2,
 };
 #define MENU_WALLPAPER_SETS_START MENU_SCENERY_1
 #define MENU_WALLPAPERS_START MENU_FOREST
@@ -4531,6 +4535,8 @@ static void AddWallpapersMenu(u8 wallpaperSet)
         SetMenuText(MENU_SPECIAL_BLOCK);
         SetMenuText(MENU_SPECIAL_POKECENTER);
         SetMenuText(MENU_SPECIAL_CIRCLES);
+        SetMenuText(MENU_SPECIAL_CLASSIC1);
+        SetMenuText(MENU_SPECIAL_CLASSIC2);
         break;
     // Pokemon 1
     case MENU_POKEMON_1 - MENU_WALLPAPER_SETS_START:
@@ -4546,7 +4552,6 @@ static void AddWallpapersMenu(u8 wallpaperSet)
         SetMenuText(MENU_SPECIAL_LUDICOLO);
         SetMenuText(MENU_SPECIAL_WHISCASH);
         SetMenuText(MENU_SPECIAL_MINUN);
-        SetMenuText(MENU_SPECIAL_PLUSLE);
         SetMenuText(MENU_SPECIAL_DIGLETT);
         SetMenuText(MENU_SPECIAL_PICHU);
         break;
@@ -8231,17 +8236,21 @@ static const u8 *const sMenuTexts[] =
     [MENU_SPECIAL_LUDICOLO]     = gPCText_Ludicolo,
     [MENU_SPECIAL_WHISCASH]     = gPCText_Whiscash,
     [MENU_SPECIAL_MINUN]        = gPCText_Minun,
-    [MENU_SPECIAL_PLUSLE]       = gPCText_Plusle,
+    // Other
+    [MENU_SPECIAL_CLASSIC1]     = gPCText_Classic1,
+    // Pokemon 2
     [MENU_SPECIAL_DIGLETT]      = gPCText_Diglett,
     [MENU_SPECIAL_PICHU]        = gPCText_Pichu,
     // Secret
     [MENU_SPECIAL_EXCLSIOR]    = gPCText_Exclsior,
     [MENU_SPECIAL_VERITAS]      = gPCText_Veritas,
-    // Special 1
+    // Team
     [MENU_SPECIAL_AQUA1]        = gPCText_Aqua1,
     [MENU_SPECIAL_MAGMA1]       = gPCText_Magma,
     [MENU_SPECIAL_AQUA2]        = gPCText_Aqua2,
     [MENU_SPECIAL_MAGMA2]       = gPCText_Magma2,
+    // Other
+    [MENU_SPECIAL_CLASSIC2]     = gPCText_Classic2,
 };
 
 static void SetMenuText(u8 textId)
