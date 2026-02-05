@@ -3976,7 +3976,8 @@ u32 GetBoxMonData3(struct BoxPokemon *boxMon, s32 field, u8 *data)
         retVal = substruct2->tough;
         break;
     case MON_DATA_SHEEN:
-        retVal = substruct2->sheen;
+        // Sheen is stored as 0-255 but displayed as 0-510 (scaled by 2)
+        retVal = substruct2->sheen * 2;
         break;
     case MON_DATA_POKERUS:
         retVal = substruct3->pokerus;

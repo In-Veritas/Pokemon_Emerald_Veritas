@@ -990,7 +990,7 @@ static void AddPokeblockToConditions(struct Pokeblock *pokeblock, struct Pokemon
     u16 i;
     s16 stat;
     u8 data;
-    
+
     CalculatePokeblockEffectiveness(pokeblock, mon);
     for (i = 0; i < CONDITION_COUNT; i++)
     {
@@ -1004,11 +1004,12 @@ static void AddPokeblockToConditions(struct Pokeblock *pokeblock, struct Pokemon
         SetMonData(mon, sConditionToMonData[i], &data);
     }
 
-    stat = (u8)(GetMonData(mon, MON_DATA_SHEEN)) + pokeblock->feel;
+    // Sheen uses 0-510 range (GetMonData returns scaled value, store divided by 2)
+    stat = GetMonData(mon, MON_DATA_SHEEN) + pokeblock->feel;
     if (stat > MAX_SHEEN)
         stat = MAX_SHEEN;
 
-    data = stat;
+    data = stat / 2;  // Convert 0-510 back to 0-255 for storage
     SetMonData(mon, MON_DATA_SHEEN, &data);
 }
 
