@@ -28,7 +28,9 @@ enum {
     WALLPAPER_SPECIAL_LUDICOLO,
     WALLPAPER_SPECIAL_WHISCASH,
     WALLPAPER_SPECIAL_MINUN,
-    WALLPAPER_SPECIAL_PLUSLE,
+    // Other
+    WALLPAPER_SPECIAL_CLASSIC1,
+    // Pokemon 2
     WALLPAPER_SPECIAL_DIGLETT,
     WALLPAPER_SPECIAL_PICHU,
     // Team
@@ -53,6 +55,8 @@ enum {
     // Secret
     WALLPAPER_SPECIAL_EXCLSIOR,
     WALLPAPER_SPECIAL_VERITAS,
+    // Other
+    WALLPAPER_SPECIAL_CLASSIC2,
     WALLPAPER_COUNT
 };
 #define MAX_DEFAULT_WALLPAPER WALLPAPER_SAVANNA
@@ -221,7 +225,9 @@ static const u16 sBoxTitleColors[WALLPAPER_COUNT][2] =
     [WALLPAPER_SPECIAL_LUDICOLO]      = {RGB(10, 10, 10), RGB_WHITE},
     [WALLPAPER_SPECIAL_WHISCASH]      = {RGB(10, 10, 10), RGB_WHITE},
     [WALLPAPER_SPECIAL_MINUN]         = {RGB(10, 10, 10), RGB_WHITE},
-    [WALLPAPER_SPECIAL_PLUSLE]        = {RGB(10, 10, 10), RGB_WHITE},
+    // Other
+    [WALLPAPER_SPECIAL_CLASSIC1]      = {RGB(10, 10, 10), RGB_WHITE},
+    // Pokemon 2
     [WALLPAPER_SPECIAL_DIGLETT]       = {RGB(10, 10, 10), RGB_WHITE},
     [WALLPAPER_SPECIAL_PICHU]         = {RGB(10, 10, 10), RGB_WHITE},
     // Team
@@ -246,6 +252,8 @@ static const u16 sBoxTitleColors[WALLPAPER_COUNT][2] =
     // Secret
     [WALLPAPER_SPECIAL_EXCLSIOR]     = {RGB(10, 10, 10), RGB_WHITE},
     [WALLPAPER_SPECIAL_VERITAS]       = {RGB(10, 10, 10), RGB_WHITE},
+    // Other
+    [WALLPAPER_SPECIAL_CLASSIC2]      = {RGB(10, 10, 10), RGB_WHITE},
 };
 
 #define WALLPAPER_ENTRY(name) {sWallpaperTiles_##name, sWallpaperTilemap_##name, sWallpaperPalettes_##name[0]}
@@ -484,11 +492,13 @@ static const struct SpecialWallpaperConfig sSpecialWallpapers[WALLPAPER_SPECIAL_
     [WALLPAPER_SPECIAL_AZUMARILL - WALLPAPER_SPECIAL_START]   = {10, 6,  RGB(11, 21, 28), RGB(31, 31, 31)}, // #58a8e0, #f8f8f8
     [WALLPAPER_SPECIAL_PIKACHU - WALLPAPER_SPECIAL_START]     = {11, 1,  RGB(26, 14, 11), RGB(31, 11, 17)}, // #d07058, #f85888
     [WALLPAPER_SPECIAL_DUSCLOPS - WALLPAPER_SPECIAL_START]    = {13, 8,  RGB(11, 10, 14), RGB(17, 18, 19)}, // #5c5270, #8e969e
-    // Pokemon 2: Ludicolo, Whiscash, Minun, Plusle, Diglett, Pichu
+    // Pokemon 2: Ludicolo, Whiscash, Minun
     [WALLPAPER_SPECIAL_LUDICOLO - WALLPAPER_SPECIAL_START]    = {14, 18, RGB(16, 25, 12), RGB(25, 25, 12)}, // #80c860, #c8c860
     [WALLPAPER_SPECIAL_WHISCASH - WALLPAPER_SPECIAL_START]    = {15, 12, RGB(26, 25, 11), RGB(13, 15, 22)}, // #d0ca5d, #6878b0
     [WALLPAPER_SPECIAL_MINUN - WALLPAPER_SPECIAL_START]       = {4,  27, RGB(29, 27, 21), RGB(12, 17, 27)}, // #e9ddad, #638fdd
-    [WALLPAPER_SPECIAL_PLUSLE - WALLPAPER_SPECIAL_START]      = {4,  7,  RGB(29, 27, 21), RGB(27, 12, 14)}, // #e9ddad, #dd6374
+    // Other: Classic 1
+    [WALLPAPER_SPECIAL_CLASSIC1 - WALLPAPER_SPECIAL_START]    = {4,  9,  RGB(0, 0, 0),    RGB(31, 31, 31)}, // #000000, #ffffff
+    // Pokemon 2: Diglett, Pichu
     [WALLPAPER_SPECIAL_DIGLETT - WALLPAPER_SPECIAL_START]     = {7,  21, RGB(20, 13, 8),  RGB(28, 22, 18)}, // #a66a42, #e0b192
     [WALLPAPER_SPECIAL_PICHU - WALLPAPER_SPECIAL_START]       = {3,  20, RGB(1, 0, 0),    RGB(30, 28, 7)},  // #080700, #f6e03a
     // Team: Aqua 1, Magma 1, Aqua 2, Magma 2
@@ -513,4 +523,6 @@ static const struct SpecialWallpaperConfig sSpecialWallpapers[WALLPAPER_SPECIAL_
     // Secret
     [WALLPAPER_SPECIAL_EXCLSIOR - WALLPAPER_SPECIAL_START]   = {6,  25, RGB(6, 12, 24),  RGB(29, 12, 14)}, // #3060c0, #ed6374
     [WALLPAPER_SPECIAL_VERITAS - WALLPAPER_SPECIAL_START]     = {6,  0,  RGB(2, 7, 17),   RGB(0, 1, 8)},    // #163e8f, #000840
+    // Other: Classic 2
+    [WALLPAPER_SPECIAL_CLASSIC2 - WALLPAPER_SPECIAL_START]    = {4,  9,  RGB(31, 31, 31), RGB(0, 0, 0)},    // #ffffff, #000000
 };

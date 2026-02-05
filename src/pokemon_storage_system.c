@@ -171,7 +171,9 @@ enum {
     MENU_SPECIAL_LUDICOLO,
     MENU_SPECIAL_WHISCASH,
     MENU_SPECIAL_MINUN,
-    MENU_SPECIAL_PLUSLE,
+    // Other
+    MENU_SPECIAL_CLASSIC1,
+    // Pokemon 2
     MENU_SPECIAL_DIGLETT,
     MENU_SPECIAL_PICHU,
     // Team
@@ -196,6 +198,8 @@ enum {
     // Secret
     MENU_SPECIAL_EXCLSIOR,
     MENU_SPECIAL_VERITAS,
+    // Other
+    MENU_SPECIAL_CLASSIC2,
 };
 #define MENU_WALLPAPER_SETS_START MENU_SCENERY_1
 #define MENU_WALLPAPERS_START MENU_FOREST
@@ -4524,7 +4528,6 @@ static void AddWallpapersMenu(u8 wallpaperSet)
         SetMenuText(MENU_SPECIAL_LUDICOLO);
         SetMenuText(MENU_SPECIAL_WHISCASH);
         SetMenuText(MENU_SPECIAL_MINUN);
-        SetMenuText(MENU_SPECIAL_PLUSLE);
         SetMenuText(MENU_SPECIAL_DIGLETT);
         SetMenuText(MENU_SPECIAL_PICHU);
         break;
@@ -4550,6 +4553,8 @@ static void AddWallpapersMenu(u8 wallpaperSet)
         SetMenuText(MENU_SPECIAL_BLOCK);
         SetMenuText(MENU_SPECIAL_POKECENTER);
         SetMenuText(MENU_SPECIAL_CIRCLES);
+        SetMenuText(MENU_SPECIAL_CLASSIC1);
+        SetMenuText(MENU_SPECIAL_CLASSIC2);
         break;
     case MENU_SECRET - MENU_WALLPAPER_SETS_START:
         SetMenuText(MENU_SPECIAL_EXCLSIOR);
@@ -8211,7 +8216,9 @@ static const u8 *const sMenuTexts[] =
     [MENU_SPECIAL_LUDICOLO]      = gPCText_Ludicolo,
     [MENU_SPECIAL_WHISCASH]      = gPCText_Whiscash,
     [MENU_SPECIAL_MINUN]         = gPCText_Minun,
-    [MENU_SPECIAL_PLUSLE]        = gPCText_Plusle,
+    // Other
+    [MENU_SPECIAL_CLASSIC1]      = gPCText_Classic1,
+    // Pokemon 2
     [MENU_SPECIAL_DIGLETT]       = gPCText_Diglett,
     [MENU_SPECIAL_PICHU]         = gPCText_Pichu,
     // Team
@@ -8236,6 +8243,8 @@ static const u8 *const sMenuTexts[] =
     // Secret
     [MENU_SPECIAL_EXCLSIOR]     = gPCText_Exclsior,
     [MENU_SPECIAL_VERITAS]       = gPCText_Veritas,
+    // Other
+    [MENU_SPECIAL_CLASSIC2]      = gPCText_Classic2,
 };
 
 static void SetMenuText(u8 textId)

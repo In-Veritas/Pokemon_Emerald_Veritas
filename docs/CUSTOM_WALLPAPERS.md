@@ -366,6 +366,28 @@ To add a new icon:
 
 4. Update `wallpaper_reference.txt` with the new icon ID
 
+## Japanese Version Asset Limitations
+
+Some pattern graphics and icons are only available in the Japanese version of Pokemon Emerald. Using these assets in the international version may cause:
+- The asset not loading properly (appearing blank or corrupted)
+- Memory access issues or unexpected behavior
+
+### Affected Patterns
+
+| Pattern | Issue |
+|---------|-------|
+| Ribbon (ID 5) | The central large ribbon decoration is Japanese-only. The smaller ribbon elements still work. |
+
+### Affected Icons
+
+| Icon ID | Name | Status |
+|---------|------|--------|
+| 7 | Cross | Japanese-only - may not display correctly |
+| 16 | Bolt | Japanese-only - may not display correctly |
+| 26 | Plusle | Japanese-only - may not display correctly |
+
+**Recommendation:** Avoid using these assets in custom wallpapers intended for international versions. Test thoroughly if you need to use them.
+
 ## Tips
 
 - **Test colors in-game**: GBA color precision is limited; test your wallpapers

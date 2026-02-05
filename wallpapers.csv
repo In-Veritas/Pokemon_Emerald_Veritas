@@ -18,7 +18,7 @@ Pokémon 1,Dusclops,13,8,#5c5270,#8e969e,#515151,#FFFFFF
 Pokémon 2,Ludicolo,14,18,#80c860,#c8c860,#515151,#FFFFFF
 Pokémon 2,Whiscash,15,12,#d0ca5d,#6878b0,#515151,#FFFFFF
 Pokémon 2,Minum,4,27,#e9ddad,#638fdd,#515151,#FFFFFF
-Pokémon 2,Plusle,4,7,#e9ddad,#dd6374,#515151,#FFFFFF
+Other,Classic 1,4,9,#00000,#ffffff,#515151,#FFFFFF
 Pokémon 2,Diglett,7,21,#a66a42,#e0b192,#515151,#FFFFFF
 Other,Circles,9,24,#e0d0a0,#584030,#515151,#FFFFFF
 Pokémon 2,Pichu,3,20,#080700,#f6e03a,#515151,#FFFFFF
@@ -28,3 +28,4 @@ Team,Aqua 1,1,0,#a8c8f0,#3060c0,#515151,#FFFFFF
 Team,Magma 1,7,29,#c05656,#a00000,#515151,#FFFFFF
 Team,Aqua 2,10,0,#4d5d7d,#f8f8f8,#515151,#FFFFFF
 Team,Magma 2,2,29,#4d1616,#a00000,#515151,#FFFFFF
+Other,Classic 2,4,9,#ffffff,#000000,#515151,#FFFFFF
