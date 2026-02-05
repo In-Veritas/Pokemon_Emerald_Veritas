@@ -524,5 +524,5 @@ static const struct SpecialWallpaperConfig sSpecialWallpapers[WALLPAPER_SPECIAL_
     [WALLPAPER_SPECIAL_EXCLSIOR - WALLPAPER_SPECIAL_START]   = {6,  25, RGB(6, 12, 24),  RGB(29, 12, 14)}, // #3060c0, #ed6374
     [WALLPAPER_SPECIAL_VERITAS - WALLPAPER_SPECIAL_START]     = {6,  0,  RGB(2, 7, 17),   RGB(0, 1, 8)},    // #163e8f, #000840
     // Other: Classic 2
-    [WALLPAPER_SPECIAL_CLASSIC2 - WALLPAPER_SPECIAL_START]    = {4,  9,  RGB(31, 31, 31), RGB(0, 0, 0)},    // #ffffff, #000000
+    [WALLPAPER_SPECIAL_CLASSIC2 - WALLPAPER_SPECIAL_START]    = {4,  9,  RGB(22, 24, 17), RGB(16, 17, 14)}, // #b5c08c, #858f76
 };
