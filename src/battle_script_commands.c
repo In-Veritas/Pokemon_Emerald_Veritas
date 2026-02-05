@@ -9015,7 +9015,11 @@ static void Cmd_hiddenpowercalc(void)
                  | ((gBattleMons[gBattlerAttacker].spAttackIV & 1) << 4)
                  | ((gBattleMons[gBattlerAttacker].spDefenseIV & 1) << 5);
 
-    gDynamicBasePower = (40 * powerBits) / 63 + 30;
+
+    if (FlagGet(FLAG_ENABLE_HIDDEN_POWER_70BP))
+        gDynamicBasePower = 70;
+    else
+        gDynamicBasePower = (40 * powerBits) / 63 + 30;
 
     // Subtract 3 instead of 1 below because 2 types are excluded (TYPE_NORMAL and TYPE_MYSTERY)
     // The final + 1 skips past Normal, and the following conditional skips TYPE_MYSTERY

@@ -4070,35 +4070,60 @@ static void PrintMoveNameAndPP(u8 moveIndex)
 
 static void PrintMovePowerAndAccuracy(u16 moveIndex)
 {
-    const u8 *text;
-    if (moveIndex != 0)
-    {
-        FillWindowPixelRect(PSS_LABEL_WINDOW_MOVES_POWER_ACC, PIXEL_FILL(0), 53, 0, 19, 32);
+   	struct Pokemon *mon = &sMonSummaryScreen->currentMon;
+    	u16 species = GetMonData(mon, MON_DATA_SPECIES);
+     	const u8 *text;
+     	if (moveIndex != 0)
+     	{
+         	FillWindowPixelRect(PSS_LABEL_WINDOW_MOVES_POWER_ACC, PIXEL_FILL(0), 53, 0, 19, 32);
+		
+		if (moveIndex == MOVE_HIDDEN_POWER)
+		{
+            u8 powerForHiddenPower;
+		 	u8 powerBits;
+            
+            powerBits = ((GetMonData(mon, MON_DATA_HP_IV) & 2) >> 1)
+             	 	 | ((GetMonData(mon, MON_DATA_ATK_IV) & 2) << 0)
+             	 	 | ((GetMonData(mon, MON_DATA_DEF_IV) & 2) << 1)
+              	 	 | ((GetMonData(mon, MON_DATA_SPEED_IV) & 2) << 2)
+              	 	 | ((GetMonData(mon, MON_DATA_SPATK_IV)& 2) << 3)
+             	 	 | ((GetMonData(mon, MON_DATA_SPDEF_IV) & 2) << 4);
+			  
+			if (FlagGet(FLAG_ENABLE_HIDDEN_POWER_70BP))
+                powerForHiddenPower = 70;
+            else
+                powerForHiddenPower = (40 * powerBits) / 63 + 30;
 
-        if (gBattleMoves[moveIndex].power < 2)
-        {
-            text = gText_ThreeDashes;
-        }
-        else
-        {
-            ConvertIntToDecimalStringN(gStringVar1, gBattleMoves[moveIndex].power, STR_CONV_MODE_RIGHT_ALIGN, 3);
-            text = gStringVar1;
-        }
+			ConvertIntToDecimalStringN(gStringVar1, powerForHiddenPower, STR_CONV_MODE_RIGHT_ALIGN, 3);
+			text = gStringVar1;
+		}
+		else
+		{
+			if (gBattleMoves[moveIndex].power < 2)
+			{
+				text = gText_ThreeDashes;
+			}
+			else
+			{
+				ConvertIntToDecimalStringN(gStringVar1, gBattleMoves[moveIndex].power, STR_CONV_MODE_RIGHT_ALIGN, 3);
+				text = gStringVar1;
+			}
+		}
+       
+         	PrintTextOnWindow(PSS_LABEL_WINDOW_MOVES_POWER_ACC, text, 53, 1, 0, 0);
 
-        PrintTextOnWindow(PSS_LABEL_WINDOW_MOVES_POWER_ACC, text, 53, 1, 0, 0);
+         	if (gBattleMoves[moveIndex].accuracy == 0)
+         	{
+            	  	text = gText_ThreeDashes;
+         	}
+        	else
+         	{
+             	 	ConvertIntToDecimalStringN(gStringVar1, gBattleMoves[moveIndex].accuracy, STR_CONV_MODE_RIGHT_ALIGN, 3);
+             	 	text = gStringVar1;
+         	}
 
-        if (gBattleMoves[moveIndex].accuracy == 0)
-        {
-            text = gText_ThreeDashes;
-        }
-        else
-        {
-            ConvertIntToDecimalStringN(gStringVar1, gBattleMoves[moveIndex].accuracy, STR_CONV_MODE_RIGHT_ALIGN, 3);
-            text = gStringVar1;
-        }
-
-        PrintTextOnWindow(PSS_LABEL_WINDOW_MOVES_POWER_ACC, text, 53, 17, 0, 0);
-    }
+         	PrintTextOnWindow(PSS_LABEL_WINDOW_MOVES_POWER_ACC, text, 53, 17, 0, 0);
+     	}
 }
 
 static void PrintContestMoves(void)
