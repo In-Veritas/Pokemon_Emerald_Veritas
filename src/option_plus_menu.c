@@ -53,6 +53,7 @@ enum
     MENUITEM_BATTLE_INTERFACE,
     MENUITEM_BATTLE_HIDDENPOWER,
     MENUITEM_BATTLE_TYPEEFFECT,
+    MENUITEM_BATTLE_WILDHELDDROP,
     MENUITEM_BATTLE_PICKUPTEXT,
     MENUITEM_BATTLE_CANCEL,
     MENUITEM_BATTLE_COUNT,
@@ -231,6 +232,7 @@ static void DrawChoices_BattleLevelCaps(int selection, int y);
 static void DrawChoices_BattleInterface(int selection, int y);
 static void DrawChoices_HiddenPower(int selection, int y);
 static void DrawChoices_TypeEffect(int selection, int y);
+static void DrawChoices_WildHeldDrop(int selection, int y);
 static void DrawChoices_PickupText(int selection, int y);
 static void DrawChoices_BattleSpeed(int selection, int y);
 static void DrawChoices_FastIntro(int selection, int y);
@@ -291,6 +293,7 @@ struct // MENU_BATTLE
     [MENUITEM_BATTLE_INTERFACE]         = {DrawChoices_BattleInterface,     ProcessInput_Options_Two},
     [MENUITEM_BATTLE_HIDDENPOWER]       = {DrawChoices_HiddenPower,         ProcessInput_Options_Two},
     [MENUITEM_BATTLE_TYPEEFFECT]        = {DrawChoices_TypeEffect,          ProcessInput_Options_Two},
+    [MENUITEM_BATTLE_WILDHELDDROP]      = {DrawChoices_WildHeldDrop,        ProcessInput_Options_Two},
     [MENUITEM_BATTLE_PICKUPTEXT]        = {DrawChoices_PickupText,          ProcessInput_Options_Two},
     [MENUITEM_BATTLE_HARDMODE]          = {DrawChoices_HardMode,            ProcessInput_Options_Three},
     [MENUITEM_BATTLE_CANCEL]            = {NULL, NULL},
@@ -359,8 +362,9 @@ static const u8 *const sOptionMenuItemsNamesMain[MENUITEM_MAIN_COUNT] =
 static const u8 sText_HardMode[]            = _("BATTLE MODE");
 static const u8 sText_BattleLevelCaps[]     = _("LEVEL CAPS");
 static const u8 sText_BattleInterface[]     = _("BATTLE INTERFACE");
-static const u8 sText_HiddenPower[]     = _("HIDDEN POWER");
+static const u8 sText_HiddenPower[]         = _("HIDDEN POWER");
 static const u8 sText_TypeEffect[]          = _("TYPE EFFECTS");
+static const u8 sText_WildHeldDropText[]    = _("WILD HELD ITEMS");
 static const u8 sText_PickupText[]          = _("PICKUP MESSAGE");
 static const u8 *const sOptionMenuItemsNamesBattle[MENUITEM_BATTLE_COUNT] =
 {
@@ -369,6 +373,7 @@ static const u8 *const sOptionMenuItemsNamesBattle[MENUITEM_BATTLE_COUNT] =
     [MENUITEM_BATTLE_INTERFACE]             = sText_BattleInterface,
     [MENUITEM_BATTLE_HIDDENPOWER]           = sText_HiddenPower,
     [MENUITEM_BATTLE_TYPEEFFECT]            = sText_TypeEffect,
+    [MENUITEM_BATTLE_WILDHELDDROP]          = sText_WildHeldDropText,
     [MENUITEM_BATTLE_PICKUPTEXT]            = sText_PickupText,
     [MENUITEM_BATTLE_HARDMODE]              = sText_HardMode,
     [MENUITEM_BATTLE_CANCEL]                = gText_OptionMenuSave,
@@ -493,6 +498,7 @@ static bool8 CheckConditions(int selection)
         case MENUITEM_BATTLE_INTERFACE:         return TRUE;
         case MENUITEM_BATTLE_HIDDENPOWER:       return TRUE;
         case MENUITEM_BATTLE_TYPEEFFECT:        return TRUE;
+        case MENUITEM_BATTLE_WILDHELDDROP:      return TRUE;
         case MENUITEM_BATTLE_PICKUPTEXT:        return TRUE;
         case MENUITEM_BATTLE_HARDMODE:
         {
@@ -596,6 +602,8 @@ static const u8 sText_Desc_HiddenPower_Orig[]       = _("Original HIDDEN POWER B
 static const u8 sText_Desc_HiddenPower_70BP[]       = _("Changes HIDDEN POWER BP to 70BP.\nType still determined by IVs.");
 static const u8 sText_Desc_TypeEffect_On[]          = _("Show move type effect in battle.\nGreen: Super, Red: Not very, Grey: No");
 static const u8 sText_Desc_TypeEffect_Off[]         = _("Original experience, does not show\nmove type effectiveness in battle.");
+static const u8 sText_Desc_WildHeldDrop_On[]        = _("Wild POKéMON may drop their\nheld items on defeat in battle.");
+static const u8 sText_Desc_WildHeldDrop_Off[]       = _("Original experience. Wild POKéMON\nwill not drop their held items.");
 static const u8 sText_Desc_PickupText_On[]          = _("Pickup messages added to end of\nbattle if an item was found.");
 static const u8 sText_Desc_PickupText_Off[]         = _("Original experience.\nItems picked up without any message.");
 static const u8 sText_Desc_HardMode_Off[]           = _("Original experience.\nNo extra restrictions in battle.");
@@ -608,6 +616,7 @@ static const u8 *const sOptionMenuItemDescriptionsBattle[MENUITEM_BATTLE_COUNT][
     [MENUITEM_BATTLE_INTERFACE]         = {sText_Desc_BattleInterface_Orig, sText_Desc_BattleInterface_White},
     [MENUITEM_BATTLE_HIDDENPOWER]       = {sText_Desc_HiddenPower_Orig,     sText_Desc_HiddenPower_70BP},
     [MENUITEM_BATTLE_TYPEEFFECT]        = {sText_Desc_TypeEffect_On,        sText_Desc_TypeEffect_Off},
+    [MENUITEM_BATTLE_WILDHELDDROP]      = {sText_Desc_WildHeldDrop_On,      sText_Desc_WildHeldDrop_Off},
     [MENUITEM_BATTLE_PICKUPTEXT]        = {sText_Desc_PickupText_On,        sText_Desc_PickupText_Off},
     [MENUITEM_BATTLE_HARDMODE]          = {sText_Desc_HardMode_Off,         sText_Desc_HardMode_Hard,       sText_Desc_HardMode_Hardcore},
     [MENUITEM_BATTLE_CANCEL]            = {sText_Desc_Save},
@@ -1019,6 +1028,7 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel_battle[MENUITEM_BATTLE_INTERFACE]         = VarGet(VAR_BATTLE_INTERFACE);
         sOptions->sel_battle[MENUITEM_BATTLE_HIDDENPOWER]       = FlagGet(FLAG_ENABLE_HIDDEN_POWER_70BP);
         sOptions->sel_battle[MENUITEM_BATTLE_TYPEEFFECT]        = FlagGet(FLAG_HIDE_TYPE_EFFECT_BATTLE);
+        sOptions->sel_battle[MENUITEM_BATTLE_WILDHELDDROP]      = !FlagGet(FLAG_ENABLE_WILD_HELD_DROP);
         sOptions->sel_battle[MENUITEM_BATTLE_PICKUPTEXT]        = !FlagGet(FLAG_ENABLE_PICKUP_TEXT);
         if (FlagGet(FLAG_HARD) || FlagGet(FLAG_NUZLOCKE))
         {
@@ -1348,6 +1358,7 @@ static void Task_OptionMenuSave(u8 taskId)
     sOptions->sel_battle[MENUITEM_BATTLE_HIDDENPOWER] == 0  ? FlagClear(FLAG_ENABLE_HIDDEN_POWER_70BP)  : FlagSet(FLAG_ENABLE_HIDDEN_POWER_70BP);
     sOptions->sel_battle[MENUITEM_BATTLE_LEVELCAPS] == 0    ? FlagSet(FLAG_ENABLE_LEVEL_CAPS)           : FlagClear(FLAG_ENABLE_LEVEL_CAPS);          // Used the inverse to align with other similar options.
     sOptions->sel_battle[MENUITEM_BATTLE_TYPEEFFECT] == 0   ? FlagClear(FLAG_HIDE_TYPE_EFFECT_BATTLE)   : FlagSet(FLAG_HIDE_TYPE_EFFECT_BATTLE);
+    sOptions->sel_battle[MENUITEM_BATTLE_WILDHELDDROP] == 0 ? FlagSet(FLAG_ENABLE_WILD_HELD_DROP)       : FlagClear(FLAG_ENABLE_WILD_HELD_DROP);      // Used the inverse to align with other similar options.
     sOptions->sel_battle[MENUITEM_BATTLE_PICKUPTEXT] == 0   ? FlagSet(FLAG_ENABLE_PICKUP_TEXT)          : FlagClear(FLAG_ENABLE_PICKUP_TEXT);         // Used the inverse to align with other similar options.
 
     switch (sOptions->sel_battle[MENUITEM_BATTLE_HARDMODE])
@@ -1696,6 +1707,15 @@ static void DrawChoices_PickupText(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_BATTLE_PICKUPTEXT);
     DrawOptionMenuChoiceStrings(selection, y, active, sPickupTextStrings, 2);
+}
+
+static const u8 sText_HeldItemDrop_On[]   = _("ON");
+static const u8 sText_HeldItemDrop_Off[]  = _("OFF");
+static const u8 *const sHeldItemDropStrings[] = {sText_HeldItemDrop_On, sText_HeldItemDrop_Off};
+static void DrawChoices_WildHeldDrop(int selection, int y)
+{
+    bool8 active = CheckConditions(MENUITEM_BATTLE_WILDHELDDROP);
+    DrawOptionMenuChoiceStrings(selection, y, active, sHeldItemDropStrings, 2);
 }
 
 const u8 sText_BattleSpeed1x[] = _("ORIGINAL");

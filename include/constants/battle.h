@@ -385,6 +385,8 @@
 #define EXP_ALL_MESSAGE             4
 #define EXP_LEVEL_UP                5
 #define EXP_NEXT_MON                6
-#define EXP_COMPLETE                7
+#define EXP_CHECK_ITEM              7
+#define EXP_GIVE_ITEM               8
+#define EXP_COMPLETE                9
 
 #endif // GUARD_CONSTANTS_BATTLE_H

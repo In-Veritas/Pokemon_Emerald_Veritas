@@ -1295,7 +1295,7 @@
 #define FLAG_ENABLE_PICKUP_TEXT                                     0x4E3 // Flag for enabling pickup text
 #define FLAG_EXP_ALL_UPGRADED                                       0x4E4 // Flag for upgraded EXP ALL
 #define FLAG_ENABLE_LEVEL_CAPS                                      0x4E5 // Flag for level caps without Hard or Nuzlocke Mode
-#define FLAG_UNUSED_0x4E6                                           0x4E6 // Unused Flag
+#define FLAG_ENABLE_WILD_HELD_DROP                                  0x4E6 // Flag for enabling wild encounter held items dropping
 #define FLAG_UNUSED_0x4E7                                           0x4E7 // Unused Flag
 #define FLAG_UNUSED_0x4E8                                           0x4E8 // Unused Flag
 #define FLAG_UNUSED_0x4E9                                           0x4E9 // Unused Flag

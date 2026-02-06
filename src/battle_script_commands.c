@@ -3704,7 +3704,33 @@ static void Cmd_getexp(void)
             if (gBattleStruct->expGetterMonId < PARTY_SIZE)
                 gBattleScripting.getexpState = EXP_CALCULATE_SINGLE; // loop again
             else
-                gBattleScripting.getexpState = EXP_COMPLETE; // we're done
+                gBattleScripting.getexpState = EXP_CHECK_ITEM; // we're done
+        }
+        break;
+    case EXP_CHECK_ITEM: // check if wild Pokémon has a hold item after fainting
+        if (!(gBattleTypeFlags & BATTLE_TYPE_TRAINER) && gBattleMons[0].hp && gBattleMons[gBattlerFainted].item != ITEM_NONE)
+        {
+            PrepareStringBattle(STRINGID_PKMNDROPPEDITEM, gBattleStruct->expGetterBattlerId);
+            gBattleScripting.getexpState = EXP_GIVE_ITEM; // add item to bag
+        }
+        else
+       {
+            gBattleScripting.getexpState = EXP_COMPLETE; // no hold item, end battle
+        }
+        break;
+    case EXP_GIVE_ITEM: // add dropped item to bag if space available
+        if (CheckBagHasSpace(gBattleMons[gBattlerFainted].item, 1) == TRUE)
+        {
+            AddBagItem(gBattleMons[gBattlerFainted].item, 1);
+            PREPARE_ITEM_BUFFER(gBattleTextBuff1, gBattleMons[gBattlerFainted].item);
+            PREPARE_POCKET_BUFFER(gBattleTextBuff2, gBattleMons[gBattlerFainted].item);
+            PrepareStringBattle(STRINGID_ADDEDTOBAG, gBattleStruct->expGetterBattlerId);
+            gBattleScripting.getexpState = EXP_COMPLETE;
+        }
+        else
+        {
+            PrepareStringBattle(STRINGID_BAGISFULL, gBattleStruct->expGetterBattlerId);
+            gBattleScripting.getexpState = EXP_COMPLETE;
         }
         break;
     case EXP_COMPLETE: // increment instruction

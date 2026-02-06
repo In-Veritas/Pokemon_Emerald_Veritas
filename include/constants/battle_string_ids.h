@@ -384,8 +384,11 @@
 #define STRINGID_POKEMONPICKUP              384
 #define STRINGID_POKEMONPICKUPVOWELITEMS    385
 #define STRINGID_POKEMONPICKUPMULTIPLE      386
+#define STRINGID_PKMNDROPPEDITEM            387
+#define STRINGID_ADDEDTOBAG                 388
+#define STRINGID_BAGISFULL                  389
 
-#define BATTLESTRINGS_COUNT                 387
+#define BATTLESTRINGS_COUNT                 390
 
 // This is the string id that gBattleStringsTable starts with.
 // String ids before this (e.g. STRINGID_INTROMSG) are not in the table,
