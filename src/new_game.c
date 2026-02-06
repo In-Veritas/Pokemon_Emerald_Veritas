@@ -154,8 +154,9 @@ void NewGameInitData(void)
 {
      // A function lower down here clears these, so retain it and reset it at the end
     bool8 nuzlockePrev = FlagGet(FLAG_NUZLOCKE);
-    bool8 hardPrev = FlagGet(FLAG_HARD); 
+    bool8 hardPrev = FlagGet(FLAG_HARD);
     bool8 natDexMode = FlagGet(FLAG_NATIONAL_DEX_MODE);
+    bool8 playerStyleRS = FlagGet(FLAG_PLAYER_STYLE_RS);
 
     if (gSaveFileStatus == SAVE_STATUS_EMPTY || gSaveFileStatus == SAVE_STATUS_CORRUPT)
         RtcReset();
@@ -220,6 +221,7 @@ void NewGameInitData(void)
     nuzlockePrev ? FlagSet(FLAG_NUZLOCKE) : FlagClear(FLAG_NUZLOCKE);
     hardPrev ? FlagSet(FLAG_HARD) : FlagClear(FLAG_HARD);
     natDexMode ? FlagSet(FLAG_NATIONAL_DEX_MODE) : FlagClear(FLAG_NATIONAL_DEX_MODE);
+    playerStyleRS ? FlagSet(FLAG_PLAYER_STYLE_RS) : FlagClear(FLAG_PLAYER_STYLE_RS);
 
     // If National Dex Mode selected, set all wild encounters to national Dex
     if (natDexMode)

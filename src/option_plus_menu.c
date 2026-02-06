@@ -1,5 +1,6 @@
 #include "global.h"
 #include "option_plus_menu.h"
+#include "debug.h"
 #include "main.h"
 #include "menu.h"
 #include "scanline_effect.h"
@@ -17,6 +18,7 @@
 #include "string_util.h"
 #include "gba/m4a_internal.h"
 #include "constants/rgb.h"
+#include "constants/flags.h"
 #include "event_data.h"
 #include "overworld.h"
 
@@ -79,9 +81,10 @@ enum
     MENUITEM_WORLD_MONOVERWORLD,
     MENUITEM_WORLD_BIKEMUSIC,
     MENUITEM_WORLD_AUTORUN,
+    MENUITEM_WORLD_PLAYERSTYLE,
+    MENUITEM_WORLD_OVERWORLDSPEED,
     MENUITEM_WORLD_IMPROVEDFISHING,
     MENUITEM_WORLD_FASTWATERING,
-    MENUITEM_WORLD_OVERWORLDSPEED,
     MENUITEM_WORLD_CANCEL,
     MENUITEM_WORLD_COUNT,
 };
@@ -226,6 +229,7 @@ static void DrawChoices_FastWatering(int selection, int y);
 static void DrawChoices_BikeMusic(int selection, int y);
 static void DrawChoices_SurfMusic(int selection, int y);
 static void DrawChoices_MonOverworld(int selection, int y);
+static void DrawChoices_PlayerStyle(int selection, int y);
 static void DrawChoices_SurfOverworld(int selection, int y);
 static void DrawChoices_ItemAnimate(int selection, int y);
 static void DrawChoices_BattleLevelCaps(int selection, int y);
@@ -327,6 +331,7 @@ struct // MENU_WORLD
     [MENUITEM_WORLD_FASTWATERING]       = {DrawChoices_FastWatering,        ProcessInput_Options_Two},
     [MENUITEM_WORLD_BIKEMUSIC]          = {DrawChoices_BikeMusic,           ProcessInput_Options_Two},
     [MENUITEM_WORLD_MONOVERWORLD]       = {DrawChoices_MonOverworld,        ProcessInput_Options_Two},
+    [MENUITEM_WORLD_PLAYERSTYLE]        = {DrawChoices_PlayerStyle,         ProcessInput_Options_Two},
     [MENUITEM_WORLD_CANCEL]             = {NULL, NULL},
 };
 
@@ -403,6 +408,7 @@ static const u8 sText_AutoRun[]             = _("AUTO RUN");
 static const u8 sText_OverworldSpeed[]      = _("WORLD SPEED");
 static const u8 sText_ImprovedFishing[]     = _("IMPROVED FISHING");
 static const u8 sText_FastWatering[]        = _("FAST WATERING");
+static const u8 sText_PlayerStyle[]         = _("PLAYER STYLE");
 static const u8 *const sOptionMenuItemsNamesWorld[MENUITEM_WORLD_COUNT] =
 {
     [MENUITEM_WORLD_MONOVERWORLD]           = sText_MonOverworld,
@@ -411,6 +417,7 @@ static const u8 *const sOptionMenuItemsNamesWorld[MENUITEM_WORLD_COUNT] =
     [MENUITEM_WORLD_OVERWORLDSPEED]         = sText_OverworldSpeed,
     [MENUITEM_WORLD_IMPROVEDFISHING]        = sText_ImprovedFishing,
     [MENUITEM_WORLD_FASTWATERING]           = sText_FastWatering,
+    [MENUITEM_WORLD_PLAYERSTYLE]            = sText_PlayerStyle,
     [MENUITEM_WORLD_CANCEL]                 = gText_OptionMenuSave,
 };
 
@@ -537,6 +544,7 @@ static bool8 CheckConditions(int selection)
         case MENUITEM_WORLD_FASTWATERING:       return TRUE;
         case MENUITEM_WORLD_BIKEMUSIC:          return TRUE;
         case MENUITEM_WORLD_MONOVERWORLD:       return TRUE;
+        case MENUITEM_WORLD_PLAYERSTYLE:        return TRUE;
         case MENUITEM_WORLD_CANCEL:             return TRUE;
         case MENUITEM_WORLD_COUNT:              return TRUE;
         }
@@ -665,6 +673,8 @@ static const u8 sText_Desc_BikeOff[]                    = _("Disables the BIKE m
 static const u8 sText_Desc_BikeOn[]                     = _("Enables the BIKE music when you\nstart riding the BIKE.");
 static const u8 sText_Desc_MonOverworldOff[]            = _("Disables following for the first\nPOKéMON in your party.");
 static const u8 sText_Desc_MonOverworldOn[]             = _("Enables following for the first\nPOKéMON in your party.");
+static const u8 sText_Desc_PlayerStyle_Emerald[]        = _("Original player sprites.\nNo change from original Emerald.");
+static const u8 sText_Desc_PlayerStyle_RS[]             = _("Uses POKéMON RUBY/SAPPHIRE style\nplayer sprites in the overworld.");
 static const u8 *const sOptionMenuItemDescriptionsWorld[MENUITEM_WORLD_COUNT][4] =
 {
     [MENUITEM_WORLD_AUTORUN]            = {sText_Desc_AutoRun_On,           sText_Desc_AutoRun_Off},
@@ -673,6 +683,7 @@ static const u8 *const sOptionMenuItemDescriptionsWorld[MENUITEM_WORLD_COUNT][4]
     [MENUITEM_WORLD_FASTWATERING]       = {sText_Desc_FastWatering_On,      sText_Desc_FastWatering_Off},
     [MENUITEM_WORLD_BIKEMUSIC]          = {sText_Desc_BikeOn,               sText_Desc_BikeOff},
     [MENUITEM_WORLD_MONOVERWORLD]       = {sText_Desc_MonOverworldOn,       sText_Desc_MonOverworldOff},
+    [MENUITEM_WORLD_PLAYERSTYLE]        = {sText_Desc_PlayerStyle_Emerald,  sText_Desc_PlayerStyle_RS},
     [MENUITEM_WORLD_CANCEL]             = {sText_Desc_Save},
 };
 
@@ -724,7 +735,13 @@ static const u8 *const sOptionMenuItemDescriptionsDisabledBattle[MENUITEM_BATTLE
 // Disabled Battle Speed
 static const u8 *const sOptionMenuItemDescriptionsDisabledBattSpeed[MENUITEM_BATTLE_SPEED_COUNT] =
 {
-    [MENUITEM_BATTLE_SPEED_CANCEL]      = sText_Empty,    
+    [MENUITEM_BATTLE_SPEED_CANCEL]      = sText_Empty,
+};
+
+// Disabled World
+static const u8 *const sOptionMenuItemDescriptionsDisabledWorld[MENUITEM_WORLD_COUNT] =
+{
+    [MENUITEM_WORLD_CANCEL]             = sText_Empty,
 };
 
 static const u8 *const OptionTextDescription(void)
@@ -755,7 +772,7 @@ static const u8 *const OptionTextDescription(void)
         return sOptionMenuItemDescriptionsBatSpeed[menuItem][selection];
     case MENU_WORLD:
         if (!CheckConditions(menuItem))
-            return sOptionMenuItemDescriptionsDisabledMain[menuItem];
+            return sOptionMenuItemDescriptionsDisabledWorld[menuItem];
         selection = sOptions->sel_world[menuItem];
         return sOptionMenuItemDescriptionsWorld[menuItem][selection];
     case MENU_SURF:
@@ -1069,6 +1086,7 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel_world[MENUITEM_WORLD_BIKEMUSIC]           = FlagGet(FLAG_DISABLE_BIKEMUSIC);
         sOptions->sel_world[MENUITEM_WORLD_MONOVERWORLD]        = !FlagGet(FLAG_ENABLE_FOLLOWER);
         sOptions->sel_world[MENUITEM_WORLD_OVERWORLDSPEED]      = VarGet(VAR_OVERWORLD_SPEEDUP);
+        sOptions->sel_world[MENUITEM_WORLD_PLAYERSTYLE]         = FlagGet(FLAG_PLAYER_STYLE_RS);
 
         //Surf
         sOptions->sel_surf[MENUITEM_SURF_FASTSURF]              = !FlagGet(FLAG_ENABLE_FASTSURF);           // Used the inverse to align with ON/OFF Buttons
@@ -1395,6 +1413,7 @@ static void Task_OptionMenuSave(u8 taskId)
     sOptions->sel_world[MENUITEM_WORLD_BIKEMUSIC]           == 0 ? FlagClear(FLAG_DISABLE_BIKEMUSIC)    : FlagSet(FLAG_DISABLE_BIKEMUSIC);
     sOptions->sel_world[MENUITEM_WORLD_MONOVERWORLD]        == 0 ? FlagSet(FLAG_ENABLE_FOLLOWER)        : FlagClear(FLAG_ENABLE_FOLLOWER);          // Used the inverse to align with other similar options.
     *GetVarPointer(VAR_OVERWORLD_SPEEDUP)                   = sOptions->sel_world[MENUITEM_WORLD_OVERWORLDSPEED];
+    sOptions->sel_world[MENUITEM_WORLD_PLAYERSTYLE]         == 0 ? FlagClear(FLAG_PLAYER_STYLE_RS)      : FlagSet(FLAG_PLAYER_STYLE_RS);
 
     //Surf
     sOptions->sel_surf[MENUITEM_SURF_FASTSURF]              == 0 ? FlagSet(FLAG_ENABLE_FASTSURF)        : FlagClear(FLAG_ENABLE_FASTSURF);          // Used the inverse to align with other similar options.
@@ -1972,6 +1991,15 @@ static void DrawChoices_MonOverworld(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_WORLD_MONOVERWORLD);
     DrawOptionMenuChoiceStrings(selection, y, active, sMonOverworldStrings, 2);
+}
+
+static const u8 sText_PlayerStyle_Emerald[] = _("ORIGINAL");
+static const u8 sText_PlayerStyle_Classic[] = _("CLASSIC");
+static const u8 *const sPlayerStyleStrings[] = {sText_PlayerStyle_Emerald, sText_PlayerStyle_Classic};
+static void DrawChoices_PlayerStyle(int selection, int y)
+{
+    bool8 active = CheckConditions(MENUITEM_WORLD_PLAYERSTYLE);
+    DrawOptionMenuChoiceStrings(selection, y, active, sPlayerStyleStrings, 2);
 }
 
 static const u8 sText_FastSurf_On[]   = _("ON");
