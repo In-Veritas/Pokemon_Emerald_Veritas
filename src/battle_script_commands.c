@@ -3708,14 +3708,14 @@ static void Cmd_getexp(void)
         }
         break;
     case EXP_CHECK_ITEM: // check if wild Pokémon has a hold item after fainting
-        if (!(gBattleTypeFlags & BATTLE_TYPE_TRAINER) && gBattleMons[0].hp && gBattleMons[gBattlerFainted].item != ITEM_NONE)
+        if (!(gBattleTypeFlags & BATTLE_TYPE_TRAINER) && gBattleMons[0].hp && gBattleMons[gBattlerFainted].item != ITEM_NONE && FlagGet(FLAG_ENABLE_WILD_HELD_DROP))
         {
             PrepareStringBattle(STRINGID_PKMNDROPPEDITEM, gBattleStruct->expGetterBattlerId);
             gBattleScripting.getexpState = EXP_GIVE_ITEM; // add item to bag
         }
         else
        {
-            gBattleScripting.getexpState = EXP_COMPLETE; // no hold item, end battle
+            gBattleScripting.getexpState = EXP_COMPLETE; // no hold item or held item dropping disabled, end battle
         }
         break;
     case EXP_GIVE_ITEM: // add dropped item to bag if space available
