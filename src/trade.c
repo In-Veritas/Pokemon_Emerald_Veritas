@@ -2399,13 +2399,10 @@ static u32 CanTradeSelectedMon(struct Pokemon *playerParty, int partyCount, int 
         species[i] = GetMonData(&playerParty[i], MON_DATA_SPECIES);
     }
 
-    // Cant trade Eggs or non-Hoenn mons if player doesn't have National Dex
+    // Cant trade non-Hoenn mons if player doesn't have National Dex
     if (!IsNationalPokedexEnabled())
     {
-        if (species2[monIdx] == SPECIES_EGG)
-            return CANT_TRADE_EGG_YET;
-
-        if (!IsSpeciesInHoennDex(species2[monIdx]))
+        if (species2[monIdx] != SPECIES_EGG && !IsSpeciesInHoennDex(species2[monIdx]))
             return CANT_TRADE_NATIONAL;
     }
 
@@ -2416,10 +2413,7 @@ static u32 CanTradeSelectedMon(struct Pokemon *playerParty, int partyCount, int 
         // Does partner not have National Dex
         if (!(partner->progressFlagsCopy & 0xF))
         {
-            if (species2[monIdx] == SPECIES_EGG)
-                return CANT_TRADE_PARTNER_EGG_YET;
-
-            if (!IsSpeciesInHoennDex(species2[monIdx]))
+            if (species2[monIdx] != SPECIES_EGG && !IsSpeciesInHoennDex(species2[monIdx]))
                 return CANT_TRADE_INVALID_MON;
         }
     }
@@ -2542,16 +2536,13 @@ int GetUnionRoomTradeMessageId(struct RfuGameCompatibilityData player, struct Rf
     if (playerSpecies2 == SPECIES_EGG && playerSpecies2 != partnerSpecies)
         return UR_TRADE_MSG_MON_CANT_BE_TRADED_1;
 
-    // If the player doesn't have the National Dex then Eggs and non-Hoenn Pokémon can't be traded
+    // If the player doesn't have the National Dex then non-Hoenn Pokémon can't be traded
     if (!playerHasNationalDex)
     {
-        if (playerSpecies2 == SPECIES_EGG)
-            return UR_TRADE_MSG_EGG_CANT_BE_TRADED;
-
-        if (!IsSpeciesInHoennDex(playerSpecies2))
+        if (playerSpecies2 != SPECIES_EGG && !IsSpeciesInHoennDex(playerSpecies2))
             return UR_TRADE_MSG_MON_CANT_BE_TRADED_2;
 
-        if (!IsSpeciesInHoennDex(partnerSpecies))
+        if (partnerSpecies != SPECIES_EGG && !IsSpeciesInHoennDex(partnerSpecies))
             return UR_TRADE_MSG_PARTNERS_MON_CANT_BE_TRADED;
     }
 
@@ -2573,9 +2564,9 @@ int CanRegisterMonForTradingBoard(struct RfuGameCompatibilityData player, u16 sp
     if (hasNationalDex)
         return CAN_REGISTER_MON;
 
-    // Eggs can only be traded if the player has the National Dex
+    // Eggs can be traded without National Dex
     if (species2 == SPECIES_EGG)
-        return CANT_REGISTER_EGG;
+        return CAN_REGISTER_MON;
 
     if (IsSpeciesInHoennDex(species2))
         return CAN_REGISTER_MON;
@@ -2627,11 +2618,9 @@ int CanSpinTradeMon(struct Pokemon *mon, u16 monIdx)
 
     if (canTradeAnyMon == FALSE)
     {
-        if (!IsSpeciesInHoennDex(speciesArray[monIdx]))
+        // Allow eggs (SPECIES_NONE in this context) but block non-Hoenn mons
+        if (speciesArray[monIdx] != SPECIES_NONE && !IsSpeciesInHoennDex(speciesArray[monIdx]))
             return CANT_TRADE_NATIONAL;
-
-        if (speciesArray[monIdx] == SPECIES_NONE)
-            return CANT_TRADE_EGG_YET;
     }
 
     numMonsLeft = 0;
