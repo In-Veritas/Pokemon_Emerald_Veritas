@@ -1,11 +1,15 @@
 #include "global.h"
 #include "main.h"
+#include "debug.h"
 #include "event_data.h"
 #include "field_effect.h"
 #include "field_specials.h"
 #include "item.h"
 #include "menu.h"
 #include "palette.h"
+#include "pokedex.h"
+#include "pokemon.h"
+#include "random.h"
 #include "script.h"
 #include "script_menu.h"
 #include "sound.h"
@@ -543,6 +547,136 @@ void GetLilycoveSSTidalSelection(void)
     {
         gSpecialVar_Result = sLilycoveSSTidalSelections[gSpecialVar_Result];
     }
+}
+
+// Link Battle Music dynamic multichoice
+
+static u8 sLinkBattleMusicSelections[LINK_MUSIC_COUNT];
+
+static const u8 *const sLinkBattleMusicNames[] =
+{
+    [LINK_MUSIC_VS_TRAINER]    = gText_LinkMusic_VsTrainer,
+    [LINK_MUSIC_VS_RIVAL]      = gText_LinkMusic_VsRival,
+    [LINK_MUSIC_VS_GYM_LEADER] = gText_LinkMusic_VsGymLeader,
+    [LINK_MUSIC_VS_CHAMPION]   = gText_LinkMusic_VsChampion,
+    [LINK_MUSIC_VS_VERITAS]    = gText_LinkMusic_VsLegendary,
+    [LINK_MUSIC_VS_LEGENDARY]  = gText_LinkMusic_VsSuper,
+    [LINK_MUSIC_RANDOM]        = gText_LinkMusic_Random,
+    [LINK_MUSIC_CANCEL]        = gText_Cancel2,
+};
+
+static const u16 sLinkBattleMusicIds[] =
+{
+    [LINK_MUSIC_VS_TRAINER]    = MUS_VS_TRAINER,
+    [LINK_MUSIC_VS_RIVAL]      = MUS_VS_RIVAL,
+    [LINK_MUSIC_VS_GYM_LEADER] = MUS_VS_GYM_LEADER,
+    [LINK_MUSIC_VS_CHAMPION]   = MUS_VS_CHAMPION,
+    [LINK_MUSIC_VS_VERITAS]    = MUS_C_VS_LEGEND_BEAST,
+    [LINK_MUSIC_VS_LEGENDARY]  = MUS_VS_KYOGRE_GROUDON,
+};
+
+static bool8 IsLinkMusicUnlocked(u8 musicIndex)
+{
+#if TX_DEBUG_SYSTEM_ENABLE == TRUE
+    return TRUE;
+#endif
+
+    switch (musicIndex)
+    {
+    case LINK_MUSIC_VS_TRAINER:
+    case LINK_MUSIC_RANDOM:
+    case LINK_MUSIC_CANCEL:
+        return TRUE;
+    case LINK_MUSIC_VS_RIVAL:
+        return FlagGet(FLAG_MET_RIVAL_LILYCOVE);
+    case LINK_MUSIC_VS_GYM_LEADER:
+        return FlagGet(FLAG_BADGE08_GET);
+    case LINK_MUSIC_VS_CHAMPION:
+        return FlagGet(FLAG_IS_CHAMPION);
+    case LINK_MUSIC_VS_VERITAS:
+        return FlagGet(FLAG_DEFEATED_EXCLSIOR);
+    case LINK_MUSIC_VS_LEGENDARY:
+        return GetSetPokedexFlag(SpeciesToNationalPokedexNum(SPECIES_GROUDON), FLAG_GET_CAUGHT)
+            && GetSetPokedexFlag(SpeciesToNationalPokedexNum(SPECIES_KYOGRE), FLAG_GET_CAUGHT)
+            && GetSetPokedexFlag(SpeciesToNationalPokedexNum(SPECIES_RAYQUAZA), FLAG_GET_CAUGHT);
+    default:
+        return FALSE;
+    }
+}
+
+static void CreateLinkBattleMusicMultichoice(void)
+{
+    u8 selectionCount = 0;
+    u32 pixelWidth = 0;
+    u8 width;
+    u8 windowId;
+    u8 i;
+
+    for (i = 0; i < LINK_MUSIC_COUNT; i++)
+        sLinkBattleMusicSelections[i] = 0xFF;
+
+    for (i = 0; i < LINK_MUSIC_COUNT; i++)
+    {
+        if (IsLinkMusicUnlocked(i))
+        {
+            sLinkBattleMusicSelections[selectionCount] = i;
+            pixelWidth = DisplayTextAndGetWidth(sLinkBattleMusicNames[i], pixelWidth);
+            selectionCount++;
+        }
+    }
+
+    width = ConvertPixelWidthToTileWidth(pixelWidth);
+    windowId = CreateWindowFromRect(0, 0, width, selectionCount * 2);
+    SetStandardWindowBorderStyle(windowId, FALSE);
+
+    for (i = 0; i < selectionCount; i++)
+    {
+        AddTextPrinterParameterized(windowId, FONT_NORMAL, sLinkBattleMusicNames[sLinkBattleMusicSelections[i]], 8, i * 16 + 1, TEXT_SKIP_DRAW, NULL);
+    }
+
+    InitMenuInUpperLeftCornerNormal(windowId, selectionCount, selectionCount - 1);
+    CopyWindowToVram(windowId, COPYWIN_FULL);
+    InitMultichoiceCheckWrap(FALSE, selectionCount, windowId, MULTI_LINK_BATTLE_MUSIC);
+}
+
+bool8 ScriptMenu_CreateLinkBattleMusicMultichoice(void)
+{
+    if (FuncIsActiveTask(Task_HandleMultichoiceInput) == TRUE)
+    {
+        return FALSE;
+    }
+    else
+    {
+        gSpecialVar_Result = 0xFF;
+        CreateLinkBattleMusicMultichoice();
+        return TRUE;
+    }
+}
+
+void GetLinkBattleMusicSelection(void)
+{
+    if (gSpecialVar_Result != MULTI_B_PRESSED)
+    {
+        gSpecialVar_Result = sLinkBattleMusicSelections[gSpecialVar_Result];
+    }
+}
+
+void SetRandomLinkBattleMusic(void)
+{
+    u16 unlockedMusic[6];
+    u8 count = 0;
+    u8 i;
+
+    for (i = LINK_MUSIC_VS_TRAINER; i <= LINK_MUSIC_VS_LEGENDARY; i++)
+    {
+        if (IsLinkMusicUnlocked(i))
+        {
+            unlockedMusic[count] = sLinkBattleMusicIds[i];
+            count++;
+        }
+    }
+
+    VarSet(VAR_LINK_BATTLE_MUSIC, unlockedMusic[Random() % count]);
 }
 
 #define tState       data[0]

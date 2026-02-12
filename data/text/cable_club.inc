@@ -346,6 +346,10 @@ CableClub_Text_PlayWhichBattleMode:
 	.string "Which Battle Mode would you like\n"
 	.string "to play?$"
 
+CableClub_Text_SelectBattleMusic:
+	.string "Which battle music would you\n"
+	.string "like to use?$"
+
 CableClub_Text_AccessRecordCorner:
 	.string "Would you like to access\n"
 	.string "the RECORD CORNER?$"

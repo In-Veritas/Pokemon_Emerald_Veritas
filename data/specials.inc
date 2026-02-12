@@ -543,3 +543,6 @@ gSpecials::
 	def_special CheckFoundAllKecleon
 	def_special CheckGotAllKantoStarters
 	def_special UpdateGymLeaderRematch
+	def_special ScriptMenu_CreateLinkBattleMusicMultichoice
+	def_special GetLinkBattleMusicSelection
+	def_special SetRandomLinkBattleMusic

@@ -124,6 +124,18 @@
 #define MULTI_TAG_MATCH_TYPE               113
 #define MULTI_FOSSIL_POST_GAME             114
 #define MULTI_SHINY_LATI                   115
+#define MULTI_LINK_BATTLE_MUSIC            116
+
+// Link Battle Music Selections
+#define LINK_MUSIC_VS_TRAINER    0
+#define LINK_MUSIC_VS_RIVAL      1
+#define LINK_MUSIC_VS_GYM_LEADER 2
+#define LINK_MUSIC_VS_CHAMPION   3
+#define LINK_MUSIC_VS_VERITAS    4
+#define LINK_MUSIC_VS_LEGENDARY  5
+#define LINK_MUSIC_RANDOM        6
+#define LINK_MUSIC_CANCEL        7
+#define LINK_MUSIC_COUNT         8
 
 // Lilycove SS Tidal Multichoice Selections
 #define SSTIDAL_SELECTION_SLATEPORT        0

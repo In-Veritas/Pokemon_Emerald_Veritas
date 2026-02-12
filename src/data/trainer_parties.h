@@ -15092,7 +15092,7 @@ static const struct TrainerMon sParty_Veritas[] = {
     .ability = ABILITY_SLOT_1,
     .evs = {4, 152, 0, 252, 100, 0},
     .moves = {MOVE_HYDRO_CANNON, MOVE_REST, MOVE_RAIN_DANCE, MOVE_HYPER_BEAM},
-    .nature = NATURE_NAUGHTY
+    .nature = NATURE_NAUGHTY,
     .shiny = TRUE
     },
     {

@@ -745,6 +745,7 @@ static const struct MenuAction MultichoiceList_ShinyLati[] =
     {gText_Teal},
 };
 
+
 static const struct MenuAction MultichoiceList_BattleTowerFeelings[] =
 {
     {gText_IllBattleNow},

@@ -301,6 +301,8 @@ CableClub_EventScript_BattleModeInfo::
 
 CableClub_EventScript_SingleBattleMode::
 	setvar VAR_0x8004, USING_SINGLE_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_SelectBattleMode
 	goto CableClub_EventScript_TryEnterColosseum
 	end
 
@@ -308,6 +310,8 @@ CableClub_EventScript_DoubleBattleMode::
 	special HasEnoughMonsForDoubleBattle
 	goto_if_ne VAR_RESULT, PLAYER_HAS_TWO_USABLE_MONS, CableClub_EventScript_NeedTwoMonsForDoubleBattle
 	setvar VAR_0x8004, USING_DOUBLE_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_SelectBattleMode
 	goto CableClub_EventScript_TryEnterColosseum
 	end
 
@@ -318,8 +322,60 @@ CableClub_EventScript_NeedTwoMonsForDoubleBattle::
 
 CableClub_EventScript_MultiBattleMode::
 	setvar VAR_0x8004, USING_MULTI_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_SelectBattleMode
 	goto CableClub_EventScript_TryEnterColosseum
 	end
+
+CableClub_EventScript_SelectBattleMusic::
+	message CableClub_Text_SelectBattleMusic
+	waitmessage
+	special ScriptMenu_CreateLinkBattleMusicMultichoice
+	waitstate
+	special GetLinkBattleMusicSelection
+	switch VAR_RESULT
+	case LINK_MUSIC_VS_TRAINER, CableClub_EventScript_MusicVsTrainer
+	case LINK_MUSIC_VS_RIVAL, CableClub_EventScript_MusicVsRival
+	case LINK_MUSIC_VS_GYM_LEADER, CableClub_EventScript_MusicVsGymLeader
+	case LINK_MUSIC_VS_CHAMPION, CableClub_EventScript_MusicVsChampion
+	case LINK_MUSIC_VS_VERITAS, CableClub_EventScript_MusicVsVeritas
+	case LINK_MUSIC_VS_LEGENDARY, CableClub_EventScript_MusicVsLegendary
+	case LINK_MUSIC_RANDOM, CableClub_EventScript_MusicRandom
+	case LINK_MUSIC_CANCEL, CableClub_EventScript_MusicCancel
+	case MULTI_B_PRESSED, CableClub_EventScript_MusicCancel
+	return
+
+CableClub_EventScript_MusicVsTrainer::
+	setvar VAR_LINK_BATTLE_MUSIC, 0
+	return
+
+CableClub_EventScript_MusicVsRival::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_VS_RIVAL
+	return
+
+CableClub_EventScript_MusicVsGymLeader::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_VS_GYM_LEADER
+	return
+
+CableClub_EventScript_MusicVsChampion::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_VS_CHAMPION
+	return
+
+CableClub_EventScript_MusicVsVeritas::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_C_VS_LEGEND_BEAST
+	return
+
+CableClub_EventScript_MusicVsLegendary::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_VS_KYOGRE_GROUDON
+	return
+
+CableClub_EventScript_MusicRandom::
+	special SetRandomLinkBattleMusic
+	return
+
+CableClub_EventScript_MusicCancel::
+	setvar VAR_RESULT, MULTI_B_PRESSED
+	return
 
 CableClub_EventScript_TryEnterColosseum::
 	call Common_EventScript_SaveGame
@@ -1034,6 +1090,8 @@ CableClub_EventScript_WirelessBattleSelect::
 
 CableClub_EventScript_WirelessSingleBattle::
 	setvar VAR_0x8004, LINK_GROUP_SINGLE_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_WirelessBattleSelect
 	goto CableClub_EventScript_SaveAndChooseLinkLeader
 	end
 
@@ -1041,6 +1099,8 @@ CableClub_EventScript_WirelessDoubleBattle::
 	special HasEnoughMonsForDoubleBattle
 	goto_if_ne VAR_RESULT, PLAYER_HAS_TWO_USABLE_MONS, CableClub_EventScript_TwoMonsNeededForWirelessDoubleBattle
 	setvar VAR_0x8004, LINK_GROUP_DOUBLE_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_WirelessBattleSelect
 	goto CableClub_EventScript_SaveAndChooseLinkLeader
 	end
 
@@ -1051,6 +1111,8 @@ CableClub_EventScript_TwoMonsNeededForWirelessDoubleBattle::
 
 CableClub_EventScript_WirelessMultiBattle::
 	setvar VAR_0x8004, LINK_GROUP_MULTI_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_WirelessBattleSelect
 	goto CableClub_EventScript_SaveAndChooseLinkLeader
 	end
 

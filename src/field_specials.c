@@ -4546,3 +4546,4 @@ void CheckGotAllKantoStarters(void)
         return;
     }
 }
+
