@@ -201,7 +201,6 @@ SouthernIsland_Interior_EventScript_SetUpShinyLatias::
 	end
 
 SouthernIsland_Interior_EventScript_ShinyLati::
-	setflag FLAG_TEMP_2
 	special SpawnCameraObject
 	applymovement OBJ_EVENT_ID_CAMERA, SouthernIsland_Interior_Movement_CameraPanUp
 	waitmovement 0

@@ -15066,7 +15066,7 @@ static const struct TrainerMon sParty_Weebra[] = {
 static const struct TrainerMon sParty_Veritas[] = {
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 80,
+    .lvl = 83,
     .species = SPECIES_MANTINE,
     .heldItem = ITEM_LEFTOVERS,
     .ability = ABILITY_SLOT_1,
@@ -15086,17 +15086,18 @@ static const struct TrainerMon sParty_Veritas[] = {
     },
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 82,
-    .species = SPECIES_KINGDRA,
-    .heldItem = ITEM_MYSTIC_WATER,
+    .lvl = 84,
+    .species = SPECIES_GYARADOS,
+    .heldItem = ITEM_CHESTO_BERRY,
     .ability = ABILITY_SLOT_1,
-    .evs = {104, 0, 0, 152, 252, 0},
-    .moves = {MOVE_SURF, MOVE_DRAGON_BREATH, MOVE_RAIN_DANCE, MOVE_OCTAZOOKA},
-    .nature = NATURE_RASH
+    .evs = {4, 152, 0, 252, 100, 0},
+    .moves = {MOVE_HYDRO_CANNON, MOVE_REST, MOVE_RAIN_DANCE, MOVE_HYPER_BEAM},
+    .nature = NATURE_NAUGHTY
+    .shiny = TRUE
     },
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 82,
+    .lvl = 84,
     .species = SPECIES_JUMPLUFF,
     .heldItem = ITEM_LEFTOVERS,
     .ability = ABILITY_SLOT_1,
@@ -15106,12 +15107,12 @@ static const struct TrainerMon sParty_Veritas[] = {
     },
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 83,
+    .lvl = 84,
     .species = SPECIES_WAILORD,
     .heldItem = ITEM_QUICK_CLAW,
     .ability = ABILITY_SLOT_1,
     .evs = {252, 4, 0, 0, 252, 0},
-    .moves = {MOVE_BLIZZARD, MOVE_WATER_SPOUT, MOVE_SELF_DESTRUCT, MOVE_RAIN_DANCE},
+    .moves = {MOVE_EARTHQUAKE, MOVE_WATER_SPOUT, MOVE_SELF_DESTRUCT, MOVE_RAIN_DANCE},
     .nature = NATURE_RASH
     },
     {

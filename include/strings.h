@@ -3246,6 +3246,7 @@ extern const u8 gText_Cancel6[];
 extern const u8 gText_CheckMapOfHoenn[];
 extern const u8 gText_CheckPokemonInDetail[];
 extern const u8 gText_CallRegisteredTrainer[];
+extern const u8 gText_RegisteredTrainerInPokenav[];
 extern const u8 gText_CheckObtainedRibbons[];
 extern const u8 gText_PutAwayPokenav[];
 extern const u8 gText_CheckPartyPokemonInDetail[];
