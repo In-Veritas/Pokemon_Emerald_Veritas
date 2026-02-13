@@ -105,6 +105,21 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 
 *This allows players to evolve Pokémon through trading (original method) or wait until higher levels for solo play.*
 
+#### Link Battle Music Selection
+
+* Choose your preferred battle music before link battles
+* Available tracks include VS Rival, VS Gym Leader, VS Champion, VS Legendary Beast, and VS Kyogre/Groudon
+* Selection of "Random" picks a random unlocked track
+* Default option uses the original trainer ID-based music selection
+
+#### Egg Trading
+
+* Eggs can now be traded before obtaining the National Dex
+
+#### Light Ball Enhancement
+
+* Light Ball now boosts Special Attack for Pikachu, Pichu, Minun, and Plusle (not just Pikachu)
+
 #### Default Options for New Games
 
 * **Pokémon Follower**: Now enabled by default
@@ -174,7 +189,7 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 #### Options Menu Simplifications
 
 * **Dive Speed option** removed from Surf submenu
-* **Stat Editor visibility toggle** removed (Stat Editor itself remains functional)
+* **Stat Editor** fully disabled (removed from party menu and post-game dialog)
 * **Button Mode simplified** - Removed "LR" mode option, now only offers "NORMAL" and "L=A" modes
 
 #### Gift Pokémon Changes
@@ -194,7 +209,7 @@ Still shiny gift Pokémon (unchanged from Enhanced):
 
 Contest painting rewards have been modified:
 
-* **Master Beauty Contest reward** - Changed from Milotic to Misdreavus (Level 50)
+* **Master Beauty Contest reward** - Changed from Milotic to Ditto (Level 50)
 * Other contest rewards remain unchanged:
   * Cool Contest: Slaking (Level 50)
   * Cute Contest: Delcatty (Level 50)
@@ -211,7 +226,7 @@ This ROM hack includes **all features** from Pokémon Emerald Legacy Enhanced v1
 * **Optional National Dex Mode** (all 9 starters available from start)
 * **HM Improvements** (no need to teach HMs, just have them in bag)
 * **Shiny Charms** (up to 8 available through in-game milestones)
-* **Stat Editor** (IV/EV editing after National Dex)
+* ~~**Stat Editor** (IV/EV editing after National Dex)~~ — Disabled in Veritas
 * **Nature Mints** & **Ability Capsules**
 * **Egg Move Tutor** (post-game)
 * **EXP. All** (Gen 3 style party-wide exp share)
@@ -331,7 +346,6 @@ Veritas uses a re-roll system where each Shiny Charm adds +1 re-roll attempt. Ba
 * Ability to toggle Type Effectiveness colour coding within battle (Off by default).
   * Green: Super effective, Red: Not very effective, Grey: No effect.
 * Ability to change in-game font from Hoenn (original Emerald font) to Kanto (FireRed/LeafGreen font).
-* Ability to hide post-game Stat Editor from Party Menu.
 * Ability to hide Nickname option from Party Menu.
 * Ability to change Battle Mode (Normal/Hard Mode/Hardcore(Nuzlocke)) after beating Steven in Meteor Falls.
 * Ability to increase player and NPC in-game speed (World Speed) by 2x, 4x, or 8x (Music speed stays the same.)
