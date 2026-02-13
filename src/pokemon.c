@@ -74,6 +74,7 @@ static u16 GiveMoveToBoxMon(struct BoxPokemon *boxMon, u16 move);
 static bool8 ShouldSkipFriendshipChange(void);
 
 EWRAM_DATA static u8 sLearningMoveTableID = 0;
+EWRAM_DATA bool8 gDifferentOTBreedingBonus = FALSE;
 EWRAM_DATA u8 gPlayerPartyCount = 0;
 EWRAM_DATA u8 gEnemyPartyCount = 0;
 EWRAM_DATA struct Pokemon gPlayerParty[PARTY_SIZE] = {0};
@@ -2293,6 +2294,12 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
                     maxRolls += itemCount;
                 }
 #endif
+                // +1 roll for breeding with different OT parents
+                if (gDifferentOTBreedingBonus)
+                {
+                    maxRolls++;
+                    gDifferentOTBreedingBonus = FALSE;
+                }
                 // Re-roll until shiny or out of attempts
                 do
                 {

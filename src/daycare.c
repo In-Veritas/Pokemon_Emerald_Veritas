@@ -889,6 +889,9 @@ static void _GiveEggFromDaycare(struct DayCare *daycare)
     u16 species;
     u8 parentSlots[DAYCARE_MON_COUNT];
     bool8 isEgg;
+    u32 otId0;
+    u32 otId1;
+    u8 masudaMarker;
 
     species = DetermineEggSpeciesAndParentSlots(daycare, parentSlots);
     AlterEggSpeciesWithIncenseItem(&species, daycare);
@@ -898,6 +901,15 @@ static void _GiveEggFromDaycare(struct DayCare *daycare)
 
     if (species == SPECIES_PICHU)
         GiveVoltTackleIfLightBall(&egg, daycare);
+
+    // Mark egg if parents have different OTs (breeding bonus at hatch)
+    otId0 = GetBoxMonData(&daycare->mons[0].mon, MON_DATA_OT_ID, NULL);
+    otId1 = GetBoxMonData(&daycare->mons[1].mon, MON_DATA_OT_ID, NULL);
+    if (otId0 != otId1)
+    {
+        masudaMarker = TRUE;
+        SetMonData(&egg, MON_DATA_MODERN_FATEFUL_ENCOUNTER, &masudaMarker);
+    }
 
     isEgg = TRUE;
     SetMonData(&egg, MON_DATA_IS_EGG, &isEgg);

@@ -153,6 +153,7 @@ Trade evolutions have been restored while keeping alternative evolution methods 
   * Base shiny odds: **1/8192** (vanilla rate)
   * Each Shiny Charm adds +1 re-roll attempt
   * Example: 1 charm = 1/4096, 2 charms = 1/2731, 8 charms = 1/910
+  * **Breeding bonus**: Breeding two Pokémon with different Original Trainers grants +1 extra shiny roll at hatch, stacking with Shiny Charms (e.g., 3 charms + different OT = 5 rolls = ~1/1638)
 * **Fast Surf Speed Reduction**: Reduced fast surfing speed by approximately 30%
   * Now uses 6-frame movement cycles instead of 4-frame cycles
   * Provides smoother surfing experience while still being faster than normal

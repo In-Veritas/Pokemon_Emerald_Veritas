@@ -334,6 +334,14 @@ static void CreateHatchedMon(struct Pokemon *egg, struct Pokemon *temp)
     pokerus = GetMonData(egg, MON_DATA_POKERUS);
     isModernFatefulEncounter = GetMonData(egg, MON_DATA_MODERN_FATEFUL_ENCOUNTER);
 
+    // If egg was marked as having different-OT parents, activate breeding bonus
+    if (isModernFatefulEncounter)
+    {
+        extern bool8 gDifferentOTBreedingBonus;
+        gDifferentOTBreedingBonus = TRUE;
+        isModernFatefulEncounter = FALSE; // Clear marker so hatched mon doesn't keep it
+    }
+
     CreateMon(temp, species, EGG_HATCH_LEVEL, USE_RANDOM_IVS, TRUE, personality, OT_ID_PLAYER_ID, 0);
 
     for (i = 0; i < MAX_MON_MOVES; i++)
