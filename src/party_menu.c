@@ -2724,10 +2724,8 @@ static void SetPartyMonFieldSelectionActions(struct Pokemon *mons, u8 slotId)
     if (sPartyMenuInternal->numActions < 6 && CanMonLearnLevelUpMove(&mons[slotId], MOVE_SWEET_SCENT) && !CheckInList(sPartyMenuInternal->actions, &sPartyMenuInternal->numActions, FIELD_MOVE_SWEET_SCENT + MENU_FIELD_MOVES)) 
         AppendToList(sPartyMenuInternal->actions, &sPartyMenuInternal->numActions, FIELD_MOVE_SWEET_SCENT + MENU_FIELD_MOVES);
 
-    // If flag set, enable Stat Editing.
-    if(sPartyMenuInternal->numActions < 6 && FlagGet(FLAG_ENABLE_STAT_EDITOR) && FlagGet(FLAG_SHOW_STAT_EDITOR)){
-        AppendToList(sPartyMenuInternal->actions, &sPartyMenuInternal->numActions, MENU_STAT_EDIT);
-    }
+    // Stat Editor disabled
+
 
     // If flag set, enable Nickname Editing
     if(sPartyMenuInternal->numActions < 6 && FlagGet(FLAG_ENABLE_NICKNAME) && !IsTradedMon(&mons[slotId])){

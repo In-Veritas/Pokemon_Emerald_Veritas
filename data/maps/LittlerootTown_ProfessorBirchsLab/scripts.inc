@@ -209,11 +209,6 @@ LittlerootTown_ProfessorBirchsLab_EventScript_UpgradeToNationalDex::
 	waitfanfare
 	setflag FLAG_SYS_NATIONAL_DEX
 	special EnableNationalPokedex
-	setflag FLAG_ENABLE_STAT_EDITOR
-	setflag FLAG_SHOW_STAT_EDITOR
-	playfanfare MUS_OBTAIN_ITEM
-	msgbox LittlerootTown_ProfessorBirchsLab_Text_StatEditorAvailable, MSGBOX_DEFAULT
-	waitfanfare
 	msgbox LittlerootTown_ProfessorBirchsLab_Text_GrassyPatchWaiting2, MSGBOX_DEFAULT
 	msgbox LittlerootTown_ProfessorBirchsLab_Text_StrangeRockInMossdeep
 	closemessage
@@ -273,11 +268,6 @@ LittlerootTown_ProfessorBirchsLab_EventScript_NationalDexMode_UpgradeDex::
 	applymovement OBJ_EVENT_ID_PLAYER, Common_Movement_WalkInPlaceFasterUp
 	waitmovement 0
 	msgbox LittlerootTown_ProfessorBirchsLab_Text_OkayAllDone, MSGBOX_DEFAULT
-	setflag FLAG_ENABLE_STAT_EDITOR
-	setflag FLAG_SHOW_STAT_EDITOR
-	playfanfare MUS_OBTAIN_ITEM
-	msgbox LittlerootTown_ProfessorBirchsLab_Text_StatEditorAvailable, MSGBOX_DEFAULT
-	waitfanfare
 	msgbox LittlerootTown_ProfessorBirchsLab_Text_GrassyPatchWaiting2, MSGBOX_DEFAULT
 	msgbox LittlerootTown_ProfessorBirchsLab_Text_StrangeRockInMossdeep
 	closemessage

@@ -340,9 +340,9 @@ bool8 UpdateSave_v2_v3(const struct SaveSectorLocation *locations)
     tempOptionSurfMusic == 0        ? FlagClear(FLAG_DISABLE_SURFMUSIC)     : FlagSet(FLAG_DISABLE_SURFMUSIC);
     tempOptionBikeMusic == 0        ? FlagClear(FLAG_DISABLE_BIKEMUSIC)     : FlagSet(FLAG_DISABLE_BIKEMUSIC);
 
-    // Check for Game Cleared to unlocked for Stat Editor unlock due to change in flag configuration (Could use National Dex, but due to National Dex flag being used in more areas prefer to use game clear flag)
-    FlagGet(FLAG_SYS_GAME_CLEAR)    ? FlagSet(FLAG_ENABLE_STAT_EDITOR)      : FlagClear(FLAG_ENABLE_STAT_EDITOR);
-    FlagGet(FLAG_SYS_GAME_CLEAR)    ? FlagSet(FLAG_SHOW_STAT_EDITOR)        : FlagClear(FLAG_SHOW_STAT_EDITOR);
+    // Stat Editor disabled — clear flags on save upgrade
+    FlagClear(FLAG_ENABLE_STAT_EDITOR);
+    FlagClear(FLAG_SHOW_STAT_EDITOR);
 
     // Add Shiny Charm to Save Upgrades
     AddPCItem(ITEM_SHINY_CHARM, 1); // One base Shiny Charm for the game
