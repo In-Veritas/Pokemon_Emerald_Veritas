@@ -239,8 +239,8 @@
 #define VAR_PETALBURG_WOODS_WILD_SET                     0x40DB
 #define VAR_RUSTURF_TUNNEL_WILD_SET                      0x40DC
 #define VAR_GIFT_PICHU_SLOT                              0x40DD
-#define VAR_GIFT_UNUSED_1                                0x40DE // Var is written to, but never read
-#define VAR_GIFT_UNUSED_2                                0x40DF // Var is written to, but never read
+#define VAR_LINK_BATTLE_MUSIC                            0x40DE // Repurposed unused gift var for link battle music selection
+#define VAR_SHOW_ZINNIA                                  0x40DF // Repurposed unused gift var for Sky Pillar Zinnia trigger
 #define VAR_GIFT_UNUSED_3                                0x40E0 // Var is written to, but never read
 #define VAR_GIFT_UNUSED_4                                0x40E1 // Var is written to, but never read
 #define VAR_GIFT_UNUSED_5                                0x40E2 // Var is written to, but never read
@@ -274,10 +274,8 @@
 #define VAR_ROUTE114_WILD_SET                            0x40FE
 #define VAR_ROUTE116_WILD_SET                            0x40FF
 #define VAR_NORMAN_REMATCH_CALL_STEP_COUNTER             0x4100
-#define VAR_SHOW_ZINNIA                                  0x4101
-#define VAR_LINK_BATTLE_MUSIC                            0x4102
 
-#define VARS_END                                         0x4103
+#define VARS_END                                         0x4100
 #define VARS_COUNT                                       (VARS_END - VARS_START + 1)
 
 #define SPECIAL_VARS_START            0x8000
