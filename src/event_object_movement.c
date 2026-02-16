@@ -2672,7 +2672,11 @@ static void ObjectEventSetGraphics(struct ObjectEvent *objectEvent, const struct
     struct Sprite *sprite = &gSprites[objectEvent->spriteId];
     u32 i = FindObjectEventPaletteIndexByTag(graphicsInfo->paletteTag);
     if (i != 0xFF)
+    {
         UpdateSpritePalette(&sObjectEventSpritePalettes[i], sprite);
+        if (gWeatherPtr->currWeather != WEATHER_FOG_HORIZONTAL)
+            UpdateSpritePaletteWithWeather(sprite->oam.paletteNum);
+    }
 
     // If gfx size changes, we need to reallocate tiles
     if (LARGE_OW_SUPPORT && !OW_GFX_COMPRESS && graphicsInfo->oam->size != sprite->oam.size)
@@ -3088,8 +3092,8 @@ static bool8 ObjectEventDoesElevationMatch(struct ObjectEvent *objectEvent, u8 e
 void UpdateObjectEventsForCameraUpdate(s16 x, s16 y)
 {
     UpdateObjectEventCoordsForCameraUpdate();
-    TrySpawnObjectEvents(x, y);
     RemoveObjectEventsOutsideView();
+    TrySpawnObjectEvents(x, y);
 }
 
 // The "CameraObject" functions below are responsible for an invisible sprite
