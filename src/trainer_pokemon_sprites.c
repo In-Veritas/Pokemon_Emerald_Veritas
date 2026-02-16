@@ -7,6 +7,7 @@
 #include "trainer_pokemon_sprites.h"
 #include "data.h"
 #include "pokemon.h"
+#include "event_data.h"
 #include "constants/trainers.h"
 
 #define PICS_COUNT 8
@@ -377,6 +378,13 @@ u16 PlayerGenderToFrontTrainerPicId_Debug(u8 gender, bool8 getClass)
 {
     if (getClass == TRUE)
     {
+        if (FlagGet(FLAG_PLAYER_STYLE_RS))
+        {
+            if (gender != MALE)
+                return gFacilityClassToPicIndex[FACILITY_CLASS_RS_MAY];
+            else
+                return gFacilityClassToPicIndex[FACILITY_CLASS_RS_BRENDAN];
+        }
         if (gender != MALE)
             return gFacilityClassToPicIndex[FACILITY_CLASS_MAY];
         else

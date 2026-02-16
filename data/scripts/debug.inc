@@ -64,10 +64,18 @@ Debug_Script_2::
 	waitstate
 	end
 
+@ Debug script to test Steven battle with VS cutscene mugshot
 Debug_Script_3::
+	clearflag FLAG_IS_CHAMPION
+	warpsilent MAP_EVER_GRANDE_CITY_CHAMPIONS_ROOM, 6, 10
+	waitstate
 	end
 
+@ Debug script to test Hall of Fame entry sequence
 Debug_Script_4::
+	setvar VAR_TEMP_1, 0
+	warpsilent MAP_EVER_GRANDE_CITY_HALL_OF_FAME, 7, 16
+	waitstate
 	end
 
 Debug_Script_5::
