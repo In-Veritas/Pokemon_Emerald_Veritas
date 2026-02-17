@@ -105,6 +105,13 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 
 *This allows players to evolve Pokémon through trading (original method) or wait until higher levels for solo play.*
 
+#### True Shiny Indicator
+
+* Shinies that were determined on the very first roll (without needing Shiny Charm re-rolls) are marked as **true shinies**
+* True shinies display **white sparkles** when entering battle, distinguishing them from charm-assisted shinies which show the normal gold sparkles
+* The marking is stored within existing unused Pokémon data bits — no save structure changes
+* Existing Pokémon are unaffected; only newly generated Pokémon going forward are tracked
+
 #### Link Battle Music Selection
 
 * Choose your preferred battle music before link battles
@@ -154,6 +161,10 @@ Trade evolutions have been restored while keeping alternative evolution methods 
   * Each Shiny Charm adds +1 re-roll attempt
   * Example: 1 charm = 1/4096, 2 charms = 1/2731, 8 charms = 1/910
   * **Breeding bonus**: Breeding two Pokémon with different Original Trainers grants +1 extra shiny roll at hatch, stacking with Shiny Charms (e.g., 3 charms + different OT = 5 rolls = ~1/1638)
+* **RS Style Front Trainer Pic Fix**: VS cutscene mugshots and Hall of Fame now correctly display the Ruby/Sapphire player sprite when Classic style is selected
+* **Acro Bike Reverse Ledge Fix**: Fixed a bug where postgame bunny-hop ledge jumps could clip the player into walls or NPCs; landing tile is now checked for passability
+* **Sprite Weather Tinting Fix**: Fixed weather palette tinting and object event spawn order
+* **PokeNews Events**: PokeNews events are now available before defeating the Elite 4
 * **Fast Surf Speed Reduction**: Reduced fast surfing speed by approximately 30%
   * Now uses 6-frame movement cycles instead of 4-frame cycles
   * Provides smoother surfing experience while still being faster than normal
