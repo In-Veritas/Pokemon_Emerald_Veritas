@@ -119,6 +119,24 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * Selection of "Random" picks a random unlocked track
 * Default option uses the original trainer ID-based music selection
 
+#### Daycare Egg to PC
+
+* When your party is full, daycare eggs are automatically sent to a PC box instead of being rejected
+* Displays which box the egg was sent to
+* If PC boxes are also full, the egg stays at the daycare
+
+#### Lottery Corner Improvement
+
+* Lowered the matching threshold from 2 digits to 1 digit, making the lottery more accessible
+
+#### Mirage Island Rework
+
+* Post-Elite 4: increased Mirage Island appearance odds (~4.6%/day with a full party)
+* Pre-Elite 4: lower odds (~0.29%/day with a full party)
+* Having a **Wynaut** in your party always grants access
+* Post-Elite 4: having **Mew**, **Celebi**, or **Jirachi** also grants access
+* Mirage Island now has a 6% chance to encounter **Kanto and Hoenn starters** (Bulbasaur, Charmander, Squirtle, Treecko, Torchic, Mudkip) at level 5
+
 #### Egg Trading
 
 * Eggs can now be traded before obtaining the National Dex
