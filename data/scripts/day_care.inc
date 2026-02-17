@@ -24,19 +24,27 @@ Route117_EventScript_DaycareEggWaiting::
 	end
 
 Route117_EventScript_DaycareAcceptEgg::
-	specialvar VAR_RESULT, CalculatePlayerPartyCount
-	goto_if_ne VAR_RESULT, PARTY_SIZE, Route117_EventScript_DaycareReceiveEgg
-	msgbox Route117_Text_YouHaveNoRoomForIt, MSGBOX_DEFAULT
-	release
-	end
-
-Route117_EventScript_DaycareReceiveEgg::
 	message Route117_Text_ReceivedEgg
 	playfanfare MUS_LEVEL_UP
 	waitfanfare
 	waitbuttonpress
-	msgbox Route117_Text_TakeGoodCareOfIt, MSGBOX_DEFAULT
 	special GiveEggFromDaycare
+	goto_if_eq VAR_RESULT, 0, Route117_EventScript_DaycareEggToParty
+	goto_if_eq VAR_RESULT, 1, Route117_EventScript_DaycareEggToPC
+	@ Result 2 = PC boxes full
+	msgbox Route117_Text_PCBoxesAreFull, MSGBOX_DEFAULT
+	release
+	end
+
+Route117_EventScript_DaycareEggToParty::
+	msgbox Route117_Text_TakeGoodCareOfIt, MSGBOX_DEFAULT
+	clearflag FLAG_PENDING_DAYCARE_EGG
+	release
+	end
+
+Route117_EventScript_DaycareEggToPC::
+	bufferboxname STR_VAR_1, VAR_PC_BOX_TO_SEND_MON
+	msgbox Route117_Text_EggSentToPC, MSGBOX_DEFAULT
 	clearflag FLAG_PENDING_DAYCARE_EGG
 	release
 	end
@@ -307,6 +315,15 @@ Route117_Text_ReceivedEgg:
 
 Route117_Text_TakeGoodCareOfIt:
 	.string "Take good care of it.$"
+
+Route117_Text_EggSentToPC:
+	.string "Your team is full, so the EGG\n"
+	.string "was sent to {STR_VAR_1} in your PC.\p"
+	.string "Take good care of it.$"
+
+Route117_Text_PCBoxesAreFull:
+	.string "Your PC boxes are full!\n"
+	.string "There's no room for the EGG.$"
 
 Route117_Text_FriendlyWithOtherTrainersMon:
 	.string "By the way, about your {STR_VAR_1},\n"

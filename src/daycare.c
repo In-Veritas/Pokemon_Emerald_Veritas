@@ -883,7 +883,8 @@ static u16 DetermineEggSpeciesAndParentSlots(struct DayCare *daycare, u8 *parent
     return eggSpecies;
 }
 
-static void _GiveEggFromDaycare(struct DayCare *daycare)
+// Returns 0 = given to party, 1 = sent to PC, 2 = PC boxes full
+static u8 _GiveEggFromDaycare(struct DayCare *daycare)
 {
     struct Pokemon egg;
     u16 species;
@@ -892,6 +893,7 @@ static void _GiveEggFromDaycare(struct DayCare *daycare)
     u32 otId0;
     u32 otId1;
     u8 masudaMarker;
+    u8 result;
 
     species = DetermineEggSpeciesAndParentSlots(daycare, parentSlots);
     AlterEggSpeciesWithIncenseItem(&species, daycare);
@@ -913,10 +915,22 @@ static void _GiveEggFromDaycare(struct DayCare *daycare)
 
     isEgg = TRUE;
     SetMonData(&egg, MON_DATA_IS_EGG, &isEgg);
-    gPlayerParty[PARTY_SIZE - 1] = egg;
-    CompactPartySlots();
-    CalculatePlayerPartyCount();
-    RemoveEggFromDayCare(daycare);
+
+    if (CalculatePlayerPartyCount() < PARTY_SIZE)
+    {
+        gPlayerParty[gPlayerPartyCount] = egg;
+        gPlayerPartyCount++;
+        result = MON_GIVEN_TO_PARTY;
+    }
+    else
+    {
+        result = CopyMonToPC(&egg);
+    }
+
+    if (result != MON_CANT_GIVE)
+        RemoveEggFromDayCare(daycare);
+
+    return result;
 }
 
 void CreateEgg(struct Pokemon *mon, u16 species, bool8 setHotSpringsLocation)
@@ -967,7 +981,7 @@ static void SetInitialEggData(struct Pokemon *mon, u16 species, struct DayCare *
 
 void GiveEggFromDaycare(void)
 {
-    _GiveEggFromDaycare(&gSaveBlock1Ptr->daycare);
+    gSpecialVar_Result = _GiveEggFromDaycare(&gSaveBlock1Ptr->daycare);
 }
 
 static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
