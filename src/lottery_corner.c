@@ -67,7 +67,7 @@ void PickLotteryCornerTicket(void)
                 u32 otId = GetMonData(mon, MON_DATA_OT_ID);
                 u8 numMatchingDigits = GetMatchingDigits(gSpecialVar_Result, otId);
 
-                if (numMatchingDigits > gSpecialVar_0x8004 && numMatchingDigits > 1)
+                if (numMatchingDigits > gSpecialVar_0x8004 && numMatchingDigits > 0)
                 {
                     gSpecialVar_0x8004 = numMatchingDigits - 1;
                     box = TOTAL_BOXES_COUNT;
@@ -89,7 +89,7 @@ void PickLotteryCornerTicket(void)
                 u32 otId = GetBoxMonData(&gPokemonStoragePtr->boxes[i][j], MON_DATA_OT_ID);
                 u8 numMatchingDigits = GetMatchingDigits(gSpecialVar_Result, otId);
 
-                if (numMatchingDigits > gSpecialVar_0x8004 && numMatchingDigits > 1)
+                if (numMatchingDigits > gSpecialVar_0x8004 && numMatchingDigits > 0)
                 {
                     gSpecialVar_0x8004 = numMatchingDigits - 1;
                     box = i;
