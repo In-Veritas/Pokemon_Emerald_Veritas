@@ -4547,3 +4547,13 @@ void CheckGotAllKantoStarters(void)
     }
 }
 
+// Debug: mark the last party Pokemon as a true shiny (for sparkle testing)
+void Debug_MarkLastPartyMonTrueShiny(void)
+{
+    u8 count = CalculatePlayerPartyCount();
+    u8 trueShiny = 1;
+
+    if (count > 0)
+        SetMonData(&gPlayerParty[count - 1], MON_DATA_TRUE_SHINY, &trueShiny);
+}
+

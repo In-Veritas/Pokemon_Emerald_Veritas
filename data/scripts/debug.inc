@@ -78,10 +78,21 @@ Debug_Script_4::
 	waitstate
 	end
 
+@ Debug script to test true shiny sparkles (white) — gives shiny Pikachu marked as true shiny
 Debug_Script_5::
+	setflag FLAG_SHINY_CREATION
+	givemon SPECIES_PIKACHU, 25
+	special Debug_MarkLastPartyMonTrueShiny
+	msgbox Debug_Text_TrueShinyGiven, MSGBOX_DEFAULT
+	release
 	end
 
+@ Debug script to test regular shiny sparkles (blue in debug) — gives shiny Ralts without true shiny bit
 Debug_Script_6::
+	setflag FLAG_SHINY_CREATION
+	givemon SPECIES_RALTS, 25
+	msgbox Debug_Text_RegularShinyGiven, MSGBOX_DEFAULT
+	release
 	end
 
 Debug_Script_7::
@@ -89,3 +100,11 @@ Debug_Script_7::
 
 Debug_Script_8::
 	end
+
+Debug_Text_TrueShinyGiven:
+	.string "Gave TRUE SHINY Pikachu.\n"
+	.string "White sparkles in battle.$"
+
+Debug_Text_RegularShinyGiven:
+	.string "Gave regular shiny Ralts.\n"
+	.string "Blue sparkles in debug.$"

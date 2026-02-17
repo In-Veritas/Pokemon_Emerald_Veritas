@@ -74,6 +74,7 @@
 // Flag value for Hidden Natures
 #define MON_DATA_NATURE            90
 #define MON_DATA_HIDDEN_NATURE     91
+#define MON_DATA_TRUE_SHINY        92
 
 // Pokémon Stats
 #define STAT_HP      0

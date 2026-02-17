@@ -546,3 +546,4 @@ gSpecials::
 	def_special ScriptMenu_CreateLinkBattleMusicMultichoice
 	def_special GetLinkBattleMusicSelection
 	def_special SetRandomLinkBattleMusic
+	def_special Debug_MarkLastPartyMonTrueShiny

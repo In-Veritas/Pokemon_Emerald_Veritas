@@ -21,6 +21,7 @@
 #include "constants/moves.h"
 #include "constants/songs.h"
 #include "constants/rgb.h"
+#include "debug.h"
 
 // iwram
 u32 gMonShrinkDuration;
@@ -2233,10 +2234,32 @@ void TryShinyAnimation(u8 battler, struct Pokemon *mon)
 
         if (isShiny)
         {
+            u8 palIdx;
+            u16 palOffset;
+
             if (GetSpriteTileStartByTag(ANIM_TAG_GOLD_STARS) == 0xFFFF)
             {
                 LoadCompressedSpriteSheetUsingHeap(&gBattleAnimPicTable[ANIM_TAG_GOLD_STARS - ANIM_SPRITES_START]);
                 LoadCompressedSpritePaletteUsingHeap(&gBattleAnimPaletteTable[ANIM_TAG_GOLD_STARS - ANIM_SPRITES_START]);
+            }
+
+            // Recolor sparkles: white for true shinies, blue for debug regular shinies
+            palIdx = IndexOfSpritePaletteTag(ANIM_TAG_GOLD_STARS);
+            if (palIdx != 0xFF)
+            {
+                palOffset = OBJ_PLTT_ID(palIdx);
+                if (GetMonData(mon, MON_DATA_TRUE_SHINY))
+                {
+                    BlendPalette(palOffset, 16, 13, RGB_WHITE);
+                    CpuCopy16(&gPlttBufferFaded[palOffset], &gPlttBufferUnfaded[palOffset], PLTT_SIZE_4BPP);
+                }
+#if TX_DEBUG_SYSTEM_ENABLE == TRUE
+                else
+                {
+                    BlendPalette(palOffset, 16, 13, RGB(8, 12, 31));
+                    CpuCopy16(&gPlttBufferFaded[palOffset], &gPlttBufferUnfaded[palOffset], PLTT_SIZE_4BPP);
+                }
+#endif
             }
 
             taskCirc = CreateTask(Task_ShinyStars, 10);

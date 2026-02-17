@@ -2223,6 +2223,7 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
     u32 personality;
     u32 value;
     u16 checksum;
+    bool8 isTrueShiny = FALSE;
 
     ZeroBoxMonData(boxMon);
 
@@ -2307,6 +2308,9 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
                     shinyValue = HIHALF(value) ^ LOHALF(value) ^ HIHALF(personality) ^ LOHALF(personality);
                     rolls++;
                 } while (shinyValue >= SHINY_ODDS && rolls < maxRolls);
+                // Mark as true shiny if shiny on the very first roll
+                if (shinyValue < SHINY_ODDS && rolls == 1)
+                    isTrueShiny = TRUE;
             }
         }
         SetBoxMonData(boxMon, MON_DATA_PERSONALITY, &personality);
@@ -2372,6 +2376,9 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
     
     value = HIDDEN_NATURE_NONE;
     SetBoxMonData(boxMon, MON_DATA_HIDDEN_NATURE, &value);
+
+    if (isTrueShiny)
+        SetBoxMonData(boxMon, MON_DATA_TRUE_SHINY, &isTrueShiny);
 
     GiveBoxMonInitialMoveset(boxMon);
 }
@@ -4165,6 +4172,9 @@ u32 GetBoxMonData3(struct BoxPokemon *boxMon, s32 field, u8 *data)
     case MON_DATA_HIDDEN_NATURE:
         retVal = substruct0->hiddenNature;
         break;
+    case MON_DATA_TRUE_SHINY:
+        retVal = substruct0->free_sub0 & 1;
+        break;
     case MON_DATA_NATURE:
         return boxMon->personality % 25;
         break;
@@ -4497,6 +4507,9 @@ void SetBoxMonData(struct BoxPokemon *boxMon, s32 field, const void *dataArg)
     }
     case MON_DATA_HIDDEN_NATURE:
         SET8(substruct0->hiddenNature);
+        break;
+    case MON_DATA_TRUE_SHINY:
+        substruct0->free_sub0 = (substruct0->free_sub0 & ~1) | (*data & 1);
         break;
     case MON_DATA_NATURE:
     {
