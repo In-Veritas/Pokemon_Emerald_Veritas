@@ -45,7 +45,7 @@ This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (
 
 * Choose between **Emerald** or **Classic** (Ruby/Sapphire) player sprite styles during new game setup
 * Style selection persists through naming screen and into gameplay
-* Style affects overworld sprites, battle back sprites, and **region map/fly menu icons**
+* Style affects overworld sprites, battle back sprites, **region map/fly menu icons**, and **secret base grayscale icons**
 * Style option unlocked after defeating the Elite 4 (correctly gated behind FLAG_SYS_GAME_CLEAR)
 
 #### Legendary Title Screen Animation
