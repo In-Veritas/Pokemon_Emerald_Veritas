@@ -759,14 +759,41 @@ static void CreateWildMon(u16 species, u8 level)
 }
 #define TRY_GET_ABILITY_INFLUENCED_WILD_MON_INDEX(wildPokemon, type, ability, ptr, count) TryGetAbilityInfluencedWildMonIndex(wildPokemon, type, ability, ptr, count)
 
+static const u16 sMirageIslandStarterSpecies[] =
+{
+    SPECIES_BULBASAUR,
+    SPECIES_CHARMANDER,
+    SPECIES_SQUIRTLE,
+    SPECIES_TREECKO,
+    SPECIES_TORCHIC,
+    SPECIES_MUDKIP,
+};
+
 static bool8 TryGenerateWildMon(const struct WildPokemonInfo *wildMonInfo, u8 area, u8 flags)
 {
     u8 wildMonIndex = 0;
     u8 level;
+    u32 roll;
 
     switch (area)
     {
     case WILD_AREA_LAND:
+        // 1% chance each for 6 starters on Mirage Island (6% total, 94% Wynaut)
+        if (gMapHeader.mapLayoutId == LAYOUT_ROUTE130_MIRAGE_ISLAND)
+        {
+            roll = Random() % 100;
+            if (roll < ARRAY_COUNT(sMirageIslandStarterSpecies))
+            {
+                level = 5;
+                if (flags & WILD_CHECK_REPEL && !IsWildLevelAllowedByRepel(level))
+                    return FALSE;
+                if (flags & WILD_CHECK_KEEN_EYE && !IsAbilityAllowingEncounter(level))
+                    return FALSE;
+                CreateWildMon(sMirageIslandStarterSpecies[roll], level);
+                return TRUE;
+            }
+        }
+
         if (TRY_GET_ABILITY_INFLUENCED_WILD_MON_INDEX(wildMonInfo->wildPokemon, TYPE_STEEL, ABILITY_MAGNET_PULL, &wildMonIndex, LAND_WILD_COUNT))
             break;
         if (TRY_GET_ABILITY_INFLUENCED_WILD_MON_INDEX(wildMonInfo->wildPokemon, TYPE_ELECTRIC, ABILITY_STATIC, &wildMonIndex, LAND_WILD_COUNT))
