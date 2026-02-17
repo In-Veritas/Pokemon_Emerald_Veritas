@@ -90,6 +90,22 @@ Some of the assets and code lines included in this PR may already exist in the c
 
 ---
 
+### 6. Region Map RS Style Player Icon
+
+**Problem:** The player icon on the region map (both the colored icon in the PokéNav and the grayscale icon shown for secret base locations on the Fly map) always displays the Emerald-style headsprite, even when the player has selected the Classic (RS) avatar style via `FLAG_PLAYER_STYLE_RS`.
+
+**Fix:** Added `FlagGet(FLAG_PLAYER_STYLE_RS)` checks to both icon creation functions. When the RS style is active:
+
+- **Colored icon** (`CreateRegionMapPlayerIcon`): Uses RS tile data and RS palette for the correct colored RS headsprite.
+- **Grayscale icon** (`CreateRegionMapPlayerGrayscaleIcon`): Uses dedicated RS grayscale icon assets (auto-generated from RS colored icons with luminance-based grayscale conversion) for correct shading and black borders.
+
+**Files changed:**
+
+- `src/region_map.c` — `CreateRegionMapPlayerIcon()` and `CreateRegionMapPlayerGrayscaleIcon()`, plus RS icon INCBIN data
+- `graphics/pokenav/region_map/` — Added RS icon PNG assets (colored and grayscale for Brendan and May)
+
+---
+
 ## Summary of All Files Changed
 
 | File                               | Changes                                                                                   |
@@ -104,5 +120,7 @@ Some of the assets and code lines included in this PR may already exist in the c
 | `include/graphics.h`               | RS graphics data extern declarations                                                      |
 | `src/data/graphics/intro_scene.h`  | RS sprite INCBIN data                                                                     |
 | `graphics/intro/rs_graphics/`      | RS sprite PNG assets (new directory)                                                      |
+| `src/region_map.c`                 | RS style checks in player icon functions, RS icon INCBIN data                             |
+| `graphics/pokenav/region_map/`     | RS player icon PNGs (colored + grayscale for Brendan and May)                             |
 
 ---
