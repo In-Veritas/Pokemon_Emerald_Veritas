@@ -42,27 +42,30 @@ void UpdateMirageRnd(u16 days)
 bool8 IsMirageIslandPresent(void)
 {
     u16 rnd = GetMirageRnd() >> 16;
+    u16 mask;
     int i;
     u32 species;
 
-    for (i = 0; i < PARTY_SIZE; i++){
-        species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES);
+    // Post-E4: 7-bit mask (~1/128 per mon, ~4.6%/day with 6 mons)
+    // Pre-E4: 11-bit mask (~1/2048 per mon, ~0.29%/day with 6 mons)
+    mask = FlagGet(FLAG_SYS_GAME_CLEAR) ? 0x7F : 0x7FF;
 
-        if (species && (GetMonData(&gPlayerParty[i], MON_DATA_PERSONALITY) & 0xFFFF) == rnd)
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES);
+        if (!species)
+            continue;
+
+        if ((GetMonData(&gPlayerParty[i], MON_DATA_PERSONALITY) & mask) == (rnd & mask))
             return TRUE;
-        
-        if (species
-            && species == SPECIES_WYNAUT
-            )
+
+        if (species == SPECIES_WYNAUT)
             return TRUE;
-        
-        if (species
-            && FLAG_SYS_GAME_CLEAR
-            && (
-                species == SPECIES_MEW
+
+        if (FlagGet(FLAG_SYS_GAME_CLEAR)
+            && (species == SPECIES_MEW
                 || species == SPECIES_CELEBI
-                || species == SPECIES_JIRACHI
-            ))
+                || species == SPECIES_JIRACHI))
             return TRUE;
     }
 
