@@ -31,12 +31,25 @@ Some of the assets and code lines included in this PR may already exist in the c
 
 **Files changed:**
 
-- `src/pokemon.c` — `PlayerGenderToFrontTrainerPicId()` 
+- `src/pokemon.c` — `PlayerGenderToFrontTrainerPicId()`
 - `src/trainer_pokemon_sprites.c` — `PlayerGenderToFrontTrainerPicId_Debug()` (used by Hall of Fame)
 
 **New include added:**
 
 - `src/trainer_pokemon_sprites.c` now includes `event_data.h` for `FlagGet()`
+
+---
+
+### 2b. RS Style Back Sprite Throw Animation Palette Fix
+
+**Problem:** When using RS style, the trainer back sprite shows correct RS colors on the first frame of battle, but the bag turns green (Emerald palette) during the pokeball throwing animation. This happens because `PlayerHandleIntroTrainerBallThrow()` reloads the sprite palette using `gSaveBlock2Ptr->playerGender` (which always indexes to the Emerald palette) instead of using `GetPlayerPreferredBackPicId()` which returns the correct RS back pic ID when `FLAG_PLAYER_STYLE_RS` is set.
+
+**Fix:** Replaced the gender-based palette index with `GetPlayerPreferredBackPicId()` in both the player and recorded player battle controllers.
+
+**Files changed:**
+
+- `src/battle_controller_player.c` — `PlayerHandleIntroTrainerBallThrow()`
+- `src/battle_controller_recorded_player.c` — `RecordedPlayerHandleIntroTrainerBallThrow()`
 
 ---
 
@@ -114,6 +127,8 @@ Some of the assets and code lines included in this PR may already exist in the c
 | `src/event_object_movement.c`      | Acro bike collision check, weather tinting fix, spawn order fix                           |
 | `src/pokemon.c`                    | RS style check in `PlayerGenderToFrontTrainerPicId()`                                     |
 | `src/trainer_pokemon_sprites.c`    | RS style check in `PlayerGenderToFrontTrainerPicId_Debug()`, added `event_data.h` include |
+| `src/battle_controller_player.c`   | RS palette fix in throw animation                                                         |
+| `src/battle_controller_recorded_player.c` | RS palette fix in recorded battle throw animation                                  |
 | `src/credits.c`                    | RS sprite loading in credits scene, added `event_data.h` include                          |
 | `src/intro_credits_graphics.c`     | RS sprite templates, sheets, palettes, creation functions, tag constants                  |
 | `include/intro_credits_graphics.h` | RS sprite sheet and function declarations                                                 |
