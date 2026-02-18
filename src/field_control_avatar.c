@@ -170,6 +170,12 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
     if (TryRunOnFrameMapScript() == TRUE)
         return TRUE;
 
+    if (TrySetupInvalidRecordCleanupMessage())
+    {
+        ScriptContext_SetupScript(EventScript_InvalidRecordsCleaned);
+        return TRUE;
+    }
+
     if (input->pressedBButton && TrySetupDiveEmergeScript() == TRUE)
         return TRUE;
     if (input->tookStep)

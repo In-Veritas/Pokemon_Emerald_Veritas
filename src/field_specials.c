@@ -87,6 +87,8 @@ static EWRAM_DATA struct ListMenuItem *sScrollableMultichoice_ListMenuItem = NUL
 static EWRAM_DATA u16 sScrollableMultichoice_ScrollOffset = 0;
 static EWRAM_DATA u16 sFrontierExchangeCorner_NeverRead = 0;
 static EWRAM_DATA u8 sScrollableMultichoice_ItemSpriteId = 0;
+static EWRAM_DATA bool8 sTrainerRecordsCleaned = FALSE;
+static EWRAM_DATA u8 sInvalidRecordsCleaned = 0;
 static EWRAM_DATA u8 sBattlePointsWindowId = 0;
 static EWRAM_DATA u8 sFrontierExchangeCorner_ItemIconWindowId = 0;
 static EWRAM_DATA u8 sPCBoxToSendMon = 0;
@@ -4555,5 +4557,85 @@ void Debug_MarkLastPartyMonTrueShiny(void)
 
     if (count > 0)
         SetMonData(&gPlayerParty[count - 1], MON_DATA_TRUE_SHINY, &trueShiny);
+}
+
+static bool8 IsTrainerNameInvalid(const u8 *name, u8 maxLen)
+{
+    u8 i;
+    bool8 hasContent = FALSE;
+
+    // Empty name (starts with EOS)
+    if (name[0] == EOS)
+        return TRUE;
+
+    for (i = 0; i < maxLen; i++)
+    {
+        if (name[i] == EOS)
+            break;
+        // Control codes (0xF7-0xFE) should never appear in names
+        if (name[i] >= CHAR_DYNAMIC && name[i] < EOS)
+            return TRUE;
+        // Any non-space character counts as content
+        if (name[i] != CHAR_SPACE)
+            hasContent = TRUE;
+    }
+
+    // Name was all spaces
+    if (!hasContent)
+        return TRUE;
+
+    return FALSE;
+}
+
+void CleanInvalidTrainerRecords(void)
+{
+    u8 i;
+    u8 count = 0;
+
+    if (sTrainerRecordsCleaned)
+        return;
+    sTrainerRecordsCleaned = TRUE;
+
+    // Clean link battle records with invalid trainer names
+    for (i = 0; i < LINK_B_RECORDS_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->linkBattleRecords.entries[i].name[0] == EOS
+            && gSaveBlock1Ptr->linkBattleRecords.entries[i].trainerId == 0)
+            continue; // Already empty
+        if (IsTrainerNameInvalid(gSaveBlock1Ptr->linkBattleRecords.entries[i].name, PLAYER_NAME_LENGTH + 1))
+        {
+            memset(&gSaveBlock1Ptr->linkBattleRecords.entries[i], 0, sizeof(struct LinkBattleRecord));
+            gSaveBlock1Ptr->linkBattleRecords.languages[i] = 0;
+            count++;
+        }
+    }
+
+    // Clean trainer name records with invalid trainer names
+    for (i = 0; i < 20; i++)
+    {
+        if (gSaveBlock1Ptr->trainerNameRecords[i].trainerName[0] == EOS
+            && gSaveBlock1Ptr->trainerNameRecords[i].trainerId == 0)
+            continue; // Already empty
+        if (IsTrainerNameInvalid(gSaveBlock1Ptr->trainerNameRecords[i].trainerName, PLAYER_NAME_LENGTH + 1))
+        {
+            memset(&gSaveBlock1Ptr->trainerNameRecords[i], 0, sizeof(struct TrainerNameRecord));
+            count++;
+        }
+    }
+
+    sInvalidRecordsCleaned = count;
+}
+
+bool8 TrySetupInvalidRecordCleanupMessage(void)
+{
+    u8 count;
+
+    count = sInvalidRecordsCleaned;
+    if (count == 0)
+        return FALSE;
+
+    sInvalidRecordsCleaned = 0;
+    ConvertIntToDecimalStringN(gStringVar1, count, STR_CONV_MODE_LEFT_ALIGN, 2);
+    return TRUE;
 }
 

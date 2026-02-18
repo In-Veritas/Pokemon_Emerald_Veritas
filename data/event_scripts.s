@@ -969,6 +969,7 @@ EventScript_SelectWithoutRegisteredItem::
 	end
 
 	.include "data/scripts/field_poison.inc"
+	.include "data/scripts/record_cleanup.inc"
 
 Common_EventScript_NopReturn::
 	return

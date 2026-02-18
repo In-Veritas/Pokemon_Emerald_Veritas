@@ -188,6 +188,9 @@ Trade evolutions have been restored while keeping alternative evolution methods 
   * Provides smoother surfing experience while still being faster than normal
 * **Pokérus Rate Increase**: Increased Pokérus encounter rate from ~1/21845 to **1/2048**
   * Makes this beneficial mechanic more accessible to players
+* **Invalid Trainer Record Cleanup**: Automatically removes corrupted link battle and trainer name records on save load
+  * Detects empty names, all-space names, and names containing control codes
+  * Displays a notification with the number of removed records if any were cleaned
 
 ### New Options Menu Items
 

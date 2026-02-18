@@ -1779,6 +1779,7 @@ void CB2_ContinueSavedGame(void)
     else
         InitMapFromSavedGame();
 
+    CleanInvalidTrainerRecords();
     PlayTimeCounter_Start();
     ScriptContext_Init();
     UnlockPlayerFieldControls();
