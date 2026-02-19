@@ -206,6 +206,22 @@ bool8 UpdateSave_v3_v4(const struct SaveSectorLocation *locations)
     for (i = 0; i < REGISTERED_ITEMS_MAX; i++)
         gSaveBlock1Ptr->registeredItems[i] = sOldSaveBlock1Ptr->registeredItems[i];
 
+    // Sanitize registered items — old saves may have garbage data in these slots
+    {
+        u8 validCount = 0;
+        u16 itemId;
+        for (i = 0; i < REGISTERED_ITEMS_MAX; i++)
+        {
+            itemId = gSaveBlock1Ptr->registeredItems[i].itemId;
+            if (itemId != ITEM_NONE && (itemId >= ITEMS_COUNT || ItemId_GetPocket(itemId) == 0))
+                gSaveBlock1Ptr->registeredItems[i].itemId = ITEM_NONE;
+            else if (itemId != ITEM_NONE)
+                validCount++;
+        }
+        gSaveBlock1Ptr->registeredItemListCount = validCount;
+        gSaveBlock1Ptr->registeredItemLastSelected = 0;
+    }
+
     #undef COPY_FIELD
     #undef COPY_BLOCK
 

@@ -596,6 +596,15 @@ void TxRegItemsMenu_CompactRegisteredItems(void)
 {
     u16 i;
     u16 j;
+    u16 itemId;
+
+    // Sanitize: clear any invalid item IDs (e.g. garbage from old saves)
+    for (i = 0; i < REGISTERED_ITEMS_MAX; i++)
+    {
+        itemId = gSaveBlock1Ptr->registeredItems[i].itemId;
+        if (itemId != ITEM_NONE && (itemId >= ITEMS_COUNT || ItemId_GetPocket(itemId) == 0))
+            gSaveBlock1Ptr->registeredItems[i].itemId = ITEM_NONE;
+    }
 
     for (i = 0; i < REGISTERED_ITEMS_MAX - 1; i++)
     {

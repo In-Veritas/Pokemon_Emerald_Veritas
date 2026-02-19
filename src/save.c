@@ -2,6 +2,7 @@
 #include "agb_flash.h"
 #include "gba/flash_internal.h"
 #include "fieldmap.h"
+#include "item.h"
 #include "save.h"
 #include "task.h"
 #include "malloc.h"
