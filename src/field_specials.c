@@ -4599,9 +4599,8 @@ void CleanInvalidTrainerRecords(void)
     // Clean link battle records with invalid trainer names
     for (i = 0; i < LINK_B_RECORDS_COUNT; i++)
     {
-        if (gSaveBlock1Ptr->linkBattleRecords.entries[i].name[0] == EOS
-            && gSaveBlock1Ptr->linkBattleRecords.entries[i].trainerId == 0)
-            continue; // Already empty
+        if (gSaveBlock1Ptr->linkBattleRecords.entries[i].trainerId == 0)
+            continue; // Empty slot
         if (IsTrainerNameInvalid(gSaveBlock1Ptr->linkBattleRecords.entries[i].name, PLAYER_NAME_LENGTH + 1))
         {
             memset(&gSaveBlock1Ptr->linkBattleRecords.entries[i], 0, sizeof(struct LinkBattleRecord));
@@ -4613,9 +4612,8 @@ void CleanInvalidTrainerRecords(void)
     // Clean trainer name records with invalid trainer names
     for (i = 0; i < 20; i++)
     {
-        if (gSaveBlock1Ptr->trainerNameRecords[i].trainerName[0] == EOS
-            && gSaveBlock1Ptr->trainerNameRecords[i].trainerId == 0)
-            continue; // Already empty
+        if (gSaveBlock1Ptr->trainerNameRecords[i].trainerId == 0)
+            continue; // Empty slot
         if (IsTrainerNameInvalid(gSaveBlock1Ptr->trainerNameRecords[i].trainerName, PLAYER_NAME_LENGTH + 1))
         {
             memset(&gSaveBlock1Ptr->trainerNameRecords[i], 0, sizeof(struct TrainerNameRecord));
