@@ -119,6 +119,25 @@ Some of the assets and code lines included in this PR may already exist in the c
 
 ---
 
+### 7. RS Style Bag Menu Sprite
+
+**Problem:** When the player selects the Classic (Ruby/Sapphire) avatar style via `FLAG_PLAYER_STYLE_RS`, the bag menu always displays the Emerald green/pink bag sprite instead of the original Ruby/Sapphire yellow bag.
+
+**Fix:** Added RS bag sprite assets (male backpack, female fanny pack, and yellow palette) sourced from pokeruby. The `LoadBagMenu_Graphics()` function now checks `FlagGet(FLAG_PLAYER_STYLE_RS)` when loading the bag sprite sheet (case 3) and palette (case 4). Wally's tutorial bag is unaffected — it always uses the Emerald male bag.
+
+**Files changed:**
+
+- `graphics/bag/bag_rs_male.png` — RS yellow backpack sprite (new asset)
+- `graphics/bag/bag_rs_female.png` — RS yellow fanny pack sprite (new asset)
+- `graphics/bag/bag_rs.pal` — RS yellow/brown palette (new asset)
+- `src/graphics.c` — Added INCBIN declarations for RS bag tiles and palette
+- `include/graphics.h` — Added extern declarations for RS bag data
+- `src/item_menu_icons.c` — Added RS sprite sheet and palette structs
+- `include/item_menu_icons.h` — Added extern declarations for RS bag structs
+- `src/item_menu.c` — `LoadBagMenu_Graphics()` cases 3+4 branch on RS flag
+
+---
+
 ## Summary of All Files Changed
 
 | File                               | Changes                                                                                   |
@@ -137,5 +156,12 @@ Some of the assets and code lines included in this PR may already exist in the c
 | `graphics/intro/rs_graphics/`      | RS sprite PNG assets (new directory)                                                      |
 | `src/region_map.c`                 | RS style checks in player icon functions, RS icon INCBIN data                             |
 | `graphics/pokenav/region_map/`     | RS player icon PNGs (colored + grayscale for Brendan and May)                             |
+| `graphics/bag/bag_rs_male.png`     | RS yellow backpack sprite (new asset)                                                     |
+| `graphics/bag/bag_rs_female.png`   | RS yellow fanny pack sprite (new asset)                                                   |
+| `graphics/bag/bag_rs.pal`          | RS yellow/brown palette (new asset)                                                       |
+| `src/graphics.c`                   | RS bag INCBIN declarations (in addition to existing RS graphics externs)                   |
+| `src/item_menu_icons.c`            | RS bag sprite sheet and palette structs                                                   |
+| `include/item_menu_icons.h`        | RS bag struct extern declarations                                                         |
+| `src/item_menu.c`                  | RS flag check in `LoadBagMenu_Graphics()` cases 3+4                                       |
 
 ---
