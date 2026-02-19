@@ -45,7 +45,7 @@ This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (
 
 * Choose between **Emerald** or **Classic** (Ruby/Sapphire) player sprite styles during new game setup
 * Style selection persists through naming screen and into gameplay
-* Style affects overworld sprites, battle back sprites, **region map/fly menu icons**, and **secret base grayscale icons**
+* Style affects overworld sprites, battle back sprites, **bag menu sprite**, **region map/fly menu icons**, and **secret base grayscale icons**
 * Style option unlocked after defeating the Elite 4 (correctly gated behind FLAG_SYS_GAME_CLEAR)
 
 #### Legendary Title Screen Animation
@@ -197,6 +197,7 @@ Trade evolutions have been restored while keeping alternative evolution methods 
   * Example: 1 charm = 1/4096, 2 charms = 1/2731, 8 charms = 1/910
   * **Breeding bonus**: Breeding two Pokémon with different Original Trainers grants +1 extra shiny roll at hatch, stacking with Shiny Charms (e.g., 3 charms + different OT = 5 rolls = ~1/1638)
 * **RS Style Front Trainer Pic Fix**: VS cutscene mugshots and Hall of Fame now correctly display the Ruby/Sapphire player sprite when Classic style is selected
+* **RS Style Bag Menu**: Bag menu now displays the original Ruby/Sapphire yellow bag sprite when Classic style is selected (both male backpack and female fanny pack variants)
 * **Acro Bike Reverse Ledge Fix**: Fixed a bug where postgame bunny-hop ledge jumps could clip the player into walls or NPCs; landing tile is now checked for passability
 * **Sprite Weather Tinting Fix**: Fixed weather palette tinting and object event spawn order
 * **PokeNews Events**: PokeNews events are now available before defeating the Elite 4
