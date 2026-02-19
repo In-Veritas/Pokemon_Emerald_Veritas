@@ -570,9 +570,9 @@ struct SecretBase
     /*0x1AAC*/ u8 numTimesEntered;
     /*0x1AAD*/ u8 unused;
     /*0x1AAE*/ u8 decorations[DECOR_MAX_SECRET_BASE];
-    /*0x1ABE*/ u8 decorationPositions[DECOR_MAX_SECRET_BASE];
-    /*0x1ACE*/ //u8 padding[2];
-    /*0x1AD0*/ struct SecretBaseParty party;
+    /*0x1ACE*/ u8 decorationPositions[DECOR_MAX_SECRET_BASE];
+    /*0x1AEE*/ //u8 padding[2];
+    /*0x1AF0*/ struct SecretBaseParty party;
 };
 
 #include "constants/game_stat.h"

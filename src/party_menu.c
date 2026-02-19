@@ -3251,7 +3251,7 @@ static void CursorCb_Give(u8 taskId)
 static void CB2_SelectBagItemToGive(void)
 {
     if (InBattlePyramid() == FALSE)
-        GoToBagMenu(ITEMMENULOCATION_PARTY, POCKETS_COUNT, CB2_GiveHoldItem);
+        GoToBagMenu(ITEMMENULOCATION_PARTY, VIRTUAL_POCKETS_COUNT, CB2_GiveHoldItem);
     else
         GoToBattlePyramidBagMenu(PYRAMIDBAG_LOC_PARTY, CB2_GiveHoldItem);
 }
@@ -4457,7 +4457,7 @@ void CB2_ShowPartyMenuForItemUse(void)
 static void CB2_ReturnToBagMenu(void)
 {
     if (InBattlePyramid() == FALSE)
-        GoToBagMenu(ITEMMENULOCATION_LAST, POCKETS_COUNT, NULL);
+        GoToBagMenu(ITEMMENULOCATION_LAST, VIRTUAL_POCKETS_COUNT, NULL);
     else
         GoToBattlePyramidBagMenu(PYRAMIDBAG_LOC_PREV, gPyramidBagMenuState.exitCallback);
 }

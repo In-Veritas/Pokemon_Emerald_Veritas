@@ -137,6 +137,23 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * Post-Elite 4: having **Mew**, **Celebi**, or **Jirachi** also grants access
 * Mirage Island now has a 6% chance to encounter **Kanto and Hoenn starters** (Bulbasaur, Charmander, Squirtle, Treecko, Torchic, Mudkip) at level 5
 
+#### Categorized Bag Pockets
+
+* The Items pocket is split into 4 sub-categories for easier navigation:
+  * **Items**: General items (Repels, Escape Rope, Evolution Stones, Mail, etc.)
+  * **Medicine**: Healing items, PP restoring items, Rare Candy, Sacred Ash
+  * **Battle Items**: Held items and in-battle consumables (X Attack, Leftovers, etc.)
+  * **Treasures**: Sell-only items with no field/battle/hold use (Nugget, Pearl, Shards, etc.)
+* Total of 8 bag pockets: Items, Medicine, Poke Balls, Battle Items, Berries, Treasures, TMs/HMs, Key Items
+* All items remain in the same internal storage — no save structure changes
+* Sorting works across all pockets including the new sub-categories
+
+#### Expanded Secret Base Decorations
+
+* Maximum decorations per secret base increased from **16 to 32**
+* Total number of secret bases reduced from 20 to 15 to accommodate the larger decoration data
+* Old saves are automatically migrated to the new format
+
 #### Egg Trading
 
 * Eggs can now be traded before obtaining the National Dex

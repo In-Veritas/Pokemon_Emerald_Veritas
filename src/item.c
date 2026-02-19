@@ -61,20 +61,21 @@ void ApplyNewEncryptionKeyToBagItems_(u32 newKey) // really GF?
 
 void SetBagItemsPointers(void)
 {
-    gBagPockets[ITEMS_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_Items;
-    gBagPockets[ITEMS_POCKET].capacity = BAG_ITEMS_COUNT;
+    // Indices 0-4 are real storage pockets (POCKETS_COUNT = 5)
+    gBagPockets[0].itemSlots = gSaveBlock1Ptr->bagPocket_Items;
+    gBagPockets[0].capacity = BAG_ITEMS_COUNT;
 
-    gBagPockets[KEYITEMS_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_KeyItems;
-    gBagPockets[KEYITEMS_POCKET].capacity = BAG_KEYITEMS_COUNT;
+    gBagPockets[1].itemSlots = gSaveBlock1Ptr->bagPocket_PokeBalls;
+    gBagPockets[1].capacity = BAG_POKEBALLS_COUNT;
 
-    gBagPockets[BALLS_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_PokeBalls;
-    gBagPockets[BALLS_POCKET].capacity = BAG_POKEBALLS_COUNT;
+    gBagPockets[2].itemSlots = gSaveBlock1Ptr->bagPocket_TMHM;
+    gBagPockets[2].capacity = BAG_TMHM_COUNT;
 
-    gBagPockets[TMHM_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_TMHM;
-    gBagPockets[TMHM_POCKET].capacity = BAG_TMHM_COUNT;
+    gBagPockets[3].itemSlots = gSaveBlock1Ptr->bagPocket_Berries;
+    gBagPockets[3].capacity = BAG_BERRIES_COUNT;
 
-    gBagPockets[BERRIES_POCKET].itemSlots = gSaveBlock1Ptr->bagPocket_Berries;
-    gBagPockets[BERRIES_POCKET].capacity = BAG_BERRIES_COUNT;
+    gBagPockets[4].itemSlots = gSaveBlock1Ptr->bagPocket_KeyItems;
+    gBagPockets[4].capacity = BAG_KEYITEMS_COUNT;
 }
 
 void CopyItemName(u16 itemId, u8 *dst)
@@ -188,7 +189,7 @@ bool8 CheckBagHasSpace(u16 itemId, u16 count)
     }
 
     pocket = ItemId_GetPocket(itemId) - 1;
-    if (pocket != BERRIES_POCKET)
+    if (pocket != POCKET_BERRIES - 1)
         slotCapacity = MAX_BAG_ITEM_CAPACITY;
     else
         slotCapacity = MAX_BERRY_CAPACITY;
@@ -201,7 +202,7 @@ bool8 CheckBagHasSpace(u16 itemId, u16 count)
             ownedCount = GetBagItemQuantity(&gBagPockets[pocket].itemSlots[i].quantity);
             if (ownedCount + count <= slotCapacity)
                 return TRUE;
-            if (pocket == TMHM_POCKET || pocket == BERRIES_POCKET)
+            if (pocket == POCKET_TM_HM - 1 || pocket == POCKET_BERRIES - 1)
                 return FALSE;
             count -= (slotCapacity - ownedCount);
             if (count == 0)
@@ -218,7 +219,7 @@ bool8 CheckBagHasSpace(u16 itemId, u16 count)
             {
                 if (count > slotCapacity)
                 {
-                    if (pocket == TMHM_POCKET || pocket == BERRIES_POCKET)
+                    if (pocket == POCKET_TM_HM - 1 || pocket == POCKET_BERRIES - 1)
                         return FALSE;
                     count -= slotCapacity;
                 }
@@ -260,7 +261,7 @@ bool8 AddBagItem(u16 itemId, u16 count)
         newItems = AllocZeroed(itemPocket->capacity * sizeof(struct ItemSlot));
         memcpy(newItems, itemPocket->itemSlots, itemPocket->capacity * sizeof(struct ItemSlot));
 
-        if (pocket != BERRIES_POCKET)
+        if (pocket != POCKET_BERRIES - 1)
             slotCapacity = MAX_BAG_ITEM_CAPACITY;
         else
             slotCapacity = MAX_BERRY_CAPACITY;
@@ -282,7 +283,7 @@ bool8 AddBagItem(u16 itemId, u16 count)
                 else
                 {
                     // try creating another instance of the item if possible
-                    if (pocket == TMHM_POCKET || pocket == BERRIES_POCKET)
+                    if (pocket == POCKET_TM_HM - 1 || pocket == POCKET_BERRIES - 1)
                     {
                         Free(newItems);
                         return FALSE;
@@ -313,7 +314,7 @@ bool8 AddBagItem(u16 itemId, u16 count)
                     if (count > slotCapacity)
                     {
                         // try creating a new slot with max capacity if duplicates are possible
-                        if (pocket == TMHM_POCKET || pocket == BERRIES_POCKET)
+                        if (pocket == POCKET_TM_HM - 1 || pocket == POCKET_BERRIES - 1)
                         {
                             Free(newItems);
                             return FALSE;
@@ -1000,4 +1001,76 @@ u8 ItemId_GetSecondaryId(u16 itemId)
 void ItemId_GetHoldEffectParam_Script()
 {
     VarSet(VAR_RESULT, ItemId_GetHoldEffectParam(VarGet(VAR_0x8004)));
+}
+
+// Maps virtual pocket ID (0-based) to real storage pocket index (0-based)
+static const u8 sVirtualToRealPocket[VIRTUAL_POCKETS_COUNT] = {
+    [ITEMS_POCKET]     = 0, // ITEMS storage
+    [MEDICINE_POCKET]  = 0, // ITEMS storage
+    [BALLS_POCKET]     = 1, // POKE_BALLS storage
+    [BATTLE_POCKET]    = 0, // ITEMS storage
+    [BERRIES_POCKET]   = 3, // BERRIES storage
+    [TREASURES_POCKET] = 0, // ITEMS storage
+    [TMHM_POCKET]      = 2, // TM_HM storage
+    [KEYITEMS_POCKET]  = 4, // KEY_ITEMS storage
+};
+
+u8 GetRealPocket(u8 virtualPocket)
+{
+    if (virtualPocket >= VIRTUAL_POCKETS_COUNT)
+        return 0;
+    return sVirtualToRealPocket[virtualPocket];
+}
+
+// Classifies items in POCKET_ITEMS into virtual sub-pockets
+u8 GetItemVirtualPocket(u16 itemId)
+{
+    u8 pocket;
+    ItemUseFunc fieldFunc;
+    u8 battleUsage;
+    u8 holdEffect;
+
+    pocket = ItemId_GetPocket(itemId);
+
+    // Non-ITEMS pocket items return their real pocket mapped to virtual
+    switch (pocket)
+    {
+    case POCKET_POKE_BALLS:
+        return BALLS_POCKET;
+    case POCKET_TM_HM:
+        return TMHM_POCKET;
+    case POCKET_BERRIES:
+        return BERRIES_POCKET;
+    case POCKET_KEY_ITEMS:
+        return KEYITEMS_POCKET;
+    case POCKET_NONE:
+        return ITEMS_POCKET;
+    }
+
+    // POCKET_ITEMS — classify into sub-pockets
+    fieldFunc = ItemId_GetFieldFunc(itemId);
+    battleUsage = ItemId_GetBattleUsage(itemId);
+    holdEffect = ItemId_GetHoldEffect(itemId);
+
+    // Medicine: healing items usable on Pokemon
+    if (fieldFunc == ItemUseOutOfBattle_Medicine
+     || fieldFunc == ItemUseOutOfBattle_PPRecovery
+     || fieldFunc == ItemUseOutOfBattle_PPUp
+     || fieldFunc == ItemUseOutOfBattle_RareCandy
+     || fieldFunc == ItemUseOutOfBattle_SacredAsh
+     || battleUsage == ITEM_B_USE_MEDICINE)
+        return MEDICINE_POCKET;
+
+    // Battle items: stat boosters, held items
+    if (battleUsage == ITEM_B_USE_OTHER)
+        return BATTLE_POCKET;
+    if (holdEffect != 0 && fieldFunc == ItemUseOutOfBattle_CannotUse)
+        return BATTLE_POCKET;
+
+    // Treasures: no field use, no hold effect, no battle use
+    if (fieldFunc == ItemUseOutOfBattle_CannotUse && holdEffect == 0 && battleUsage == 0)
+        return TREASURES_POCKET;
+
+    // Default: general items (Repels, Escape Rope, Evolution Stones, Mail, etc.)
+    return ITEMS_POCKET;
 }

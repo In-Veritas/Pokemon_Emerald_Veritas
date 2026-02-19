@@ -86,7 +86,7 @@ struct SaveBlock1_v2
     u16 vars[VARS_COUNT];
     u32 gameStats[64];
     struct BerryTree berryTrees[128];
-    struct SecretBase secretBases[20];
+    struct SecretBase_Old secretBases[SECRET_BASES_COUNT_OLD];
     u8 playerRoomDecorations[12];
     u8 playerRoomDecorationPositions[12];
     u8 decorationDesks[10];
@@ -162,7 +162,7 @@ bool8 UpdateSave_v2_v3(const struct SaveSectorLocation *locations)
 
     /** We need to fill in any data that's new in this version. */
     gSaveBlock2Ptr->_saveSentinel = 0xFF;
-    gSaveBlock2Ptr->saveVersion = 3;
+    gSaveBlock2Ptr->saveVersion = SAVE_VERSION;
     gSaveBlock2Ptr->optionsDiveSpeed = 0;
 
     // Copy V1 items - SaveBlock2
@@ -266,7 +266,7 @@ bool8 UpdateSave_v2_v3(const struct SaveSectorLocation *locations)
     COPY_BLOCK(vars);
     COPY_BLOCK(gameStats);
     COPY_BLOCK(berryTrees);
-    COPY_BLOCK(secretBases);
+    CopyOldSecretBases(sOldSaveBlock1Ptr->secretBases, SECRET_BASES_COUNT_OLD);
     COPY_BLOCK(playerRoomDecorations);
     COPY_BLOCK(playerRoomDecorationPositions);
     COPY_BLOCK(decorationDesks);

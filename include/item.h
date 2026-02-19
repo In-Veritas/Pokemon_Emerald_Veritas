@@ -63,6 +63,8 @@ void SortBerriesOrTMHMs(struct BagPocket *bagPocket);
 void MoveItemSlotInList(struct ItemSlot* itemSlots_, u32 from, u32 to_);
 void ClearBag(void);
 u16 CountTotalItemQuantityInBag(u16 itemId);
+u8 GetRealPocket(u8 virtualPocket);
+u8 GetItemVirtualPocket(u16 itemId);
 bool8 AddPyramidBagItem(u16 itemId, u16 count);
 bool8 RemovePyramidBagItem(u16 itemId, u16 count);
 const u8 *ItemId_GetName(u16 itemId);

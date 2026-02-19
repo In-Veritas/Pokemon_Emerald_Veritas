@@ -51,8 +51,8 @@ struct BagPosition
     u8 location;
     u8 pocket;
     u16 pocketSwitchArrowPos;
-    u16 cursorPosition[POCKETS_COUNT];
-    u16 scrollPosition[POCKETS_COUNT];
+    u16 cursorPosition[VIRTUAL_POCKETS_COUNT];
+    u16 scrollPosition[VIRTUAL_POCKETS_COUNT];
 };
 
 extern struct BagPosition gBagPosition;
@@ -74,8 +74,8 @@ struct BagMenu
     const u8 *contextMenuItemsPtr;
     u8 contextMenuItemsBuffer[4];
     u8 contextMenuNumItems;
-    u8 numItemStacks[POCKETS_COUNT];
-    u8 numShownItems[POCKETS_COUNT];
+    u8 numItemStacks[VIRTUAL_POCKETS_COUNT];
+    u8 numShownItems[VIRTUAL_POCKETS_COUNT];
     s16 graphicsLoadState;
     u8 unused2[14];
     u8 ALIGNED(4) pocketNameBuffer[32][32];

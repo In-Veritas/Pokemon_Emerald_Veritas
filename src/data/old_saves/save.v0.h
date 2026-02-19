@@ -5,6 +5,74 @@
 #include "constants/heal_locations.h"
 #include "constants/flags.h"
 
+// Old SecretBase struct used by save versions 0-3 (decorations[16], 20 bases)
+// Shared across save.v0.h, save.v1.h, save.v2.h, save.v3.h
+#define SECRET_BASES_COUNT_OLD      20
+#define DECOR_MAX_SECRET_BASE_OLD   16
+
+struct SecretBaseParty_Old
+{
+    u32 personality[PARTY_SIZE];
+    u16 moves[PARTY_SIZE * MAX_MON_MOVES];
+    u16 species[PARTY_SIZE];
+    u16 heldItems[PARTY_SIZE];
+    u8 levels[PARTY_SIZE];
+    u8 EVs[PARTY_SIZE];
+};
+
+struct SecretBase_Old
+{
+    u8 secretBaseId;
+    bool8 toRegister:4;
+    u8 gender:1;
+    u8 battledOwnerToday:1;
+    u8 registryStatus:2;
+    u8 trainerName[PLAYER_NAME_LENGTH];
+    u8 trainerId[TRAINER_ID_LENGTH];
+    u8 language;
+    u16 numSecretBasesReceived;
+    u8 numTimesEntered;
+    u8 unused;
+    u8 decorations[DECOR_MAX_SECRET_BASE_OLD];
+    u8 decorationPositions[DECOR_MAX_SECRET_BASE_OLD];
+    struct SecretBaseParty_Old party;
+};
+
+// Helper to copy old-format secret bases into new-format
+// Old: decorations[16], New: decorations[32]; Old count: 20, New count: 15
+static void CopyOldSecretBases(const struct SecretBase_Old *src, u32 srcCount)
+{
+    u32 i, j;
+    u32 count;
+
+    count = srcCount;
+    if (count > SECRET_BASES_COUNT)
+        count = SECRET_BASES_COUNT;
+
+    for (i = 0; i < count; i++)
+    {
+        gSaveBlock1Ptr->secretBases[i].secretBaseId = src[i].secretBaseId;
+        gSaveBlock1Ptr->secretBases[i].toRegister = src[i].toRegister;
+        gSaveBlock1Ptr->secretBases[i].gender = src[i].gender;
+        gSaveBlock1Ptr->secretBases[i].battledOwnerToday = src[i].battledOwnerToday;
+        gSaveBlock1Ptr->secretBases[i].registryStatus = src[i].registryStatus;
+        for (j = 0; j < PLAYER_NAME_LENGTH; j++)
+            gSaveBlock1Ptr->secretBases[i].trainerName[j] = src[i].trainerName[j];
+        for (j = 0; j < TRAINER_ID_LENGTH; j++)
+            gSaveBlock1Ptr->secretBases[i].trainerId[j] = src[i].trainerId[j];
+        gSaveBlock1Ptr->secretBases[i].language = src[i].language;
+        gSaveBlock1Ptr->secretBases[i].numSecretBasesReceived = src[i].numSecretBasesReceived;
+        gSaveBlock1Ptr->secretBases[i].numTimesEntered = src[i].numTimesEntered;
+        gSaveBlock1Ptr->secretBases[i].unused = src[i].unused;
+        for (j = 0; j < DECOR_MAX_SECRET_BASE_OLD; j++)
+        {
+            gSaveBlock1Ptr->secretBases[i].decorations[j] = src[i].decorations[j];
+            gSaveBlock1Ptr->secretBases[i].decorationPositions[j] = src[i].decorationPositions[j];
+        }
+        CpuCopy16(&src[i].party, &gSaveBlock1Ptr->secretBases[i].party, sizeof(struct SecretBaseParty));
+    }
+}
+
 struct SaveBlock2_v0
 {
     u8 playerName[7 + 1];
@@ -83,7 +151,7 @@ struct SaveBlock1_v0
     /*0x139C*/ u16 vars[VARS_COUNT];
     /*0x159C*/ u32 gameStats[64];
     /*0x169C*/ struct BerryTree berryTrees[128];
-    /*0x1A9C*/ struct SecretBase secretBases[20];
+    /*0x1A9C*/ struct SecretBase_Old secretBases[SECRET_BASES_COUNT_OLD];
     /*0x271C*/ u8 playerRoomDecorations[12];
     /*0x2728*/ u8 playerRoomDecorationPositions[12];
     /*0x2734*/ u8 decorationDesks[10];
@@ -255,7 +323,7 @@ bool8 UpdateSave_v0_v1(const struct SaveSectorLocation *locations)
     COPY_BLOCK(vars);
     COPY_BLOCK(gameStats);
     COPY_BLOCK(berryTrees);
-    COPY_BLOCK(secretBases);
+    CopyOldSecretBases(sOldSaveBlock1Ptr->secretBases, SECRET_BASES_COUNT_OLD);
     COPY_BLOCK(playerRoomDecorations);
     COPY_BLOCK(playerRoomDecorationPositions);
     COPY_BLOCK(decorationDesks);
@@ -349,8 +417,8 @@ bool8 UpdateSave_v0_v3(const struct SaveSectorLocation *locations)
 
     /** We need to fill in any data that's new in this version. */
     gSaveBlock2Ptr->_saveSentinel = 0xFF;
-    gSaveBlock2Ptr->saveVersion = 3;
-    
+    gSaveBlock2Ptr->saveVersion = SAVE_VERSION;
+
     // Set Secret Base Entrance Warp to -1 until Secret Base entered.
     SetPlayerSecretBaseCoords(-1, -1, WARP_ID_NONE, -1, -1);
 
@@ -451,7 +519,7 @@ bool8 UpdateSave_v0_v3(const struct SaveSectorLocation *locations)
     COPY_BLOCK(vars);
     COPY_BLOCK(gameStats);
     COPY_BLOCK(berryTrees);
-    COPY_BLOCK(secretBases);
+    CopyOldSecretBases(sOldSaveBlock1Ptr->secretBases, SECRET_BASES_COUNT_OLD);
     COPY_BLOCK(playerRoomDecorations);
     COPY_BLOCK(playerRoomDecorationPositions);
     COPY_BLOCK(decorationDesks);
