@@ -1519,7 +1519,7 @@ static void DrawItemListBgRow(u8 y)
 
 static void DrawPocketIndicatorSquare(u8 x, bool8 isCurrentPocket)
 {
-    u8 xPos = x + (14 - VIRTUAL_POCKETS_COUNT) / 2;
+    u8 xPos = x + 4;
     if (!isCurrentPocket)
         FillBgTilemapBufferRect_Palette0(2, 0x1017, xPos, 3, 1, 1);
     else
