@@ -5,6 +5,7 @@
 #include "field_effect.h"
 #include "field_specials.h"
 #include "item.h"
+#include "list_menu.h"
 #include "menu.h"
 #include "palette.h"
 #include "pokedex.h"
@@ -551,7 +552,14 @@ void GetLilycoveSSTidalSelection(void)
 
 // Link Battle Music dynamic multichoice
 
+#define LINK_MUSIC_MAX_VISIBLE 8
+
+static void Task_HandleLinkMusicListInput(u8 taskId);
+
 static u8 sLinkBattleMusicSelections[LINK_MUSIC_COUNT];
+static EWRAM_DATA struct ListMenuItem sLinkMusicListItems[LINK_MUSIC_COUNT] = {0};
+static EWRAM_DATA u8 sLinkMusicListTaskId = 0;
+static EWRAM_DATA u8 sLinkMusicWindowId = 0;
 
 static const u8 *const sLinkBattleMusicNames[] =
 {
@@ -561,6 +569,8 @@ static const u8 *const sLinkBattleMusicNames[] =
     [LINK_MUSIC_VS_CHAMPION]   = gText_LinkMusic_VsChampion,
     [LINK_MUSIC_VS_VERITAS]    = gText_LinkMusic_VsLegendary,
     [LINK_MUSIC_VS_LEGENDARY]  = gText_LinkMusic_VsSuper,
+    [LINK_MUSIC_VS_REGI]       = gText_LinkMusic_VsRegi,
+    [LINK_MUSIC_VS_JIRACHI]    = gText_LinkMusic_VsJirachi,
     [LINK_MUSIC_RANDOM]        = gText_LinkMusic_Random,
     [LINK_MUSIC_CANCEL]        = gText_Cancel2,
 };
@@ -573,6 +583,8 @@ static const u16 sLinkBattleMusicIds[] =
     [LINK_MUSIC_VS_CHAMPION]   = MUS_VS_CHAMPION,
     [LINK_MUSIC_VS_VERITAS]    = MUS_C_VS_LEGEND_BEAST,
     [LINK_MUSIC_VS_LEGENDARY]  = MUS_VS_KYOGRE_GROUDON,
+    [LINK_MUSIC_VS_REGI]       = MUS_VS_REGI,
+    [LINK_MUSIC_VS_JIRACHI]    = MUS_RG_VS_DEOXYS,
 };
 
 static bool8 IsLinkMusicUnlocked(u8 musicIndex)
@@ -599,6 +611,12 @@ static bool8 IsLinkMusicUnlocked(u8 musicIndex)
         return GetSetPokedexFlag(SpeciesToNationalPokedexNum(SPECIES_GROUDON), FLAG_GET_CAUGHT)
             && GetSetPokedexFlag(SpeciesToNationalPokedexNum(SPECIES_KYOGRE), FLAG_GET_CAUGHT)
             && GetSetPokedexFlag(SpeciesToNationalPokedexNum(SPECIES_RAYQUAZA), FLAG_GET_CAUGHT);
+    case LINK_MUSIC_VS_REGI:
+        return FlagGet(FLAG_DEFEATED_REGIROCK)
+            && FlagGet(FLAG_DEFEATED_REGICE)
+            && FlagGet(FLAG_DEFEATED_REGISTEEL);
+    case LINK_MUSIC_VS_JIRACHI:
+        return FlagGet(FLAG_DEFEATED_DEOXYS);
     default:
         return FALSE;
     }
@@ -609,8 +627,9 @@ static void CreateLinkBattleMusicMultichoice(void)
     u8 selectionCount = 0;
     u32 pixelWidth = 0;
     u8 width;
-    u8 windowId;
+    u8 maxShowed;
     u8 i;
+    struct ListMenuTemplate menuTemplate;
 
     for (i = 0; i < LINK_MUSIC_COUNT; i++)
         sLinkBattleMusicSelections[i] = 0xFF;
@@ -620,28 +639,76 @@ static void CreateLinkBattleMusicMultichoice(void)
         if (IsLinkMusicUnlocked(i))
         {
             sLinkBattleMusicSelections[selectionCount] = i;
+            sLinkMusicListItems[selectionCount].name = sLinkBattleMusicNames[i];
+            sLinkMusicListItems[selectionCount].id = selectionCount;
             pixelWidth = DisplayTextAndGetWidth(sLinkBattleMusicNames[i], pixelWidth);
             selectionCount++;
         }
     }
 
+    maxShowed = (selectionCount > LINK_MUSIC_MAX_VISIBLE) ? LINK_MUSIC_MAX_VISIBLE : selectionCount;
     width = ConvertPixelWidthToTileWidth(pixelWidth);
-    windowId = CreateWindowFromRect(0, 0, width, selectionCount * 2);
-    SetStandardWindowBorderStyle(windowId, FALSE);
+    sLinkMusicWindowId = CreateWindowFromRect(0, 0, width, maxShowed * 2);
+    SetStandardWindowBorderStyle(sLinkMusicWindowId, FALSE);
 
-    for (i = 0; i < selectionCount; i++)
+    menuTemplate.items = sLinkMusicListItems;
+    menuTemplate.moveCursorFunc = ListMenuDefaultCursorMoveFunc;
+    menuTemplate.itemPrintFunc = NULL;
+    menuTemplate.totalItems = selectionCount;
+    menuTemplate.maxShowed = maxShowed;
+    menuTemplate.windowId = sLinkMusicWindowId;
+    menuTemplate.header_X = 0;
+    menuTemplate.item_X = 8;
+    menuTemplate.cursor_X = 0;
+    menuTemplate.upText_Y = 1;
+    menuTemplate.cursorPal = 2;
+    menuTemplate.fillValue = 1;
+    menuTemplate.cursorShadowPal = 3;
+    menuTemplate.lettersSpacing = 0;
+    menuTemplate.itemVerticalPadding = 0;
+    menuTemplate.scrollMultiple = LIST_NO_MULTIPLE_SCROLL;
+    menuTemplate.fontId = FONT_NORMAL;
+    menuTemplate.cursorKind = CURSOR_BLACK_ARROW;
+
+    sLinkMusicListTaskId = ListMenuInit(&menuTemplate, 0, 0);
+    CopyWindowToVram(sLinkMusicWindowId, COPYWIN_FULL);
+    sProcessInputDelay = 6;
+    CreateTask(Task_HandleLinkMusicListInput, 80);
+}
+
+static void Task_HandleLinkMusicListInput(u8 taskId)
+{
+    s32 input;
+
+    if (gPaletteFade.active)
+        return;
+
+    if (sProcessInputDelay)
     {
-        AddTextPrinterParameterized(windowId, FONT_NORMAL, sLinkBattleMusicNames[sLinkBattleMusicSelections[i]], 8, i * 16 + 1, TEXT_SKIP_DRAW, NULL);
+        sProcessInputDelay--;
+        return;
     }
 
-    InitMenuInUpperLeftCornerNormal(windowId, selectionCount, selectionCount - 1);
-    CopyWindowToVram(windowId, COPYWIN_FULL);
-    InitMultichoiceCheckWrap(FALSE, selectionCount, windowId, MULTI_LINK_BATTLE_MUSIC);
+    input = ListMenu_ProcessInput(sLinkMusicListTaskId);
+
+    if (input != LIST_NOTHING_CHOSEN)
+    {
+        PlaySE(SE_SELECT);
+        if (input == LIST_CANCEL)
+            gSpecialVar_Result = MULTI_B_PRESSED;
+        else
+            gSpecialVar_Result = input;
+
+        DestroyListMenuTask(sLinkMusicListTaskId, NULL, NULL);
+        ClearToTransparentAndRemoveWindow(sLinkMusicWindowId);
+        DestroyTask(taskId);
+        ScriptContext_Enable();
+    }
 }
 
 bool8 ScriptMenu_CreateLinkBattleMusicMultichoice(void)
 {
-    if (FuncIsActiveTask(Task_HandleMultichoiceInput) == TRUE)
+    if (FuncIsActiveTask(Task_HandleLinkMusicListInput) == TRUE)
     {
         return FALSE;
     }
@@ -663,11 +730,11 @@ void GetLinkBattleMusicSelection(void)
 
 void SetRandomLinkBattleMusic(void)
 {
-    u16 unlockedMusic[6];
+    u16 unlockedMusic[8];
     u8 count = 0;
     u8 i;
 
-    for (i = LINK_MUSIC_VS_TRAINER; i <= LINK_MUSIC_VS_LEGENDARY; i++)
+    for (i = LINK_MUSIC_VS_TRAINER; i <= LINK_MUSIC_VS_JIRACHI; i++)
     {
         if (IsLinkMusicUnlocked(i))
         {

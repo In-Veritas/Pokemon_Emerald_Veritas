@@ -4690,9 +4690,10 @@ bool16 HasAllHoennMons(void)
 {
     u16 i;
 
-    // -2 excludes Jirachi and Deoxys
-    for (i = 0; i < HOENN_DEX_COUNT - 2; i++)
+    for (i = 0; i < HOENN_DEX_COUNT; i++)
     {
+        if ((i + 1) == HOENN_DEX_JIRACHI || (i + 1) == HOENN_DEX_DEOXYS)
+            continue;
         if (!GetSetPokedexFlag(HoennToNationalOrder(i + 1), FLAG_GET_CAUGHT))
             return FALSE;
     }

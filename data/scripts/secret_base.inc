@@ -637,6 +637,7 @@ SecretBase_EventScript_Trainer9PostBattle::
 	end
 
 SecretBase_EventScript_BattleTrainer::
+	call SecretBase_EventScript_SelectBattleMusic
 	special PrepSecretBaseBattleFlags
 	setvar VAR_0x8004, SPECIAL_BATTLE_SECRET_BASE
 	setvar VAR_0x8005, 0
@@ -660,6 +661,26 @@ SecretBase_EventScript_WonSecretBaseBattle::
 
 SecretBase_EventScript_LostSecretBaseBattle::
 	special LostSecretBaseBattle
+	return
+
+SecretBase_EventScript_SelectBattleMusic::
+	message CableClub_Text_SelectBattleMusic
+	waitmessage
+	special ScriptMenu_CreateLinkBattleMusicMultichoice
+	waitstate
+	special GetLinkBattleMusicSelection
+	switch VAR_RESULT
+	case LINK_MUSIC_VS_TRAINER, CableClub_EventScript_MusicVsTrainer
+	case LINK_MUSIC_VS_RIVAL, CableClub_EventScript_MusicVsRival
+	case LINK_MUSIC_VS_GYM_LEADER, CableClub_EventScript_MusicVsGymLeader
+	case LINK_MUSIC_VS_CHAMPION, CableClub_EventScript_MusicVsChampion
+	case LINK_MUSIC_VS_VERITAS, CableClub_EventScript_MusicVsVeritas
+	case LINK_MUSIC_VS_LEGENDARY, CableClub_EventScript_MusicVsLegendary
+	case LINK_MUSIC_VS_REGI, CableClub_EventScript_MusicVsRegi
+	case LINK_MUSIC_VS_JIRACHI, CableClub_EventScript_MusicVsJirachi
+	case LINK_MUSIC_RANDOM, CableClub_EventScript_MusicRandom
+	@ Cancel or B press defaults to standard trainer music
+	setvar VAR_LINK_BATTLE_MUSIC, 0
 	return
 
 	.include "data/scripts/secret_power_tm.inc"

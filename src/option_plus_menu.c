@@ -54,6 +54,7 @@ enum
     MENUITEM_CUSTOM_EXP_BAR,
     MENUITEM_BATTLE_ITEMANIMATE,
     MENUITEM_BATTLE_TYPEEFFECT,
+    MENUITEM_BATTLE_PICKUPTEXT,
     MENUITEM_BATTLE_CANCEL,
     MENUITEM_BATTLE_COUNT,
 };
@@ -215,6 +216,7 @@ static void DrawChoices_SurfOverworld(int selection, int y);
 static void DrawChoices_ItemAnimate(int selection, int y);
 static void DrawChoices_TypeEffect(int selection, int y);
 static void DrawChoices_HardMode(int selection, int y);
+static void DrawChoices_PickupText(int selection, int y);
 static void DrawChoices_FrameType(int selection, int y);
 static void DrawChoices_Font(int selection, int y);
 static void DrawBgWindowFrames(void);
@@ -270,6 +272,7 @@ struct // MENU_BATTLE
     [MENUITEM_MAIN_BATTLESTYLE]     = {DrawChoices_BattleStyle, ProcessInput_Options_Two},
     [MENUITEM_BATTLE_ITEMANIMATE]   = {DrawChoices_ItemAnimate, ProcessInput_Options_Four},
     [MENUITEM_BATTLE_TYPEEFFECT]    = {DrawChoices_TypeEffect,  ProcessInput_Options_Two},
+    [MENUITEM_BATTLE_PICKUPTEXT]    = {DrawChoices_PickupText,      ProcessInput_Options_Two},
     [MENUITEM_BATTLE_HARDMODE]      = {DrawChoices_HardMode,    ProcessInput_Options_Three},
     [MENUITEM_BATTLE_CANCEL]        = {NULL, NULL},
 };
@@ -320,8 +323,9 @@ static const u8 *const sOptionMenuItemsNamesMain[MENUITEM_MAIN_COUNT] =
 static const u8 sText_HpBar[]       = _("HP BAR SPEED");
 static const u8 sText_ExpBar[]      = _("EXP BAR SPEED");
 static const u8 sText_HardMode[]    = _("BATTLE MODE");
-static const u8 sText_TypeEffect[]  = _("TYPE EFFECTS");
-static const u8 sText_ItemAnimate[] = _("ITEM ANIMATION");
+static const u8 sText_TypeEffect[]      = _("TYPE EFFECTS");
+static const u8 sText_ItemAnimate[]     = _("ITEM ANIMATION");
+static const u8 sText_PickupText[]      = _("PICKUP MESSAGE");
 static const u8 *const sOptionMenuItemsNamesBattle[MENUITEM_BATTLE_COUNT] =
 {
     [MENUITEM_CUSTOM_HP_BAR]        = sText_HpBar,
@@ -330,6 +334,7 @@ static const u8 *const sOptionMenuItemsNamesBattle[MENUITEM_BATTLE_COUNT] =
     [MENUITEM_MAIN_BATTLESTYLE]     = gText_BattleStyle,
     [MENUITEM_BATTLE_ITEMANIMATE]   = sText_ItemAnimate,
     [MENUITEM_BATTLE_TYPEEFFECT]    = sText_TypeEffect,
+    [MENUITEM_BATTLE_PICKUPTEXT]    = sText_PickupText,
     [MENUITEM_BATTLE_HARDMODE]      = sText_HardMode,
     [MENUITEM_BATTLE_CANCEL]        = gText_OptionMenuSave,
 };
@@ -415,6 +420,7 @@ static bool8 CheckConditions(int selection)
         }
         case MENUITEM_BATTLE_ITEMANIMATE:     return TRUE;
         case MENUITEM_BATTLE_TYPEEFFECT:      return TRUE;
+        case MENUITEM_BATTLE_PICKUPTEXT:      return TRUE;
         case MENUITEM_BATTLE_HARDMODE:
         {
             if (!FlagGet(FLAG_DEFEATED_METEOR_FALLS_STEVEN))
@@ -501,6 +507,8 @@ static const u8 sText_Desc_TypeEffect_Off[]         = _("Original experience, do
 static const u8 sText_Desc_HardMode_Off[]           = _("Original experience.\nNo extra restrictions in battle.");
 static const u8 sText_Desc_HardMode_Hard[]          = _("SET mode, no items in battle,\nGYM level caps.");
 static const u8 sText_Desc_HardMode_Hardcore[]      = _("Hard mode, but POKéMON can't\nbe revived.");
+static const u8 sText_Desc_PickupText_On[]          = _("Pickup messages added to end of\nbattle if an item was found.");
+static const u8 sText_Desc_PickupText_Off[]         = _("Original experience.\nItems picked up without any message.");
 static const u8 *const sOptionMenuItemDescriptionsBattle[MENUITEM_BATTLE_COUNT][4] =
 {
     [MENUITEM_CUSTOM_HP_BAR]            = {sText_Desc_BattleHPBar},
@@ -509,6 +517,7 @@ static const u8 *const sOptionMenuItemDescriptionsBattle[MENUITEM_BATTLE_COUNT][
     [MENUITEM_MAIN_BATTLESTYLE]         = {sText_Desc_BattleStyle_Shift,    sText_Desc_BattleStyle_Set,     sText_Empty},
     [MENUITEM_BATTLE_ITEMANIMATE]       = {sText_Desc_ItemAnimateNormal,    sText_Desc_ItemAnimateReduced,  sText_Desc_ItemAnimateMinimal,  sText_Desc_ItemAnimateNone},
     [MENUITEM_BATTLE_TYPEEFFECT]        = {sText_Desc_TypeEffect_On,        sText_Desc_TypeEffect_Off,      sText_Empty},
+    [MENUITEM_BATTLE_PICKUPTEXT]        = {sText_Desc_PickupText_On,        sText_Desc_PickupText_Off},
     [MENUITEM_BATTLE_HARDMODE]          = {sText_Desc_HardMode_Off,         sText_Desc_HardMode_Hard,       sText_Desc_HardMode_Hardcore},
     [MENUITEM_BATTLE_CANCEL]            = {sText_Desc_Save,                 sText_Empty,                    sText_Empty,                    sText_Empty},
 };
@@ -578,11 +587,10 @@ static const u8 *const sOptionMenuItemDescriptionsDisabledBattle[MENUITEM_BATTLE
 {
     [MENUITEM_CUSTOM_HP_BAR]      = sText_Empty,
     [MENUITEM_CUSTOM_EXP_BAR]     = sText_Empty,
-    [MENUITEM_MAIN_BATTLESCENE] = sText_Empty,
-    [MENUITEM_MAIN_BATTLESTYLE] = sText_Desc_Disabled_BattleStyle,
-    [MENUITEM_BATTLE_HARDMODE] = sText_Desc_Disabled_Hardmode,
+    [MENUITEM_MAIN_BATTLESCENE]   = sText_Empty,
+    [MENUITEM_MAIN_BATTLESTYLE]   = sText_Desc_Disabled_BattleStyle,
+    [MENUITEM_BATTLE_HARDMODE]    = sText_Desc_Disabled_Hardmode,
     [MENUITEM_BATTLE_CANCEL]      = sText_Empty,
-
 };
 
 // Disabled World
@@ -897,6 +905,8 @@ void CB2_InitOptionPlusMenu(void)
         else
             sOptions->sel_battle[MENUITEM_BATTLE_HARDMODE]    = 0;
 
+        sOptions->sel_battle[MENUITEM_BATTLE_PICKUPTEXT]      = !FlagGet(FLAG_ENABLE_PICKUP_TEXT);
+
         //World
         sOptions->sel_world[MENUITEM_WORLD_AUTORUN]             = !FlagGet(FLAG_ENABLE_AUTORUN);            // Used the inverse to align with ON/OFF Buttons
         sOptions->sel_world[MENUITEM_WORLD_IMPROVEDFISHING]     = !FlagGet(FLAG_ENABLE_FISHCANTESCAPE);     // Used the inverse to align with ON/OFF Buttons
@@ -1171,7 +1181,8 @@ static void Task_OptionMenuSave(u8 taskId)
     gSaveBlock2Ptr->optionsBattleStyle                      = sOptions->sel_battle[MENUITEM_MAIN_BATTLESTYLE];
     gSaveBlock2Ptr->optionsBattleItemAnimation              = sOptions->sel_battle[MENUITEM_BATTLE_ITEMANIMATE];
     sOptions->sel_battle[MENUITEM_BATTLE_TYPEEFFECT] == 0   ? FlagClear(FLAG_HIDE_TYPE_EFFECT_BATTLE)   : FlagSet(FLAG_HIDE_TYPE_EFFECT_BATTLE);
-    
+    sOptions->sel_battle[MENUITEM_BATTLE_PICKUPTEXT] == 0  ? FlagSet(FLAG_ENABLE_PICKUP_TEXT)          : FlagClear(FLAG_ENABLE_PICKUP_TEXT);
+
     switch (sOptions->sel_battle[MENUITEM_BATTLE_HARDMODE])
     {
         case 2:
@@ -1507,6 +1518,15 @@ static void DrawChoices_ItemAnimate(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_BATTLE_ITEMANIMATE);
     DrawOptionMenuChoiceStrings(selection, y, active, sItemAnimateStrings, 4);
+}
+
+static const u8 sText_PickupText_On[]   = _("ON");
+static const u8 sText_PickupText_Off[]  = _("OFF");
+static const u8 *const sPickupTextStrings[] = {sText_PickupText_On, sText_PickupText_Off};
+static void DrawChoices_PickupText(int selection, int y)
+{
+    bool8 active = CheckConditions(MENUITEM_BATTLE_PICKUPTEXT);
+    DrawOptionMenuChoiceStrings(selection, y, active, sPickupTextStrings, 2);
 }
 
 static const u8 *const sSoundStrings[] = {gText_SoundMono, gText_SoundStereo};

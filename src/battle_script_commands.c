@@ -823,6 +823,13 @@ static const u16 sRarePickupItems[] =
     ITEM_RARE_CANDY,
 };
 
+static const u16 sVowelPickupItems[] =
+{
+    ITEM_ETHER,
+    ITEM_ULTRA_BALL,
+    ITEM_IRON,
+};
+
 static const u8 sPickupProbabilities[] =
 {
     30, 40, 50, 60, 70, 80, 90, 94, 98
@@ -3025,31 +3032,46 @@ void SetMoveEffect(bool8 primary, u8 certain)
 
 static void Cmd_seteffectwithchance(void)
 {
+    int i;
     u32 percentChance;
+    u8 effectCount = 1;
+    u8 moveEffectsBurnFlinch[2];
+
+    moveEffectsBurnFlinch[0] = MOVE_EFFECT_BURN;
+    moveEffectsBurnFlinch[1] = MOVE_EFFECT_FLINCH;
 
     if (gBattleMons[gBattlerAttacker].ability == ABILITY_SERENE_GRACE)
         percentChance = gBattleMoves[gCurrentMove].secondaryEffectChance * 2;
     else
         percentChance = gBattleMoves[gCurrentMove].secondaryEffectChance;
 
-    if (gBattleCommunication[MOVE_EFFECT_BYTE] & MOVE_EFFECT_CERTAIN
-        && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
+    for (i = 0; i < effectCount; i++)
     {
-        gBattleCommunication[MOVE_EFFECT_BYTE] &= ~MOVE_EFFECT_CERTAIN;
-        SetMoveEffect(FALSE, MOVE_EFFECT_CERTAIN);
-    }
-    else if (Random() % 100 < percentChance
-             && gBattleCommunication[MOVE_EFFECT_BYTE]
-             && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
-    {
-        if (percentChance >= 100)
+        if (gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_BURN_FLINCH)
+        {
+            gBattleCommunication[MOVE_EFFECT_BYTE] = moveEffectsBurnFlinch[i];
+            effectCount = 2;
+        }
+
+        if (gBattleCommunication[MOVE_EFFECT_BYTE] & MOVE_EFFECT_CERTAIN
+            && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
+        {
+            gBattleCommunication[MOVE_EFFECT_BYTE] &= ~MOVE_EFFECT_CERTAIN;
             SetMoveEffect(FALSE, MOVE_EFFECT_CERTAIN);
-        else
-            SetMoveEffect(FALSE, 0);
-    }
-    else
-    {
-        gBattlescriptCurrInstr++;
+        }
+        else if (Random() % 100 < percentChance
+                 && gBattleCommunication[MOVE_EFFECT_BYTE]
+                 && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
+        {
+            if (percentChance >= 100)
+                SetMoveEffect(FALSE, MOVE_EFFECT_CERTAIN);
+            else
+                SetMoveEffect(FALSE, 0);
+        }
+        else if (i == (effectCount - 1))
+        {
+            gBattlescriptCurrInstr++;
+        }
     }
 
     gBattleCommunication[MOVE_EFFECT_BYTE] = 0;
@@ -9723,8 +9745,11 @@ static void Cmd_getsecretpowereffect(void)
 static void Cmd_pickup(void)
 {
     s32 i;
-    u16 species, heldItem;
+    u16 species, heldItem, pickedupItem = 0;
     u8 ability;
+    u8 pickedUp = 0;
+    u8 monIdx = 0;
+    bool8 doesItemStartWithVowel = FALSE;
 
     if (InBattlePike())
     {
@@ -9750,6 +9775,8 @@ static void Cmd_pickup(void)
             {
                 heldItem = GetBattlePyramidPickupItemId();
                 SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
+
+                pickedUp++;
             }
         }
     }
@@ -9781,12 +9808,26 @@ static void Cmd_pickup(void)
                 {
                     if (sPickupProbabilities[j] > rand)
                     {
-                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &sPickupItems[lvlDivBy10 + j]);
+                        heldItem = sPickupItems[lvlDivBy10 + j];
+                        monIdx = i;
+
+                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
+
+                        pickedupItem = heldItem;
+                        pickedUp++;
+
                         break;
                     }
                     else if (rand == 99 || rand == 98)
                     {
-                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &sRarePickupItems[lvlDivBy10 + (99 - rand)]);
+                        heldItem = sRarePickupItems[lvlDivBy10 + (99 - rand)];
+                        monIdx = i;
+
+                        SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
+
+                        pickedupItem = heldItem;
+                        pickedUp++;
+
                         break;
                     }
                 }
@@ -9794,7 +9835,38 @@ static void Cmd_pickup(void)
         }
     }
 
-    gBattlescriptCurrInstr++;
+    if (pickedUp > 1 && FlagGet(FLAG_ENABLE_PICKUP_TEXT))
+    {
+        PREPARE_BYTE_NUMBER_BUFFER(gBattleTextBuff1, 1, pickedUp);
+
+        BattleScriptPush(gBattlescriptCurrInstr + 1);
+        gBattlescriptCurrInstr = BattleScript_PrintPickupMultipleString;
+    }
+    else if (pickedUp == 1 && FlagGet(FLAG_ENABLE_PICKUP_TEXT))
+    {
+        PREPARE_MON_NICK_BUFFER(gBattleTextBuff1, 0, monIdx);
+        PREPARE_ITEM_BUFFER(gBattleTextBuff2, pickedupItem);
+
+        BattleScriptPush(gBattlescriptCurrInstr + 1);
+
+        for (i = 0; i < (int)ARRAY_COUNT(sVowelPickupItems); i++)
+        {
+            if (pickedupItem == sVowelPickupItems[i])
+            {
+                doesItemStartWithVowel = TRUE;
+                break;
+            }
+        }
+
+        if (doesItemStartWithVowel)
+            gBattlescriptCurrInstr = BattleScript_PrintPickupStringVowelItem;
+        else
+            gBattlescriptCurrInstr = BattleScript_PrintPickupString;
+    }
+    else
+    {
+        gBattlescriptCurrInstr++;
+    }
 }
 
 static void Cmd_docastformchangeanimation(void)

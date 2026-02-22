@@ -112,11 +112,13 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * The marking is stored within existing unused Pokémon data bits — no save structure changes
 * Existing Pokémon are unaffected; only newly generated Pokémon going forward are tracked
 
-#### Link Battle Music Selection
+#### Battle Music Selection
 
-* Choose your preferred battle music before link battles
-* Available tracks include VS Rival, VS Gym Leader, VS Champion, VS Legendary Beast, and VS Kyogre/Groudon
+* Choose your preferred battle music before link battles and secret base NPC battles
+* Available tracks include VS Rival, VS Gym Leader, VS Champion, VS Legendary Beast, VS Kyogre/Groudon, VS Regi, and VS Jirachi
+* VS Regi unlocks after defeating all three Regis; VS Jirachi unlocks after defeating Deoxys
 * Selection of "Random" picks a random unlocked track
+* Menu scrolls when more options are unlocked than fit on screen
 * Default option uses the original trainer ID-based music selection
 
 #### Daycare Egg to PC
@@ -210,6 +212,11 @@ Trade evolutions have been restored while keeping alternative evolution methods 
   * Detects empty names, all-space names, and names containing control codes
   * Detects secret base trainers with invalid party species (e.g. Missingno from corrupted records)
   * Displays a notification with the number of removed records if any were cleaned
+* **Surfing Weather Palette Fix**: Surfing Pokémon overworld sprites now have weather palette fade applied correctly (e.g. rain tinting on Route 119)
+* **Hoenn Dex Completion Fix**: `HasAllHoennMons()` now explicitly skips Jirachi and Deoxys instead of relying on fragile index math
+* **Route 119 Parasol Lady Sprite Fix**: Corrected wrong sprite used for Parasol Lady Rachel NPC
+* **Norman Rematch Text Fix**: Norman's rematch phone call now correctly says "the SOOTOPOLIS GYM BADGE" instead of "all eight GYM BADGES"
+* **Blaze Kick Flinch Effect**: Blaze Kick now has independent burn and flinch chances (like Fire Fang), instead of only applying burn
 
 ### New Options Menu Items
 
@@ -223,6 +230,11 @@ Trade evolutions have been restored while keeping alternative evolution methods 
   * When disabled (OFF): Vanilla Feebas hunting mechanics with hidden tiles, 50% encounter rate
   * Toggling this option also remixes the Feebas tile locations
   * Allows players to choose between the QoL visible tiles or the classic blind fishing experience
+
+* **Pickup Message**: Added option to Battle menu
+  * When enabled (ON): Displays a message at the end of battle when a party Pokémon picks up an item via the Pickup ability
+  * When disabled (OFF): Items are picked up silently (original behavior)
+  * Shows individual Pokémon name and item for single pickups, or total count for multiple
 
 ### Removed Features
 

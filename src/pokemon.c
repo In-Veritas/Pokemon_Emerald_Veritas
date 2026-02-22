@@ -6647,7 +6647,7 @@ u16 GetBattleBGM(void)
         return MUS_VS_KYOGRE_GROUDON;
     else if (gBattleTypeFlags & BATTLE_TYPE_REGI)
         return MUS_VS_REGI;
-    else if (gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED_LINK))
+    else if (gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED_LINK | BATTLE_TYPE_SECRET_BASE))
     {
         u16 musicChoice = VarGet(VAR_LINK_BATTLE_MUSIC);
         if (musicChoice != 0)

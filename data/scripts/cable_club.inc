@@ -340,6 +340,8 @@ CableClub_EventScript_SelectBattleMusic::
 	case LINK_MUSIC_VS_CHAMPION, CableClub_EventScript_MusicVsChampion
 	case LINK_MUSIC_VS_VERITAS, CableClub_EventScript_MusicVsVeritas
 	case LINK_MUSIC_VS_LEGENDARY, CableClub_EventScript_MusicVsLegendary
+	case LINK_MUSIC_VS_REGI, CableClub_EventScript_MusicVsRegi
+	case LINK_MUSIC_VS_JIRACHI, CableClub_EventScript_MusicVsJirachi
 	case LINK_MUSIC_RANDOM, CableClub_EventScript_MusicRandom
 	case LINK_MUSIC_CANCEL, CableClub_EventScript_MusicCancel
 	case MULTI_B_PRESSED, CableClub_EventScript_MusicCancel
@@ -367,6 +369,14 @@ CableClub_EventScript_MusicVsVeritas::
 
 CableClub_EventScript_MusicVsLegendary::
 	setvar VAR_LINK_BATTLE_MUSIC, MUS_VS_KYOGRE_GROUDON
+	return
+
+CableClub_EventScript_MusicVsRegi::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_VS_REGI
+	return
+
+CableClub_EventScript_MusicVsJirachi::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_RG_VS_DEOXYS
 	return
 
 CableClub_EventScript_MusicRandom::

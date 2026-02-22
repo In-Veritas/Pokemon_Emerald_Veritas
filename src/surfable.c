@@ -8,6 +8,7 @@
 #include "party_menu.h"
 #include "sprite.h"
 #include "surfable.h"
+#include "field_weather.h"
 #include "constants/event_object_movement.h"
 #include "constants/event_objects.h"
 #include "constants/field_effects.h"
@@ -64,13 +65,16 @@ static u16 GetSurfablePokemonSprite(void)
 static void LoadSurfOverworldPalette(void)
 {
     u8 i;
+    u8 paletteIdx;
 
     i = VarGet(VAR_SURF_MON_SLOT);
 
     if (IsMonShiny(&gPlayerParty[i]) == TRUE)
-        LoadSpritePalette(&sSurfablePokemonShinyPalettes[sCurrentSurfMon]);
+        paletteIdx = LoadSpritePalette(&sSurfablePokemonShinyPalettes[sCurrentSurfMon]);
     else
-        LoadSpritePalette(&sSurfablePokemonPalettes[sCurrentSurfMon]);
+        paletteIdx = LoadSpritePalette(&sSurfablePokemonPalettes[sCurrentSurfMon]);
+
+    UpdateSpritePaletteWithWeather(paletteIdx);
 }
 
 u32 CreateSurfablePokemonSprite(void)
