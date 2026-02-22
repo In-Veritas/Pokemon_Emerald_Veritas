@@ -4587,18 +4587,31 @@ static bool8 IsTrainerNameInvalid(const u8 *name, u8 maxLen)
     return FALSE;
 }
 
-static bool8 HasInvalidPartySpecies(const struct SecretBaseParty *party)
+static bool8 IsSecretBasePartyInvalid(const struct SecretBaseParty *party)
 {
     u8 i;
-    bool8 hasAnyMon = FALSE;
+
+    // Lead Pokemon must exist
+    if (party->species[0] == SPECIES_NONE || party->species[0] >= NUM_SPECIES)
+        return TRUE;
 
     for (i = 0; i < PARTY_SIZE; i++)
     {
         if (party->species[i] == SPECIES_NONE)
             continue;
+        // Invalid species
         if (party->species[i] >= NUM_SPECIES)
             return TRUE;
-        hasAnyMon = TRUE;
+        // Level must be 1-100
+        if (party->levels[i] == 0 || party->levels[i] > MAX_LEVEL)
+            return TRUE;
+    }
+
+    // Check all moves across all party slots
+    for (i = 0; i < PARTY_SIZE * MAX_MON_MOVES; i++)
+    {
+        if (party->moves[i] != MOVE_NONE && party->moves[i] >= MOVES_COUNT)
+            return TRUE;
     }
 
     return FALSE;
@@ -4644,7 +4657,7 @@ void CleanInvalidTrainerRecords(void)
         if (gSaveBlock1Ptr->secretBases[i].secretBaseId == 0)
             continue; // Empty slot
         if (IsTrainerNameInvalid(gSaveBlock1Ptr->secretBases[i].trainerName, PLAYER_NAME_LENGTH)
-            || HasInvalidPartySpecies(&gSaveBlock1Ptr->secretBases[i].party))
+            || IsSecretBasePartyInvalid(&gSaveBlock1Ptr->secretBases[i].party))
         {
             memset(&gSaveBlock1Ptr->secretBases[i], 0, sizeof(struct SecretBase));
             count++;
