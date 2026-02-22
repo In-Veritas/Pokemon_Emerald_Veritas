@@ -4587,6 +4587,23 @@ static bool8 IsTrainerNameInvalid(const u8 *name, u8 maxLen)
     return FALSE;
 }
 
+static bool8 HasInvalidPartySpecies(const struct SecretBaseParty *party)
+{
+    u8 i;
+    bool8 hasAnyMon = FALSE;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (party->species[i] == SPECIES_NONE)
+            continue;
+        if (party->species[i] >= NUM_SPECIES)
+            return TRUE;
+        hasAnyMon = TRUE;
+    }
+
+    return FALSE;
+}
+
 void CleanInvalidTrainerRecords(void)
 {
     u8 i;
@@ -4617,6 +4634,19 @@ void CleanInvalidTrainerRecords(void)
         if (IsTrainerNameInvalid(gSaveBlock1Ptr->trainerNameRecords[i].trainerName, PLAYER_NAME_LENGTH + 1))
         {
             memset(&gSaveBlock1Ptr->trainerNameRecords[i], 0, sizeof(struct TrainerNameRecord));
+            count++;
+        }
+    }
+
+    // Clean secret base records with invalid names or party species (skip index 0 = player's base)
+    for (i = 1; i < SECRET_BASES_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->secretBases[i].secretBaseId == 0)
+            continue; // Empty slot
+        if (IsTrainerNameInvalid(gSaveBlock1Ptr->secretBases[i].trainerName, PLAYER_NAME_LENGTH)
+            || HasInvalidPartySpecies(&gSaveBlock1Ptr->secretBases[i].party))
+        {
+            memset(&gSaveBlock1Ptr->secretBases[i], 0, sizeof(struct SecretBase));
             count++;
         }
     }

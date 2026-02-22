@@ -206,8 +206,9 @@ Trade evolutions have been restored while keeping alternative evolution methods 
   * Provides smoother surfing experience while still being faster than normal
 * **Pokérus Rate Increase**: Increased Pokérus encounter rate from ~1/21845 to **1/2048**
   * Makes this beneficial mechanic more accessible to players
-* **Invalid Trainer Record Cleanup**: Automatically removes corrupted link battle and trainer name records on save load
+* **Invalid Trainer Record Cleanup**: Automatically removes corrupted link battle, trainer name, and secret base records on save load
   * Detects empty names, all-space names, and names containing control codes
+  * Detects secret base trainers with invalid party species (e.g. Missingno from corrupted records)
   * Displays a notification with the number of removed records if any were cleaned
 
 ### New Options Menu Items
@@ -410,6 +411,7 @@ Veritas uses a re-roll system where each Shiny Charm adds +1 re-roll attempt. Ba
     * If diving, will step through the different diving speeds on each press.
     * If on bike and unlocked dual swapping bike in post-game, swap bikes.
       * This is as an alternate for players using the above World Speed options to be able to change bike type and use the manual slow down of holding "R". Pressing "R" in this mode does not change the bike type.
+  * Pressing A+B simultaneously while on a bike also swaps bike type (post-game unlock required)
   * L = Speed: Will either step through, or toggle on/off the relevant chosen World Speed option
   * L = Fast Mode: Either toggles Auto Run, Fast Surf, World Speed and Diving speed to On or Max (as appropriate), or turns them all to Off or Minimum as appropriate.
   * L = Follower: Toggles Follower On or Off:
