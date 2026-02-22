@@ -715,6 +715,7 @@ static void CB2_Bag(void)
 static bool8 SetupBagMenu(void)
 {
     u8 taskId;
+    u8 i;
 
     switch (gMain.state)
     {
@@ -779,7 +780,8 @@ static bool8 SetupBagMenu(void)
     case 13:
         PrintPocketNames(gPocketNamesStringsTable[gBagPosition.pocket], 0);
         CopyPocketNameToWindow(0);
-        DrawPocketIndicatorSquare(gBagPosition.pocket, TRUE);
+        for (i = 0; i < VIRTUAL_POCKETS_COUNT; i++)
+            DrawPocketIndicatorSquare(i, i == gBagPosition.pocket);
         gMain.state++;
         break;
     case 14:
@@ -1517,10 +1519,11 @@ static void DrawItemListBgRow(u8 y)
 
 static void DrawPocketIndicatorSquare(u8 x, bool8 isCurrentPocket)
 {
+    u8 xPos = x + (14 - VIRTUAL_POCKETS_COUNT) / 2;
     if (!isCurrentPocket)
-        FillBgTilemapBufferRect_Palette0(2, 0x1017, x + 5, 3, 1, 1);
+        FillBgTilemapBufferRect_Palette0(2, 0x1017, xPos, 3, 1, 1);
     else
-        FillBgTilemapBufferRect_Palette0(2, 0x102B, x + 5, 3, 1, 1);
+        FillBgTilemapBufferRect_Palette0(2, 0x102B, xPos, 3, 1, 1);
     ScheduleBgCopyTilemapToVram(2);
 }
 
