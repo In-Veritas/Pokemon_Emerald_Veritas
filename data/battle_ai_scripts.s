@@ -714,7 +714,7 @@ AI_CheckViability:
 	if_effect EFFECT_PARALYZE, AI_CV_Paralyze
 	if_effect EFFECT_SWAGGER, AI_CV_Swagger
 	if_effect EFFECT_SPEED_DOWN_HIT, AI_CV_SpeedDownFromChance
-	if_effect EFFECT_SKY_ATTACK, AI_CV_ChargeUpMove
+	if_effect EFFECT_SKY_ATTACK, AI_CV_HighCrit
 	if_effect EFFECT_VITAL_THROW, AI_CV_VitalThrow
 	if_effect EFFECT_SUBSTITUTE, AI_CV_Substitute
 	if_effect EFFECT_RECHARGE, AI_CV_Recharge

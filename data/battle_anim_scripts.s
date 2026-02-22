@@ -2918,7 +2918,7 @@ Move_BARRAGE:
 	end
 
 Move_SKY_ATTACK:
-	choosetwoturnanim SkyAttackSetUp, SkyAttackUnleash
+	goto SkyAttackUnleash
 SkyAttackEnd:
 	end
 SkyAttackSetUp:
