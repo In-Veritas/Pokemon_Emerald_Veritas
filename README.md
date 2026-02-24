@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="header.png" alt="Pokémon Emerald Veritas" width="480">
+</p>
+
 # Pokémon Emerald Veritas
 
 Hey thanks for checking this out! Emerald Veritas is a rom hack I made based on Exclsior's Emerald Enhanced. I made this mostly to play with my friends but feel free to try it if you want to.
