@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="header.png" alt="Pokémon Emerald Veritas" width="480">
+  <img src="header.png" alt="Pokémon Emerald Veritas" width="100%">
 </p>
 
 # Pokémon Emerald Veritas
