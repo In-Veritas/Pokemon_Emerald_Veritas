@@ -507,16 +507,16 @@
     {
       "map_section": "MAPSEC_METEOR_FALLS",
       "name": "METEOR FALLS",
-      "x": 0,
-      "y": 3,
+      "x": 1,
+      "y": 2,
       "width": 1,
       "height": 1
     },
     {
       "map_section": "MAPSEC_METEOR_FALLS2",
       "name": "METEOR FALLS",
-      "x": 1,
-      "y": 2,
+      "x": 0,
+      "y": 3,
       "width": 1,
       "height": 1
     },
