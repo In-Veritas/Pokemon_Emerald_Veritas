@@ -678,6 +678,7 @@ SecretBase_EventScript_SelectBattleMusic::
 	case LINK_MUSIC_VS_LEGENDARY, CableClub_EventScript_MusicVsLegendary
 	case LINK_MUSIC_VS_REGI, CableClub_EventScript_MusicVsRegi
 	case LINK_MUSIC_VS_JIRACHI, CableClub_EventScript_MusicVsJirachi
+	case LINK_MUSIC_VS_MAGMA_AQUA, CableClub_EventScript_MusicVsMagmaAqua
 	case LINK_MUSIC_RANDOM, CableClub_EventScript_MusicRandom
 	@ Cancel or B press defaults to standard trainer music
 	setvar VAR_LINK_BATTLE_MUSIC, 0

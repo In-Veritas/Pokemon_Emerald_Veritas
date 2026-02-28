@@ -1059,6 +1059,7 @@ const u8 gText_LinkMusic_VsLegendary[] = _("VS VERITAS");
 const u8 gText_LinkMusic_VsSuper[] = _("VS LEGENDARY");
 const u8 gText_LinkMusic_VsRegi[] = _("VS Regi");
 const u8 gText_LinkMusic_VsJirachi[] = _("VS Mythic");
+const u8 gText_LinkMusic_VsMagmaAqua[] = _("VS Boss");
 const u8 gText_LinkMusic_Random[] = _("Random");
 const u8 gText_CheckObtainedRibbons[] = _("Check obtained RIBBONS.");
 const u8 gText_PutAwayPokenav[] = _("Put away the POKéNAV.");

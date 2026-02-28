@@ -571,6 +571,7 @@ static const u8 *const sLinkBattleMusicNames[] =
     [LINK_MUSIC_VS_LEGENDARY]  = gText_LinkMusic_VsSuper,
     [LINK_MUSIC_VS_REGI]       = gText_LinkMusic_VsRegi,
     [LINK_MUSIC_VS_JIRACHI]    = gText_LinkMusic_VsJirachi,
+    [LINK_MUSIC_VS_MAGMA_AQUA] = gText_LinkMusic_VsMagmaAqua,
     [LINK_MUSIC_RANDOM]        = gText_LinkMusic_Random,
     [LINK_MUSIC_CANCEL]        = gText_Cancel2,
 };
@@ -585,6 +586,7 @@ static const u16 sLinkBattleMusicIds[] =
     [LINK_MUSIC_VS_LEGENDARY]  = MUS_VS_KYOGRE_GROUDON,
     [LINK_MUSIC_VS_REGI]       = MUS_VS_REGI,
     [LINK_MUSIC_VS_JIRACHI]    = MUS_RG_VS_DEOXYS,
+    [LINK_MUSIC_VS_MAGMA_AQUA] = MUS_VS_AQUA_MAGMA_LEADER,
 };
 
 static bool8 IsLinkMusicUnlocked(u8 musicIndex)
@@ -617,6 +619,8 @@ static bool8 IsLinkMusicUnlocked(u8 musicIndex)
             && FlagGet(FLAG_DEFEATED_REGISTEEL);
     case LINK_MUSIC_VS_JIRACHI:
         return FlagGet(FLAG_DEFEATED_DEOXYS);
+    case LINK_MUSIC_VS_MAGMA_AQUA:
+        return FlagGet(FLAG_BADGE08_GET);
     default:
         return FALSE;
     }
@@ -730,11 +734,11 @@ void GetLinkBattleMusicSelection(void)
 
 void SetRandomLinkBattleMusic(void)
 {
-    u16 unlockedMusic[8];
+    u16 unlockedMusic[9];
     u8 count = 0;
     u8 i;
 
-    for (i = LINK_MUSIC_VS_TRAINER; i <= LINK_MUSIC_VS_JIRACHI; i++)
+    for (i = LINK_MUSIC_VS_TRAINER; i <= LINK_MUSIC_VS_MAGMA_AQUA; i++)
     {
         if (IsLinkMusicUnlocked(i))
         {
