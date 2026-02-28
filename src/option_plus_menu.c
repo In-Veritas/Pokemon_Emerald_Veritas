@@ -408,7 +408,7 @@ static bool8 CheckConditions(int selection)
         case MENUITEM_MAIN_BATTLESCENE:       return TRUE;
         case MENUITEM_MAIN_BATTLESTYLE:
         {
-            if (FlagGet(FLAG_HARD) || FlagGet(FLAG_NUZLOCKE))
+            if (FlagGet(FLAG_NUZLOCKE) || (FlagGet(FLAG_HARD) && !FlagGet(FLAG_IS_CHAMPION)))
             {
                 return FALSE;
             }
@@ -889,7 +889,7 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel_battle[MENUITEM_MAIN_BATTLESCENE] = gSaveBlock2Ptr->optionsBattleSceneOff;
         sOptions->sel_battle[MENUITEM_BATTLE_ITEMANIMATE]   = gSaveBlock2Ptr->optionsBattleItemAnimation;
         sOptions->sel_battle[MENUITEM_BATTLE_TYPEEFFECT]    = FlagGet(FLAG_HIDE_TYPE_EFFECT_BATTLE);
-        if (FlagGet(FLAG_HARD) || FlagGet(FLAG_NUZLOCKE))
+        if (FlagGet(FLAG_NUZLOCKE) || (FlagGet(FLAG_HARD) && !FlagGet(FLAG_IS_CHAMPION)))
         {
             sOptions->sel_battle[MENUITEM_MAIN_BATTLESTYLE] = OPTIONS_BATTLE_STYLE_SET;
         }
