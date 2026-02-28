@@ -6,6 +6,7 @@
 #include "field_specials.h"
 #include "metatile_behavior.h"
 #include "overworld.h"
+#include "field_weather.h"
 #include "sound.h"
 #include "constants/map_types.h"
 #include "constants/songs.h"
@@ -980,6 +981,7 @@ void GetOnOffBike(u8 transitionFlags)
         UpdateFollowingPokemon();
         Overworld_ClearSavedMusic();
         Overworld_PlaySpecialMapMusic();
+        DoCurrentWeather();
     }
     else
     {
