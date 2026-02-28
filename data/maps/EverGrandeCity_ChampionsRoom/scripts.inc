@@ -39,6 +39,8 @@ EverGrandeCity_ChampionsRoom_EventScript_EnterRoom::
 	waitmovement 0
 	setvar VAR_TEMP_1, 1
 	goto_if_unset FLAG_IS_CHAMPION, EverGrandeCity_ChampionsRoom_EventScript_Steven
+	random 5
+	goto_if_eq VAR_RESULT, 0, EverGrandeCity_ChampionsRoom_EventScript_ChampionExclsior
 	goto EverGrandeCity_ChampionsRoom_EventScript_Wallace
 	releaseall
 	end
@@ -258,6 +260,23 @@ EverGrandeCity_ChampionsRoom_EventScript_RematchMayCantGoIn::
 EverGrandeCity_ChampionsRoom_EventScript_RematchBrendanCantGoIn::
 	msgbox EverGrandeCity_ChampionsRoom_Text_RematchBrendanCantGoIn, MSGBOX_DEFAULT
 	return
+
+EverGrandeCity_ChampionsRoom_EventScript_ChampionExclsior::
+	playbgm MUS_ENCOUNTER_CHAMPION, FALSE
+	msgbox EverGrandeCity_ChampionsRoom_Text_ExclsiorIntro, MSGBOX_DEFAULT
+	trainerbattle_no_intro TRAINER_CHAMPION_EXCLSIOR, EverGrandeCity_ChampionsRoom_Text_ExclsiorDefeat
+	playse SE_DOOR
+	setmetatile 6, 1, METATILE_EliteFour_OpenDoorChampion_Frame, FALSE
+	setmetatile 6, 2, METATILE_EliteFour_OpenDoorChampion_Opening, FALSE
+	special DrawWholeMapView
+	msgbox EverGrandeCity_ChampionsRoom_Text_ExclsiorPostBattle, MSGBOX_DEFAULT
+	closemessage
+	delay 30
+	setflag FLAG_HIDE_PETALBURG_GYM_GREETER
+	warp MAP_EVER_GRANDE_CITY_HALL_OF_FAME, 7, 16
+	waitstate
+	releaseall
+	end
 
 EverGrandeCity_ChampionsRoom_Movement_PlayerExitStart:
 	walk_up
@@ -533,3 +552,29 @@ EverGrandeCity_ChampionsRoom_Text_RematchWallaceChampion::
 	.string "{PLAYER}{KUN}.\p"
 	.string "Come, CHAMPION. Let us mark this moment\n"
 	.string "in the HALL OF FAME!$"
+
+EverGrandeCity_ChampionsRoom_Text_ExclsiorIntro:
+	.string "???: …\p"
+	.string "So you've come back.\p"
+	.string "I've been waiting here, watching\n"
+	.string "TRAINERS come and go…\p"
+	.string "But you're different.\n"
+	.string "I can tell by the look in your eyes.\p"
+	.string "My name is EXCLSIOR.\p"
+	.string "I once traveled across every region,\n"
+	.string "seeking the strongest opponents.\p"
+	.string "Today, that opponent is you.\p"
+	.string "Let's see what you've got, CHAMPION!$"
+
+EverGrandeCity_ChampionsRoom_Text_ExclsiorDefeat:
+	.string "… Magnificent.\p"
+	.string "That was everything I hoped for\n"
+	.string "and more.$"
+
+EverGrandeCity_ChampionsRoom_Text_ExclsiorPostBattle:
+	.string "EXCLSIOR: You truly are something\n"
+	.string "special, {PLAYER}{KUN}.\p"
+	.string "I've battled TRAINERS across every\n"
+	.string "region, but none quite like you.\p"
+	.string "Go on, CHAMPION.\n"
+	.string "The HALL OF FAME awaits.$"

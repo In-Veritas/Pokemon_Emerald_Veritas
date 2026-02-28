@@ -15128,6 +15128,70 @@ static const struct TrainerMon sParty_Veritas[] = {
     }
 };
 
+static const struct TrainerMon sParty_ChampionExclsior[] = {
+    {
+    .ivs = BEST_IV_SPREAD,
+    .lvl = 80,
+    .species = SPECIES_TYPHLOSION,
+    .heldItem = ITEM_CHARCOAL,
+    .ability = ABILITY_SLOT_1,
+    .evs = {4, 252, 0, 252, 0, 0},
+    .moves = {MOVE_ERUPTION, MOVE_THUNDER_PUNCH, MOVE_FOCUS_PUNCH, MOVE_FLAMETHROWER},
+    .nature = NATURE_HASTY
+    },
+    {
+    .ivs = BEST_IV_SPREAD,
+    .lvl = 80,
+    .species = SPECIES_BRELOOM,
+    .heldItem = ITEM_LEFTOVERS,
+    .ability = ABILITY_SLOT_1,
+    .evs = {252, 252, 0, 4, 0, 0},
+    .moves = {MOVE_SPORE, MOVE_FOCUS_PUNCH, MOVE_MACH_PUNCH, MOVE_SLUDGE_BOMB},
+    .nature = NATURE_ADAMANT
+    },
+    {
+    .ivs = BEST_IV_SPREAD,
+    .lvl = 80,
+    .species = SPECIES_SCIZOR,
+    .heldItem = ITEM_CHOICE_BAND,
+    .ability = ABILITY_SLOT_1,
+    .evs = {252, 252, 0, 4, 0, 0},
+    .moves = {MOVE_SILVER_WIND, MOVE_STEEL_WING, MOVE_SLASH, MOVE_PURSUIT},
+    .nature = NATURE_ADAMANT
+    },
+    {
+    .ivs = BEST_IV_SPREAD,
+    .lvl = 80,
+    .species = SPECIES_GARDEVOIR,
+    .heldItem = ITEM_LUM_BERRY,
+    .ability = ABILITY_SLOT_1,
+    .evs = {4, 0, 0, 252, 252, 0},
+    .moves = {MOVE_PSYCHIC, MOVE_THUNDERBOLT, MOVE_CALM_MIND, MOVE_WILL_O_WISP},
+    .nature = NATURE_TIMID
+    },
+    {
+    .ivs = BEST_IV_SPREAD,
+    .lvl = 80,
+    .species = SPECIES_TYRANITAR,
+    .heldItem = ITEM_QUICK_CLAW,
+    .ability = ABILITY_SLOT_1,
+    .evs = {252, 252, 0, 4, 0, 0},
+    .moves = {MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_CRUNCH, MOVE_DRAGON_DANCE},
+    .nature = NATURE_ADAMANT
+    },
+    {
+    .ivs = BEST_IV_SPREAD,
+    .lvl = 80,
+    .species = SPECIES_LATIOS,
+    .heldItem = ITEM_SOUL_DEW,
+    .ability = ABILITY_SLOT_1,
+    .evs = {4, 0, 0, 252, 252, 0},
+    .moves = {MOVE_LUSTER_PURGE, MOVE_DRAGON_CLAW, MOVE_RECOVER, MOVE_CALM_MIND},
+    .nature = NATURE_TIMID,
+    .shiny = TRUE
+    }
+};
+
 // Battle Frontier HP EV trainer
 static const struct TrainerMon sParty_Eva[] = {
     {

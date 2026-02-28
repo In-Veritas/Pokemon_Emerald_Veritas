@@ -889,11 +889,12 @@
 #define TRAINER_PHOEBE_2_SINGLE             885
 #define TRAINER_STEVEN_3                    886
 #define TRAINER_EXCLSIOR                    887 //Actually calls trainer Veritas now
-// NOTE: Because each Trainer uses a flag to determine when they are defeated, there is only space for 9 additional trainers before trainer flag space overflows
+#define TRAINER_CHAMPION_EXCLSIOR           888
+// NOTE: Because each Trainer uses a flag to determine when they are defeated, there is only space for 8 additional trainers before trainer flag space overflows
 //       More space can be made by shifting flags around in constants/flags.h or changing how trainer flags are handled
 //       MAX_TRAINERS_COUNT can be increased but will take up additional saveblock space
 
-#define TRAINERS_COUNT                      888
+#define TRAINERS_COUNT                      889
 #define MAX_TRAINERS_COUNT                  960
 
 #endif  // GUARD_CONSTANTS_OPPONENTS_H
