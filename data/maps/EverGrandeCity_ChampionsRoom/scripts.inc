@@ -2,6 +2,7 @@
 .set LOCALID_RIVAL, 2
 .set LOCALID_BIRCH, 3
 .set LOCALID_STEVEN, 4
+.set LOCALID_EXCLSIOR, 5
 
 EverGrandeCity_ChampionsRoom_MapScripts::
 	map_script MAP_SCRIPT_ON_TRANSITION, EverGrandeCity_ChampionsRoom_OnTransition
@@ -11,6 +12,7 @@ EverGrandeCity_ChampionsRoom_MapScripts::
 
 EverGrandeCity_ChampionsRoom_OnTransition:
 	call Common_EventScript_SetupRivalGfxId
+	setflag FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR
 	call_if_unset FLAG_IS_CHAMPION, EverGrandeCity_ChampionsRoom_EventScript_SetStevenLayout
 	end
 
@@ -262,6 +264,9 @@ EverGrandeCity_ChampionsRoom_EventScript_RematchBrendanCantGoIn::
 	return
 
 EverGrandeCity_ChampionsRoom_EventScript_ChampionExclsior::
+	removeobject LOCALID_WALLACE
+	clearflag FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR
+	addobject LOCALID_EXCLSIOR
 	playbgm MUS_ENCOUNTER_CHAMPION, FALSE
 	msgbox EverGrandeCity_ChampionsRoom_Text_ExclsiorIntro, MSGBOX_DEFAULT
 	trainerbattle_no_intro TRAINER_CHAMPION_EXCLSIOR, EverGrandeCity_ChampionsRoom_Text_ExclsiorDefeat

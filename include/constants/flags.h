@@ -89,7 +89,7 @@
 #define FLAG_CAUGHT_JIRACHI                                 0x4C // Check for Jirachi Caught, for Rematch
 #define FLAG_DEFEATED_JIRACHI                               0x4D // Check for Jirachi Defeated, for Rematch
 #define FLAG_ENABLE_SHORT_POKECENTER                        0x4E // Flag for enabling short Pokemon Center dialog
-#define FLAG_UNUSED_0x04F                                   0x4F // Unused Flag
+#define FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR                    0x4F
 
 // Scripts
 #define FLAG_HIDE_SKY_PILLAR_TOP_RAYQUAZA_STILL             0x50
