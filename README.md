@@ -119,11 +119,43 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 #### Battle Music Selection
 
 * Choose your preferred battle music before link battles and secret base NPC battles
-* Available tracks include VS Rival, VS Gym Leader, VS Champion, VS Legendary Beast, VS Kyogre/Groudon, VS Regi, and VS Jirachi
-* VS Regi unlocks after defeating all three Regis; VS Jirachi unlocks after defeating Deoxys
+* Available tracks include VS Rival, VS Gym Leader, VS Champion, VS Legendary Beast, VS Kyogre/Groudon, VS Regi, VS Jirachi, and VS Boss (Magma/Aqua Leader)
+* VS Regi unlocks after defeating all three Regis; VS Jirachi unlocks after defeating Deoxys; VS Boss unlocks after all 8 badges
 * Selection of "Random" picks a random unlocked track
 * Menu scrolls when more options are unlocked than fit on screen
 * Default option uses the original trainer ID-based music selection
+
+#### Steven's Beldum Gift
+
+* The gift Beldum in Steven's house now has "STEVEN" as its OT name, male OT gender, and a unique trainer ID
+* Makes the Beldum feel like a genuine gift from Steven rather than a self-caught Pokémon
+
+#### Champion Exclsior (Post-Game)
+
+* After becoming Champion, there is a 20% chance of encountering Exclsior instead of Wallace
+* Uses Red's trainer pic and the Veritas battle theme
+* Team consists of six Lv80 Pokémon: Typhlosion, Breloom, Scizor, Gardevoir, Tyranitar, and a shiny Latios
+* Defeating Exclsior warps directly to the Hall of Fame
+
+#### Secret Base VS Cutscene
+
+* Secret base battles now show a VS mugshot transition (like Elite Four and Champion battles)
+* The mugshot dynamically displays the opponent's NPC trainer sprite
+
+#### Muddy Water Buff
+
+* Muddy Water base power increased from 85 to 95
+* Mudkip now learns Muddy Water at level 50
+
+#### Pokemon League Lobby Music
+
+* The Pokemon League 1F lobby now plays the Victory Road theme instead of the Poke Center theme
+
+#### Hard Mode: Switch/Set After Champion
+
+* Hard mode no longer permanently forces SET battle style
+* Players who have beaten the Champion can toggle between Switch and Set
+* Nuzlocke mode still always forces SET
 
 #### Daycare Egg to PC
 
@@ -221,6 +253,9 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * **Route 119 Parasol Lady Sprite Fix**: Corrected wrong sprite used for Parasol Lady Rachel NPC
 * **Norman Rematch Text Fix**: Norman's rematch phone call now correctly says "the SOOTOPOLIS GYM BADGE" instead of "all eight GYM BADGES"
 * **Blaze Kick Flinch Effect**: Blaze Kick now has independent burn and flinch chances (like Fire Fang), instead of only applying burn
+* **Contest Room RS Style Fix**: Contest lobby now correctly uses RS player sprites when Classic (Ruby/Sapphire) style is selected
+* **Link Battle Music Fix**: Link battle music selection was being ignored — both wired and wireless battles now correctly use the player's chosen music
+* **Bike Dismount Weather Fix**: Dismounting the bike on weather-affected routes (e.g., Route 119 rain) now properly restores weather effects
 
 ### New Options Menu Items
 
