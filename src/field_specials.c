@@ -4559,6 +4559,32 @@ void Debug_MarkLastPartyMonTrueShiny(void)
         SetMonData(&gPlayerParty[count - 1], MON_DATA_TRUE_SHINY, &trueShiny);
 }
 
+void SetLastGiftMonStevenOT(void)
+{
+    u32 otId = Random32();
+    u8 gender = MALE;
+
+    if (gSpecialVar_Result == MON_GIVEN_TO_PARTY)
+    {
+        u8 count = CalculatePlayerPartyCount();
+
+        if (count > 0)
+        {
+            SetMonData(&gPlayerParty[count - 1], MON_DATA_OT_NAME, gText_Steven);
+            SetMonData(&gPlayerParty[count - 1], MON_DATA_OT_GENDER, &gender);
+            SetMonData(&gPlayerParty[count - 1], MON_DATA_OT_ID, &otId);
+        }
+    }
+    else if (gSpecialVar_Result == MON_GIVEN_TO_PC)
+    {
+        struct BoxPokemon *boxMon = GetBoxedMonPtr(gSpecialVar_MonBoxId, gSpecialVar_MonBoxPos);
+
+        SetBoxMonData(boxMon, MON_DATA_OT_NAME, gText_Steven);
+        SetBoxMonData(boxMon, MON_DATA_OT_GENDER, &gender);
+        SetBoxMonData(boxMon, MON_DATA_OT_ID, &otId);
+    }
+}
+
 static bool8 IsTrainerNameInvalid(const u8 *name, u8 maxLen)
 {
     u8 i;
