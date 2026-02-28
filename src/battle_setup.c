@@ -861,7 +861,7 @@ static u8 GetTrainerBattleTransition(void)
     u8 playerLevel;
 
     if (gTrainerBattleOpponent_A == TRAINER_SECRET_BASE)
-        return B_TRANSITION_CHAMPION;
+        return B_TRANSITION_SECRET_BASE;
 
     if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_ELITE_FOUR)
     {

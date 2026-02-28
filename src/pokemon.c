@@ -4780,6 +4780,13 @@ u8 GetSecretBaseTrainerPicIndex(void)
     return gFacilityClassToPicIndex[facilityClass];
 }
 
+u8 GetCurrentSecretBaseTrainerPicIndex(void)
+{
+    struct SecretBase *base = &gSaveBlock1Ptr->secretBases[VarGet(VAR_CURRENT_SECRET_BASE)];
+    u8 facilityClass = sSecretBaseFacilityClasses[base->gender][base->trainerId[0] % NUM_SECRET_BASE_CLASSES];
+    return gFacilityClassToPicIndex[facilityClass];
+}
+
 u8 GetSecretBaseTrainerClass(void)
 {
     u8 facilityClass = sSecretBaseFacilityClasses[gBattleResources->secretBase->gender][gBattleResources->secretBase->trainerId[0] % NUM_SECRET_BASE_CLASSES];

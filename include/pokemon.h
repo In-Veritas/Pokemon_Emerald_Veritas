@@ -466,6 +466,7 @@ u8 GetAbilityBySpecies(u16 species, u8 abilityNum);
 u8 GetMonAbility(struct Pokemon *mon);
 void CreateSecretBaseEnemyParty(struct SecretBase *secretBaseRecord);
 u8 GetSecretBaseTrainerPicIndex(void);
+u8 GetCurrentSecretBaseTrainerPicIndex(void);
 u8 GetSecretBaseTrainerClass(void);
 bool8 IsPlayerPartyAndPokemonStorageFull(void);
 bool8 IsPokemonStorageFull(void);

@@ -22,6 +22,7 @@
 #include "util.h"
 #include "constants/field_effects.h"
 #include "constants/songs.h"
+#include "pokemon.h"
 #include "constants/trainers.h"
 #include "constants/rgb.h"
 
@@ -114,6 +115,7 @@ static void Task_Drake(u8);
 static void Task_Champion(u8);
 static void Task_Champion_Steven(u8);
 static void Task_Red(u8);
+static void Task_SecretBase(u8);
 static void Task_Aqua(u8);
 static void Task_Magma(u8);
 static void Task_Regice(u8);
@@ -392,6 +394,7 @@ static const TaskFunc sTasks_Main[B_TRANSITION_COUNT] =
     [B_TRANSITION_FRONTIER_CIRCLES_ASYMMETRIC_SPIRAL_IN_SEQ] = Task_FrontierCirclesAsymmetricSpiralInSeq,
     [B_TRANSITION_FRONTIER_CIRCLES_SYMMETRIC_SPIRAL_IN_SEQ] = Task_FrontierCirclesSymmetricSpiralInSeq,
     [B_TRANSITION_RED] = Task_Red,
+    [B_TRANSITION_SECRET_BASE] = Task_SecretBase,
 };
 
 static const TransitionStateFunc sTaskHandlers[] =
@@ -554,6 +557,7 @@ static const u8 sMugshotsTrainerPicIDsTable[MUGSHOTS_COUNT] =
     [MUGSHOT_CHAMPION] = TRAINER_PIC_CHAMPION_WALLACE,
     [MUGSHOT_CHAMPION_STEVEN] = TRAINER_PIC_STEVEN,
     [MUGSHOT_RED] = TRAINER_PIC_RED,
+    [MUGSHOT_SECRET_BASE] = TRAINER_PIC_ELITE_FOUR_SIDNEY, // Placeholder, overridden at runtime
 };
 static const s16 sMugshotsOpponentRotationScales[MUGSHOTS_COUNT][2] =
 {
@@ -564,6 +568,7 @@ static const s16 sMugshotsOpponentRotationScales[MUGSHOTS_COUNT][2] =
     [MUGSHOT_CHAMPION] = {0x188, 0x188},
     [MUGSHOT_CHAMPION_STEVEN] = {0x188, 0x188},
     [MUGSHOT_RED] = {0x188, 0x188},
+    [MUGSHOT_SECRET_BASE] = {0x200, 0x200},
 };
 static const s16 sMugshotsOpponentCoords[MUGSHOTS_COUNT][2] =
 {
@@ -574,6 +579,7 @@ static const s16 sMugshotsOpponentCoords[MUGSHOTS_COUNT][2] =
     [MUGSHOT_CHAMPION] = {-8,  7},
     [MUGSHOT_CHAMPION_STEVEN] = {-8,  7},
     [MUGSHOT_RED] = {-8,  7},
+    [MUGSHOT_SECRET_BASE] = { 0,  0},
 };
 
 static const TransitionSpriteCallback sMugshotTrainerPicFuncs[] =
@@ -912,7 +918,8 @@ static const u16 *const sOpponentMugshotsPals[MUGSHOTS_COUNT] =
     [MUGSHOT_DRAKE] = sMugshotPal_Drake,
     [MUGSHOT_CHAMPION] = sMugshotPal_Champion,
     [MUGSHOT_CHAMPION_STEVEN] = sMugshotPal_Champion,
-    [MUGSHOT_RED] = sMugshotPal_Sidney
+    [MUGSHOT_RED] = sMugshotPal_Sidney,
+    [MUGSHOT_SECRET_BASE] = sMugshotPal_Sidney
 };
 
 static const u16 *const sPlayerMugshotsPals[GENDER_COUNT] =
@@ -2313,6 +2320,12 @@ static void Task_Red(u8 taskId)
     DoMugshotTransition(taskId);
 }
 
+static void Task_SecretBase(u8 taskId)
+{
+    gTasks[taskId].tMugshotId = MUGSHOT_SECRET_BASE;
+    DoMugshotTransition(taskId);
+}
+
 static void DoMugshotTransition(u8 taskId)
 {
     while (sMugshot_Funcs[gTasks[taskId].tState](&gTasks[taskId]));
@@ -2601,9 +2614,14 @@ static void HBlankCB_Mugshots(void)
 static void Mugshots_CreateTrainerPics(struct Task *task)
 {
     struct Sprite *opponentSprite, *playerSprite;
+    u8 trainerPicId;
 
     s16 mugshotId = task->tMugshotId;
-    task->tOpponentSpriteId = CreateTrainerSprite(sMugshotsTrainerPicIDsTable[mugshotId],
+    if (mugshotId == MUGSHOT_SECRET_BASE)
+        trainerPicId = GetCurrentSecretBaseTrainerPicIndex();
+    else
+        trainerPicId = sMugshotsTrainerPicIDsTable[mugshotId];
+    task->tOpponentSpriteId = CreateTrainerSprite(trainerPicId,
                                                   sMugshotsOpponentCoords[mugshotId][0] - 32,
                                                   sMugshotsOpponentCoords[mugshotId][1] + 42,
                                                   0, gDecompressionBuffer);
