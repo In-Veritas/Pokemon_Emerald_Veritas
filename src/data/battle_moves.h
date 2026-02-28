@@ -4293,7 +4293,7 @@ const struct BattleMove gBattleMoves[MOVES_COUNT] =
     [MOVE_MUDDY_WATER] =
     {
         .effect = EFFECT_SPEED_DOWN_HIT,
-        .power = 85,
+        .power = 95,
         .type = TYPE_WATER,
         .accuracy = 95,
         .pp = 15,
