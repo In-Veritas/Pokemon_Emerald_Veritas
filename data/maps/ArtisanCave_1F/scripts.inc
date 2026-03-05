@@ -13,11 +13,27 @@ ArtisanCave_1F_EventScript_MoveRelearner::
 	end
 
 ArtisanCave_1F_EventScript_AskTeachMove::
-	checkitem ITEM_HEART_SCALE
-	goto_if_eq VAR_RESULT, FALSE, ArtisanCave_1F_EventScript_ComeBackWithHeartScale
-	msgbox ArtisanCave_1F_Text_ThatsAHeartScaleWantMeToTeachMove, MSGBOX_YESNO
+	checkitem ITEM_NUGGET
+	goto_if_eq VAR_RESULT, TRUE, ArtisanCave_1F_EventScript_HasNugget
+	checkitem ITEM_PEARL
+	goto_if_eq VAR_RESULT, TRUE, ArtisanCave_1F_EventScript_HasPearl
+	goto ArtisanCave_1F_EventScript_ComeBackWithPayment
+	end
+
+ArtisanCave_1F_EventScript_HasNugget::
+	setvar VAR_0x8006, ITEM_NUGGET
+	goto ArtisanCave_1F_EventScript_OfferTeachMove
+	end
+
+ArtisanCave_1F_EventScript_HasPearl::
+	setvar VAR_0x8006, ITEM_PEARL
+	goto ArtisanCave_1F_EventScript_OfferTeachMove
+	end
+
+ArtisanCave_1F_EventScript_OfferTeachMove::
+	msgbox ArtisanCave_1F_Text_ThatsATreasureWantMeToTeachMove, MSGBOX_YESNO
 	switch VAR_RESULT
-	case NO, ArtisanCave_1F_EventScript_ComeBackWithHeartScale
+	case NO, ArtisanCave_1F_EventScript_ComeBackWithPayment
 	goto ArtisanCave_1F_EventScript_ChooseMon
 	end
 
@@ -25,7 +41,7 @@ ArtisanCave_1F_EventScript_ChooseMon::
 	msgbox ArtisanCave_1F_Text_TutorWhichMon, MSGBOX_DEFAULT
 	special ChooseMonForMoveRelearner
 	waitstate
-	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, ArtisanCave_1F_EventScript_ComeBackWithHeartScale
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, ArtisanCave_1F_EventScript_ComeBackWithPayment
 	special IsSelectedMonEgg
 	goto_if_eq VAR_RESULT, TRUE, ArtisanCave_1F_EventScript_CantTeachEgg
 	goto_if_eq VAR_0x8005, 0, ArtisanCave_1F_EventScript_NoMoveToTeachMon
@@ -37,9 +53,17 @@ ArtisanCave_1F_EventScript_ChooseMove::
 	special TeachMoveRelearnerMove
 	waitstate
 	goto_if_eq VAR_0x8004, 0, ArtisanCave_1F_EventScript_ChooseMon
-	msgbox ArtisanCave_1F_Text_HandedOverHeartScale, MSGBOX_DEFAULT
-	removeitem ITEM_HEART_SCALE
-	goto ArtisanCave_1F_EventScript_ComeBackWithHeartScale
+	compare VAR_0x8006, ITEM_NUGGET
+	goto_if_eq ArtisanCave_1F_EventScript_RemoveNugget
+	msgbox ArtisanCave_1F_Text_HandedOverPearl, MSGBOX_DEFAULT
+	removeitem ITEM_PEARL
+	goto ArtisanCave_1F_EventScript_ComeBackWithPayment
+	end
+
+ArtisanCave_1F_EventScript_RemoveNugget::
+	msgbox ArtisanCave_1F_Text_HandedOverNugget, MSGBOX_DEFAULT
+	removeitem ITEM_NUGGET
+	goto ArtisanCave_1F_EventScript_ComeBackWithPayment
 	end
 
 ArtisanCave_1F_EventScript_NoMoveToTeachMon::
@@ -52,8 +76,8 @@ ArtisanCave_1F_EventScript_CantTeachEgg::
 	goto ArtisanCave_1F_EventScript_ChooseMon
 	end
 
-ArtisanCave_1F_EventScript_ComeBackWithHeartScale::
-	msgbox ArtisanCave_1F_Text_ComeBackWithHeartScale, MSGBOX_DEFAULT
+ArtisanCave_1F_EventScript_ComeBackWithPayment::
+	msgbox ArtisanCave_1F_Text_ComeBackWithPayment, MSGBOX_DEFAULT
 	releaseall
 	clearflag FLAG_EGG_MOVES_TUTOR
 	end
@@ -65,12 +89,12 @@ ArtisanCave_1F_Text_ImTheMoveTutor:
 	.string "I teach moves meant for newborns.\p"
 	.string "I can gift an EGG move to your POKéMON\n"
 	.string "if you'd like.\p"
-	.string "All for one HEART SCALE.\n"
-	.string "I'm crafting my next masterpiece.$"
+	.string "All for a NUGGET or PEARL.\n"
+	.string "An artist needs to fund supplies!$"
 
-ArtisanCave_1F_Text_ThatsAHeartScaleWantMeToTeachMove:
-	.string "Oh! That's it! A true HEART SCALE\n"
-	.string "of passion, no less!\p"
+ArtisanCave_1F_Text_ThatsATreasureWantMeToTeachMove:
+	.string "Oh! What a fine treasure you carry!\n"
+	.string "It sparkles with inspiration!\p"
 	.string "Let me guess, you want me to\n"
 	.string "sketch a move?$"
 
@@ -85,13 +109,17 @@ ArtisanCave_1F_Text_DontHaveMoveToTeachPokemon:
 	.string "I haven't mastered that move's art\n"
 	.string "for that POKéMON.$"
 
-ArtisanCave_1F_Text_HandedOverHeartScale:
-	.string "{PLAYER} handed over one HEART SCALE\n"
+ArtisanCave_1F_Text_HandedOverNugget:
+	.string "{PLAYER} handed over one NUGGET\n"
 	.string "in exchange.$"
 
-ArtisanCave_1F_Text_ComeBackWithHeartScale:
+ArtisanCave_1F_Text_HandedOverPearl:
+	.string "{PLAYER} handed over one PEARL\n"
+	.string "in exchange.$"
+
+ArtisanCave_1F_Text_ComeBackWithPayment:
 	.string "If your POKéMON need to learn an EGG\n"
-	.string "move, come back with a HEART SCALE.$"
+	.string "move, bring me a NUGGET or PEARL.$"
 
 ArtisanCave_1F_Text_CantTeachEgg:
 	.string "Hunh? No move in my sketchbook\n"

@@ -85,6 +85,24 @@ FallarborTown_MoveRelearnersHouse_EventScript_EggMovetutor::
 	end
 
 FallarborTown_MoveRelearnersHouse_EventScript_AskTeachEggMove::
+	checkitem ITEM_NUGGET
+	goto_if_eq VAR_RESULT, TRUE, FallarborTown_MoveRelearnersHouse_EventScript_HasNugget
+	checkitem ITEM_PEARL
+	goto_if_eq VAR_RESULT, TRUE, FallarborTown_MoveRelearnersHouse_EventScript_HasPearl
+	goto FallarborTown_MoveRelearnersHouse_EventScript_ComeBackLater
+	end
+
+FallarborTown_MoveRelearnersHouse_EventScript_HasNugget::
+	setvar VAR_0x8006, ITEM_NUGGET
+	goto FallarborTown_MoveRelearnersHouse_EventScript_OfferTeachEggMove
+	end
+
+FallarborTown_MoveRelearnersHouse_EventScript_HasPearl::
+	setvar VAR_0x8006, ITEM_PEARL
+	goto FallarborTown_MoveRelearnersHouse_EventScript_OfferTeachEggMove
+	end
+
+FallarborTown_MoveRelearnersHouse_EventScript_OfferTeachEggMove::
 	msgbox FallarborTown_MoveRelearnersHouse_Text_WantMeToTeachEggMove, MSGBOX_YESNO
 	switch VAR_RESULT
 	case NO, FallarborTown_MoveRelearnersHouse_EventScript_ComeBackLater
@@ -108,9 +126,17 @@ FallarborTown_MoveRelearnersHouse_EventScript_ChooseEggMove::
 	special TeachMoveRelearnerMove
 	waitstate
 	goto_if_eq VAR_0x8004, 0, FallarborTown_MoveRelearnersHouse_EventScript_ChooseMonEggMove
-	msgbox FallarborTown_MoveRelearnersHouse_Text_ComeBackAgain, MSGBOX_DEFAULT
-	clearflag FLAG_EGG_MOVES_TUTOR
-	releaseall
+	compare VAR_0x8006, ITEM_NUGGET
+	goto_if_eq FallarborTown_MoveRelearnersHouse_EventScript_RemoveNugget
+	msgbox FallarborTown_MoveRelearnersHouse_Text_HandedOverPearl, MSGBOX_DEFAULT
+	removeitem ITEM_PEARL
+	goto FallarborTown_MoveRelearnersHouse_EventScript_ComeBackLater
+	end
+
+FallarborTown_MoveRelearnersHouse_EventScript_RemoveNugget::
+	msgbox FallarborTown_MoveRelearnersHouse_Text_HandedOverNugget, MSGBOX_DEFAULT
+	removeitem ITEM_NUGGET
+	goto FallarborTown_MoveRelearnersHouse_EventScript_ComeBackLater
 	end
 
 FallarborTown_MoveRelearnersHouse_EventScript_NoEggMoveToTeachMon::
@@ -169,21 +195,27 @@ FallarborTown_MoveRelearnersHouse_Text_CantTeachEgg:
 	.string "I can teach an EGG.$"
 
 FallarborTown_MoveRelearnersHouse_Text_ImTheEggMoveTutor:
-	.string "I'm the EGG MOVE MANIAC.\p"
-	.string "I know all the moves that POKéMON learn\n"
-	.string "by breeding and I can teach POKéMON\l"
-	.string "those moves.\p"
-	.string "I can teach moves to a POKéMON of\n"
-	.string "yours if you'd like.$"
+	.string "I'm the EGG MOVE MANIAC!\p"
+	.string "I know all the moves that POKéMON\n"
+	.string "learn by breeding--every last one!\l"
+	.string "I can teach those moves to yours.\p"
+	.string "All I ask is a NUGGET or a PEARL.\n"
+	.string "A man's got to fund his research!$"
 
 FallarborTown_MoveRelearnersHouse_Text_WantMeToTeachEggMove:
-	.string "Would you like me to teach your POKéMON\n"
-	.string "some of their EGG MOVES?$"
+	.string "Oh! Is that a little treasure\n"
+	.string "I spot in your BAG?\p"
+	.string "Want me to teach an EGG MOVE\n"
+	.string "in exchange?$"
+
+FallarborTown_MoveRelearnersHouse_Text_HandedOverNugget:
+	.string "{PLAYER} handed over one NUGGET\n"
+	.string "in exchange.$"
+
+FallarborTown_MoveRelearnersHouse_Text_HandedOverPearl:
+	.string "{PLAYER} handed over one PEARL\n"
+	.string "in exchange.$"
 
 FallarborTown_MoveRelearnersHouse_Text_ComeBackLater:
 	.string "If your POKéMON need to learn an\n"
-	.string "EGG MOVE, come back later.$"
-	
-FallarborTown_MoveRelearnersHouse_Text_ComeBackAgain:
-	.string "If your POKéMON needs to learn another\n"
-	.string "EGG MOVE, come back again!$"
+	.string "EGG MOVE, bring me a NUGGET or PEARL.$"
