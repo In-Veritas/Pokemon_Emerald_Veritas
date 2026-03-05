@@ -147,6 +147,18 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * Muddy Water base power increased from 85 to 95
 * Mudkip now learns Muddy Water at level 50
 
+#### Egg Move Tutor Price
+
+* Egg Move Tutors (Fallarbor Town and Artisan Cave) now charge a **Nugget** or **Pearl** per move taught
+* Works like the Move Relearner's Heart Scale payment — bring either item to learn an egg move
+
+#### Wild Held Item Changes
+
+* **Clamperl**: 35% chance to hold a Pearl (rare slot is 50/50 Deep Sea Scale or Deep Sea Tooth)
+* **Spoink**: 35% chance to hold a Pearl
+* **Staryu**: 35% chance to hold a Pearl (replaces Stardust; Star Piece remains as rare)
+* **Zigzagoon**: 5% chance to hold a Nugget
+
 #### Pokemon League Lobby Music
 
 * The Pokemon League 1F lobby now plays the Victory Road theme instead of the Poke Center theme
@@ -178,9 +190,9 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 #### Categorized Bag Pockets
 
 * The Items pocket is split into 4 sub-categories for easier navigation:
-  * **Items**: General items (Repels, Escape Rope, Evolution Stones, Mail, etc.)
-  * **Medicine**: Healing items, PP restoring items, Rare Candy, Sacred Ash
-  * **Battle Items**: Held items and in-battle consumables (X Attack, Leftovers, etc.)
+  * **Items**: General items (Repels, Escape Rope, Evolution Stones, etc.)
+  * **Medicine**: Healing items, PP restoring items, stat boosters (X Attack, etc.), Rare Candy, Sacred Ash
+  * **Hold Items**: Held items, evolution hold items (King's Rock, Metal Coat, etc.), and Mail
   * **Treasures**: Sell-only items with no field/battle/hold use (Nugget, Pearl, Shards, etc.)
 * Total of 8 bag pockets: Items, Medicine, Poke Balls, Battle Items, Berries, Treasures, TMs/HMs, Key Items
 * All items remain in the same internal storage — no save structure changes
@@ -256,6 +268,10 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * **Contest Room RS Style Fix**: Contest lobby now correctly uses RS player sprites when Classic (Ruby/Sapphire) style is selected
 * **Link Battle Music Fix**: Link battle music selection was being ignored — both wired and wireless battles now correctly use the player's chosen music
 * **Bike Dismount Weather Fix**: Dismounting the bike on weather-affected routes (e.g., Route 119 rain) now properly restores weather effects
+* **RS Style Link Battle Palette Fix**: Fixed player sprite palette mismatch during Poké Ball throw animation in link double battles when using Classic (RS) style
+* **Hall of Fame Text**: Hall of Fame screen now displays "EMERALD VERITAS" instead of the base project name
+* **Shiny Palette Redesigns**: Custom shiny palettes for Treecko line (vibrant blues/reds), Mudkip line (brown), Spinda (panda), Wingull (dark gray markings), Wailord (gray), Zigzagoon (brown-orange corgi), Gardevoir (dark gray petal, blood red eye), Kyogre (dark orca), Groudon (dark volcanic), and Rayquaza (darker emerald)
+* **Save Migration v4→v5**: Automatically wipes corrupted record mixing data (TV Shows, Poké News, Dewford Trends, etc.) from older saves to fix crashes
 
 ### New Options Menu Items
 
