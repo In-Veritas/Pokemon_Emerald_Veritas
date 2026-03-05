@@ -133,6 +133,8 @@ void ObjectEventClearHeldMovementIfActive(struct ObjectEvent *);
 struct Pokemon * GetFirstLiveMon(void);
 void UpdateFollowingPokemon(void);
 void RemoveFollowingPokemon(void);
+void ResetFollowerIndoorStepCount(void);
+void TryIncrementFollowerIndoorStepCount(void);
 struct ObjectEvent * GetFollowerObject(void);
 u8 GetDirectionToFace(s16, s16, s16, s16);
 void TrySpawnObjectEvents(s16 cameraX, s16 cameraY);
