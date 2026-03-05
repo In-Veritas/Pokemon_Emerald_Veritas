@@ -12,9 +12,22 @@ EverGrandeCity_ChampionsRoom_MapScripts::
 
 EverGrandeCity_ChampionsRoom_OnTransition:
 	call Common_EventScript_SetupRivalGfxId
+	clearflag FLAG_HIDE_CHAMPIONS_ROOM_WALLACE
 	setflag FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR
 	call_if_unset FLAG_IS_CHAMPION, EverGrandeCity_ChampionsRoom_EventScript_SetStevenLayout
+	call_if_set FLAG_IS_CHAMPION, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll
 	end
+
+EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll::
+	goto_if_unset TRAINER_FLAGS_START + TRAINER_WALLACE_2, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End
+	random 5
+	goto_if_ne VAR_RESULT, 0, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End
+	setflag FLAG_HIDE_CHAMPIONS_ROOM_WALLACE
+	clearflag FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR
+	return
+
+EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End::
+	return
 
 EverGrandeCity_ChampionsRoom_OnWarp:
 	map_script_2 VAR_TEMP_1, 0, EverGrandeCity_ChampionsRoom_EventScript_PlayerTurnNorth
@@ -41,8 +54,7 @@ EverGrandeCity_ChampionsRoom_EventScript_EnterRoom::
 	waitmovement 0
 	setvar VAR_TEMP_1, 1
 	goto_if_unset FLAG_IS_CHAMPION, EverGrandeCity_ChampionsRoom_EventScript_Steven
-	random 5
-	goto_if_eq VAR_RESULT, 0, EverGrandeCity_ChampionsRoom_EventScript_ChampionExclsior
+	goto_if_unset FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR, EverGrandeCity_ChampionsRoom_EventScript_ChampionExclsior
 	goto EverGrandeCity_ChampionsRoom_EventScript_Wallace
 	releaseall
 	end
@@ -264,9 +276,6 @@ EverGrandeCity_ChampionsRoom_EventScript_RematchBrendanCantGoIn::
 	return
 
 EverGrandeCity_ChampionsRoom_EventScript_ChampionExclsior::
-	removeobject LOCALID_WALLACE
-	clearflag FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR
-	addobject LOCALID_EXCLSIOR
 	playbgm MUS_ENCOUNTER_CHAMPION, FALSE
 	msgbox EverGrandeCity_ChampionsRoom_Text_ExclsiorIntro, MSGBOX_DEFAULT
 	trainerbattle_no_intro TRAINER_CHAMPION_EXCLSIOR, EverGrandeCity_ChampionsRoom_Text_ExclsiorDefeat
