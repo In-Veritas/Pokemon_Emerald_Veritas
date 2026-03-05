@@ -2442,12 +2442,12 @@ static void PlayerHandleDrawTrainerPic(void)
         }
         else
         {
-            trainerPicId = gLinkPlayers[GetMultiplayerId()].gender + TRAINER_BACK_PIC_BRENDAN;
+            // Local Emerald player — respect RS style flag
+            trainerPicId = GetPlayerPreferredBackPicId();
         }
     }
     else
     {
-        // Pick back pic id based on player style (Emerald or RS)
         trainerPicId = GetPlayerPreferredBackPicId();
     }
 
@@ -2525,7 +2525,7 @@ static void PlayerHandleTrainerSlide(void)
         }
         else
         {
-            trainerPicId = gLinkPlayers[GetMultiplayerId()].gender + TRAINER_BACK_PIC_BRENDAN;
+            trainerPicId = GetPlayerPreferredBackPicId();
         }
     }
     else
