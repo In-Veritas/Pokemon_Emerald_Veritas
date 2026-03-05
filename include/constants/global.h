@@ -31,10 +31,11 @@
 #define SAVE_VERSION_2 2
 #define SAVE_VERSION_3 3
 #define SAVE_VERSION_4 4
+#define SAVE_VERSION_5 5 // TEMPORARY — wipes corrupted record mixing data. Remove next update.
 
 #define GAME_VERSION (VERSION_EMERALD)
 #define GAME_LANGUAGE (LANGUAGE_ENGLISH)
-#define SAVE_VERSION (SAVE_VERSION_4)
+#define SAVE_VERSION (SAVE_VERSION_5)
 
 // party sizes
 #define PARTY_SIZE 6

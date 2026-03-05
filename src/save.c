@@ -1067,6 +1067,7 @@ void Task_LinkFullSave(u8 taskId)
 #include "data/old_saves/save.v1.h"
 #include "data/old_saves/save.v2.h"
 #include "data/old_saves/save.v3.h"
+#include "data/old_saves/save.v4.h"
 
 u16 DetermineSaveVersion()
 {
@@ -1128,6 +1129,9 @@ u8 UpdateSaveFile(void)
             break;
         case 3: //Upgrading from version 3 to version 4
             result = UpdateSave_v3_v4(gRamSaveSectorLocations);
+            break;
+        case 4: // Upgrading from version 4 to version 5 — wipe corrupted record mixing data
+            result = UpdateSave_v4_v5(gRamSaveSectorLocations);
             break;
         default: // Unsupported version to upgrade
             result = FALSE;
