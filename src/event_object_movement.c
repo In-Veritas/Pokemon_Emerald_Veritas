@@ -78,11 +78,6 @@ enum {
     JUMP_DISTANCE_FAR,
 };
 
-// Step counter to delay follower spawn in indoor maps (avoids palette loading lag)
-EWRAM_DATA static u8 sFollowerIndoorStepCount = 0;
-
-#define FOLLOWER_INDOOR_DELAY_STEPS 3
-
 // Sprite data used throughout
 #define sObjEventId   data[0]
 #define sTypeFuncId   data[1] // Index into corresponding gMovementTypeFuncs_* table
@@ -2152,11 +2147,6 @@ void UpdateFollowingPokemon(void) { // Update following pokemon if any
         return;
     }
 
-    // Delay follower spawn in indoor maps to avoid palette loading lag
-    if (objEvent == NULL && gMapHeader.mapType == MAP_TYPE_INDOOR
-        && sFollowerIndoorStepCount < FOLLOWER_INDOOR_DELAY_STEPS)
-        return;
-
     if (objEvent == NULL) { // Spawn follower
         u32 objId = gPlayerAvatar.objectEventId;
         struct ObjectEventTemplate template = {
@@ -2192,19 +2182,6 @@ void RemoveFollowingPokemon(void) {
     if (objectEvent == NULL)
         return;
     RemoveObjectEvent(objectEvent);
-}
-
-void ResetFollowerIndoorStepCount(void) {
-    sFollowerIndoorStepCount = 0;
-}
-
-void TryIncrementFollowerIndoorStepCount(void) {
-    if (gMapHeader.mapType == MAP_TYPE_INDOOR && sFollowerIndoorStepCount < FOLLOWER_INDOOR_DELAY_STEPS)
-    {
-        sFollowerIndoorStepCount++;
-        if (sFollowerIndoorStepCount == FOLLOWER_INDOOR_DELAY_STEPS)
-            UpdateFollowingPokemon();
-    }
 }
 
 static bool32 IsFollowerVisible(void) { // Determine whether follower *should* be visible
