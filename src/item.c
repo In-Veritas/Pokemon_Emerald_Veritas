@@ -1061,16 +1061,20 @@ u8 GetItemVirtualPocket(u16 itemId)
      || battleUsage == ITEM_B_USE_MEDICINE)
         return MEDICINE_POCKET;
 
-    // Battle items: stat boosters, held items
+    // Battle items: stat boosters, held items, evolution hold items
     if (battleUsage == ITEM_B_USE_OTHER)
         return BATTLE_POCKET;
     if (holdEffect != 0 && fieldFunc == ItemUseOutOfBattle_CannotUse)
+        return BATTLE_POCKET;
+    if (holdEffect != 0 && fieldFunc == ItemUseOutOfBattle_EvolutionStone)
+        return BATTLE_POCKET;
+    if (fieldFunc == ItemUseOutOfBattle_Mail)
         return BATTLE_POCKET;
 
     // Treasures: no field use, no hold effect, no battle use
     if (fieldFunc == ItemUseOutOfBattle_CannotUse && holdEffect == 0 && battleUsage == 0)
         return TREASURES_POCKET;
 
-    // Default: general items (Repels, Escape Rope, Evolution Stones, Mail, etc.)
+    // Default: general items (Repels, Escape Rope, Evolution Stones, etc.)
     return ITEMS_POCKET;
 }
