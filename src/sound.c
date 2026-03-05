@@ -2,6 +2,7 @@
 #include "gba/m4a_internal.h"
 #include "sound.h"
 #include "battle.h"
+#include "event_data.h"
 #include "m4a.h"
 #include "main.h"
 #include "pokemon.h"
@@ -570,6 +571,20 @@ void PlayBGM(u16 songNum)
 
 void PlaySE(u16 songNum)
 {
+    // SE_SELECT volume option: 0=medium(50%), 1=quiet, 2=loud(100%)
+    if (songNum == SE_SELECT)
+    {
+        u16 seVolume = VarGet(VAR_SE_VOLUME);
+        if (seVolume == 1)
+            return; // quiet: skip ding entirely
+        m4aSongNumStart(songNum);
+        if (seVolume != 2) // medium (0 or any other value): 50% volume
+        {
+            m4aMPlayVolumeControl(&gMPlayInfo_SE1, TRACKS_ALL, 128);
+            m4aMPlayVolumeControl(&gMPlayInfo_SE2, TRACKS_ALL, 128);
+        }
+        return;
+    }
     m4aSongNumStart(songNum);
 }
 

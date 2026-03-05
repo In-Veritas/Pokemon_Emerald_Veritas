@@ -241,7 +241,7 @@
 #define VAR_GIFT_PICHU_SLOT                              0x40DD
 #define VAR_LINK_BATTLE_MUSIC                            0x40DE // Repurposed unused gift var for link battle music selection
 #define VAR_SHOW_ZINNIA                                  0x40DF // Repurposed unused gift var for Sky Pillar Zinnia trigger
-#define VAR_GIFT_UNUSED_3                                0x40E0 // Var is written to, but never read
+#define VAR_SE_VOLUME                                    0x40E0 // 0=medium(50%), 1=quiet, 2=loud(100%)
 #define VAR_GIFT_UNUSED_4                                0x40E1 // Var is written to, but never read
 #define VAR_GIFT_UNUSED_5                                0x40E2 // Var is written to, but never read
 #define VAR_GIFT_UNUSED_6                                0x40E3 // Var is written to, but never read
