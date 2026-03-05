@@ -6922,25 +6922,26 @@ void SetWildMonHeldItem(void)
         u16 species = GetMonData(&gEnemyParty[0], MON_DATA_SPECIES, 0);
         u16 chanceNoItem = 45; // 45% chance for no item, 50% chance for Common Item
         u16 chanceNotRare = 95; // 5% chance for Rare Item
+        u16 evoItem;
 
-        // Set default Clamperl to equal chance of either Common or Rare item for evolution items.
-        if (species == SPECIES_CLAMPERL)
+        // Pearl-holding species: 35% chance for Pearl as common item
+        if (species == SPECIES_CLAMPERL || species == SPECIES_SPOINK || species == SPECIES_STARYU)
         {
-            chanceNoItem = 90; // 90% chance for no item, 5% chance for Common Item
-            chanceNotRare = 95; // 5% chance for Rare Item
+            chanceNoItem = 60; // 60% no item, 35% common (Pearl), 5% rare
+            chanceNotRare = 95;
         }
-        
+
         if (!GetMonData(&gPlayerParty[0], MON_DATA_SANITY_IS_EGG, 0)
             && GetMonAbility(&gPlayerParty[0]) == ABILITY_COMPOUND_EYES)
         {
             chanceNoItem = 5; // 5% chance for no item, 70% chance for Common Item
             chanceNotRare = 75; // 25% chance for Rare Item
-            
-            // Set Clamperl to equal chance of either Common or Rare item for evolution items.
-            if (species == SPECIES_CLAMPERL)
+
+            // Pearl-holding species with Compound Eyes
+            if (species == SPECIES_CLAMPERL || species == SPECIES_SPOINK || species == SPECIES_STARYU)
             {
-                chanceNoItem = 80; // 80% chance for no item, 10% chance for Common Item
-                chanceNotRare = 90; // 10% chance for Rare Item
+                chanceNoItem = 30; // 30% no item, 45% Pearl, 25% rare
+                chanceNotRare = 75;
             }
         }
 
@@ -6977,9 +6978,22 @@ void SetWildMonHeldItem(void)
                 if (rnd < chanceNoItem)
                     return;
                 if (rnd < chanceNotRare)
+                {
                     SetMonData(&gEnemyParty[0], MON_DATA_HELD_ITEM, &gSpeciesInfo[species].itemCommon);
+                }
                 else
-                    SetMonData(&gEnemyParty[0], MON_DATA_HELD_ITEM, &gSpeciesInfo[species].itemRare);
+                {
+                    // Clamperl rare slot: 50/50 DeepSeaScale or DeepSeaTooth
+                    if (species == SPECIES_CLAMPERL)
+                    {
+                        evoItem = (Random() % 2) ? ITEM_DEEP_SEA_SCALE : ITEM_DEEP_SEA_TOOTH;
+                        SetMonData(&gEnemyParty[0], MON_DATA_HELD_ITEM, &evoItem);
+                    }
+                    else
+                    {
+                        SetMonData(&gEnemyParty[0], MON_DATA_HELD_ITEM, &gSpeciesInfo[species].itemRare);
+                    }
+                }
             }
         }
     }
