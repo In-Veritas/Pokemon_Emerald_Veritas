@@ -1061,9 +1061,9 @@ u8 GetItemVirtualPocket(u16 itemId)
      || battleUsage == ITEM_B_USE_MEDICINE)
         return MEDICINE_POCKET;
 
-    // Battle items: stat boosters, held items, evolution hold items
+    // Battle consumables (X Attack, Poke Doll, etc.) go with medicine
     if (battleUsage == ITEM_B_USE_OTHER)
-        return BATTLE_POCKET;
+        return MEDICINE_POCKET;
     if (holdEffect != 0 && fieldFunc == ItemUseOutOfBattle_CannotUse)
         return BATTLE_POCKET;
     if (holdEffect != 0 && fieldFunc == ItemUseOutOfBattle_EvolutionStone)
