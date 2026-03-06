@@ -98,6 +98,36 @@ GAME_STAT_ENTERED_HOF = 10
 # Flags
 FLAG_SYS_GAME_CLEAR = 0x864
 
+# Known player names for fuzzy repair (GBA encoded)
+KNOWN_NAMES = [
+    [0xCA, 0xCF, 0xCC, 0xCA, 0xC6, 0xBF, 0xFF],  # PURPLE
+    [0xBB, 0xC3, 0xC6, 0xBF, 0xCD, 0xFF],          # AILES
+    [0xBB, 0xE0, 0xDC, 0xED, 0xD5, 0xFF],          # Alhya
+    [0xC1, 0xD5, 0xD6, 0xE7, 0xFF],                # Gabs
+    [0xC8, 0xDD, 0xDE, 0xDD, 0xFF],                # Niji
+]
+
+def try_fuzzy_name_repair(name_data, max_len):
+    """Try to fix a name where only the first 1-2 bytes are corrupted.
+    Returns the fixed name bytes if matched, or None."""
+    for known in KNOWN_NAMES:
+        known_len = len(known) - 1  # exclude EOS
+        for start_pos in range(1, min(3, known_len)):
+            match = True
+            for m in range(start_pos, known_len):
+                if m >= max_len:
+                    match = False
+                    break
+                if name_data[m] != known[m]:
+                    match = False
+                    break
+            if match:
+                fixed = bytearray(name_data)
+                for n in range(start_pos):
+                    fixed[n] = known[n]
+                return bytes(fixed)
+    return None
+
 # =============================================================================
 # GBA Pokemon text encoding
 # =============================================================================
@@ -1034,10 +1064,21 @@ class SaveFile:
             tid = struct.unpack_from('<H', sb1, entry_off + 8)[0]
             link_records.append({'name_data': bytes(name_data), 'tid': tid, 'entry_off': entry_off})
 
+        fuzzy_fixes = []
         for i in range(LINK_BATTLE_RECORDS_COUNT):
             rec = link_records[i]
             if all(b == 0 or b == 0xFF for b in rec['name_data'][:8]):
                 continue
+            # Try fuzzy name repair first
+            fixed = try_fuzzy_name_repair(rec['name_data'], 8)
+            if fixed and fixed != rec['name_data']:
+                old_name = decode_gba_string(rec['name_data'], 8)
+                new_name = decode_gba_string(fixed, 8)
+                for b_idx in range(8):
+                    sb1[rec['entry_off'] + b_idx] = fixed[b_idx]
+                rec['name_data'] = fixed
+                link_records[i]['name_data'] = fixed
+                fuzzy_fixes.append(f"    Link record {i}: \"{old_name}\" -> \"{new_name}\"")
             issues = self._check_name_corruption(rec['name_data'], 8)
             if issues:
                 # Try auto-repair: find another record with same trainer ID and valid name
@@ -1124,6 +1165,23 @@ class SaveFile:
                         'issues': issues,
                     }
                     corrupt_entries.append(entry)
+
+        if fuzzy_fixes:
+            print(f"  Fuzzy name repair applied to {len(fuzzy_fixes)} record(s):")
+            for msg in fuzzy_fixes:
+                print(msg)
+            self._write_saveblock1_data(sb1)
+            # Also write to other slot
+            other_slot = 1 - self.active_slot
+            try:
+                sb1_other = self._get_saveblock1_data(other_slot)
+                for rec_fix in link_records:
+                    for b_idx in range(8):
+                        sb1_other[rec_fix['entry_off'] + b_idx] = sb1[rec_fix['entry_off'] + b_idx]
+                self._write_saveblock1_data(sb1_other, other_slot)
+            except (ValueError, IndexError):
+                pass
+            print()
 
         if not corrupt_entries:
             print("  No corrupted text found! All scanned fields are clean.")

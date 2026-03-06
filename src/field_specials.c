@@ -4608,6 +4608,65 @@ static bool8 IsValidNameByte(u8 byte)
     return FALSE;
 }
 
+// Known player names for fuzzy repair of slightly-corrupted records
+static const u8 sKnownName_PURPLE[] = {CHAR_P, CHAR_U, CHAR_R, CHAR_P, CHAR_L, CHAR_E, EOS};
+static const u8 sKnownName_AILES[] = {CHAR_A, CHAR_I, CHAR_L, CHAR_E, CHAR_S, EOS};
+static const u8 sKnownName_Alhya[] = {CHAR_A, CHAR_l, CHAR_h, CHAR_y, CHAR_a, EOS};
+static const u8 sKnownName_Gabs[] = {CHAR_G, CHAR_a, CHAR_b, CHAR_s, EOS};
+static const u8 sKnownName_Niji[] = {CHAR_N, CHAR_i, CHAR_j, CHAR_i, EOS};
+
+static const u8 *const sKnownNames[] = {
+    sKnownName_PURPLE,
+    sKnownName_AILES,
+    sKnownName_Alhya,
+    sKnownName_Gabs,
+    sKnownName_Niji,
+};
+
+// Try to fix a name where only the first 1-2 bytes are corrupted
+// but the rest matches a known name. Returns TRUE if fixed.
+static bool8 TryFuzzyNameRepair(u8 *name, u8 maxLen)
+{
+    u8 k;
+    u8 startPos;
+
+    for (k = 0; k < ARRAY_COUNT(sKnownNames); k++)
+    {
+        const u8 *known = sKnownNames[k];
+        u8 knownLen = StringLength(known);
+
+        // Try matching from position 1 (first byte corrupted)
+        for (startPos = 1; startPos <= 2 && startPos < knownLen; startPos++)
+        {
+            u8 m;
+            bool8 match = TRUE;
+
+            for (m = startPos; m < knownLen; m++)
+            {
+                if (m >= maxLen || name[m] == EOS)
+                {
+                    match = FALSE;
+                    break;
+                }
+                if (name[m] != known[m])
+                {
+                    match = FALSE;
+                    break;
+                }
+            }
+            if (match && (m >= maxLen || name[m] == EOS || m == knownLen))
+            {
+                // Fix the corrupted leading bytes
+                u8 n;
+                for (n = 0; n < startPos; n++)
+                    name[n] = known[n];
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
 static bool8 IsTrainerNameInvalid(const u8 *name, u8 maxLen)
 {
     u8 i;
@@ -4697,6 +4756,9 @@ void CleanInvalidTrainerRecords(void)
             && gSaveBlock1Ptr->linkBattleRecords.entries[i].losses == 0
             && gSaveBlock1Ptr->linkBattleRecords.entries[i].draws == 0)
             continue; // Truly empty slot
+        // Try fuzzy name repair first (fixes 1-2 corrupted leading bytes)
+        TryFuzzyNameRepair(gSaveBlock1Ptr->linkBattleRecords.entries[i].name, PLAYER_NAME_LENGTH + 1);
+
         if (IsTrainerNameInvalid(gSaveBlock1Ptr->linkBattleRecords.entries[i].name, PLAYER_NAME_LENGTH + 1))
         {
             // Try to repair: find another record with same trainer ID and valid name
@@ -4729,6 +4791,27 @@ void CleanInvalidTrainerRecords(void)
                 count++;
             }
         }
+        else
+        {
+            // Name is valid (possibly after fuzzy repair) — merge with duplicate if exists
+            for (j = 0; j < i; j++)
+            {
+                if (gSaveBlock1Ptr->linkBattleRecords.entries[j].trainerId
+                    == gSaveBlock1Ptr->linkBattleRecords.entries[i].trainerId
+                    && !IsTrainerNameInvalid(gSaveBlock1Ptr->linkBattleRecords.entries[j].name, PLAYER_NAME_LENGTH + 1))
+                {
+                    gSaveBlock1Ptr->linkBattleRecords.entries[j].wins +=
+                        gSaveBlock1Ptr->linkBattleRecords.entries[i].wins;
+                    gSaveBlock1Ptr->linkBattleRecords.entries[j].losses +=
+                        gSaveBlock1Ptr->linkBattleRecords.entries[i].losses;
+                    gSaveBlock1Ptr->linkBattleRecords.entries[j].draws +=
+                        gSaveBlock1Ptr->linkBattleRecords.entries[i].draws;
+                    memset(&gSaveBlock1Ptr->linkBattleRecords.entries[i], 0, sizeof(struct LinkBattleRecord));
+                    gSaveBlock1Ptr->linkBattleRecords.languages[i] = 0;
+                    break;
+                }
+            }
+        }
     }
 
     // Compact link battle records — shift non-empty entries to front
@@ -4755,6 +4838,7 @@ void CleanInvalidTrainerRecords(void)
     {
         if (gSaveBlock1Ptr->trainerNameRecords[i].trainerId == 0)
             continue; // Empty slot
+        TryFuzzyNameRepair(gSaveBlock1Ptr->trainerNameRecords[i].trainerName, PLAYER_NAME_LENGTH + 1);
         if (IsTrainerNameInvalid(gSaveBlock1Ptr->trainerNameRecords[i].trainerName, PLAYER_NAME_LENGTH + 1))
         {
             // Try to find a matching trainer ID with valid name (just wipe duplicate)
@@ -4786,6 +4870,7 @@ void CleanInvalidTrainerRecords(void)
     {
         if (gSaveBlock1Ptr->secretBases[i].secretBaseId == 0)
             continue; // Empty slot
+        TryFuzzyNameRepair(gSaveBlock1Ptr->secretBases[i].trainerName, PLAYER_NAME_LENGTH);
         if (IsTrainerNameInvalid(gSaveBlock1Ptr->secretBases[i].trainerName, PLAYER_NAME_LENGTH)
             || IsSecretBasePartyInvalid(&gSaveBlock1Ptr->secretBases[i].party))
         {
