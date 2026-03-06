@@ -59,6 +59,7 @@ struct TrainerCardData
     bool8 showSecretID;
     bool8 isInitialLoadComplete;
     bool8 hasTrades;
+    u8 nextStatRow;
     u8 badgeCount[NUM_BADGES];
     u8 easyChatProfile[TRAINER_CARD_PROFILE_LENGTH][13];
     u8 textPlayersCard[70];
@@ -854,6 +855,7 @@ static void SetDataFromTrainerCard(void)
     sData->showSecretID = FALSE;
     sData->isInitialLoadComplete = FALSE;
     sData->hasTrades = FALSE;
+    sData->nextStatRow = 0;
     memset(sData->badgeCount, 0, sizeof(sData->badgeCount));
     if (sData->trainerCard.hasPokedex)
         sData->hasPokedex++;
@@ -1271,7 +1273,7 @@ static void PrintStatOnBackOfCard(u8 top, const u8 *statName, u8 *stat, const u8
 static void PrintHofDebutTimeOnCard(void)
 {
     if (sData->hasHofResult)
-        PrintStatOnBackOfCard(0, gText_HallOfFameDebut, sData->textHofTime, sTrainerCardStatColors);
+        PrintStatOnBackOfCard(sData->nextStatRow++, gText_HallOfFameDebut, sData->textHofTime, sTrainerCardStatColors);
 }
 
 static const u8 *const sLinkBattleTexts[] =
@@ -1298,7 +1300,7 @@ static void PrintLinkBattleResultsOnCard(void)
         StringCopy(gStringVar1, sData->textLinkBattleWins);
         StringCopy(gStringVar2, sData->textLinkBattleLosses);
         StringExpandPlaceholders(gStringVar4, gText_WinsLosses);
-        PrintStatOnBackOfCard(1, sData->textLinkBattleType, gStringVar4, sTrainerCardTextColors);
+        PrintStatOnBackOfCard(sData->nextStatRow++, sData->textLinkBattleType, gStringVar4, sTrainerCardTextColors);
     }
 }
 
@@ -1311,7 +1313,7 @@ static void BufferNumTrades(void)
 static void PrintTradesStringOnCard(void)
 {
     if (sData->hasTrades)
-        PrintStatOnBackOfCard(2, gText_PokemonTrades, sData->textNumTrades, sTrainerCardStatColors);
+        PrintStatOnBackOfCard(sData->nextStatRow++, gText_PokemonTrades, sData->textNumTrades, sTrainerCardStatColors);
 }
 
 static void BufferBerryCrushPoints(void)
@@ -1323,7 +1325,7 @@ static void BufferBerryCrushPoints(void)
 static void PrintBerryCrushStringOnCard(void)
 {
     if (sData->cardType == CARD_TYPE_FRLG && sData->trainerCard.linkPoints.berryCrush)
-        PrintStatOnBackOfCard(4, gText_BerryCrush, sData->textBerryCrushPts, sTrainerCardStatColors);
+        PrintStatOnBackOfCard(sData->nextStatRow++, gText_BerryCrush, sData->textBerryCrushPts, sTrainerCardStatColors);
 }
 
 static void BufferUnionRoomStats(void)
@@ -1335,7 +1337,7 @@ static void BufferUnionRoomStats(void)
 static void PrintUnionStringOnCard(void)
 {
     if (sData->cardType == CARD_TYPE_FRLG && sData->trainerCard.unionRoomNum)
-        PrintStatOnBackOfCard(3, gText_UnionTradesAndBattles, sData->textUnionRoomStats, sTrainerCardStatColors);
+        PrintStatOnBackOfCard(sData->nextStatRow++, gText_UnionTradesAndBattles, sData->textUnionRoomStats, sTrainerCardStatColors);
 }
 
 static void BufferLinkPokeblocksNum(void)
@@ -1350,7 +1352,7 @@ static void BufferLinkPokeblocksNum(void)
 static void PrintPokeblockStringOnCard(void)
 {
     if (sData->cardType != CARD_TYPE_FRLG && sData->trainerCard.pokeblocksWithFriends)
-        PrintStatOnBackOfCard(3, gText_PokeblocksWithFriends, sData->textNumLinkPokeblocks, sTrainerCardStatColors);
+        PrintStatOnBackOfCard(sData->nextStatRow++, gText_PokeblocksWithFriends, sData->textNumLinkPokeblocks, sTrainerCardStatColors);
 }
 
 static void BufferLinkContestNum(void)
@@ -1362,7 +1364,7 @@ static void BufferLinkContestNum(void)
 static void PrintContestStringOnCard(void)
 {
     if (sData->cardType != CARD_TYPE_FRLG && sData->trainerCard.contestsWithFriends)
-        PrintStatOnBackOfCard(4, gText_WonContestsWFriends, sData->textNumLinkContests, sTrainerCardStatColors);
+        PrintStatOnBackOfCard(sData->nextStatRow++, gText_WonContestsWFriends, sData->textNumLinkContests, sTrainerCardStatColors);
 }
 
 static void BufferBattleFacilityStats(void)
@@ -1395,11 +1397,11 @@ static void PrintBattleFacilityStringOnCard(void)
     {
     case CARD_TYPE_RS:
         if (sData->hasBattleTowerWins)
-            PrintStatOnBackOfCard(5, gText_BattleTower, sData->textBattleFacilityStat, sTrainerCardTextColors);
+            PrintStatOnBackOfCard(sData->nextStatRow++, gText_BattleTower, sData->textBattleFacilityStat, sTrainerCardTextColors);
         break;
     case CARD_TYPE_EMERALD:
         if (sData->trainerCard.frontierBP)
-            PrintStatOnBackOfCard(5, gText_BattlePtsWon, sData->textBattleFacilityStat, sTrainerCardStatColors);
+            PrintStatOnBackOfCard(sData->nextStatRow++, gText_BattlePtsWon, sData->textBattleFacilityStat, sTrainerCardStatColors);
         break;
     case CARD_TYPE_FRLG:
         break;
