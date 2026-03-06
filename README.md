@@ -256,9 +256,10 @@ Trade evolutions have been restored while keeping alternative evolution methods 
   * Provides smoother surfing experience while still being faster than normal
 * **Pokérus Rate Increase**: Increased Pokérus encounter rate from ~1/21845 to **1/2048**
   * Makes this beneficial mechanic more accessible to players
-* **Invalid Trainer Record Cleanup**: Automatically removes corrupted link battle, trainer name, and secret base records on save load
+* **Invalid Trainer Record Cleanup**: Automatically repairs or removes corrupted link battle, trainer name, and secret base records on save load
   * Detects empty names, all-space names, and names containing control codes
   * Detects secret base trainers with invalid party species (e.g. Missingno from corrupted records)
+  * When a corrupted record shares a trainer ID with a valid record, wins/losses/draws are merged into the valid record
   * Displays a notification with the number of removed records if any were cleaned
 * **Surfing Weather Palette Fix**: Surfing Pokémon overworld sprites now have weather palette fade applied correctly (e.g. rain tinting on Route 119)
 * **Hoenn Dex Completion Fix**: `HasAllHoennMons()` now explicitly skips Jirachi and Deoxys instead of relying on fragile index math
@@ -271,7 +272,8 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * **RS Style Link Battle Palette Fix**: Fixed player sprite palette mismatch during Poké Ball throw animation in link double battles when using Classic (RS) style
 * **Hall of Fame Text**: Hall of Fame screen now displays "EMERALD VERITAS" instead of the base project name
 * **Shiny Palette Redesigns**: Custom shiny palettes for Treecko line (vibrant blues/reds), Mudkip line (brown), Spinda (panda), Wingull (dark gray markings), Wailord (gray), Zigzagoon (brown-orange corgi), Gardevoir (dark gray petal, blood red eye), Kyogre (dark orca), Groudon (dark volcanic), and Rayquaza (darker emerald)
-* **Save Migration v4→v5**: Automatically wipes corrupted record mixing data (TV Shows, Poké News, Dewford Trends, etc.) from older saves to fix crashes
+* **Save Migration v4→v5**: Automatically wipes corrupted record mixing data (TV Shows, Dewford Trends, etc.) from older saves to fix crashes
+  * Valid PokeNews events (Slateport sales, Game Corner, Lilycove sales, Blend Master) are preserved through migration
 
 ### New Options Menu Items
 
@@ -285,6 +287,10 @@ Trade evolutions have been restored while keeping alternative evolution methods 
   * When disabled (OFF): Vanilla Feebas hunting mechanics with hidden tiles, 50% encounter rate
   * Toggling this option also remixes the Feebas tile locations
   * Allows players to choose between the QoL visible tiles or the classic blind fishing experience
+
+* **SE Volume**: Added 5-level volume control for the menu select ding sound
+  * Quiet (mute), Low (25%), Medium (50%, default), High (75%), Loud (100%)
+  * Backward compatible with existing saves
 
 * **Pickup Message**: Added option to Battle menu
   * When enabled (ON): Displays a message at the end of battle when a party Pokémon picks up an item via the Pickup ability
