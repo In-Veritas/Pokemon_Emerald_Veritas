@@ -89,6 +89,9 @@ static EWRAM_DATA u16 sFrontierExchangeCorner_NeverRead = 0;
 static EWRAM_DATA u8 sScrollableMultichoice_ItemSpriteId = 0;
 static EWRAM_DATA bool8 sTrainerRecordsCleaned = FALSE;
 static EWRAM_DATA u8 sInvalidRecordsCleaned = 0;
+static EWRAM_DATA u8 sInvalidLinkBattleRecords = 0;
+static EWRAM_DATA u8 sInvalidTrainerNameRecords = 0;
+static EWRAM_DATA u8 sInvalidSecretBaseRecords = 0;
 static EWRAM_DATA u8 sBattlePointsWindowId = 0;
 static EWRAM_DATA u8 sFrontierExchangeCorner_ItemIconWindowId = 0;
 static EWRAM_DATA u8 sPCBoxToSendMon = 0;
@@ -4585,6 +4588,25 @@ void SetLastGiftMonStevenOT(void)
     }
 }
 
+static bool8 IsValidNameByte(u8 byte)
+{
+    // Space
+    if (byte == CHAR_SPACE)
+        return TRUE;
+    // Accented Latin block (European names): 0x01-0x2E
+    if (byte >= 0x01 && byte <= 0x2E)
+        return TRUE;
+    // Scattered accented chars outside the main block
+    if (byte == CHAR_I_ACUTE || byte == CHAR_a_CIRCUMFLEX || byte == CHAR_i_ACUTE)
+        return TRUE;
+    // Digits, punctuation, letters, diacriticals: 0xA1-0xF6
+    if (byte >= CHAR_0 && byte <= CHAR_u_DIAERESIS)
+        return TRUE;
+    // Everything else (gaps, display-only chars like PK/MN,
+    // inverted punctuation, arrows, control codes) is invalid
+    return FALSE;
+}
+
 static bool8 IsTrainerNameInvalid(const u8 *name, u8 maxLen)
 {
     u8 i;
@@ -4598,8 +4620,8 @@ static bool8 IsTrainerNameInvalid(const u8 *name, u8 maxLen)
     {
         if (name[i] == EOS)
             break;
-        // Control codes (0xF7-0xFE) should never appear in names
-        if (name[i] >= CHAR_DYNAMIC && name[i] < EOS)
+        // Check against whitelist of valid name characters
+        if (!IsValidNameByte(name[i]))
             return TRUE;
         // Any non-space character counts as content
         if (name[i] != CHAR_SPACE)
@@ -4646,7 +4668,11 @@ static bool8 IsSecretBasePartyInvalid(const struct SecretBaseParty *party)
 void CleanInvalidTrainerRecords(void)
 {
     u8 i;
+    u8 j;
     u8 count = 0;
+    u8 linkCount = 0;
+    u8 nameCount = 0;
+    u8 baseCount = 0;
 
     if (sTrainerRecordsCleaned)
         return;
@@ -4655,13 +4681,42 @@ void CleanInvalidTrainerRecords(void)
     // Clean link battle records with invalid trainer names
     for (i = 0; i < LINK_B_RECORDS_COUNT; i++)
     {
-        if (gSaveBlock1Ptr->linkBattleRecords.entries[i].trainerId == 0)
-            continue; // Empty slot
+        if (gSaveBlock1Ptr->linkBattleRecords.entries[i].trainerId == 0
+            && gSaveBlock1Ptr->linkBattleRecords.entries[i].wins == 0
+            && gSaveBlock1Ptr->linkBattleRecords.entries[i].losses == 0
+            && gSaveBlock1Ptr->linkBattleRecords.entries[i].draws == 0)
+            continue; // Truly empty slot
         if (IsTrainerNameInvalid(gSaveBlock1Ptr->linkBattleRecords.entries[i].name, PLAYER_NAME_LENGTH + 1))
         {
-            memset(&gSaveBlock1Ptr->linkBattleRecords.entries[i], 0, sizeof(struct LinkBattleRecord));
-            gSaveBlock1Ptr->linkBattleRecords.languages[i] = 0;
-            count++;
+            // Try to repair: find another record with same trainer ID and valid name
+            for (j = 0; j < LINK_B_RECORDS_COUNT; j++)
+            {
+                if (j == i)
+                    continue;
+                if (gSaveBlock1Ptr->linkBattleRecords.entries[j].trainerId
+                    == gSaveBlock1Ptr->linkBattleRecords.entries[i].trainerId
+                    && !IsTrainerNameInvalid(gSaveBlock1Ptr->linkBattleRecords.entries[j].name, PLAYER_NAME_LENGTH + 1))
+                {
+                    // Merge W/L/D into the valid record, then wipe the corrupted one
+                    gSaveBlock1Ptr->linkBattleRecords.entries[j].wins +=
+                        gSaveBlock1Ptr->linkBattleRecords.entries[i].wins;
+                    gSaveBlock1Ptr->linkBattleRecords.entries[j].losses +=
+                        gSaveBlock1Ptr->linkBattleRecords.entries[i].losses;
+                    gSaveBlock1Ptr->linkBattleRecords.entries[j].draws +=
+                        gSaveBlock1Ptr->linkBattleRecords.entries[i].draws;
+                    memset(&gSaveBlock1Ptr->linkBattleRecords.entries[i], 0, sizeof(struct LinkBattleRecord));
+                    gSaveBlock1Ptr->linkBattleRecords.languages[i] = 0;
+                    break;
+                }
+            }
+            // If no match found, wipe the record
+            if (j == LINK_B_RECORDS_COUNT)
+            {
+                memset(&gSaveBlock1Ptr->linkBattleRecords.entries[i], 0, sizeof(struct LinkBattleRecord));
+                gSaveBlock1Ptr->linkBattleRecords.languages[i] = 0;
+                linkCount++;
+                count++;
+            }
         }
     }
 
@@ -4672,8 +4727,27 @@ void CleanInvalidTrainerRecords(void)
             continue; // Empty slot
         if (IsTrainerNameInvalid(gSaveBlock1Ptr->trainerNameRecords[i].trainerName, PLAYER_NAME_LENGTH + 1))
         {
-            memset(&gSaveBlock1Ptr->trainerNameRecords[i], 0, sizeof(struct TrainerNameRecord));
-            count++;
+            // Try to find a matching trainer ID with valid name (just wipe duplicate)
+            for (j = 0; j < 20; j++)
+            {
+                if (j == i)
+                    continue;
+                if (gSaveBlock1Ptr->trainerNameRecords[j].trainerId
+                    == gSaveBlock1Ptr->trainerNameRecords[i].trainerId
+                    && !IsTrainerNameInvalid(gSaveBlock1Ptr->trainerNameRecords[j].trainerName, PLAYER_NAME_LENGTH + 1))
+                {
+                    // Valid duplicate exists, just wipe the corrupted one
+                    memset(&gSaveBlock1Ptr->trainerNameRecords[i], 0, sizeof(struct TrainerNameRecord));
+                    break;
+                }
+            }
+            if (j == 20)
+            {
+                // No match found, wipe the record
+                memset(&gSaveBlock1Ptr->trainerNameRecords[i], 0, sizeof(struct TrainerNameRecord));
+                nameCount++;
+                count++;
+            }
         }
     }
 
@@ -4686,11 +4760,15 @@ void CleanInvalidTrainerRecords(void)
             || IsSecretBasePartyInvalid(&gSaveBlock1Ptr->secretBases[i].party))
         {
             memset(&gSaveBlock1Ptr->secretBases[i], 0, sizeof(struct SecretBase));
+            baseCount++;
             count++;
         }
     }
 
     sInvalidRecordsCleaned = count;
+    sInvalidLinkBattleRecords = linkCount;
+    sInvalidTrainerNameRecords = nameCount;
+    sInvalidSecretBaseRecords = baseCount;
 }
 
 bool8 TrySetupInvalidRecordCleanupMessage(void)
@@ -4702,7 +4780,12 @@ bool8 TrySetupInvalidRecordCleanupMessage(void)
         return FALSE;
 
     sInvalidRecordsCleaned = 0;
-    ConvertIntToDecimalStringN(gStringVar1, count, STR_CONV_MODE_LEFT_ALIGN, 2);
+    ConvertIntToDecimalStringN(gStringVar1, sInvalidLinkBattleRecords, STR_CONV_MODE_LEFT_ALIGN, 2);
+    ConvertIntToDecimalStringN(gStringVar2, sInvalidTrainerNameRecords, STR_CONV_MODE_LEFT_ALIGN, 2);
+    ConvertIntToDecimalStringN(gStringVar3, sInvalidSecretBaseRecords, STR_CONV_MODE_LEFT_ALIGN, 2);
+    sInvalidLinkBattleRecords = 0;
+    sInvalidTrainerNameRecords = 0;
+    sInvalidSecretBaseRecords = 0;
     return TRUE;
 }
 
