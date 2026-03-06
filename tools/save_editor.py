@@ -90,6 +90,14 @@ TRAINER_NAME_RECORDS_COUNT = 20
 
 PLAYER_NAME_LENGTH = 7
 
+# Game stats
+SB1_OFF_GAME_STATS = 0x159C  # u32 gameStats[64]
+GAME_STAT_FIRST_HOF_PLAY_TIME = 1
+GAME_STAT_ENTERED_HOF = 10
+
+# Flags
+FLAG_SYS_GAME_CLEAR = 0x864
+
 # =============================================================================
 # GBA Pokemon text encoding
 # =============================================================================
@@ -437,6 +445,27 @@ class SaveFile:
         byte_idx = flag_id // 8
         bit_idx = flag_id % 8
         return bool(sb1[SB1_OFF_FLAGS + byte_idx] & (1 << bit_idx))
+
+    def get_game_stat(self, stat_index):
+        """Read a u32 game stat from SaveBlock1."""
+        sb1 = self._get_saveblock1_data()
+        off = SB1_OFF_GAME_STATS + stat_index * 4
+        return struct.unpack_from('<I', sb1, off)[0]
+
+    def set_game_stat(self, stat_index, value):
+        """Write a u32 game stat to SaveBlock1 (both slots)."""
+        sb1 = self._get_saveblock1_data()
+        off = SB1_OFF_GAME_STATS + stat_index * 4
+        struct.pack_into('<I', sb1, off, value)
+        self._write_saveblock1_data(sb1)
+        # Also write to other slot
+        other_slot = 1 - self.active_slot
+        try:
+            sb1_other = self._get_saveblock1_data(other_slot)
+            struct.pack_into('<I', sb1_other, off, value)
+            self._write_saveblock1_data(sb1_other, other_slot)
+        except (ValueError, IndexError):
+            pass
 
     def get_encryption_key(self):
         sb2 = self._get_saveblock2_data()
@@ -969,6 +998,25 @@ class SaveFile:
         """Scan all text fields for corrupted characters and allow manual correction."""
         sb1 = self._get_saveblock1_data()
         found_any = False
+
+        # Check for spurious Hall of Fame stats without FLAG_SYS_GAME_CLEAR
+        game_clear = self.get_flag(FLAG_SYS_GAME_CLEAR)
+        hof_time = self.get_game_stat(GAME_STAT_FIRST_HOF_PLAY_TIME)
+        hof_count = self.get_game_stat(GAME_STAT_ENTERED_HOF)
+        if not game_clear and (hof_time != 0 or hof_count != 0):
+            hours = (hof_time >> 16) & 0xFFFF
+            minutes = (hof_time >> 8) & 0xFF
+            seconds = hof_time & 0xFF
+            print(f"\n  WARNING: Hall of Fame data found but FLAG_SYS_GAME_CLEAR is not set!")
+            print(f"    HOF debut time: {hours}h:{minutes:02d}m:{seconds:02d}s")
+            print(f"    HOF entries: {hof_count}")
+            confirm = input("  Clear spurious HOF stats? (y/n): ").strip().lower()
+            if confirm == 'y':
+                self.set_game_stat(GAME_STAT_FIRST_HOF_PLAY_TIME, 0)
+                self.set_game_stat(GAME_STAT_ENTERED_HOF, 0)
+                print("  Cleared HOF stats from both save slots.")
+                # Re-read sb1 since we wrote to it
+                sb1 = self._get_saveblock1_data()
 
         print("\n========================================")
         print("  Corruption Scanner")

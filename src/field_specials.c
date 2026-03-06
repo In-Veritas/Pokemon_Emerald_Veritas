@@ -64,6 +64,7 @@
 #include "constants/battle_frontier.h"
 #include "constants/weather.h"
 #include "constants/metatile_labels.h"
+#include "constants/game_stat.h"
 #include "palette.h"
 
 #define TAG_ITEM_ICON 5500
@@ -4678,6 +4679,15 @@ void CleanInvalidTrainerRecords(void)
     if (sTrainerRecordsCleaned)
         return;
     sTrainerRecordsCleaned = TRUE;
+
+    // Clear spurious Hall of Fame stats if player hasn't actually beaten the game
+    if (!FlagGet(FLAG_SYS_GAME_CLEAR))
+    {
+        if (GetGameStat(GAME_STAT_FIRST_HOF_PLAY_TIME) != 0)
+            SetGameStat(GAME_STAT_FIRST_HOF_PLAY_TIME, 0);
+        if (GetGameStat(GAME_STAT_ENTERED_HOF) != 0)
+            SetGameStat(GAME_STAT_ENTERED_HOF, 0);
+    }
 
     // Clean link battle records with invalid trainer names
     for (i = 0; i < LINK_B_RECORDS_COUNT; i++)
