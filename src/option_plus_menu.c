@@ -183,6 +183,7 @@ static int XOptions_ProcessInput(int x, int selection);
 static int ProcessInput_Options_Two(int selection);
 static int ProcessInput_Options_Three(int selection);
 static int ProcessInput_Options_Four(int selection);
+static int ProcessInput_Options_Five(int selection);
 static int ProcessInput_Options_Ten(int selection);
 static int ProcessInput_Options_Eleven(int selection);
 static int ProcessInput_Sound(int selection);
@@ -259,7 +260,7 @@ struct // MENU_MAIN - General
     [MENUITEM_MAIN_FRAMETYPE]    = {DrawChoices_FrameType,   ProcessInput_FrameType},
     [MENUITEM_CUSTOM_FONT]       = {DrawChoices_Font,        ProcessInput_Options_Two}, 
     [MENUITEM_MAIN_NICKNAME]     = {DrawChoices_Nickname,    ProcessInput_Options_Two},
-    [MENUITEM_MAIN_SEVOLUME]     = {DrawChoices_SEVolume,    ProcessInput_Options_Three},
+    [MENUITEM_MAIN_SEVOLUME]     = {DrawChoices_SEVolume,    ProcessInput_Options_Five},
     [MENUITEM_MAIN_CANCEL]       = {NULL, NULL},
 };
 
@@ -313,6 +314,9 @@ struct // MENU_SURF
 static const u8 sText_Nickname[]    = _("NICKNAME IN MENU");
 static const u8 sText_SEVolume[]    = _("SE VOLUME");
 static const u8 sText_Font[]        = _("FONT");
+// SE Volume: maps display index (Quiet=0,Low=1,Medium=2,High=3,Loud=4) <-> VAR_SE_VOLUME value
+static const u8 sSEVolumeDisplayToVar[] = {1, 3, 0, 4, 2};
+static const u8 sSEVolumeVarToDisplay[] = {2, 0, 4, 1, 3};
 static const u8 *const sOptionMenuItemsNamesMain[MENUITEM_MAIN_COUNT] =
 {
     [MENUITEM_MAIN_TEXTSPEED]   = gText_TextSpeed,
@@ -487,18 +491,20 @@ static const u8 sText_Desc_FontType_Kanto[]         = _("POKéMON FIRERED/LEAFGR
 static const u8 sText_Desc_ButtonMode[]             = _("All buttons work as normal.\nLR Mode inactive.");
 static const u8 sText_Desc_ButtonMode_LA[]          = _("The {L_BUTTON} button acts as another\n{A_BUTTON} button for one-handed play.");
 static const u8 sText_Desc_SEVolume_Quiet[]      = _("Mute the select ding sound\neffect completely.");
+static const u8 sText_Desc_SEVolume_Low[]        = _("Play the select ding at low\nvolume.");
 static const u8 sText_Desc_SEVolume_Medium[]     = _("Play the select ding at half\nvolume. Recommended setting.");
+static const u8 sText_Desc_SEVolume_High[]       = _("Play the select ding at high\nvolume.");
 static const u8 sText_Desc_SEVolume_Loud[]       = _("Play the select ding at full\nvolume. Original experience.");
-static const u8 *const sOptionMenuItemDescriptionsMain[MENUITEM_MAIN_COUNT][3] =
+static const u8 *const sOptionMenuItemDescriptionsMain[MENUITEM_MAIN_COUNT][5] =
 {
-    [MENUITEM_MAIN_TEXTSPEED]       = {sText_Desc_TextSpeed,            sText_Empty,                    sText_Empty},
-    [MENUITEM_MAIN_SOUND]           = {sText_Desc_SoundMono,            sText_Desc_SoundStereo,         sText_Empty},
-    [MENUITEM_MAIN_FRAMETYPE]       = {sText_Desc_FrameType,            sText_Empty,                    sText_Empty},
-    [MENUITEM_CUSTOM_FONT]          = {sText_Desc_FontType_Hoenn,       sText_Desc_FontType_Kanto,      sText_Empty},
-    [MENUITEM_MAIN_NICKNAME]        = {sText_Desc_Nickname_Hide,        sText_Desc_Nickname_Show,       sText_Empty},
-    [MENUITEM_MAIN_SEVOLUME]        = {sText_Desc_SEVolume_Medium,      sText_Desc_SEVolume_Quiet,      sText_Desc_SEVolume_Loud},
-    [MENUITEM_MAIN_CANCEL]          = {sText_Desc_Save,                 sText_Empty,                    sText_Empty},
-    [MENUITEM_MAIN_BUTTONMODE]      = {sText_Desc_ButtonMode,           sText_Desc_ButtonMode_LA,       sText_Empty},
+    [MENUITEM_MAIN_TEXTSPEED]       = {sText_Desc_TextSpeed,            sText_Empty,                    sText_Empty,                sText_Empty,                sText_Empty},
+    [MENUITEM_MAIN_SOUND]           = {sText_Desc_SoundMono,            sText_Desc_SoundStereo,         sText_Empty,                sText_Empty,                sText_Empty},
+    [MENUITEM_MAIN_FRAMETYPE]       = {sText_Desc_FrameType,            sText_Empty,                    sText_Empty,                sText_Empty,                sText_Empty},
+    [MENUITEM_CUSTOM_FONT]          = {sText_Desc_FontType_Hoenn,       sText_Desc_FontType_Kanto,      sText_Empty,                sText_Empty,                sText_Empty},
+    [MENUITEM_MAIN_NICKNAME]        = {sText_Desc_Nickname_Hide,        sText_Desc_Nickname_Show,       sText_Empty,                sText_Empty,                sText_Empty},
+    [MENUITEM_MAIN_SEVOLUME]        = {sText_Desc_SEVolume_Quiet,       sText_Desc_SEVolume_Low,        sText_Desc_SEVolume_Medium, sText_Desc_SEVolume_High,   sText_Desc_SEVolume_Loud},
+    [MENUITEM_MAIN_CANCEL]          = {sText_Desc_Save,                 sText_Empty,                    sText_Empty,                sText_Empty,                sText_Empty},
+    [MENUITEM_MAIN_BUTTONMODE]      = {sText_Desc_ButtonMode,           sText_Desc_ButtonMode_LA,       sText_Empty,                sText_Empty,                sText_Empty},
 };
 
 // Battle
@@ -893,7 +899,7 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel[MENUITEM_MAIN_FRAMETYPE]   = gSaveBlock2Ptr->optionsWindowFrameType;
         sOptions->sel[MENUITEM_CUSTOM_FONT]      = FlagGet(FLAG_SWAP_FONT);
         sOptions->sel[MENUITEM_MAIN_NICKNAME]    = FlagGet(FLAG_ENABLE_NICKNAME);
-        sOptions->sel[MENUITEM_MAIN_SEVOLUME]    = VarGet(VAR_SE_VOLUME);
+        sOptions->sel[MENUITEM_MAIN_SEVOLUME]    = (VarGet(VAR_SE_VOLUME) < 5) ? sSEVolumeVarToDisplay[VarGet(VAR_SE_VOLUME)] : 2;
 
         //Battle
         sOptions->sel_battle[MENUITEM_CUSTOM_HP_BAR]    = gSaveBlock2Ptr->optionsHpBarSpeed;
@@ -1185,7 +1191,7 @@ static void Task_OptionMenuSave(u8 taskId)
     gSaveBlock2Ptr->optionsWindowFrameType                  = sOptions->sel[MENUITEM_MAIN_FRAMETYPE];
     sOptions->sel[MENUITEM_CUSTOM_FONT]         == 0        ? FlagClear(FLAG_SWAP_FONT)                 : FlagSet(FLAG_SWAP_FONT);
     sOptions->sel[MENUITEM_MAIN_NICKNAME]       == 0        ? FlagClear(FLAG_ENABLE_NICKNAME)           : FlagSet(FLAG_ENABLE_NICKNAME);
-    VarSet(VAR_SE_VOLUME, sOptions->sel[MENUITEM_MAIN_SEVOLUME]);
+    VarSet(VAR_SE_VOLUME, sSEVolumeDisplayToVar[sOptions->sel[MENUITEM_MAIN_SEVOLUME]]);
 
     //Battle
     gSaveBlock2Ptr->optionsHpBarSpeed                       = sOptions->sel_battle[MENUITEM_CUSTOM_HP_BAR];
@@ -1349,6 +1355,11 @@ static int ProcessInput_Options_Three(int selection)
 static int ProcessInput_Options_Four(int selection)
 {
     return XOptions_ProcessInput(4, selection);
+}
+
+static int ProcessInput_Options_Five(int selection)
+{
+    return XOptions_ProcessInput(5, selection);
 }
 
 static int ProcessInput_Options_Ten(int selection)
@@ -1549,14 +1560,16 @@ static void DrawChoices_Sound(int selection, int y)
     DrawOptionMenuChoiceStrings(selection, y, active, sSoundStrings, 2);
 }
 
-static const u8 sText_SEVolume_Medium[] = _("MEDIUM");
 static const u8 sText_SEVolume_Quiet[]  = _("QUIET");
+static const u8 sText_SEVolume_Low[]    = _("LOW");
+static const u8 sText_SEVolume_Medium[] = _("MEDIUM");
+static const u8 sText_SEVolume_High[]   = _("HIGH");
 static const u8 sText_SEVolume_Loud[]   = _("LOUD");
-static const u8 *const sSEVolumeStrings[] = {sText_SEVolume_Medium, sText_SEVolume_Quiet, sText_SEVolume_Loud};
+static const u8 *const sSEVolumeStrings[] = {sText_SEVolume_Quiet, sText_SEVolume_Low, sText_SEVolume_Medium, sText_SEVolume_High, sText_SEVolume_Loud};
 static void DrawChoices_SEVolume(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_MAIN_SEVOLUME);
-    DrawOptionMenuChoiceStrings(selection, y, active, sSEVolumeStrings, 3);
+    DrawOptionMenuChoiceStrings(selection, y, active, sSEVolumeStrings, 5);
 }
 
 static const u8 sText_ButtonType_Settings[]         = _("L=SETTINGS");

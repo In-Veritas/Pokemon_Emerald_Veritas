@@ -571,18 +571,23 @@ void PlayBGM(u16 songNum)
 
 void PlaySE(u16 songNum)
 {
-    // SE_SELECT volume option: 0=medium(50%), 1=quiet, 2=loud(100%)
+    // SE_SELECT volume option: 0=medium(50%), 1=quiet, 2=loud(100%), 3=low(25%), 4=high(75%)
     if (songNum == SE_SELECT)
     {
         u16 seVolume = VarGet(VAR_SE_VOLUME);
+        u16 vol = 128;
+
         if (seVolume == 1)
             return; // quiet: skip ding entirely
+        if (seVolume == 2)
+            vol = 256; // loud: 100%
+        else if (seVolume == 3)
+            vol = 64;  // low: 25%
+        else if (seVolume == 4)
+            vol = 192; // high: 75%
         m4aSongNumStart(songNum);
-        if (seVolume != 2) // medium (0 or any other value): 50% volume
-        {
-            m4aMPlayVolumeControl(&gMPlayInfo_SE1, TRACKS_ALL, 128);
-            m4aMPlayVolumeControl(&gMPlayInfo_SE2, TRACKS_ALL, 128);
-        }
+        m4aMPlayVolumeControl(&gMPlayInfo_SE1, TRACKS_ALL, vol);
+        m4aMPlayVolumeControl(&gMPlayInfo_SE2, TRACKS_ALL, vol);
         return;
     }
     m4aSongNumStart(songNum);
