@@ -4669,6 +4669,7 @@ void CleanInvalidTrainerRecords(void)
 {
     u8 i;
     u8 j;
+    u8 dst;
     u8 count = 0;
     u8 linkCount = 0;
     u8 nameCount = 0;
@@ -4718,6 +4719,25 @@ void CleanInvalidTrainerRecords(void)
                 count++;
             }
         }
+    }
+
+    // Compact link battle records — shift non-empty entries to front
+    dst = 0;
+    for (i = 0; i < LINK_B_RECORDS_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->linkBattleRecords.entries[i].trainerId == 0
+            && gSaveBlock1Ptr->linkBattleRecords.entries[i].wins == 0
+            && gSaveBlock1Ptr->linkBattleRecords.entries[i].losses == 0
+            && gSaveBlock1Ptr->linkBattleRecords.entries[i].draws == 0)
+            continue;
+        if (dst != i)
+        {
+            gSaveBlock1Ptr->linkBattleRecords.entries[dst] = gSaveBlock1Ptr->linkBattleRecords.entries[i];
+            gSaveBlock1Ptr->linkBattleRecords.languages[dst] = gSaveBlock1Ptr->linkBattleRecords.languages[i];
+            memset(&gSaveBlock1Ptr->linkBattleRecords.entries[i], 0, sizeof(struct LinkBattleRecord));
+            gSaveBlock1Ptr->linkBattleRecords.languages[i] = 0;
+        }
+        dst++;
     }
 
     // Clean trainer name records with invalid trainer names
