@@ -1,7 +1,7 @@
 // Save version 4 → 5 migration
 // Wipes only record mixing data received from OTHER players
-// (TV shows, news, other players' secret bases).
-// All player-owned data is preserved.
+// (TV shows, other players' secret bases).
+// Preserves valid PokeNews (local events) and all player-owned data.
 
 bool8 UpdateSave_v4_v5(const struct SaveSectorLocation *locations)
 {
@@ -19,9 +19,15 @@ bool8 UpdateSave_v4_v5(const struct SaveSectorLocation *locations)
     // SaveBlock1 — full copy first, then selectively wipe other players' data
     CpuCopy16(sOldSaveBlock1Ptr, gSaveBlock1Ptr, sizeof(struct SaveBlock1));
 
-    // Wipe TV shows and news (contain data received from other players)
+    // Wipe TV shows (contain data received from other players)
     CpuFill16(0, &gSaveBlock1Ptr->tvShows, sizeof(gSaveBlock1Ptr->tvShows));
-    CpuFill16(0, &gSaveBlock1Ptr->pokeNews, sizeof(gSaveBlock1Ptr->pokeNews));
+
+    // Selectively wipe PokeNews — preserve valid local entries (kind 1-4)
+    for (i = 0; i < POKE_NEWS_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->pokeNews[i].kind > NUM_POKENEWS_TYPES)
+            CpuFill16(0, &gSaveBlock1Ptr->pokeNews[i], sizeof(PokeNews));
+    }
 
     // Wipe other players' secret bases (index 0 is the player's own)
     for (i = 1; i < SECRET_BASES_COUNT; i++)
