@@ -476,29 +476,33 @@ class SaveFile:
         bit_idx = flag_id % 8
         return bool(sb1[SB1_OFF_FLAGS + byte_idx] & (1 << bit_idx))
 
-    def get_game_stat(self, stat_index):
-        """Read a u32 game stat from SaveBlock1."""
+    def set_game_stat(self, stat_id, value):
+        """Write a decrypted u32 game stat to SaveBlock1 (both slots). XOR-encrypts with key."""
+        off = self._find_game_stats_offset()
+        if off is None:
+            print("  ERROR: Could not find gameStats offset.")
+            return
+        key = self.get_encryption_key()
+        encrypted = value ^ key
+        stat_offset = off + stat_id * 4
         sb1 = self._get_saveblock1_data()
-        off = SB1_OFF_GAME_STATS + stat_index * 4
-        return struct.unpack_from('<I', sb1, off)[0]
-
-    def set_game_stat(self, stat_index, value):
-        """Write a u32 game stat to SaveBlock1 (both slots)."""
-        sb1 = self._get_saveblock1_data()
-        off = SB1_OFF_GAME_STATS + stat_index * 4
-        struct.pack_into('<I', sb1, off, value)
+        if stat_offset + 4 > len(sb1):
+            return
+        struct.pack_into('<I', sb1, stat_offset, encrypted)
         self._write_saveblock1_data(sb1)
         # Also write to other slot
         other_slot = 1 - self.active_slot
         try:
             sb1_other = self._get_saveblock1_data(other_slot)
-            struct.pack_into('<I', sb1_other, off, value)
+            key_other = self.get_encryption_key(other_slot)
+            encrypted_other = value ^ key_other
+            struct.pack_into('<I', sb1_other, stat_offset, encrypted_other)
             self._write_saveblock1_data(sb1_other, other_slot)
         except (ValueError, IndexError):
             pass
 
-    def get_encryption_key(self):
-        sb2 = self._get_saveblock2_data()
+    def get_encryption_key(self, slot=None):
+        sb2 = self._get_saveblock2_data(slot)
         key = struct.unpack_from('<I', sb2, SB2_OFF_ENCRYPTION_KEY)[0]
         return key
 
@@ -564,6 +568,59 @@ class SaveFile:
         if stat_offset + 4 > len(sb1):
             return None
         return struct.unpack_from('<I', sb1, stat_offset)[0] ^ key
+
+    # =========================================================================
+    # Hall of Fame Time Editor
+    # =========================================================================
+
+    def view_and_set_hof_time(self):
+        """View and optionally set the Hall of Fame debut time."""
+        hof_time = self.get_game_stat(GAME_STAT_FIRST_HOF_PLAY_TIME)
+        hof_count = self.get_game_stat(GAME_STAT_ENTERED_HOF)
+        game_clear = self.get_flag(FLAG_SYS_GAME_CLEAR)
+
+        if hof_time is None:
+            print("  Could not read HOF time.")
+            return
+
+        hours = (hof_time >> 16) & 0xFFFF
+        mins = (hof_time >> 8) & 0xFF
+        secs = hof_time & 0xFF
+
+        print(f"\n  Current HOF debut time: {hours}:{mins:02d}:{secs:02d} (raw: 0x{hof_time:08X})")
+        print(f"  HOF entries: {hof_count if hof_count is not None else 'unknown'}")
+        print(f"  FLAG_SYS_GAME_CLEAR: {'Set' if game_clear else 'Not set'}")
+
+        print("\n  Enter new HOF debut time (or press Enter to cancel):")
+        try:
+            h_str = input("    Hours: ").strip()
+            if not h_str:
+                print("  Cancelled.")
+                return
+            m_str = input("    Minutes: ").strip()
+            s_str = input("    Seconds: ").strip()
+
+            h = int(h_str)
+            m = int(m_str) if m_str else 0
+            s = int(s_str) if s_str else 0
+
+            if h < 0 or m < 0 or m > 59 or s < 0 or s > 59:
+                print("  Invalid time values.")
+                return
+
+            new_time = (h << 16) | (m << 8) | s
+            print(f"\n  Setting HOF debut to {h}:{m:02d}:{s:02d} (raw: 0x{new_time:08X})")
+            confirm = input("  Confirm? (y/n): ").strip().lower()
+            if confirm == 'y':
+                self.set_game_stat(GAME_STAT_FIRST_HOF_PLAY_TIME, new_time)
+                if hof_count == 0 or hof_count is None:
+                    self.set_game_stat(GAME_STAT_ENTERED_HOF, 1)
+                    print("  Also set HOF entries to 1.")
+                print("  HOF debut time updated in both save slots.")
+            else:
+                print("  Cancelled.")
+        except ValueError:
+            print("  Invalid input.")
 
     # =========================================================================
     # Bard / Old Man
@@ -881,11 +938,10 @@ class SaveFile:
         hof_entries = self.get_game_stat(10)
 
         if hof_time is not None:
-            total_seconds = hof_time // 60 if hof_time > 0 else 0
-            hof_hours = total_seconds // 3600
-            hof_mins = (total_seconds % 3600) // 60
-            hof_secs = total_seconds % 60
-            print(f"  First HOF Play Time: {hof_hours}:{hof_mins:02d}:{hof_secs:02d} (raw: {hof_time})")
+            hof_hours = (hof_time >> 16) & 0xFFFF
+            hof_mins = (hof_time >> 8) & 0xFF
+            hof_secs = hof_time & 0xFF
+            print(f"  First HOF Play Time: {hof_hours}:{hof_mins:02d}:{hof_secs:02d} (raw: 0x{hof_time:08X})")
         else:
             print("  First HOF Play Time: Could not read")
 
@@ -1382,8 +1438,9 @@ def print_menu():
     print(" 13. Verify checksums")
     print(" 14. Recalculate all checksums")
     print(" 15. Scan for corrupted text")
-    print(" 16. Save file")
-    print(" 17. Save file as (new path)")
+    print(" 16. Set HOF debut time")
+    print(" 17. Save file")
+    print(" 18. Save file as (new path)")
     print("  0. Exit")
     print("========================================")
 
@@ -1590,12 +1647,18 @@ def main():
             if not loaded:
                 print("No save file loaded.")
                 continue
+            save.view_and_set_hof_time()
+
+        elif choice == '17':
+            if not loaded:
+                print("No save file loaded.")
+                continue
             confirm = input(f"Overwrite {save.filepath}? (y/n): ").strip().lower()
             if confirm == 'y':
                 save.recalculate_all_checksums()
                 save.save()
 
-        elif choice == '17':
+        elif choice == '18':
             if not loaded:
                 print("No save file loaded.")
                 continue
