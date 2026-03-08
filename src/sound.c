@@ -585,9 +585,9 @@ void PlaySE(u16 songNum)
             vol = 64;  // low: 25%
         else if (seVolume == 4)
             vol = 192; // high: 75%
-        m4aSongNumStart(songNum);
         m4aMPlayVolumeControl(&gMPlayInfo_SE1, TRACKS_ALL, vol);
         m4aMPlayVolumeControl(&gMPlayInfo_SE2, TRACKS_ALL, vol);
+        m4aSongNumStart(songNum);
         return;
     }
     m4aSongNumStart(songNum);
