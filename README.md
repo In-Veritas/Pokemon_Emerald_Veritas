@@ -79,7 +79,7 @@ This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (
   * **Team**: Complete Team Aqua Hideout (Aqua 1, Aqua 2, Magma 1, Magma 2)
   * **Contest**: Receive the Pokéblock Case (Cute, Smart, Cool, Tough, Beauty)
   * **Legends**: Catch Latias or Latios (Legendary, Latias, Latios)
-  * **Secret**: Defeat Pokémon Trainer Veritas on Southern Island (Exclsior, Veritas)
+  * **Secret**: Defeat Pokémon Trainer Veritas on Southern Island — requires both Latios and Latias caught or defeated, plus Zinnia defeated (Exclsior, Veritas)
 * Access special wallpapers via PC Box > Wallpaper > Special menu
 * For developers: See `docs/CUSTOM_WALLPAPERS.md` for adding new wallpapers
 
@@ -274,6 +274,8 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * **Shiny Palette Redesigns**: Custom shiny palettes for Treecko line (vibrant blues/reds), Mudkip line (brown), Spinda (panda), Wingull (dark gray markings), Wailord (gray), Zigzagoon (brown-orange corgi), Gardevoir (dark gray petal, blood red eye), Kyogre (dark orca), Groudon (dark volcanic), and Rayquaza (darker emerald)
 * **Save Migration v4→v5**: Automatically wipes corrupted record mixing data (TV Shows, Dewford Trends, etc.) from older saves to fix crashes
   * Valid PokeNews events (Slateport sales, Game Corner, Lilycove sales, Blend Master) are preserved through migration
+* **SE Volume Fix**: Fixed SE volume control not applying — volume is now set before the sound starts playing
+* **Southern Island Veritas Battle Fix**: Exclsior encounter now correctly requires both Latios and Latias to be caught or defeated (plus Zinnia defeated), not just one of them
 
 ### New Options Menu Items
 
