@@ -5309,7 +5309,10 @@ static void ReturnFromBattleToOverworld(void)
         FlagSet(FLAG_ENCOUNTERED_ROAMING_LATI);
 
         if ((gBattleOutcome == B_OUTCOME_WON) || gBattleOutcome == B_OUTCOME_CAUGHT)
+        {
             SetRoamerInactive();
+            FlagSet(FLAG_ROAMING_LATI_CAUGHT_OR_DEFEATED);
+        }
     }
 
     m4aSongNumStop(SE_LOW_HEALTH);
