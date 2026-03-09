@@ -152,12 +152,22 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * Egg Move Tutors (Fallarbor Town and Artisan Cave) now charge a **Nugget** or **Pearl** per move taught
 * Works like the Move Relearner's Heart Scale payment — bring either item to learn an egg move
 
+#### Morph Powder
+
+* A new item that changes a Pokémon's displayed gender
+* Found as a 5% held item on wild **Ditto** (alongside 5% Metal Powder)
+* Uses the Metal Powder icon with a light blue palette
+* Usable from the bag on any gendered Pokémon — genderless species are unaffected
+* The change is stored within existing unused Pokémon data bits — no save structure changes
+* Safe for trading and Pokémon Box — other games simply ignore the flag and show the original gender
+
 #### Wild Held Item Changes
 
 * **Clamperl**: 35% chance to hold a Pearl (rare slot is 50/50 Deep Sea Scale or Deep Sea Tooth)
 * **Spoink**: 35% chance to hold a Pearl
 * **Staryu**: 35% chance to hold a Pearl (replaces Stardust; Star Piece remains as rare)
 * **Zigzagoon**: 5% chance to hold a Nugget
+* **Ditto**: 5% chance to hold Morph Powder, 5% chance to hold Metal Powder
 
 #### Pokemon League Lobby Music
 
@@ -217,6 +227,18 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * **Pokémon Follower**: Now enabled by default
 * **Surfing Pokémon Sprites**: Now enabled by default
 * Both options remain fully toggleable in the Options Plus menu
+
+#### Baby Pokémon Overhaul
+
+Baby Pokémon have been reworked to be viable in battle with new abilities and compressed learnsets:
+
+* **3 New Abilities**:
+  * **Baby Charm** — Infatuates all opposing Pokémon on switch-in (bypasses gender check, blocked by Oblivious/Substitute)
+  * **Quick Learner** — Boosts Attack, Sp. Attack, and Evasion by 1 stage when hit by any damaging move
+  * **Mystic Tempo** — Sharply boosts a random stat by 3 stages after using Metronome
+* **Stat Adjustments**: Pichu (SpA 100), Magby (SpA 110), Azurill (Atk 50, SpA 30), Cleffa (Def 73, SpD 90), Igglybuff (Def 20, SpD 25), Togepi (HP 50), Tyrogue (all stats 40), Teddiursa (Atk 95, Spd 55)
+* **Compressed Learnsets**: All baby Pokémon learn their final evolution's moves before level 40
+* **Ability Assignments**: Pichu/Cleffa/Igglybuff/Smoochum/Azurill/Teddiursa → Baby Charm; Magby/Elekid/Tyrogue → Quick Learner; Togepi → Mystic Tempo
 
 ### Technical Improvements
 

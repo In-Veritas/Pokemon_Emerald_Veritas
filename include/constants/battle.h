@@ -164,6 +164,7 @@
 #define STATUS3_UNDERWATER              (1 << 18)
 #define STATUS3_INTIMIDATE_POKES        (1 << 19)
 #define STATUS3_TRACE                   (1 << 20)
+#define STATUS3_BABY_CHARM_POKES        (1 << 21)
 #define STATUS3_SEMI_INVULNERABLE       (STATUS3_UNDERGROUND | STATUS3_ON_AIR | STATUS3_UNDERWATER)
 
 // Not really sure what a "hitmarker" is.

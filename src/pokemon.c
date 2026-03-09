@@ -3559,6 +3559,7 @@ u8 GetBoxMonGender(struct BoxPokemon *boxMon)
 {
     u16 species = GetBoxMonData(boxMon, MON_DATA_SPECIES, NULL);
     u32 personality = GetBoxMonData(boxMon, MON_DATA_PERSONALITY, NULL);
+    u8 gender;
 
     switch (gSpeciesInfo[species].genderRatio)
     {
@@ -3569,9 +3570,14 @@ u8 GetBoxMonGender(struct BoxPokemon *boxMon)
     }
 
     if (gSpeciesInfo[species].genderRatio > (personality & 0xFF))
-        return MON_FEMALE;
+        gender = MON_FEMALE;
     else
-        return MON_MALE;
+        gender = MON_MALE;
+
+    if (GetBoxMonData(boxMon, MON_DATA_GENDER_FLAG, NULL))
+        gender = (gender == MON_MALE) ? MON_FEMALE : MON_MALE;
+
+    return gender;
 }
 
 u8 GetGenderFromSpeciesAndPersonality(u16 species, u32 personality)
@@ -4175,6 +4181,9 @@ u32 GetBoxMonData3(struct BoxPokemon *boxMon, s32 field, u8 *data)
     case MON_DATA_TRUE_SHINY:
         retVal = substruct0->free_sub0 & 1;
         break;
+    case MON_DATA_GENDER_FLAG:
+        retVal = (substruct0->free_sub0 >> 1) & 1;
+        break;
     case MON_DATA_NATURE:
         return boxMon->personality % 25;
         break;
@@ -4510,6 +4519,9 @@ void SetBoxMonData(struct BoxPokemon *boxMon, s32 field, const void *dataArg)
         break;
     case MON_DATA_TRUE_SHINY:
         substruct0->free_sub0 = (substruct0->free_sub0 & ~1) | (*data & 1);
+        break;
+    case MON_DATA_GENDER_FLAG:
+        substruct0->free_sub0 = (substruct0->free_sub0 & ~2) | ((*data & 1) << 1);
         break;
     case MON_DATA_NATURE:
     {
@@ -6928,6 +6940,13 @@ void SetWildMonHeldItem(void)
         if (species == SPECIES_CLAMPERL || species == SPECIES_SPOINK || species == SPECIES_STARYU)
         {
             chanceNoItem = 60; // 60% no item, 35% common (Pearl), 5% rare
+            chanceNotRare = 95;
+        }
+
+        // Ditto: 5% Morph Powder (common), 5% Metal Powder (rare)
+        if (species == SPECIES_DITTO)
+        {
+            chanceNoItem = 90;
             chanceNotRare = 95;
         }
 

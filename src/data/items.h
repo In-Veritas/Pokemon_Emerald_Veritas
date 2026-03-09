@@ -4822,4 +4822,15 @@ const struct Item gItems[] =
         .type = ITEM_USE_BAG_MENU,
         .fieldUseFunc = ItemUseOutOfBattle_CannotUse,
     },
+
+    [ITEM_MORPH_POWDER] =
+    {
+        .name = _("MORPH POWDER"),
+        .itemId = ITEM_MORPH_POWDER,
+        .price = 4900,
+        .description = sMorphPowderDesc,
+        .pocket = POCKET_ITEMS,
+        .type = ITEM_USE_PARTY_MENU,
+        .fieldUseFunc = ItemUseOutOfBattle_MorphPowder,
+    },
 };

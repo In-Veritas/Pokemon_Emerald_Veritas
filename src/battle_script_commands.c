@@ -4644,6 +4644,23 @@ static void Cmd_moveend(void)
             }
             gBattleScripting.moveendState++;
             break;
+        case MOVEEND_MYSTIC_TEMPO:
+            if (originallyUsedMove == MOVE_METRONOME
+             && gBattleMons[gBattlerAttacker].ability == ABILITY_MYSTIC_TEMPO
+             && gBattleMons[gBattlerAttacker].hp != 0
+             && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
+            {
+                u8 statId = STAT_ATK + (Random() % 7);
+                SET_STATCHANGER(statId, 3, FALSE);
+                gBattleScripting.battler = gBattlerAttacker;
+                gLastUsedAbility = ABILITY_MYSTIC_TEMPO;
+                PREPARE_STAT_BUFFER(gBattleTextBuff1, statId);
+                BattleScriptPushCursor();
+                gBattlescriptCurrInstr = BattleScript_MysticTempoActivates;
+                effect = TRUE;
+            }
+            gBattleScripting.moveendState++;
+            break;
         case MOVEEND_NEXT_TARGET: // For moves hitting two opposing Pokémon.
             if (!(gHitMarker & HITMARKER_UNABLE_TO_USE_MOVE) && gBattleTypeFlags & BATTLE_TYPE_DOUBLE
                 && !gProtectStructs[gBattlerAttacker].chargingTurn && gBattleMoves[gCurrentMove].target == MOVE_TARGET_BOTH

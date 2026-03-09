@@ -1674,4 +1674,9 @@ static const u8 sShinyCharmDesc[] = _(
     "A charm that will\n"
     "raise the chance\n"
     "of Shiny Pokémon.");
+
+static const u8 sMorphPowderDesc[] = _(
+    "A mysterious powder\n"
+    "that changes a\n"
+    "POKéMON's gender.");
     

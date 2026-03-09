@@ -87,18 +87,48 @@ Debug_Script_5::
 	release
 	end
 
-@ Debug script to test regular shiny sparkles (blue in debug) — gives shiny Ralts without true shiny bit
+@ Debug script to test regular shiny sparkles (blue in debug) — gives shiny Ralts + Morph Powder
 Debug_Script_6::
 	setflag FLAG_SHINY_CREATION
 	givemon SPECIES_RALTS, 25
+	additem ITEM_MORPH_POWDER, 5
 	msgbox Debug_Text_RegularShinyGiven, MSGBOX_DEFAULT
 	release
 	end
 
+@ Debug script to test Baby Pokemon abilities — gives party of 6 baby mons
+@ Pichu (Baby Charm), Cleffa (Baby Charm), Togepi (Mystic Tempo),
+@ Tyrogue (Quick Learner), Magby (Quick Learner), Azurill (Baby Charm)
 Debug_Script_7::
+	givemon SPECIES_PICHU, 30, ITEM_NONE
+	givemon SPECIES_CLEFFA, 30, ITEM_NONE
+	givemon SPECIES_TOGEPI, 30, ITEM_NONE
+	givemon SPECIES_TYROGUE, 30, ITEM_NONE
+	givemon SPECIES_MAGBY, 30, ITEM_NONE
+	givemon SPECIES_AZURILL, 30, ITEM_NONE
+	msgbox Debug_Text_BabyParty1, MSGBOX_DEFAULT
+	release
 	end
 
+@ Debug script to test remaining Baby Pokemon abilities
+@ Igglybuff (Baby Charm), Smoochum (Baby Charm), Elekid (Quick Learner),
+@ Teddiursa (Baby Charm), + wild Magikarp lv50 battle to test on-damage triggers
 Debug_Script_8::
+	givemon SPECIES_IGGLYBUFF, 30, ITEM_NONE
+	givemon SPECIES_SMOOCHUM, 30, ITEM_NONE
+	givemon SPECIES_ELEKID, 30, ITEM_NONE
+	givemon SPECIES_TEDDIURSA, 30, ITEM_NONE
+	msgbox Debug_Text_BabyParty2, MSGBOX_YESNO
+	compare VAR_RESULT, YES
+	goto_if_eq Debug_Script_8_WildBattle
+	release
+	end
+
+Debug_Script_8_WildBattle:
+	closemessage
+	setwildbattle SPECIES_MAGIKARP, 50
+	dowildbattle
+	release
 	end
 
 Debug_Text_TrueShinyGiven:
@@ -108,3 +138,15 @@ Debug_Text_TrueShinyGiven:
 Debug_Text_RegularShinyGiven:
 	.string "Gave regular shiny Ralts.\n"
 	.string "Blue sparkles in debug.$"
+
+Debug_Text_BabyParty1:
+	.string "Baby party 1 added:\n"
+	.string "PICHU CLEFFA TOGEPI\n"
+	.string "TYROGUE MAGBY AZURILL\l"
+	.string "All lv30.$"
+
+Debug_Text_BabyParty2:
+	.string "Baby party 2 added:\n"
+	.string "IGGLYBUFF SMOOCHUM\n"
+	.string "ELEKID TEDDIURSA\l"
+	.string "Start wild battle?$"

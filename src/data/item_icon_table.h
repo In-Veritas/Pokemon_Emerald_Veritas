@@ -434,5 +434,7 @@ const u32 *const gItemIconTable[ITEMS_COUNT + 1][2] =
     // EXP. ALL Key Item
     [ITEM_EXP_ALL] = {gItemIcon_ExpShare, gItemIconPalette_ExpShare},
 
+    [ITEM_MORPH_POWDER] = {gItemIcon_MetalPowder, gItemIconPalette_MorphPowder},
+
     [ITEMS_COUNT] = {gItemIcon_ReturnToFieldArrow, gItemIconPalette_ReturnToFieldArrow},
 };

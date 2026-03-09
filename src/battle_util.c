@@ -2546,6 +2546,34 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
                     gSpecialStatuses[battler].intimidatedMon = 1;
                 }
                 break;
+            case ABILITY_BABY_CHARM:
+                {
+                    u8 side2 = GetBattlerSide(battler);
+                    u8 j;
+                    u8 infatuated = 0;
+                    for (j = 0; j < gBattlersCount; j++)
+                    {
+                        if (GetBattlerSide(j) == side2)
+                            continue;
+                        if (gAbsentBattlerFlags & gBitTable[j])
+                            continue;
+                        if (gBattleMons[j].status2 & STATUS2_INFATUATION)
+                            continue;
+                        if (gBattleMons[j].status2 & STATUS2_SUBSTITUTE)
+                            continue;
+                        if (gBattleMons[j].ability == ABILITY_OBLIVIOUS)
+                            continue;
+                        gBattleMons[j].status2 |= STATUS2_INFATUATED_WITH(battler);
+                        infatuated++;
+                    }
+                    if (infatuated)
+                    {
+                        gBattleScripting.battler = battler;
+                        BattleScriptPushCursorAndCallback(BattleScript_BabyCharmActivatesEnd3);
+                        effect++;
+                    }
+                }
+                break;
             case ABILITY_FORECAST:
                 effect = CastformDataTypeChange(battler);
                 if (effect != 0)
@@ -2848,6 +2876,16 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
                     gBattleMons[gBattlerAttacker].status2 |= STATUS2_INFATUATED_WITH(gBattlerTarget);
                     BattleScriptPushCursor();
                     gBattlescriptCurrInstr = BattleScript_CuteCharmActivates;
+                    effect++;
+                }
+                break;
+            case ABILITY_QUICK_LEARNER:
+                if (gBattleMoves[move].power != 0
+                 && gBattleMons[battler].hp != 0
+                 && gBattlerAttacker != battler)
+                {
+                    BattleScriptPushCursor();
+                    gBattlescriptCurrInstr = BattleScript_QuickLearnerActivates;
                     effect++;
                 }
                 break;

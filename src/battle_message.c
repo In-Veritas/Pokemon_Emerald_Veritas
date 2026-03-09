@@ -436,6 +436,9 @@ static const u8 sText_Accuracy[] = _("accuracy");
 static const u8 sText_Evasiveness[] = _("evasiveness");
 static const u8 sText_AttackBoostedByAbility[] = _("{B_ATK_NAME_WITH_PREFIX}'s {B_CURRENT_MOVE}\nwas boosted by {B_ATK_ABILITY}!\p"); // // Added new Ability Effect to provide text for Overgrow, Blaze, Torrent and Swarm
 static const u8 sText_MagmaArmorActivated[] = _("{B_DEF_NAME_WITH_PREFIX}'s {B_DEF_ABILITY} reduced\nthe damage from {B_CURRENT_MOVE}!\p"); // Added new Battle result message to provide text for Magma Armor activation
+static const u8 sText_BabyCharmInfatuated[] = _("{B_SCR_ACTIVE_NAME_WITH_PREFIX}'s {B_SCR_ACTIVE_ABILITY}\ncharmed the opposing POKéMON!");
+static const u8 sText_QuickLearnerActivated[] = _("{B_DEF_NAME_WITH_PREFIX}'s {B_DEF_ABILITY}\nboosted its stats!");
+static const u8 sText_MysticTempoActivated[] = _("{B_ATK_NAME_WITH_PREFIX}'s {B_ATK_ABILITY}\nsharply boosted its {B_BUFF1}!");
 
 const u8 * const gStatNamesTable[NUM_BATTLE_STATS] =
 {
@@ -896,7 +899,10 @@ const u8 * const gBattleStringsTable[BATTLESTRINGS_COUNT - BATTLESTRINGS_TABLE_S
     [STRINGID_PKMNGAINEDEXPALL - BATTLESTRINGS_TABLE_START] = sText_PkmnGainedEXPAll,
     [STRINGID_POKEMONPICKUP - BATTLESTRINGS_TABLE_START] = sText_PokemonPickupText,
     [STRINGID_POKEMONPICKUPVOWELITEMS - BATTLESTRINGS_TABLE_START] = sText_PokemonPickupText_VowelItems,
-    [STRINGID_POKEMONPICKUPMULTIPLE - BATTLESTRINGS_TABLE_START] = sText_PokemonPickupMultipleText
+    [STRINGID_POKEMONPICKUPMULTIPLE - BATTLESTRINGS_TABLE_START] = sText_PokemonPickupMultipleText,
+    [STRINGID_BABYCHARMINFATUATED - BATTLESTRINGS_TABLE_START] = sText_BabyCharmInfatuated,
+    [STRINGID_QUICKLEARNERACTIVATED - BATTLESTRINGS_TABLE_START] = sText_QuickLearnerActivated,
+    [STRINGID_MYSTICTEMPOACTIVATED - BATTLESTRINGS_TABLE_START] = sText_MysticTempoActivated
 };
 
 const u16 gMissStringIds[] =

@@ -1170,6 +1170,12 @@ void ItemUseOutOfBattle_AbilityCapsule(u8 taskId)
     SetUpItemUseCallback(taskId);
 }
 
+void ItemUseOutOfBattle_MorphPowder(u8 taskId)
+{
+    gItemUseCB = ItemUseCB_MorphPowder;
+    SetUpItemUseCallback(taskId);
+}
+
 void ItemUseOutOfBattle_PokeBall(u8 taskId)
 {
     gItemUseCB = ItemUseCB_PokeBall;

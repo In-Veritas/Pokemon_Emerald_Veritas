@@ -4681,3 +4681,56 @@ BattleScript_HeldItemAnimationReduced_Attacker::
 BattleScript_HeldItemAnimationMinimal_Attacker::
 	playanimation BS_ATTACKER, B_ANIM_HELD_ITEM_MIN_EFFECT
 	return
+
+@ Baby Charm ability - infatuation on switch-in
+@ C code sets infatuation on all valid opponents before calling this script
+BattleScript_BabyCharmActivatesEnd3::
+	pause B_WAIT_TIME_SHORT
+	printstring STRINGID_BABYCHARMINFATUATED
+	waitmessage B_WAIT_TIME_LONG
+	end3
+
+BattleScript_BabyCharmActivates::
+	printstring STRINGID_BABYCHARMINFATUATED
+	waitmessage B_WAIT_TIME_LONG
+	return
+
+@ Quick Learner ability - boosts ATK, SPATK, and Evasion by 1 stage each when hit
+BattleScript_QuickLearnerActivates::
+	setstatchanger STAT_ATK, 1, FALSE
+	statbuffchange STAT_CHANGE_NOT_PROTECT_AFFECTED | STAT_CHANGE_ALLOW_PTR, BattleScript_QuickLearnerSpAtk
+	jumpifbyte CMP_GREATER_THAN, cMULTISTRING_CHOOSER, 1, BattleScript_QuickLearnerSpAtk
+	setgraphicalstatchangevalues
+	playanimation BS_TARGET, B_ANIM_STATS_CHANGE, sB_ANIM_ARG1
+	printstring STRINGID_STATROSE
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_QuickLearnerSpAtk:
+	setstatchanger STAT_SPATK, 1, FALSE
+	statbuffchange STAT_CHANGE_NOT_PROTECT_AFFECTED | STAT_CHANGE_ALLOW_PTR, BattleScript_QuickLearnerEvasion
+	jumpifbyte CMP_GREATER_THAN, cMULTISTRING_CHOOSER, 1, BattleScript_QuickLearnerEvasion
+	setgraphicalstatchangevalues
+	playanimation BS_TARGET, B_ANIM_STATS_CHANGE, sB_ANIM_ARG1
+	printstring STRINGID_STATROSE
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_QuickLearnerEvasion:
+	setstatchanger STAT_EVASION, 1, FALSE
+	statbuffchange STAT_CHANGE_NOT_PROTECT_AFFECTED | STAT_CHANGE_ALLOW_PTR, BattleScript_QuickLearnerEnd
+	jumpifbyte CMP_GREATER_THAN, cMULTISTRING_CHOOSER, 1, BattleScript_QuickLearnerEnd
+	setgraphicalstatchangevalues
+	playanimation BS_TARGET, B_ANIM_STATS_CHANGE, sB_ANIM_ARG1
+	printstring STRINGID_STATROSE
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_QuickLearnerEnd:
+	return
+
+@ Mystic Tempo ability - sharply boosts a random stat by 3 stages after using Metronome
+@ C code selects the random stat and sets sSTATCHANGER before calling this script
+BattleScript_MysticTempoActivates::
+	statbuffchange MOVE_EFFECT_AFFECTS_USER | STAT_CHANGE_NOT_PROTECT_AFFECTED | STAT_CHANGE_ALLOW_PTR, BattleScript_MysticTempoEnd
+	jumpifbyte CMP_GREATER_THAN, cMULTISTRING_CHOOSER, 1, BattleScript_MysticTempoEnd
+	setgraphicalstatchangevalues
+	playanimation BS_ATTACKER, B_ANIM_STATS_CHANGE, sB_ANIM_ARG1
+	printstring STRINGID_MYSTICTEMPOACTIVATED
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_MysticTempoEnd:
+	return
