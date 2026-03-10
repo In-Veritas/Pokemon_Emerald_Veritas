@@ -24,6 +24,7 @@
 #include "window.h"
 #include "constants/items.h"
 #include "constants/songs.h"
+#include "characters.h"
 
 // Note that in this file 'Dodrio Berry Picking' is often
 // shortened to DodrioGame or just Game for convenience
@@ -282,6 +283,9 @@ EWRAM_DATA static u16 * sBerrySpriteIds[NUM_BERRY_COLUMNS] = {NULL};
 EWRAM_DATA static u16 * sBerryIconSpriteIds[NUM_BERRY_TYPES] = {NULL};
 EWRAM_DATA static struct StatusBar * sStatusBar = NULL;
 EWRAM_DATA static struct DodrioGame_Gfx * sGfx = NULL;
+EWRAM_DATA static u16 sReceivedPrizeIds[6] = {0};
+EWRAM_DATA static u8 sNumReceivedPrizes = 0;
+EWRAM_DATA static u8 sPrizeListBuffer[128] = {0};
 
 static bool32 sExitingGame;
 
@@ -588,45 +592,32 @@ static const u8 sTreeBorderXPos[MAX_RFU_PLAYERS] = {8, 5, 8, 11, 15};
 ALIGNED(4)
 static const u8 sDifficultyThresholds[NUM_DIFFICULTIES] = {5, 10, 20, 30, 50, 70, 100};
 
-ALIGNED(4)
-static const u8 sPrizeBerryIds[][10] =
-{
-    { // Possible prizes with 3 players
-        ITEM_TO_BERRY(ITEM_RAZZ_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_BLUK_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_NANAB_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_WEPEAR_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_PINAP_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_PINAP_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_WEPEAR_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_NANAB_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_BLUK_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_RAZZ_BERRY) - 1
-    },
-    { // Possible prizes with 4 players
-        ITEM_TO_BERRY(ITEM_POMEG_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_KELPSY_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_QUALOT_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_HONDEW_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_GREPA_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_TAMATO_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_CORNN_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_MAGOST_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_RABUTA_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_NOMEL_BERRY) - 1
-    },
-    { // Possible prizes with 5 players
-        ITEM_TO_BERRY(ITEM_SPELON_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_PAMTRE_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_WATMEL_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_DURIN_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_BELUE_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_BELUE_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_DURIN_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_WATMEL_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_PAMTRE_BERRY) - 1,
-        ITEM_TO_BERRY(ITEM_SPELON_BERRY) - 1
-    },
+// Prize tier items
+static const u16 sPrizeTier_Common[] = {
+    ITEM_POMEG_BERRY, ITEM_KELPSY_BERRY, ITEM_QUALOT_BERRY,
+    ITEM_HONDEW_BERRY, ITEM_GREPA_BERRY, ITEM_TAMATO_BERRY
+};
+
+static const u16 sPrizeTier_Uncommon[] = {
+    ITEM_LIECHI_BERRY, ITEM_GANLON_BERRY, ITEM_SALAC_BERRY,
+    ITEM_PETAYA_BERRY, ITEM_APICOT_BERRY
+};
+
+static const u16 sPrizeTier_Rare[] = {
+    ITEM_NUGGET, ITEM_RARE_CANDY, ITEM_PP_UP
+};
+
+static const u16 sPrizeTier_UltraRare[] = {
+    ITEM_LANSAT_BERRY, ITEM_STARF_BERRY, ITEM_PP_MAX
+};
+
+// Tier thresholds by player count index (3/4/5 players = index 0/1/2)
+// Format: {common_max, uncommon_max, rare_max, ultrarare_max}
+// Legendary is the remainder (100 - ultrarare_max)
+static const u8 sPrizeTierThresholds[][4] = {
+    {60, 85, 98, 99},  // 3 players: 60/25/13/1/1
+    {43, 71, 94, 98},  // 4 players: 43/28/23/4/2 (98 not 96 since legendary=2)
+    {30, 63, 93, 97},  // 5 players: 30/33/30/4/3
 };
 
 static void (*const sLeaderFuncs[])(void) =
@@ -1199,7 +1190,7 @@ static void AskPlayAgain(void)
     switch (sGame->state)
     {
     case 0:
-        if (GetHighestScore() >= PRIZE_SCORE)
+        if (GetScore(sGame->multiplayerId) >= PRIZE_SCORE)
         {
             SetGfxFuncById(GFXFUNC_MSG_SAVING);
         }
@@ -1804,7 +1795,18 @@ static void VBlankCB_DodrioGame(void)
 
 static void InitMonInfo(struct DodrioGame_MonInfo * monInfo, struct Pokemon *mon)
 {
-    monInfo->isShiny = IsMonShiny(mon);
+    int i;
+    monInfo->isShiny = FALSE;
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (GetMonData(&gPlayerParty[i], MON_DATA_SANITY_HAS_SPECIES)
+            && GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) == SPECIES_DODRIO
+            && IsMonShiny(&gPlayerParty[i]))
+        {
+            monInfo->isShiny = TRUE;
+            break;
+        }
+    }
 }
 
 static void CreateTask_(TaskFunc func, u8 priority)
@@ -2604,17 +2606,7 @@ static const s16 sBerryScoreMultipliers[] = {
 
 static void SetRandomPrize(void)
 {
-    u8 i, prizeSet = 0, prizeIdx = 0;
-
-    switch (sGame->numPlayers)
-    {
-    case 4:  prizeSet = 1; break;
-    case 5:  prizeSet = 2; break;
-    }
-
-    prizeIdx = Random() % ARRAY_COUNT(sPrizeBerryIds[0]);
-    for (i = 0; i < MAX_RFU_PLAYERS; i++)
-        sGame->berryResults[i][BERRY_PRIZE] = sPrizeBerryIds[prizeSet][prizeIdx];
+    // Prizes are now rolled individually in TryGivePrize
 }
 
 static u32 GetBerriesPicked(u8 playerId)
@@ -2689,11 +2681,6 @@ static void HandleWaitPlayAgainInput(void)
 static void ResetPickState(void)
 {
     sGame->players[sGame->multiplayerId].comm.pickState = PICK_NONE;
-}
-
-static u16 GetPrizeItemId(void)
-{
-    return sGame->berryResults[sGame->multiplayerId][BERRY_PRIZE] + FIRST_BERRY_INDEX;
 }
 
 static u8 GetNumPlayers(void)
@@ -2867,18 +2854,119 @@ enum {
     NO_PRIZE,
 };
 
+static u16 RollPrizeItem(u8 tierIndex)
+{
+    u8 roll = Random() % 100;
+    const u8 *thresholds = sPrizeTierThresholds[tierIndex];
+
+    if (roll < thresholds[0])
+        return sPrizeTier_Common[Random() % ARRAY_COUNT(sPrizeTier_Common)];
+    else if (roll < thresholds[1])
+        return sPrizeTier_Uncommon[Random() % ARRAY_COUNT(sPrizeTier_Uncommon)];
+    else if (roll < thresholds[2])
+        return sPrizeTier_Rare[Random() % ARRAY_COUNT(sPrizeTier_Rare)];
+    else if (roll < thresholds[3])
+        return sPrizeTier_UltraRare[Random() % ARRAY_COUNT(sPrizeTier_UltraRare)];
+    else
+        return ITEM_MASTER_BALL;
+}
+
 static u8 TryGivePrize(void)
 {
     u8 multiplayerId = sGame->multiplayerId;
-    u16 itemId = GetPrizeItemId();
+    u32 score = GetScore(multiplayerId);
+    u8 numItems = 0;
+    u8 isWinner = 0;
+    u8 tierIndex = 0;
+    u8 i;
+    u8 givenAny = 0;
+    u8 bagFull = 0;
+    u16 itemId;
 
-    if (GetScore(multiplayerId) != GetHighestScore())
+    if (score < PRIZE_SCORE)
         return NO_PRIZE;
-    if (!CheckBagHasSpace(itemId, 1))
-        return PRIZE_NO_ROOM;
 
-    AddBagItem(itemId, 1);
-    if (!CheckBagHasSpace(itemId, 1))
+    /* Determine number of items based on score */
+    if (score >= 16000)
+        numItems = 5;
+    else if (score >= 12000)
+        numItems = 4;
+    else if (score >= 8000)
+        numItems = 3;
+    else if (score >= 5000)
+        numItems = 2;
+    else
+        numItems = 1;
+
+    /* Winner gets +1 bonus item */
+    if (GetScore(multiplayerId) == GetHighestScore())
+        isWinner = 1;
+    numItems += isWinner;
+
+    /* Determine tier index from player count (3=0, 4=1, 5=2) */
+    switch (sGame->numPlayers)
+    {
+    case 4:  tierIndex = 1; break;
+    case 5:  tierIndex = 2; break;
+    default: tierIndex = 0; break;
+    }
+
+    /* Roll and give each item independently */
+    sNumReceivedPrizes = 0;
+    for (i = 0; i < numItems; i++)
+    {
+        itemId = RollPrizeItem(tierIndex);
+        if (CheckBagHasSpace(itemId, 1))
+        {
+            AddBagItem(itemId, 1);
+            sReceivedPrizeIds[sNumReceivedPrizes++] = itemId;
+            givenAny = 1;
+        }
+        else
+        {
+            bagFull = 1;
+        }
+    }
+
+    /* Build display string listing received items */
+    if (givenAny)
+    {
+        u8 *dst = sPrizeListBuffer;
+        u8 nameBuf[20];
+        u8 lineWidth = 0;
+        u8 nameWidth;
+
+        for (i = 0; i < sNumReceivedPrizes; i++)
+        {
+            CopyItemName(sReceivedPrizeIds[i], nameBuf);
+            nameWidth = GetStringWidth(FONT_NARROW, nameBuf, -1);
+
+            /* Add separator before 2nd+ item */
+            if (i > 0)
+            {
+                /* Check if adding ", Name" would overflow line (~210px usable) */
+                if (lineWidth + 12 + nameWidth > 210)
+                {
+                    *dst++ = CHAR_NEWLINE;
+                    lineWidth = 0;
+                }
+                else
+                {
+                    *dst++ = CHAR_COMMA;
+                    *dst++ = CHAR_SPACE;
+                    lineWidth += 12;
+                }
+            }
+
+            dst = StringCopy(dst, nameBuf);
+            lineWidth += nameWidth;
+        }
+        *dst = EOS;
+    }
+
+    if (!givenAny)
+        return PRIZE_NO_ROOM;
+    if (bagFull)
         return PRIZE_FILLED_BAG;
     return PRIZE_RECEIVED;
 }
@@ -2906,18 +2994,7 @@ static u8 GetPlayerIdByPos(u8 id)
 
 void IsDodrioInParty(void)
 {
-    int i;
-    for (i = 0; i < PARTY_SIZE; i++)
-    {
-        if (GetMonData(&gPlayerParty[i], MON_DATA_SANITY_HAS_SPECIES)
-            && GetMonData(&gPlayerParty[i], MON_DATA_SPECIES_OR_EGG) == SPECIES_DODRIO)
-        {
-            gSpecialVar_Result = TRUE;
-            return;
-        }
-    }
-
-    gSpecialVar_Result = FALSE;
+    gSpecialVar_Result = TRUE;
 }
 
 #define NUM_RECORD_TYPES 3
@@ -4849,7 +4926,7 @@ static void ShowResults(void)
         {
             sGfx->timer = 0;
             PlaySE(SE_SELECT);
-            if (GetHighestScore() < PRIZE_SCORE)
+            if (GetScore(GetMultiplayerId()) < PRIZE_SCORE)
             {
                 sGfx->state = 127; // Skip to end, past giving prize
             }
@@ -4873,22 +4950,17 @@ static void ShowResults(void)
         strWidth = GetStringWidth(FONT_NORMAL, gText_AnnouncingPrizes, -1);
         x = (224 - strWidth) / 2;
         AddTextPrinterParameterized(sGfx->windowIds[0], FONT_NORMAL, gText_AnnouncingPrizes, x, 1, TEXT_SKIP_DRAW, NULL);
-        DynamicPlaceholderTextUtil_Reset();
-        CopyItemName(GetPrizeItemId(), gStringVar1);
-        DynamicPlaceholderTextUtil_SetPlaceholderPtr(0, gStringVar1);
-        DynamicPlaceholderTextUtil_ExpandPlaceholders(gStringVar4, gText_FirstPlacePrize);
-        AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NORMAL, gStringVar4, 0, 1, TEXT_SKIP_DRAW, NULL);
         prizeState = TryGivePrize();
-        if (prizeState != PRIZE_RECEIVED && prizeState != NO_PRIZE)
+        if (prizeState == PRIZE_RECEIVED || prizeState == PRIZE_FILLED_BAG)
         {
-            DynamicPlaceholderTextUtil_Reset();
-            CopyItemName(GetPrizeItemId(), gStringVar1);
-            DynamicPlaceholderTextUtil_SetPlaceholderPtr(0, gStringVar1);
-            if (prizeState == PRIZE_NO_ROOM)
-                DynamicPlaceholderTextUtil_ExpandPlaceholders(gStringVar4, gText_CantHoldAnyMore);
-            else if (prizeState == PRIZE_FILLED_BAG)
-                DynamicPlaceholderTextUtil_ExpandPlaceholders(gStringVar4, gText_FilledStorageSpace);
-            AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NORMAL, gStringVar4, 0, 41, TEXT_SKIP_DRAW, NULL);
+            AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NORMAL, gText_ReceivedPrizes, 0, 1, TEXT_SKIP_DRAW, NULL);
+            AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NARROW, sPrizeListBuffer, 0, 17, TEXT_SKIP_DRAW, NULL);
+            if (prizeState == PRIZE_FILLED_BAG)
+                AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NARROW, gText_FilledStorageSpace, 0, 45, TEXT_SKIP_DRAW, NULL);
+        }
+        else if (prizeState == PRIZE_NO_ROOM)
+        {
+            AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NORMAL, gText_CantHoldAnyMore, 0, 1, TEXT_SKIP_DRAW, NULL);
         }
         CopyWindowToVram(sGfx->windowIds[0], COPYWIN_GFX);
         CopyWindowToVram(sGfx->windowIds[1], COPYWIN_GFX);

@@ -2247,7 +2247,8 @@ static void TryUpdateExcellentsRecord(u16 excellentsInRow)
         sPokemonJump->excellentsInRowRecord = excellentsInRow;
 }
 
-static const u16 sPrizeItems[] = {
+// Tier 0: Always available (score 5000+)
+static const u16 sPrizeItems_Common[] = {
     ITEM_LEPPA_BERRY,
     ITEM_LUM_BERRY,
     ITEM_SITRUS_BERRY,
@@ -2255,7 +2256,40 @@ static const u16 sPrizeItems[] = {
     ITEM_WIKI_BERRY,
     ITEM_MAGO_BERRY,
     ITEM_AGUAV_BERRY,
-    ITEM_IAPAPA_BERRY
+    ITEM_IAPAPA_BERRY,
+};
+
+// Tier 1: Unlocked at 8000+
+static const u16 sPrizeItems_Uncommon[] = {
+    ITEM_POMEG_BERRY,
+    ITEM_KELPSY_BERRY,
+    ITEM_QUALOT_BERRY,
+    ITEM_HONDEW_BERRY,
+    ITEM_GREPA_BERRY,
+    ITEM_TAMATO_BERRY,
+    ITEM_NUGGET,
+};
+
+// Tier 2: Unlocked at 12000+
+static const u16 sPrizeItems_Rare[] = {
+    ITEM_LUCKY_EGG,
+    ITEM_LEFTOVERS,
+    ITEM_FOCUS_BAND,
+    ITEM_RARE_CANDY,
+    ITEM_PP_UP,
+};
+
+// Tier 3: Unlocked at 16000+
+static const u16 sPrizeItems_VeryRare[] = {
+    ITEM_SCOPE_LENS,
+    ITEM_KINGS_ROCK,
+    ITEM_UP_GRADE,
+    ITEM_PP_MAX,
+};
+
+// Tier 4: Unlocked at 20000+
+static const u16 sPrizeItems_Legendary[] = {
+    ITEM_MASTER_BALL,
 };
 
 struct {
@@ -2293,8 +2327,38 @@ static void UnpackPrizeData(u16 data, u16 *itemId, u16 *quantity)
 
 static u16 GetPrizeItemId(void)
 {
-    u16 index = Random() % ARRAY_COUNT(sPrizeItems);
-    return sPrizeItems[index];
+    u16 pool[25];
+    u16 poolSize = 0;
+    u32 score = sPokemonJump->comm.jumpScore;
+    u32 i;
+    u16 index;
+
+    for (i = 0; i < ARRAY_COUNT(sPrizeItems_Common); i++)
+        pool[poolSize++] = sPrizeItems_Common[i];
+
+    if (score >= 8000)
+    {
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Uncommon); i++)
+            pool[poolSize++] = sPrizeItems_Uncommon[i];
+    }
+    if (score >= 12000)
+    {
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Rare); i++)
+            pool[poolSize++] = sPrizeItems_Rare[i];
+    }
+    if (score >= 16000)
+    {
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_VeryRare); i++)
+            pool[poolSize++] = sPrizeItems_VeryRare[i];
+    }
+    if (score >= 20000)
+    {
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Legendary); i++)
+            pool[poolSize++] = sPrizeItems_Legendary[i];
+    }
+
+    index = Random() % poolSize;
+    return pool[index];
 }
 
 static u16 GetPrizeQuantity(void)

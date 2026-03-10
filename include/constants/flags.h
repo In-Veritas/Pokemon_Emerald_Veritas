@@ -23,7 +23,8 @@
 #define FLAG_TEMP_D                 (TEMP_FLAGS_START + 0xD)  // Unused Flag
 #define FLAG_TEMP_E                 (TEMP_FLAGS_START + 0xE)  // Unused Flag
 #define FLAG_TEMP_HIDE_FOLLOWER     (TEMP_FLAGS_START + 0xF)  // When set, follower pokemon won't be spawned
-#define FLAG_TEMP_10                (TEMP_FLAGS_START + 0x10) // Unused Flag
+#define FLAG_TEMP_10                (TEMP_FLAGS_START + 0x10)
+#define FLAG_TEMP_HIDE_SPECIAL      FLAG_TEMP_10
 #define FLAG_TEMP_11                (TEMP_FLAGS_START + 0x11)
 #define FLAG_TEMP_12                (TEMP_FLAGS_START + 0x12)
 #define FLAG_TEMP_13                (TEMP_FLAGS_START + 0x13)

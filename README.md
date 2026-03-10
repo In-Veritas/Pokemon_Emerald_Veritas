@@ -179,6 +179,22 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * Players who have beaten the Champion can toggle between Switch and Set
 * Nuzlocke mode still always forces SET
 
+#### Wireless Minigame Reward Overhaul
+
+All three wireless minigames at the Mossdeep Game Corner have been improved with better rewards:
+
+* **Berry Crush**: Berry powder output **doubled** for all berry types
+* **Pokemon Jump**: Expanded prize pool unlocked by score tiers — includes Lucky Egg, Leftovers, Focus Band, Scope Lens, King's Rock, Up-Grade, PP Max, and Master Ball (at 20,000+ points)
+* **Dodrio Berry Picking**: No longer requires a Dodrio in the party. **All players** now receive prizes (not just the winner), with rarity odds improving with more players. Prize pool includes rare berries, Nugget, Rare Candy, PP Up/Max, and Master Ball
+* Shiny Dodrio in your party still makes the in-game Dodrio shiny
+
+See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
+
+#### Legendary Overworld Sprite Fix
+
+* All static legendary encounters now use their dedicated original sprites instead of HGSS follower sprites
+* Applies to: Articuno, Zapdos, Moltres, Mewtwo, Raikou, Entei, Suicune, Lugia, Ho-Oh, Celebi, Latios, Latias
+
 #### Daycare Egg to PC
 
 * When your party is full, daycare eggs are automatically sent to a PC box instead of being rejected

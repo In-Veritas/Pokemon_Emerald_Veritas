@@ -1540,6 +1540,7 @@ const u8 gText_3Colon[] = _("3:");
 const u8 gText_4Colon[] = _("4:");
 const u8 gText_5Colon[] = _("5:");
 const u8 gText_FirstPlacePrize[] = _("The first-place winner gets\nthis {DYNAMIC 0}!");
+const u8 gText_ReceivedPrizes[] = _("You received prizes!");
 const u8 gText_CantHoldAnyMore[] = _("You can't hold any more!");
 const u8 gText_FilledStorageSpace[] = _("It filled its storage space.");
 const u8 gText_WantToPlayAgain[] = _("Want to play again?");

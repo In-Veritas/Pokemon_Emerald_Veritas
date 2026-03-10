@@ -26,12 +26,12 @@ SouthernIsland_Interior_OnTransition:
 	end
 
 SouthernIsland_Interior_EventScript_SetUpLatios::
-	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_MON_BASE+SPECIES_LATIOS
+	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_LATIOS
 	setvar VAR_TEMP_4, SPECIES_LATIOS
 	return
 
 SouthernIsland_Interior_EventScript_SetUpLatias::
-	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_MON_BASE+SPECIES_LATIAS
+	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_LATIAS
 	setvar VAR_TEMP_4, SPECIES_LATIAS
 	return
 
@@ -43,22 +43,16 @@ SouthernIsland_Interior_EventScript_SetUpPlayerGfx::
 
 SouthernIsland_Interior_EventScript_CheckExclsior::
 	goto_if_set FLAG_DEFEATED_EXCLSIOR, SouthernIsland_Interior_EventScript_HideExclsior
+	goto_if_unset FLAG_DEFEATED_METEOR_FALLS_STEVEN, SouthernIsland_Interior_EventScript_HideExclsior
+	goto_if_unset FLAG_CAUGHT_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_HideExclsior
 	goto_if_unset FLAG_DEFEATED_ZINNIA, SouthernIsland_Interior_EventScript_HideExclsior
-	@ Require BOTH latis dealt with (SI lati + roaming lati)
-	goto_if_unset FLAG_ROAMING_LATI_CAUGHT_OR_DEFEATED, SouthernIsland_Interior_EventScript_HideExclsior
-	goto_if_set FLAG_CAUGHT_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_ExclsiorReady
-	goto_if_set FLAG_DEFEATED_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_ExclsiorReady
-	goto SouthernIsland_Interior_EventScript_HideExclsior
-
-SouthernIsland_Interior_EventScript_ExclsiorReady::
-	addobject LOCALID_EXCLSIOR
-	addobject LOCALID_TYPHLOSION //Change to Feraligatr
+	@ All 3 requirements met — show Exclsior
+	clearflag FLAG_TEMP_10
 	end
 
 SouthernIsland_Interior_EventScript_HideExclsior::
-	removeobject LOCALID_EXCLSIOR
-	removeobject LOCALID_TYPHLOSION //Change to Feraligatr
-	return
+	setflag FLAG_TEMP_10
+	end
 
 SouthernIsland_Interior_EventScript_Typhlosion::
 	lock

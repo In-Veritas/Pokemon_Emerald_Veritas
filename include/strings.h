@@ -3150,6 +3150,7 @@ extern const u8 gText_10P30P50P50P[];
 extern const u8 gText_AnnouncingPrizes[];
 extern const u8 gText_AnnouncingRankings[];
 extern const u8 gText_FirstPlacePrize[];
+extern const u8 gText_ReceivedPrizes[];
 extern const u8 gText_CantHoldAnyMore[];
 extern const u8 gText_FilledStorageSpace[];
 extern const u8 gText_BerryPickingResults[];
