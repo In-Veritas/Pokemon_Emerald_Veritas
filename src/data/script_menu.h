@@ -464,6 +464,7 @@ static const struct MenuAction MultichoiceList_LinkServicesNoBerry[] =
     {gText_TradeCenter},
     {gText_Colosseum},
     {gText_RecordCorner},
+    {gText_Minigames},
     {gText_Exit},
 };
 
@@ -483,11 +484,18 @@ static const struct MenuAction MultichoiceList_BattleMode[] =
     {gText_Exit},
 };
 
+static const struct MenuAction MultichoiceList_SecretBaseBattleType[] =
+{
+    {gText_SingleBattle},
+    {gText_DoubleBattle},
+};
+
 static const struct MenuAction MultichoiceList_LinkServicesNoRecord[] =
 {
     {gText_TradeCenter},
     {gText_Colosseum},
     {gText_BerryCrush3},
+    {gText_Minigames},
     {gText_Exit},
 };
 
@@ -497,6 +505,7 @@ static const struct MenuAction MultichoiceList_LinkServicesAll[] =
     {gText_Colosseum},
     {gText_RecordCorner},
     {gText_BerryCrush3},
+    {gText_Minigames},
     {gText_Exit},
 };
 
@@ -504,6 +513,22 @@ static const struct MenuAction MultichoiceList_LinkServicesNoRecordBerry[] =
 {
     {gText_TradeCenter},
     {gText_Colosseum},
+    {gText_Minigames},
+    {gText_Exit},
+};
+
+static const struct MenuAction MultichoiceList_CableClubNoRecordMix[] =
+{
+    {gText_TradeCenter},
+    {gText_Colosseum},
+    {gText_Exit},
+};
+
+static const struct MenuAction MultichoiceList_CableClubWithRecordMix[] =
+{
+    {gText_TradeCenter},
+    {gText_Colosseum},
+    {gText_RecordCorner},
     {gText_Exit},
 };
 
@@ -823,7 +848,7 @@ static const struct MultichoiceListStruct sMultichoiceLists[] =
     [MULTI_VIEWED_PAINTINGS]           = MULTICHOICE(MultichoiceList_ViewedPaintings),
     [MULTI_YESNOINFO]                  = MULTICHOICE(MultichoiceList_YesNoInfo),
     [MULTI_BATTLE_MODE]                = MULTICHOICE(MultichoiceList_BattleMode),
-    [MULTI_UNUSED_19]                  = MULTICHOICE(MultichoiceList_Exit),
+    [MULTI_SECRET_BASE_BATTLE_TYPE]    = MULTICHOICE(MultichoiceList_SecretBaseBattleType),
     [MULTI_YESNOINFO_2]                = MULTICHOICE(MultichoiceList_YesNoInfo2),
     [MULTI_UNUSED_21]                  = MULTICHOICE(MultichoiceList_Exit),
     [MULTI_UNUSED_22]                  = MULTICHOICE(MultichoiceList_Exit),
@@ -878,9 +903,9 @@ static const struct MultichoiceListStruct sMultichoiceLists[] =
     [MULTI_SHARDS_YBG]                 = MULTICHOICE(MultichoiceList_ShardsYBG),
     [MULTI_SHARDS_RYBG]                = MULTICHOICE(MultichoiceList_ShardsRYBG),
     [MULTI_TOURNEY_WITH_RECORD]        = MULTICHOICE(MultichoiceList_TourneyWithRecord),
-    [MULTI_CABLE_CLUB_NO_RECORD_MIX]   = MULTICHOICE(MultichoiceList_LinkServicesNoRecordBerry),
+    [MULTI_CABLE_CLUB_NO_RECORD_MIX]   = MULTICHOICE(MultichoiceList_CableClubNoRecordMix),
     [MULTI_WIRELESS_NO_RECORD_BERRY]   = MULTICHOICE(MultichoiceList_LinkServicesNoRecordBerry),
-    [MULTI_CABLE_CLUB_WITH_RECORD_MIX] = MULTICHOICE(MultichoiceList_LinkServicesNoBerry),
+    [MULTI_CABLE_CLUB_WITH_RECORD_MIX] = MULTICHOICE(MultichoiceList_CableClubWithRecordMix),
     [MULTI_WIRELESS_NO_BERRY]          = MULTICHOICE(MultichoiceList_LinkServicesNoBerry),
     [MULTI_WIRELESS_NO_RECORD]         = MULTICHOICE(MultichoiceList_LinkServicesNoRecord),
     [MULTI_WIRELESS_ALL_SERVICES]      = MULTICHOICE(MultichoiceList_LinkServicesAll),

@@ -142,6 +142,11 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * Secret base battles now show a VS mugshot transition (like Elite Four and Champion battles)
 * The mugshot dynamically displays the opponent's NPC trainer sprite
 
+#### Secret Base Battle Mode Choice
+
+* When challenging a secret base trainer, a prompt lets you choose between **Single Battle** or **Double Battle**
+* Selecting Double Battle checks that you have at least 2 usable Pokemon before proceeding
+
 #### Muddy Water Buff
 
 * Muddy Water base power increased from 85 to 95
@@ -181,7 +186,7 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 
 #### Wireless Minigame Reward Overhaul
 
-All three wireless minigames at the Mossdeep Game Corner have been improved with better rewards:
+All three wireless minigames have been improved with better rewards and are now accessible from **both** the Mossdeep Game Corner and the **Direct Corner** (Pokemon Center 2F wireless lobby):
 
 * **Berry Crush**: Berry powder output **doubled** for all berry types
 * **Pokemon Jump**: Expanded prize pool unlocked by score tiers — includes Lucky Egg, Leftovers, Focus Band, Scope Lens, King's Rock, Up-Grade, PP Max, and Master Ball (at 20,000+ points)

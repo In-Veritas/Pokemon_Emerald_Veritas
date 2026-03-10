@@ -18,15 +18,15 @@ Les quantites de poudre ont ete **doublees** par rapport au jeu original :
 
 | Baies | Poudre |
 |---|---|
-| Ceriz, Maron, Pecha, Fraive, Willia | 40 |
-| Mepo, Oran, Kika, Prine, Sitrus | 60 |
-| Figuy, Wiki, Mago, Gowav, Papaya | 100 |
-| Framby, Remu, Nanab, Repoi, Nanana | 140 |
-| Grena, Alga, Qualot, Lonfo, Resin | 200 |
-| Tamato, Siam, Mangou, Rabuta, Tronci | 300 |
-| Kiwan, Palma, Stekpa, Durin, Myrte | 500 |
-| Lichii, Lingan, Sailak, Petaya, Abriko | 1000 |
-| Lansat, Frista | 1500 |
+| Cheri, Chesto, Pecha, Rawst, Aspear | 40 |
+| Leppa, Oran, Persim, Lum, Sitrus | 60 |
+| Figy, Wiki, Mago, Aguav, Iapapa | 100 |
+| Razz, Bluk, Nanab, Wepear, Pinap | 140 |
+| Pomeg, Kelpsy, Qualot, Hondew, Grepa | 200 |
+| Tamato, Cornn, Magost, Rabuta, Nomel | 300 |
+| Spelon, Pamtre, Watmel, Durin, Belue | 500 |
+| Liechi, Ganlon, Salac, Petaya, Apicot | 1000 |
+| Lansat, Starf | 1500 |
 
 ---
 
@@ -53,24 +53,24 @@ Les quantites de poudre ont ete **doublees** par rapport au jeu original :
 ### Objets disponibles par palier de score
 
 **5 000+** (toujours disponible)
-- Baie Mepo, Baie Prine, Baie Sitrus
-- Baie Figuy, Baie Wiki, Baie Mago, Baie Gowav, Baie Papaya
+- Leppa Berry, Lum Berry, Sitrus Berry
+- Figy Berry, Wiki Berry, Mago Berry, Aguav Berry, Iapapa Berry
 
 **8 000+** (ajoute au pool)
-- Baie Grena, Baie Alga, Baie Qualot, Baie Lonfo, Baie Resin, Baie Tamato
-- Pepite
+- Pomeg Berry, Kelpsy Berry, Qualot Berry, Hondew Berry, Grepa Berry, Tamato Berry
+- Nugget
 
 **12 000+** (ajoute au pool)
-- Oeuf Chance (Lucky Egg)
-- Restes (Leftovers)
-- Bandeau (Focus Band)
-- Super Bonbon (Rare Candy)
-- PP Plus (PP Up)
+- Lucky Egg
+- Leftovers
+- Focus Band
+- Rare Candy
+- PP Up
 
 **16 000+** (ajoute au pool)
-- Lentilscope (Scope Lens)
-- Roche Royale (King's Rock)
-- Ameliorator (Up-Grade)
+- Scope Lens
+- King's Rock
+- Up-Grade
 - PP Max
 
 **20 000+** (ajoute au pool)
@@ -109,10 +109,10 @@ Chaque objet a une chance egale d'etre choisi dans le pool disponible. A 20 000+
 
 | Tier | Objets | 3 Joueurs | 4 Joueurs | 5 Joueurs |
 |---|---|---|---|---|
-| **Commun** | Baie Grena, Alga, Qualot, Lonfo, Resin, Tamato | 60% | 43% | 30% |
-| **Peu commun** | Baie Lichii, Lingan, Sailak, Petaya, Abriko | 25% | 28% | 33% |
-| **Rare** | Pepite, Super Bonbon, PP Plus | 13% | 23% | 30% |
-| **Tres rare** | Baie Lansat, Baie Frista, PP Max | 1% | 4% | 4% |
+| **Commun** | Pomeg, Kelpsy, Qualot, Hondew, Grepa, Tamato Berry | 60% | 43% | 30% |
+| **Peu commun** | Liechi, Ganlon, Salac, Petaya, Apicot Berry | 25% | 28% | 33% |
+| **Rare** | Nugget, Rare Candy, PP Up | 13% | 23% | 30% |
+| **Tres rare** | Lansat Berry, Starf Berry, PP Max | 1% | 4% | 4% |
 | **Legendaire** | Master Ball | 1% | 2% | 3% |
 
 Chaque objet est tire independamment. Plus vous jouez avec de joueurs, meilleures sont vos chances d'obtenir des objets rares.

@@ -637,10 +637,24 @@ SecretBase_EventScript_Trainer9PostBattle::
 	end
 
 SecretBase_EventScript_BattleTrainer::
+	multichoice 20, 6, MULTI_SECRET_BASE_BATTLE_TYPE, FALSE
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, SecretBase_EventScript_BattleTrainerSingle
+	goto_if_eq VAR_RESULT, 1, SecretBase_EventScript_BattleTrainerDouble
+SecretBase_EventScript_BattleTrainerSingle::
+	setvar VAR_0x8005, 0
+	goto SecretBase_EventScript_StartSecretBaseBattle
+SecretBase_EventScript_BattleTrainerDouble::
+	special HasEnoughMonsForDoubleBattle
+	goto_if_ne VAR_RESULT, PLAYER_HAS_TWO_USABLE_MONS, SecretBase_EventScript_NotEnoughMonsForDouble
+	setvar VAR_0x8005, 1
+	goto SecretBase_EventScript_StartSecretBaseBattle
+SecretBase_EventScript_NotEnoughMonsForDouble::
+	msgbox CableClub_Text_NeedTwoMonsForDoubleBattle, MSGBOX_DEFAULT
+	goto SecretBase_EventScript_BattleTrainer
+SecretBase_EventScript_StartSecretBaseBattle::
 	call SecretBase_EventScript_SelectBattleMusic
 	special PrepSecretBaseBattleFlags
 	setvar VAR_0x8004, SPECIAL_BATTLE_SECRET_BASE
-	setvar VAR_0x8005, 0
 	special DoSpecialTrainerBattle
 	waitstate
 	call_if_eq VAR_RESULT, B_OUTCOME_DREW, SecretBase_EventScript_DrewSecretBaseBattle

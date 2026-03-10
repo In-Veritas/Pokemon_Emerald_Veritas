@@ -816,6 +816,7 @@ const u8 gText_Colosseum[] = _("COLOSSEUM");
 const u8 gText_RecordCorner[] = _("RECORD CORNER");
 const u8 gText_BerryCrush3[] = _("BERRY CRUSH");
 const u8 gText_EmptyLinkService[] = _(""); // Maybe Spin Trade?
+const u8 gText_Minigames[] = _("MINIGAMES");
 const u8 gText_PokemonJump[] = _("POKéMON JUMP");
 const u8 gText_DodrioBerryPicking[] = _("DODRIO BERRY-PICKING");
 const u8 gText_BecomeLeader[] = _("BECOME LEADER");

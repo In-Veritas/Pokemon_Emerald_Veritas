@@ -1046,7 +1046,8 @@ CableClub_EventScript_DirectCornerSelectService::
 	case 0, CableClub_EventScript_WirelessTrade
 	case 1, CableClub_EventScript_WirelessBattleSelect
 	case 2, CableClub_EventScript_WirelessBerryCrush
-	case 3, CableClub_EventScript_AbortLink
+	case 3, CableClub_EventScript_WirelessMinigames
+	case 4, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -1057,7 +1058,8 @@ CableClub_EventScript_DirectCornerSelectAllServices::
 	case 1, CableClub_EventScript_WirelessBattleSelect
 	case 2, CableClub_EventScript_WirelessRecordMix
 	case 3, CableClub_EventScript_WirelessBerryCrush
-	case 4, CableClub_EventScript_AbortLink
+	case 4, CableClub_EventScript_WirelessMinigames
+	case 5, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -1067,7 +1069,8 @@ CableClub_EventScript_DirectCornerNoBerry::
 	switch VAR_RESULT
 	case 0, CableClub_EventScript_WirelessTrade
 	case 1, CableClub_EventScript_WirelessBattleSelect
-	case 2, CableClub_EventScript_AbortLink
+	case 2, CableClub_EventScript_WirelessMinigames
+	case 3, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -1077,7 +1080,8 @@ CableClub_EventScript_DirectCornerHasRecordMix::
 	case 0, CableClub_EventScript_WirelessTrade
 	case 1, CableClub_EventScript_WirelessBattleSelect
 	case 2, CableClub_EventScript_WirelessRecordMix
-	case 3, CableClub_EventScript_AbortLink
+	case 3, CableClub_EventScript_WirelessMinigames
+	case 4, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -1157,6 +1161,45 @@ CableClub_EventScript_NeedBerryForBerryCrush::
 	goto CableClub_EventScript_DirectCornerSelectService
 	end
 
+CableClub_EventScript_WirelessMinigames::
+	message MossdeepCity_GameCorner_1F_Text_PlayWhichGame
+	waitmessage
+	multichoice 0, 0, MULTI_WIRELESS_MINIGAME, FALSE
+	switch VAR_RESULT
+	case 0, CableClub_EventScript_WirelessPokemonJump
+	case 1, CableClub_EventScript_WirelessDodrioBerryPicking
+	case 2, CableClub_EventScript_DirectCornerSelectService
+	case MULTI_B_PRESSED, CableClub_EventScript_DirectCornerSelectService
+	end
+
+CableClub_EventScript_WirelessPokemonJump::
+	setvar VAR_0x8005, 0
+	special IsPokemonJumpSpeciesInParty
+	goto_if_eq VAR_RESULT, FALSE, CableClub_EventScript_WirelessMinigameNeedMon
+	msgbox MossdeepCity_GameCorner_1F_Text_EnterWhichPokemon, MSGBOX_DEFAULT
+	fadescreen FADE_TO_BLACK
+	setvar VAR_0x8005, 0
+	special ChooseMonForWirelessMinigame
+	waitstate
+	goto_if_ge VAR_0x8004, PARTY_SIZE, CableClub_EventScript_DirectCornerSelectService
+	setvar VAR_0x8004, LINK_GROUP_POKEMON_JUMP
+	goto CableClub_EventScript_SaveAndChooseLinkLeader
+	end
+
+CableClub_EventScript_WirelessMinigameNeedMon::
+	msgbox MossdeepCity_GameCorner_1F_Text_ExplainRequiredMon, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, CableClub_EventScript_WirelessMinigames
+	call_if_eq VAR_0x8005, 0, MossdeepCity_GameCorner_1F_EventScript_ExplainPokemonJumpRequirements
+	goto CableClub_EventScript_WirelessMinigames
+	end
+
+CableClub_EventScript_WirelessDodrioBerryPicking::
+	setvar VAR_0x8005, 1
+	setvar VAR_0x8004, 0
+	setvar VAR_0x8004, LINK_GROUP_BERRY_PICKING
+	goto CableClub_EventScript_SaveAndChooseLinkLeader
+	end
+
 CableClub_EventScript_SaveAndChooseLinkLeader::
 	call Common_EventScript_SaveGame
 	goto_if_eq VAR_RESULT, 0, CableClub_EventScript_AbortLink
@@ -1167,6 +1210,8 @@ CableClub_EventScript_SaveAndChooseLinkLeader::
 	case LINK_GROUP_MULTI_BATTLE, CableClub_EventScript_ChooseLinkLeaderFrom4
 	case LINK_GROUP_BERRY_CRUSH, CableClub_EventScript_ChooseLinkLeader
 	case LINK_GROUP_RECORD_CORNER, CableClub_EventScript_ChooseLinkLeader
+	case LINK_GROUP_POKEMON_JUMP, CableClub_EventScript_ChooseLinkLeader
+	case LINK_GROUP_BERRY_PICKING, CableClub_EventScript_ChooseLinkLeader
 	end
 
 CableClub_EventScript_ChooseLinkLeaderFrom2::
