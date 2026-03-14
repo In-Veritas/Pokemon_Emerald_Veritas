@@ -514,7 +514,7 @@ Route119_EventScript_Raikou::
 	delay 40
 	waitmoncry
 	setvar VAR_LAST_TALKED, LOCALID_RAIKOU
-	seteventmon SPECIES_RAIKOU, 40
+	seteventmon SPECIES_RAIKOU, 70
 	setflag FLAG_SYS_CTRL_OBJ_DELETE
 	special BattleSetup_StartLegendaryBattle
 	waitstate

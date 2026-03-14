@@ -38,7 +38,7 @@ ScorchedSlab_EventScript_Entei::
 	delay 40
 	waitmoncry
 	setvar VAR_LAST_TALKED, LOCALID_ENTEI
-	seteventmon SPECIES_ENTEI, 40
+	seteventmon SPECIES_ENTEI, 70
 	setflag FLAG_SYS_CTRL_OBJ_DELETE
 	special BattleSetup_StartLegendaryBattle
 	waitstate

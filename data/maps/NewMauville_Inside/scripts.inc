@@ -55,7 +55,7 @@ NewMauville_Inside_EventScript_Zapdos::
 	delay 40
 	waitmoncry
 	setvar VAR_LAST_TALKED, LOCALID_ZAPDOS
-	seteventmon SPECIES_ZAPDOS, 50
+	seteventmon SPECIES_ZAPDOS, 70
 	setflag FLAG_SYS_CTRL_OBJ_DELETE
 	special BattleSetup_StartLegendaryBattle
 	waitstate

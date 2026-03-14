@@ -41,7 +41,7 @@ AlteringCave_EventScript_Mewtwo::
 	delay 40
 	waitmoncry
 	setvar VAR_LAST_TALKED, LOCALID_MEWTWO
-	seteventmon SPECIES_MEWTWO, 50
+	seteventmon SPECIES_MEWTWO, 80
 	setflag FLAG_SYS_CTRL_OBJ_DELETE
 	special BattleSetup_StartLegendaryBattle
 	waitstate

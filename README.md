@@ -198,7 +198,18 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 #### Legendary Overworld Sprite Fix
 
 * All static legendary encounters now use their dedicated original sprites instead of HGSS follower sprites
-* Applies to: Articuno, Zapdos, Moltres, Mewtwo, Raikou, Entei, Suicune, Lugia, Ho-Oh, Celebi, Latios, Latias
+* Applies to: Articuno, Zapdos, Moltres, Mewtwo, Raikou, Entei, Suicune, Lugia, Ho-Oh, Celebi, Latios, Latias, Regirock, Regice, Registeel
+
+#### Legendary Encounter Rework
+
+* Legendary encounters have higher levels and custom movesets for a greater challenge:
+  * **Regi trio** (Lv65): Ancient Power, Lock On + signature OHKO move + Rest/Zap Cannon
+  * **Kanto birds** (Lv70): Full offensive movesets with signature moves
+  * **Johto beasts** (Lv70): Competitive movesets with coverage moves
+  * **Mewtwo** (Lv80): Calm Mind, Thunderbolt, Psychic, Amnesia
+  * **Deoxys** (Lv85): Psycho Boost, Hyper Beam, Superpower, Recover
+  * **Jirachi** (Lv30): Psychic, Refresh, Doom Desire, Rest
+  * **Rayquaza** (Lv70): Rest, ExtremeSpeed, Outrage (no longer knows Fly at encounter)
 
 #### Daycare Egg to PC
 

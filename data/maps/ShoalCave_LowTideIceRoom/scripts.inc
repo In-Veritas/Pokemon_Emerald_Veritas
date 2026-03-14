@@ -40,7 +40,7 @@ ShoalCave_LowTideIceRoom_EventScript_Articuno::
 	delay 40
 	waitmoncry
 	setvar VAR_LAST_TALKED, LOCALID_ARTICUNO
-	seteventmon SPECIES_ARTICUNO, 50
+	seteventmon SPECIES_ARTICUNO, 70
 	setflag FLAG_SYS_CTRL_OBJ_DELETE
 	special BattleSetup_StartLegendaryBattle
 	waitstate

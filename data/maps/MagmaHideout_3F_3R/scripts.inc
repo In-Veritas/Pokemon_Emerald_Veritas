@@ -40,7 +40,7 @@ MagmaHideout_3F_3R_EventScript_Moltres::
 	delay 40
 	waitmoncry
 	setvar VAR_LAST_TALKED, LOCALID_MOLTRES
-	seteventmon SPECIES_MOLTRES, 50
+	seteventmon SPECIES_MOLTRES, 70
 	setflag FLAG_SYS_CTRL_OBJ_DELETE
 	special BattleSetup_StartLegendaryBattle
 	waitstate
