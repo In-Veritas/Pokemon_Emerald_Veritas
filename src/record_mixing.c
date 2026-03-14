@@ -346,6 +346,8 @@ static void Task_RecordMixing_Main(u8 taskId)
             tState = 4;
             if (gWirelessCommType == 0)
                 tLinkTaskId = CreateTask_ReestablishCableClubLink();
+            else
+                tLinkTaskId = taskId; // Point to self so state 5 doesn't check a stale task slot
 
             PrintTextOnRecordMixing(gText_RecordMixingComplete);
             tTimer = 0;
@@ -356,7 +358,9 @@ static void Task_RecordMixing_Main(u8 taskId)
             tState = 5;
         break;
     case 5: // Wait for the task created by CreateTask_ReestablishCableClubLink
-        if (!gTasks[tLinkTaskId].isActive)
+        // For wireless, tLinkTaskId == taskId so this is always true (self is active),
+        // skip the check entirely for wireless since there's no reestablish task.
+        if (gWirelessCommType != 0 || !gTasks[tLinkTaskId].isActive)
         {
             Free(sReceivedRecords);
             Free(sSentRecord);
