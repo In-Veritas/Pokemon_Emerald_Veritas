@@ -518,7 +518,8 @@ static const u8 *const sChooseTrainerTexts[NUM_LINK_GROUP_TYPES] =
     [LINK_GROUP_SMART_CONTEST]     = sText_ChooseLeaderSmartContest,
     [LINK_GROUP_TOUGH_CONTEST]     = sText_ChooseLeaderToughContest,
     [LINK_GROUP_BATTLE_TOWER]      = sText_ChooseLeaderBattleTowerLv50,
-    [LINK_GROUP_BATTLE_TOWER_OPEN] = sText_ChooseLeaderBattleTowerOpenLv
+    [LINK_GROUP_BATTLE_TOWER_OPEN] = sText_ChooseLeaderBattleTowerOpenLv,
+    [LINK_GROUP_LV50_SINGLE_BATTLE] = sText_ChooseTrainerSingleBattle
 };
 
 ALIGNED(4) static const u8 sText_SearchingForWirelessSystemWait[] = _("Searching for a WIRELESS\nCOMMUNICATION SYSTEM. Wait...");
@@ -545,6 +546,7 @@ ALIGNED(4) static const u8 sText_NameWantedOfferLv[] = _("NAME{CLEAR_TO 60}WANTE
 ALIGNED(4) static const u8 sText_SingleBattle[] = _("SINGLE BATTLE");
 ALIGNED(4) static const u8 sText_DoubleBattle[] = _("DOUBLE BATTLE");
 ALIGNED(4) static const u8 sText_MultiBattle[] = _("MULTI BATTLE");
+ALIGNED(4) static const u8 sText_Lv50Battle[] = _("Lv 50 BATTLE");
 ALIGNED(4) static const u8 sText_PokemonTrades[] = _("POKéMON TRADES");
 ALIGNED(4) static const u8 sText_Chat[] = _("CHAT");
 ALIGNED(4) static const u8 sText_Cards[] = _("CARDS");
@@ -618,7 +620,9 @@ static const u8 *const sLinkGroupActivityNameTexts[] = {
     [ACTIVITY_CONTEST_CUTE]      = sText_CuteContest,
     [ACTIVITY_CONTEST_SMART]     = sText_SmartContest,
     [ACTIVITY_CONTEST_TOUGH]     = sText_ToughContest,
-    [ACTIVITY_BATTLE_TOWER]      = sText_BattleTowerLv50
+    [ACTIVITY_BATTLE_TOWER]      = sText_BattleTowerLv50,
+    [ACTIVITY_29]                = sText_EmptyString,
+    [ACTIVITY_BATTLE_SINGLE_LV50] = sText_Lv50Battle
 };
 
 static const struct WindowTemplate sWindowTemplate_BButtonCancel = {
@@ -660,7 +664,8 @@ static const u32 sLinkGroupToActivityAndCapacity[NUM_LINK_GROUP_TYPES] = {
     [LINK_GROUP_SMART_CONTEST]     = ACTIVITY_CONTEST_SMART     | LINK_GROUP_CAPACITY(2, 4),
     [LINK_GROUP_TOUGH_CONTEST]     = ACTIVITY_CONTEST_TOUGH     | LINK_GROUP_CAPACITY(2, 4),
     [LINK_GROUP_BATTLE_TOWER]      = ACTIVITY_BATTLE_TOWER      | LINK_GROUP_CAPACITY(0, 2),
-    [LINK_GROUP_BATTLE_TOWER_OPEN] = ACTIVITY_BATTLE_TOWER_OPEN | LINK_GROUP_CAPACITY(0, 2)
+    [LINK_GROUP_BATTLE_TOWER_OPEN] = ACTIVITY_BATTLE_TOWER_OPEN | LINK_GROUP_CAPACITY(0, 2),
+    [LINK_GROUP_LV50_SINGLE_BATTLE] = ACTIVITY_BATTLE_SINGLE_LV50 | LINK_GROUP_CAPACITY(0, 2)
 };
 
 static const struct WindowTemplate sWindowTemplate_PlayerList = {
@@ -1061,6 +1066,7 @@ ALIGNED(4) static const u8 sAcceptedActivityIds_SmartContest[]    = {ACTIVITY_CO
 ALIGNED(4) static const u8 sAcceptedActivityIds_ToughContest[]    = {ACTIVITY_CONTEST_TOUGH, 0xff};
 ALIGNED(4) static const u8 sAcceptedActivityIds_BattleTower[]     = {ACTIVITY_BATTLE_TOWER, 0xff};
 ALIGNED(4) static const u8 sAcceptedActivityIds_BattleTowerOpen[] = {ACTIVITY_BATTLE_TOWER_OPEN, 0xff};
+ALIGNED(4) static const u8 sAcceptedActivityIds_Lv50SingleBattle[] = {ACTIVITY_BATTLE_SINGLE_LV50, 0xff};
 
 static const u8 *const sAcceptedActivityIds[NUM_LINK_GROUP_TYPES] = {
     [LINK_GROUP_SINGLE_BATTLE]     = sAcceptedActivityIds_SingleBattle,
@@ -1084,7 +1090,8 @@ static const u8 *const sAcceptedActivityIds[NUM_LINK_GROUP_TYPES] = {
     [LINK_GROUP_SMART_CONTEST]     = sAcceptedActivityIds_SmartContest,
     [LINK_GROUP_TOUGH_CONTEST]     = sAcceptedActivityIds_ToughContest,
     [LINK_GROUP_BATTLE_TOWER]      = sAcceptedActivityIds_BattleTower,
-    [LINK_GROUP_BATTLE_TOWER_OPEN] = sAcceptedActivityIds_BattleTowerOpen
+    [LINK_GROUP_BATTLE_TOWER_OPEN] = sAcceptedActivityIds_BattleTowerOpen,
+    [LINK_GROUP_LV50_SINGLE_BATTLE] = sAcceptedActivityIds_Lv50SingleBattle
 };
 
 static const u8 sLinkGroupToURoomActivity[NUM_LINK_GROUP_TYPES + 2] =
@@ -1110,5 +1117,6 @@ static const u8 sLinkGroupToURoomActivity[NUM_LINK_GROUP_TYPES + 2] =
     [LINK_GROUP_SMART_CONTEST]     = ACTIVITY_CONTEST_SMART,
     [LINK_GROUP_TOUGH_CONTEST]     = ACTIVITY_CONTEST_TOUGH,
     [LINK_GROUP_BATTLE_TOWER]      = ACTIVITY_BATTLE_TOWER,
-    [LINK_GROUP_BATTLE_TOWER_OPEN] = ACTIVITY_BATTLE_TOWER_OPEN
+    [LINK_GROUP_BATTLE_TOWER_OPEN] = ACTIVITY_BATTLE_TOWER_OPEN,
+    [LINK_GROUP_LV50_SINGLE_BATTLE] = ACTIVITY_BATTLE_SINGLE_LV50
 };

@@ -691,6 +691,7 @@ const u8 gText_Info4[] = _("INFO"); // Unused
 const u8 gText_SingleBattle[] = _("SINGLE BATTLE");
 const u8 gText_DoubleBattle[] = _("DOUBLE BATTLE");
 const u8 gText_MultiBattle[] = _("MULTI BATTLE");
+const u8 gText_Lv50Battle[] = _("Lv 50 BATTLE");
 const u8 gText_MrBriney[] = _("MR. BRINEY"); // Unused
 const u8 gText_Challenge[] = _("CHALLENGE");
 const u8 gText_Info3[] = _("INFO");

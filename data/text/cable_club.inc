@@ -359,7 +359,7 @@ CableClub_Text_UseBerryCrush:
 	.string "BERRY CRUSH System?$"
 
 CableClub_Text_ExplainBattleModes:
-	.string "There are three Battle Modes.\p"
+	.string "There are four Battle Modes.\p"
 	.string "SINGLE BATTLE is for two TRAINERS\n"
 	.string "with one or more POKéMON each.\p"
 	.string "Each TRAINER can have one POKéMON\n"
@@ -371,7 +371,11 @@ CableClub_Text_ExplainBattleModes:
 	.string "MULTI BATTLE is for four TRAINERS\n"
 	.string "with one or more POKéMON each.\p"
 	.string "Each TRAINER can have one POKéMON\n"
-	.string "in battle at a time.$"
+	.string "in battle at a time.\p"
+	.string "Lv 50 BATTLE is a SINGLE BATTLE\n"
+	.string "where all POKéMON above Lv 50\p"
+	.string "are temporarily scaled down\n"
+	.string "to Lv 50 for the battle.$"
 
 CableClub_Text_ChooseGroupLeaderOfTwo:
 	.string "Please decide which of you two\n"

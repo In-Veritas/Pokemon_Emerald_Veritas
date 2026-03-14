@@ -52,6 +52,7 @@ CableClub_OnWarp:
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_SINGLE_BATTLE, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_DOUBLE_BATTLE, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_MULTI_BATTLE, CableClub_EventScript_CheckTurnAttendant
+	map_script_2 VAR_CABLE_CLUB_STATE, USING_LV50_SINGLE_BATTLE, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_TRADE_CENTER, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_RECORD_CORNER, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_UNION_ROOM, CableClub_EventScript_CheckTurnAttendant
@@ -69,6 +70,7 @@ CableClub_OnLoad:
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_SINGLE_BATTLE, CableClub_EventScript_OnLoadFromColosseum
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_DOUBLE_BATTLE, CableClub_EventScript_OnLoadFromColosseum
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_MULTI_BATTLE, CableClub_EventScript_OnLoadFromColosseum
+	goto_if_eq VAR_CABLE_CLUB_STATE, USING_LV50_SINGLE_BATTLE, CableClub_EventScript_OnLoadFromColosseum
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_TRADE_CENTER, CableClub_EventScript_OnLoadFromTradeCenter
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_RECORD_CORNER, CableClub_EventScript_OnLoadFromRecordCorner
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_UNION_ROOM, CableClub_EventScript_OnLoadFromUnionRoom
@@ -105,6 +107,7 @@ CableClub_OnFrame:
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_SINGLE_BATTLE, CableClub_EventScript_ExitLinkRoom
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_DOUBLE_BATTLE, CableClub_EventScript_ExitLinkRoom
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_MULTI_BATTLE, CableClub_EventScript_ExitLinkRoom
+	map_script_2 VAR_CABLE_CLUB_STATE, USING_LV50_SINGLE_BATTLE, CableClub_EventScript_ExitLinkRoom
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_TRADE_CENTER, CableClub_EventScript_ExitTradeCenter
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_RECORD_CORNER, CableClub_EventScript_ExitRecordCorner
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_UNION_ROOM, CableClub_EventScript_ExitUnionRoom
@@ -289,8 +292,9 @@ CableClub_EventScript_SelectBattleMode::
 	case 0, CableClub_EventScript_SingleBattleMode
 	case 1, CableClub_EventScript_DoubleBattleMode
 	case 2, CableClub_EventScript_MultiBattleMode
-	case 3, CableClub_EventScript_BattleModeInfo
-	case 4, CableClub_EventScript_AbortLink
+	case 3, CableClub_EventScript_Lv50BattleMode
+	case 4, CableClub_EventScript_BattleModeInfo
+	case 5, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -322,6 +326,13 @@ CableClub_EventScript_NeedTwoMonsForDoubleBattle::
 
 CableClub_EventScript_MultiBattleMode::
 	setvar VAR_0x8004, USING_MULTI_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_SelectBattleMode
+	goto CableClub_EventScript_TryEnterColosseum
+	end
+
+CableClub_EventScript_Lv50BattleMode::
+	setvar VAR_0x8004, USING_LV50_SINGLE_BATTLE
 	call CableClub_EventScript_SelectBattleMusic
 	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_SelectBattleMode
 	goto CableClub_EventScript_TryEnterColosseum
@@ -456,6 +467,7 @@ CableClub_EventScript_AbortLinkIncorrectNumberOfBattlers::
 	case USING_SINGLE_BATTLE, CableClub_EventScript_AbortLinkWrongNumberForSingleBattle
 	case USING_DOUBLE_BATTLE, CableClub_EventScript_AbortLinkWrongNumberForDoubleBattle
 	case USING_MULTI_BATTLE,  CableClub_EventScript_AbortLinkNeedFourPlayers
+	case USING_LV50_SINGLE_BATTLE, CableClub_EventScript_AbortLinkWrongNumberForSingleBattle
 	goto CableClub_EventScript_AbortLinkIncorrectNumberOfParticipants
 	end
 
@@ -1102,8 +1114,9 @@ CableClub_EventScript_WirelessBattleSelect::
 	case 0, CableClub_EventScript_WirelessSingleBattle
 	case 1, CableClub_EventScript_WirelessDoubleBattle
 	case 2, CableClub_EventScript_WirelessMultiBattle
-	case 3, CableClub_EventScript_WirelessBattleInfo
-	case 4, CableClub_EventScript_AbortLink
+	case 3, CableClub_EventScript_WirelessLv50Battle
+	case 4, CableClub_EventScript_WirelessBattleInfo
+	case 5, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -1130,6 +1143,13 @@ CableClub_EventScript_TwoMonsNeededForWirelessDoubleBattle::
 
 CableClub_EventScript_WirelessMultiBattle::
 	setvar VAR_0x8004, LINK_GROUP_MULTI_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_WirelessBattleSelect
+	goto CableClub_EventScript_SaveAndChooseLinkLeader
+	end
+
+CableClub_EventScript_WirelessLv50Battle::
+	setvar VAR_0x8004, LINK_GROUP_LV50_SINGLE_BATTLE
 	call CableClub_EventScript_SelectBattleMusic
 	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_WirelessBattleSelect
 	goto CableClub_EventScript_SaveAndChooseLinkLeader
@@ -1207,6 +1227,7 @@ CableClub_EventScript_SaveAndChooseLinkLeader::
 	case LINK_GROUP_TRADE, CableClub_EventScript_ChooseLinkLeaderFrom2
 	case LINK_GROUP_SINGLE_BATTLE, CableClub_EventScript_ChooseLinkLeaderFrom2
 	case LINK_GROUP_DOUBLE_BATTLE, CableClub_EventScript_ChooseLinkLeaderFrom2
+	case LINK_GROUP_LV50_SINGLE_BATTLE, CableClub_EventScript_ChooseLinkLeaderFrom2
 	case LINK_GROUP_MULTI_BATTLE, CableClub_EventScript_ChooseLinkLeaderFrom4
 	case LINK_GROUP_BERRY_CRUSH, CableClub_EventScript_ChooseLinkLeader
 	case LINK_GROUP_RECORD_CORNER, CableClub_EventScript_ChooseLinkLeader

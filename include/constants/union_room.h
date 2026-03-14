@@ -52,6 +52,7 @@
 #define ACTIVITY_CONTEST_TOUGH      27
 #define ACTIVITY_BATTLE_TOWER       28
 #define ACTIVITY_29                 29
+#define ACTIVITY_BATTLE_SINGLE_LV50 30
 
 #define IN_UNION_ROOM               (1 << 6)
 
@@ -77,7 +78,8 @@
 #define LINK_GROUP_TOUGH_CONTEST        19
 #define LINK_GROUP_BATTLE_TOWER         20
 #define LINK_GROUP_BATTLE_TOWER_OPEN    21
-#define NUM_LINK_GROUP_TYPES            22
+#define LINK_GROUP_LV50_SINGLE_BATTLE   22
+#define NUM_LINK_GROUP_TYPES            23
 
 #define UR_TRADE_MATCH  0
 #define UR_TRADE_NOTYPE 1

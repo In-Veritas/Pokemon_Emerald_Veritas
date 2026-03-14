@@ -324,6 +324,7 @@ static void GetAwaitingCommunicationText(u8 *dst, u8 activity)
     switch (activity)
     {
     case ACTIVITY_BATTLE_SINGLE:
+    case ACTIVITY_BATTLE_SINGLE_LV50:
     case ACTIVITY_BATTLE_DOUBLE:
     case ACTIVITY_BATTLE_MULTI:
     case ACTIVITY_TRADE:
@@ -734,6 +735,7 @@ static void Leader_GetAcceptNewMemberPrompt(u8 *dst, u8 activity)
     switch (activity)
     {
     case ACTIVITY_BATTLE_SINGLE:
+    case ACTIVITY_BATTLE_SINGLE_LV50:
     case ACTIVITY_BATTLE_DOUBLE:
     case ACTIVITY_TRADE:
     case ACTIVITY_BATTLE_TOWER_OPEN:
@@ -780,6 +782,7 @@ static void GetYouAskedToJoinGroupPleaseWaitMessage(u8 *dst, u8 activity)
     switch (activity)
     {
     case ACTIVITY_BATTLE_SINGLE:
+    case ACTIVITY_BATTLE_SINGLE_LV50:
     case ACTIVITY_BATTLE_DOUBLE:
     case ACTIVITY_TRADE:
     case ACTIVITY_BATTLE_TOWER:
@@ -809,6 +812,7 @@ static void GetGroupLeaderSentAnOKMessage(u8 *dst, u8 activity)
     switch (activity)
     {
     case ACTIVITY_BATTLE_SINGLE:
+    case ACTIVITY_BATTLE_SINGLE_LV50:
     case ACTIVITY_BATTLE_DOUBLE:
     case ACTIVITY_TRADE:
     case ACTIVITY_BATTLE_TOWER:
@@ -1087,6 +1091,7 @@ static void Task_TryJoinLinkGroup(u8 taskId)
             switch (gPlayerCurrActivity)
             {
             case ACTIVITY_BATTLE_SINGLE:
+            case ACTIVITY_BATTLE_SINGLE_LV50:
             case ACTIVITY_BATTLE_DOUBLE:
             case ACTIVITY_BATTLE_MULTI:
             case ACTIVITY_TRADE:
@@ -1151,6 +1156,7 @@ static void Task_TryJoinLinkGroup(u8 taskId)
                 switch (gPlayerCurrActivity)
                 {
                 case ACTIVITY_BATTLE_SINGLE:
+                case ACTIVITY_BATTLE_SINGLE_LV50:
                 case ACTIVITY_BATTLE_DOUBLE:
                 case ACTIVITY_TRADE:
                 case ACTIVITY_BATTLE_TOWER:
@@ -1639,6 +1645,7 @@ static void Task_StartActivity(u8 taskId)
     switch (gPlayerCurrActivity)
     {
     case ACTIVITY_BATTLE_SINGLE:
+    case ACTIVITY_BATTLE_SINGLE_LV50:
     case ACTIVITY_BATTLE_DOUBLE:
     case ACTIVITY_BATTLE_MULTI:
     case ACTIVITY_TRADE:
@@ -1675,6 +1682,15 @@ static void Task_StartActivity(u8 taskId)
         LoadPlayerBag();
         CreateTrainerCardInBuffer(gBlockSendBuffer, TRUE);
         WarpForCableClubActivity(MAP_GROUP(BATTLE_COLOSSEUM_2P), MAP_NUM(BATTLE_COLOSSEUM_2P), 6, 8, USING_DOUBLE_BATTLE);
+        SetMainCallback2(CB2_TransitionToCableClub);
+        break;
+    case ACTIVITY_BATTLE_SINGLE_LV50:
+        CleanupOverworldWindowsAndTilemaps();
+        HealPlayerParty();
+        SavePlayerParty();
+        LoadPlayerBag();
+        CreateTrainerCardInBuffer(gBlockSendBuffer, TRUE);
+        WarpForCableClubActivity(MAP_GROUP(BATTLE_COLOSSEUM_2P), MAP_NUM(BATTLE_COLOSSEUM_2P), 6, 8, USING_LV50_SINGLE_BATTLE);
         SetMainCallback2(CB2_TransitionToCableClub);
         break;
     case ACTIVITY_BATTLE_MULTI:
@@ -4064,6 +4080,7 @@ static s32 UnionRoomGetPlayerInteractionResponse(struct RfuPlayerList *list, boo
         switch (player->rfu.data.activity & 0x3F)
         {
         case ACTIVITY_BATTLE_SINGLE:
+        case ACTIVITY_BATTLE_SINGLE_LV50:
             StringExpandPlaceholders(gStringVar4, sBattleReactionTexts[playerGender][Random() % ARRAY_COUNT(sBattleReactionTexts[0])]);
             break;
         case ACTIVITY_TRADE:
