@@ -3851,7 +3851,7 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Regirock = {
     .oam = &gObjectEventBaseOam_32x32,
     .subspriteTables = sOamTables_32x32,
     .anims = sAnimTable_Standard,
-    .images = sPicTable_Regirock,
+    .images = sPicTable_Regi,
     .affineAnims = gDummySpriteAffineAnimTable,
 };
 
@@ -3870,7 +3870,7 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Regice = {
     .oam = &gObjectEventBaseOam_32x32,
     .subspriteTables = sOamTables_32x32,
     .anims = sAnimTable_Standard,
-    .images = sPicTable_Regice,
+    .images = sPicTable_Regi,
     .affineAnims = gDummySpriteAffineAnimTable,
 };
 
@@ -3889,7 +3889,7 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Registeel = {
     .oam = &gObjectEventBaseOam_32x32,
     .subspriteTables = sOamTables_32x32,
     .anims = sAnimTable_Standard,
-    .images = sPicTable_Registeel,
+    .images = sPicTable_Regi,
     .affineAnims = gDummySpriteAffineAnimTable,
 };
 
