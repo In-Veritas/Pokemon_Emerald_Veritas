@@ -193,7 +193,7 @@ gPokeNewsTextShinyDay_Ongoing::
 gPokeNewsTextShinyDay_Ending::
 	.string "Greetings!\n"
 	.string "It's time for POKéMON NEWS.\p"
-	.string "Sad news for shiny hunters…\n"
+	.string "Sad news for shiny hunters...\n"
 	.string "The rare light event is fading.\p"
 	.string "Reports of shimmering POKéMON\n"
 	.string "are becoming less frequent.\p"
