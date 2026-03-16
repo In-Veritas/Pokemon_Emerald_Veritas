@@ -176,6 +176,8 @@ enum { // Give
     DEBUG_GIVE_MENU_ITEM_MAX_COINS,
     DEBUG_GIVE_MENU_ITEM_MAX_BATTLE_POINTS,
     DEBUG_GIVE_MENU_ITEM_DAYCARE_EGG,
+    DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW,
+    DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW,
 };
 enum {
     DEBUG_PKM_CREATOR_MENU_ITEM_PARTY_ADD,               // Add to party
@@ -376,6 +378,8 @@ static void DebugAction_Give_MaxMoney(u8 taskId);
 static void DebugAction_Give_MaxCoins(u8 taskId);
 static void DebugAction_Give_MaxBattlePoints(u8 taskId);
 static void DebugAction_Give_DayCareEgg(u8 taskId);
+static void DebugAction_Give_GiveShadow(u8 taskId);
+static void DebugAction_Give_BattleShadow(u8 taskId);
 
 static void DebugAction_PkmCreator_Party_Add(u8 taskid);
 static void DebugAction_PkmCreator_Party_Edit(u8 taskid);
@@ -570,6 +574,8 @@ static const u8 sDebugText_Give_MaxMoney[] =            _("Max Money");
 static const u8 sDebugText_Give_MaxCoins[] =            _("Max Coins");
 static const u8 sDebugText_Give_BattlePoints[] =        _("Max Battle Points");
 static const u8 sDebugText_Give_DaycareEgg[] =          _("Daycare Egg");
+static const u8 sDebugText_Give_GiveShadow[] =          _("Give Shadow");
+static const u8 sDebugText_Give_BattleShadow[] =        _("Battle Shadow");
 // Pokemon Creator
 static const u8 sDebugText_PkmCreator_Party_Add[] =                 _("Party add");
 static const u8 sDebugText_PkmCreator_Party_Edit[] =                _("Party edit");
@@ -746,6 +752,8 @@ static const struct ListMenuItem sDebugMenu_Items_Give[] =
     [DEBUG_GIVE_MENU_ITEM_MAX_COINS]         = {sDebugText_Give_MaxCoins,           DEBUG_GIVE_MENU_ITEM_MAX_COINS},
     [DEBUG_GIVE_MENU_ITEM_MAX_BATTLE_POINTS] = {sDebugText_Give_BattlePoints,       DEBUG_GIVE_MENU_ITEM_MAX_BATTLE_POINTS},
     [DEBUG_GIVE_MENU_ITEM_DAYCARE_EGG]       = {sDebugText_Give_DaycareEgg,         DEBUG_GIVE_MENU_ITEM_DAYCARE_EGG},
+    [DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW]       = {sDebugText_Give_GiveShadow,         DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW},
+    [DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW]     = {sDebugText_Give_BattleShadow,       DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW},
 };
 static const struct ListMenuItem sDebugMenu_Items_PkmCreator[] =
 {
@@ -848,6 +856,8 @@ static void (*const sDebugMenu_Actions_Give[])(u8) =
     [DEBUG_GIVE_MENU_ITEM_MAX_COINS]         = DebugAction_Give_MaxCoins,
     [DEBUG_GIVE_MENU_ITEM_MAX_BATTLE_POINTS] = DebugAction_Give_MaxBattlePoints,
     [DEBUG_GIVE_MENU_ITEM_DAYCARE_EGG]       = DebugAction_Give_DayCareEgg,
+    [DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW]       = DebugAction_Give_GiveShadow,
+    [DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW]     = DebugAction_Give_BattleShadow,
 };
 static void (*const sDebugMenu_Actions_PkmCreator[])(u8) =
 {
@@ -3658,6 +3668,52 @@ static void DebugAction_Give_MaxBattlePoints(u8 taskId)
 static void DebugAction_Give_DayCareEgg(u8 taskId)
 {
     TriggerPendingDaycareEgg();
+}
+
+static void DebugAction_Give_GiveShadow(u8 taskId)
+{
+    struct Pokemon mon;
+    u16 move;
+
+    /* Regular Lugia */
+    CreateMon(&mon, SPECIES_LUGIA, 70, USE_RANDOM_IVS, FALSE, 0, OT_ID_PLAYER_ID, 0);
+    GiveMonToPlayer(&mon);
+
+    /* Shiny Lugia (Shadow) */
+    FlagSet(FLAG_SHINY_CREATION);
+    CreateMon(&mon, SPECIES_LUGIA, 70, USE_RANDOM_IVS, FALSE, 0, OT_ID_PLAYER_ID, 0);
+    FlagClear(FLAG_SHINY_CREATION);
+    GiveMonToPlayer(&mon);
+
+    PlaySE(SE_SELECT);
+    Debug_DestroyMenu(taskId);
+    Debug_ReShowMainMenu();
+}
+
+static void DebugAction_Give_BattleShadow(u8 taskId)
+{
+    u32 i;
+
+    /* Clear enemy party */
+    for (i = 0; i < PARTY_SIZE; i++)
+        ZeroMonData(&gEnemyParty[i]);
+
+    /* Trainer 1: Regular Lugia (slots 0-2) */
+    CreateMon(&gEnemyParty[0], SPECIES_LUGIA, 70, USE_RANDOM_IVS, FALSE, 0, OT_ID_RANDOM_NO_SHINY, 0);
+
+    /* Trainer 2: Shiny Lugia (slots 3-5) */
+    FlagSet(FLAG_SHINY_CREATION);
+    CreateMon(&gEnemyParty[3], SPECIES_LUGIA, 70, USE_RANDOM_IVS, FALSE, 0, OT_ID_PLAYER_ID, 0);
+    FlagClear(FLAG_SHINY_CREATION);
+
+    gEnemyPartyCount = PARTY_SIZE;
+    gBattleTypeFlags = BATTLE_TYPE_DOUBLE | BATTLE_TYPE_TWO_OPPONENTS | BATTLE_TYPE_TRAINER;
+    gBattleTerrain = BATTLE_TERRAIN_BUILDING;
+    gIsDebugBattle = TRUE;
+    gDebugAIFlags = 0;
+
+    BattleSetup_StartTrainerBattle_Debug();
+    Debug_DestroyMenu_Full(taskId);
 }
 
 // *******************************
