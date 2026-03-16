@@ -15,15 +15,17 @@ EverGrandeCity_ChampionsRoom_OnTransition:
 	clearflag FLAG_HIDE_CHAMPIONS_ROOM_WALLACE
 	setflag FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR
 	call_if_unset FLAG_IS_CHAMPION, EverGrandeCity_ChampionsRoom_EventScript_SetStevenLayout
-	call_if_set FLAG_IS_CHAMPION, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll
+	@ Exclsior champion feature disabled for now
+	@ call_if_set FLAG_IS_CHAMPION, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll
 	end
 
 EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll::
-	goto_if_unset TRAINER_FLAGS_START + TRAINER_WALLACE_2, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End
-	random 5
-	goto_if_ne VAR_RESULT, 0, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End
-	setflag FLAG_HIDE_CHAMPIONS_ROOM_WALLACE
-	clearflag FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR
+	@ Disabled — always show Wallace
+	@ goto_if_unset TRAINER_FLAGS_START + TRAINER_WALLACE_2, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End
+	@ random 5
+	@ goto_if_ne VAR_RESULT, 0, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End
+	@ setflag FLAG_HIDE_CHAMPIONS_ROOM_WALLACE
+	@ clearflag FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR
 	return
 
 EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End::
