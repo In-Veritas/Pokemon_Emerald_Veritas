@@ -178,6 +178,7 @@ enum { // Give
     DEBUG_GIVE_MENU_ITEM_DAYCARE_EGG,
     DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW,
     DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW,
+    DEBUG_GIVE_MENU_ITEM_WARP_SHADOW,
 };
 enum {
     DEBUG_PKM_CREATOR_MENU_ITEM_PARTY_ADD,               // Add to party
@@ -380,6 +381,7 @@ static void DebugAction_Give_MaxBattlePoints(u8 taskId);
 static void DebugAction_Give_DayCareEgg(u8 taskId);
 static void DebugAction_Give_GiveShadow(u8 taskId);
 static void DebugAction_Give_BattleShadow(u8 taskId);
+static void DebugAction_Give_WarpShadow(u8 taskId);
 
 static void DebugAction_PkmCreator_Party_Add(u8 taskid);
 static void DebugAction_PkmCreator_Party_Edit(u8 taskid);
@@ -576,6 +578,7 @@ static const u8 sDebugText_Give_BattlePoints[] =        _("Max Battle Points");
 static const u8 sDebugText_Give_DaycareEgg[] =          _("Daycare Egg");
 static const u8 sDebugText_Give_GiveShadow[] =          _("Give Shadow");
 static const u8 sDebugText_Give_BattleShadow[] =        _("Battle Shadow");
+static const u8 sDebugText_Give_WarpShadow[] =          _("Warp Shadow");
 // Pokemon Creator
 static const u8 sDebugText_PkmCreator_Party_Add[] =                 _("Party add");
 static const u8 sDebugText_PkmCreator_Party_Edit[] =                _("Party edit");
@@ -754,6 +757,7 @@ static const struct ListMenuItem sDebugMenu_Items_Give[] =
     [DEBUG_GIVE_MENU_ITEM_DAYCARE_EGG]       = {sDebugText_Give_DaycareEgg,         DEBUG_GIVE_MENU_ITEM_DAYCARE_EGG},
     [DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW]       = {sDebugText_Give_GiveShadow,         DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW},
     [DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW]     = {sDebugText_Give_BattleShadow,       DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW},
+    [DEBUG_GIVE_MENU_ITEM_WARP_SHADOW]       = {sDebugText_Give_WarpShadow,         DEBUG_GIVE_MENU_ITEM_WARP_SHADOW},
 };
 static const struct ListMenuItem sDebugMenu_Items_PkmCreator[] =
 {
@@ -858,6 +862,7 @@ static void (*const sDebugMenu_Actions_Give[])(u8) =
     [DEBUG_GIVE_MENU_ITEM_DAYCARE_EGG]       = DebugAction_Give_DayCareEgg,
     [DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW]       = DebugAction_Give_GiveShadow,
     [DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW]     = DebugAction_Give_BattleShadow,
+    [DEBUG_GIVE_MENU_ITEM_WARP_SHADOW]       = DebugAction_Give_WarpShadow,
 };
 static void (*const sDebugMenu_Actions_PkmCreator[])(u8) =
 {
@@ -3713,6 +3718,22 @@ static void DebugAction_Give_BattleShadow(u8 taskId)
     gDebugAIFlags = 0;
 
     BattleSetup_StartTrainerBattle_Debug();
+    Debug_DestroyMenu_Full(taskId);
+}
+
+static void DebugAction_Give_WarpShadow(u8 taskId)
+{
+    /* Set flags so the post-Veritas rock interaction triggers Shadow Lugia */
+    FlagSet(FLAG_DEFEATED_EXCLSIOR);
+    FlagSet(FLAG_ENABLE_SHIP_SOUTHERN_ISLAND);
+    FlagClear(FLAG_DEFEATED_BOSS_LUGIA);
+    FlagClear(FLAG_CAUGHT_BOSS_LUGIA);
+
+    /* Warp to Southern Island Interior */
+    SetWarpDestinationToMapWarp(MAP_GROUP(SOUTHERN_ISLAND_INTERIOR), MAP_NUM(SOUTHERN_ISLAND_INTERIOR), 0);
+    DoWarp();
+    ResetInitialPlayerAvatarState();
+
     Debug_DestroyMenu_Full(taskId);
 }
 
