@@ -168,15 +168,17 @@ SouthernIsland_Interior_EventScript_ExclsiorPostBattle::
 SouthernIsland_Interior_EventScript_CloserLookAtStone::
 	goto_if_unset FLAG_DEFEATED_EXCLSIOR, SouthernIsland_Interior_EventScript_Sign
 	goto_if_unset FLAG_ENABLE_SHIP_SOUTHERN_ISLAND, SouthernIsland_Interior_EventScript_Sign
-	@ Boss Lugia must be dealt with before shiny Lati
+	@ Boss Lugia must be dealt with before anything else
 	goto_if_unset FLAG_DEFEATED_BOSS_LUGIA, SouthernIsland_Interior_EventScript_BossLugiaCheck
-	@ Lugia was defeated — check shiny Lati
-	goto_if_set FLAG_DEFEATED_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
-	goto_if_set FLAG_CAUGHT_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
-	message SouthernIsland_Interior_Text_CloserLookAtStone
-	waitmessage
-	goto SouthernIsland_Interior_EventScript_ChooseShinyLati
+	@ Lugia was defeated — show sign (shiny Lati disabled for now)
+	goto SouthernIsland_Interior_EventScript_Sign
 	end
+	@ --- Shiny Lati gift commented out for future use ---
+	@ goto_if_set FLAG_DEFEATED_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
+	@ goto_if_set FLAG_CAUGHT_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
+	@ message SouthernIsland_Interior_Text_CloserLookAtStone
+	@ waitmessage
+	@ goto SouthernIsland_Interior_EventScript_ChooseShinyLati
 
 SouthernIsland_Interior_EventScript_BossLugiaCheck::
 	@ Already caught — skip to shiny Lati
@@ -217,13 +219,15 @@ SouthernIsland_Interior_EventScript_BossLugiaFled::
 	end
 
 SouthernIsland_Interior_EventScript_BossLugiaDone::
-	@ Lugia was caught, now check shiny Lati
-	goto_if_set FLAG_DEFEATED_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
-	goto_if_set FLAG_CAUGHT_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
-	message SouthernIsland_Interior_Text_CloserLookAtStone
-	waitmessage
-	goto SouthernIsland_Interior_EventScript_ChooseShinyLati
+	@ Lugia was caught — show sign (shiny Lati disabled for now)
+	goto SouthernIsland_Interior_EventScript_Sign
 	end
+	@ --- Shiny Lati after Lugia catch commented out ---
+	@ goto_if_set FLAG_DEFEATED_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
+	@ goto_if_set FLAG_CAUGHT_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
+	@ message SouthernIsland_Interior_Text_CloserLookAtStone
+	@ waitmessage
+	@ goto SouthernIsland_Interior_EventScript_ChooseShinyLati
 
 SouthernIsland_Interior_EventScript_ChooseShinyLati::
 	multichoice 20, 8, MULTI_SHINY_LATI, TRUE
