@@ -4904,3 +4904,37 @@ bool8 TrySetupInvalidRecordCleanupMessage(void)
     return TRUE;
 }
 
+void CreateBossLugia(void)
+{
+    u16 move;
+    u8 pp;
+
+    ZeroEnemyPartyMons();
+    CreateMon(&gEnemyParty[0], SPECIES_LUGIA, 99, USE_RANDOM_IVS, FALSE, 0, OT_ID_PLAYER_ID, 0);
+
+    /* Set custom moves */
+    move = MOVE_THUNDER;
+    SetMonData(&gEnemyParty[0], MON_DATA_MOVE1, &move);
+    pp = gBattleMoves[MOVE_THUNDER].pp;
+    SetMonData(&gEnemyParty[0], MON_DATA_PP1, &pp);
+
+    move = MOVE_HYDRO_PUMP;
+    SetMonData(&gEnemyParty[0], MON_DATA_MOVE2, &move);
+    pp = gBattleMoves[MOVE_HYDRO_PUMP].pp;
+    SetMonData(&gEnemyParty[0], MON_DATA_PP2, &pp);
+
+    move = MOVE_CALM_MIND;
+    SetMonData(&gEnemyParty[0], MON_DATA_MOVE3, &move);
+    pp = gBattleMoves[MOVE_CALM_MIND].pp;
+    SetMonData(&gEnemyParty[0], MON_DATA_PP3, &pp);
+
+    move = MOVE_PSYCHO_BOOST;
+    SetMonData(&gEnemyParty[0], MON_DATA_MOVE4, &move);
+    pp = gBattleMoves[MOVE_PSYCHO_BOOST].pp;
+    SetMonData(&gEnemyParty[0], MON_DATA_PP4, &pp);
+
+    /* Set held item */
+    move = ITEM_WHITE_HERB;
+    SetMonData(&gEnemyParty[0], MON_DATA_HELD_ITEM, &move);
+}
+

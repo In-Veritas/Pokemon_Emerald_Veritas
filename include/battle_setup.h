@@ -68,6 +68,7 @@ u8 getLevelCap(void);
 bool8 levelCappedNuzlocke(u8 level);
 s32 FirstBattleTrainerIdToRematchTableId(const struct RematchTrainer *table, u16 trainerId);
 
+void BattleSetup_StartLugiaBossBattle(void);
 void DoStandardWildBattle_Debug(void);
 void BattleSetup_StartTrainerBattle_Debug(void);
 

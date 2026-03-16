@@ -702,8 +702,8 @@
 #define FLAG_PLAYER_STYLE_RS                                       0x296 // Player avatar style: 0 = Emerald (default), 1 = Ruby/Sapphire
 #define FLAG_ENABLE_PICKUP_TEXT                                     0x297
 #define FLAG_ROAMING_LATI_CAUGHT_OR_DEFEATED                        0x298 // Roaming Lati was caught or defeated
-#define FLAG_UNUSED_0x299                                          0x299 // Unused Flag
-#define FLAG_UNUSED_0x29A                                          0x29A // Unused Flag
+#define FLAG_DEFEATED_BOSS_LUGIA                                    0x299 // Boss Lugia defeated on Southern Island
+#define FLAG_CAUGHT_BOSS_LUGIA                                     0x29A // Boss Lugia caught on Southern Island
 #define FLAG_UNUSED_0x29B                                          0x29B // Unused Flag
 #define FLAG_UNUSED_0x29C                                          0x29C // Unused Flag
 #define FLAG_UNUSED_0x29D                                          0x29D // Unused Flag

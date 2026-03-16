@@ -167,9 +167,59 @@ SouthernIsland_Interior_EventScript_ExclsiorPostBattle::
 
 SouthernIsland_Interior_EventScript_CloserLookAtStone::
 	goto_if_unset FLAG_DEFEATED_EXCLSIOR, SouthernIsland_Interior_EventScript_Sign
+	goto_if_unset FLAG_ENABLE_SHIP_SOUTHERN_ISLAND, SouthernIsland_Interior_EventScript_Sign
+	@ Boss Lugia must be dealt with before shiny Lati
+	goto_if_unset FLAG_DEFEATED_BOSS_LUGIA, SouthernIsland_Interior_EventScript_BossLugiaCheck
+	@ Lugia was defeated — check shiny Lati
 	goto_if_set FLAG_DEFEATED_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
 	goto_if_set FLAG_CAUGHT_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
-	goto_if_unset FLAG_ENABLE_SHIP_SOUTHERN_ISLAND, SouthernIsland_Interior_EventScript_Sign
+	message SouthernIsland_Interior_Text_CloserLookAtStone
+	waitmessage
+	goto SouthernIsland_Interior_EventScript_ChooseShinyLati
+	end
+
+SouthernIsland_Interior_EventScript_BossLugiaCheck::
+	@ Already caught — skip to shiny Lati
+	goto_if_set FLAG_CAUGHT_BOSS_LUGIA, SouthernIsland_Interior_EventScript_BossLugiaDone
+	@ Not yet fought — start boss fight
+	message SouthernIsland_Interior_Text_RockWarning
+	waitmessage
+	waitbuttonpress
+	closemessage
+	setflag FLAG_SHINY_CREATION
+	special CreateBossLugia
+	clearflag FLAG_SHINY_CREATION
+	waitse
+	playmoncry SPECIES_LUGIA, CRY_MODE_ENCOUNTER
+	delay 40
+	waitmoncry
+	special BattleSetup_StartLugiaBossBattle
+	waitstate
+	specialvar VAR_RESULT, GetBattleOutcome
+	goto_if_eq VAR_RESULT, B_OUTCOME_WON, SouthernIsland_Interior_EventScript_BossLugiaDefeated
+	goto_if_eq VAR_RESULT, B_OUTCOME_RAN, SouthernIsland_Interior_EventScript_BossLugiaFled
+	goto_if_eq VAR_RESULT, B_OUTCOME_PLAYER_TELEPORTED, SouthernIsland_Interior_EventScript_BossLugiaFled
+	@ Caught
+	setflag FLAG_CAUGHT_BOSS_LUGIA
+	setflag FLAG_DEFEATED_BOSS_LUGIA
+	releaseall
+	end
+
+SouthernIsland_Interior_EventScript_BossLugiaDefeated::
+	setflag FLAG_DEFEATED_BOSS_LUGIA
+	msgbox SouthernIsland_Interior_Text_LugiaDefeated, MSGBOX_DEFAULT
+	releaseall
+	end
+
+SouthernIsland_Interior_EventScript_BossLugiaFled::
+	msgbox SouthernIsland_Interior_Text_LugiaFled, MSGBOX_DEFAULT
+	releaseall
+	end
+
+SouthernIsland_Interior_EventScript_BossLugiaDone::
+	@ Lugia was caught, now check shiny Lati
+	goto_if_set FLAG_DEFEATED_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
+	goto_if_set FLAG_CAUGHT_SHINY_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_Sign
 	message SouthernIsland_Interior_Text_CloserLookAtStone
 	waitmessage
 	goto SouthernIsland_Interior_EventScript_ChooseShinyLati
@@ -267,6 +317,8 @@ SouthernIsland_Interior_Text_ExclsiorPostBattle:
 	.string "And for keeping my memory alive...\p"
 	.string "You may want to have a closer look at\n"
 	.string "this stone...\p"
+	.string "But be careful.\n"
+	.string "Something powerful sleeps within.\p"
 	.string "Goodbye.$"
 
 SouthernIsland_Interior_Text_Typhlosion:
@@ -319,3 +371,19 @@ SouthernIsland_Interior_Movement_WalkSlowDown:
 SouthernIsland_Interior_Movement_FaceUp:
 	face_down
 	step_end
+
+SouthernIsland_Interior_Text_RockWarning:
+	.string "You reach toward the strange stone...\p"
+	.string "The air grows heavy.\n"
+	.string "Something stirs from deep within...$"
+
+SouthernIsland_Interior_Text_LugiaDefeated:
+	.string "The light fades from the stone.\p"
+	.string "Whatever was sealed inside has\n"
+	.string "vanished...$"
+
+SouthernIsland_Interior_Text_LugiaFled:
+	.string "The presence retreats back into\n"
+	.string "the stone...\p"
+	.string "It seems to be waiting for you\n"
+	.string "to try again.$"

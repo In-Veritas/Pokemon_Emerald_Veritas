@@ -547,3 +547,5 @@ gSpecials::
 	def_special GetLinkBattleMusicSelection
 	def_special SetRandomLinkBattleMusic
 	def_special Debug_MarkLastPartyMonTrueShiny
+	def_special CreateBossLugia
+	def_special BattleSetup_StartLugiaBossBattle
