@@ -280,6 +280,7 @@
 #define OBJ_EVENT_GFX_RS_MAY_FIELD_MOVE          273
 #define OBJ_EVENT_GFX_RS_MAY_FISHING             274
 #define OBJ_EVENT_GFX_RS_MAY_WATERING            275
+#define OBJ_EVENT_GFX_REGICE_NEW                 276 // Regice moved here; slot 201 reused by OW_MON
 #define OBJ_EVENT_GFX_POKE_BALL                  OBJ_EVENT_GFX_ITEM_BALL // replaces ITEM_BALL
 #define OBJ_EVENT_GFX_OW_MON                     OBJ_EVENT_GFX_REGICE
 

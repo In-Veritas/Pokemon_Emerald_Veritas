@@ -488,7 +488,7 @@ const struct ObjectEventGraphicsInfo *const gObjectEventGraphicsInfoPointers[NUM
     [OBJ_EVENT_GFX_GROUDON_FRONT] =            &gObjectEventGraphicsInfo_GroudonFront,
     [OBJ_EVENT_GFX_FOSSIL] =                   &gObjectEventGraphicsInfo_Fossil,
     [OBJ_EVENT_GFX_REGIROCK] =                 &gObjectEventGraphicsInfo_Regirock,
-    //[OBJ_EVENT_GFX_REGICE] =                   &gObjectEventGraphicsInfo_Regice, // Slot reused by OBJ_EVENT_GFX_OW_MON (follower system)
+    //[OBJ_EVENT_GFX_REGICE] =                   &gObjectEventGraphicsInfo_Regice, // Slot 201 reused by OBJ_EVENT_GFX_OW_MON; use OBJ_EVENT_GFX_REGICE_NEW (276) instead
     [OBJ_EVENT_GFX_REGISTEEL] =                &gObjectEventGraphicsInfo_Registeel,
     [OBJ_EVENT_GFX_SKITTY] =                   &gObjectEventGraphicsInfo_Skitty,
     [OBJ_EVENT_GFX_KECLEON] =                  &gObjectEventGraphicsInfo_Kecleon,
@@ -566,6 +566,7 @@ const struct ObjectEventGraphicsInfo *const gObjectEventGraphicsInfoPointers[NUM
     [OBJ_EVENT_GFX_RS_MAY_FIELD_MOVE]     = &gObjectEventGraphicsInfo_RubySapphireMayFieldMove,
     [OBJ_EVENT_GFX_RS_MAY_FISHING]        = &gObjectEventGraphicsInfo_RubySapphireMayFishing,
     [OBJ_EVENT_GFX_RS_MAY_WATERING]       = &gObjectEventGraphicsInfo_RubySapphireMayWatering,
+    [OBJ_EVENT_GFX_REGICE_NEW] =               &gObjectEventGraphicsInfo_Regice,
 };
 
 const struct ObjectEventGraphicsInfo *const gMauvilleOldManGraphicsInfoPointers[] = {
