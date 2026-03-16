@@ -15,6 +15,8 @@
 #include "field_specials.h"
 #include "item.h"
 #include "link.h"
+#include "tv.h"
+#include "constants/tv.h"
 #include "main.h"
 #include "overworld.h"
 #include "m4a.h"
@@ -2302,6 +2304,9 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
                     maxRolls++;
                     gDifferentOTBreedingBonus = FALSE;
                 }
+                // +1 roll during Shiny Day PokeNews event
+                if (IsPokeNewsActive(POKENEWS_SHINY_DAY))
+                    maxRolls++;
                 // Re-roll until shiny or out of attempts
                 do
                 {
