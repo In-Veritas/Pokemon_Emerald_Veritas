@@ -569,7 +569,8 @@ void BattleSetup_StartLugiaBossBattle(void)
     LockPlayerFieldControls();
     gMain.savedCallback = CB2_EndScriptedWildBattle;
     gBattleTypeFlags = BATTLE_TYPE_LEGENDARY;
-    CreateBattleStartTask(B_TRANSITION_BLUR, MUS_C_VS_LEGEND_BEAST);
+    gBattleTerrain = BATTLE_TERRAIN_UNDERWATER;
+    CreateBattleStartTask(B_TRANSITION_BLUR, MUS_VS_RAYQUAZA);
     IncrementGameStat(GAME_STAT_TOTAL_BATTLES);
     IncrementGameStat(GAME_STAT_WILD_BATTLES);
     IncrementDailyWildBattles();
