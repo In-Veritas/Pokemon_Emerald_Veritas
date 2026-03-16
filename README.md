@@ -325,7 +325,26 @@ Baby Pokémon have been reworked to be viable in battle with new abilities and c
 * **Bike Dismount Weather Fix**: Dismounting the bike on weather-affected routes (e.g., Route 119 rain) now properly restores weather effects
 * **RS Style Link Battle Palette Fix**: Fixed player sprite palette mismatch during Poké Ball throw animation in link double battles when using Classic (RS) style
 * **Hall of Fame Text**: Hall of Fame screen now displays "EMERALD VERITAS" instead of the base project name
-* **Shiny Palette Redesigns**: Custom shiny palettes for Treecko line (vibrant blues/reds), Mudkip line (brown), Spinda (panda), Wingull (dark gray markings), Wailord (gray), Zigzagoon (brown-orange corgi), Gardevoir (dark gray petal, blood red eye), Kyogre (dark orca), Groudon (dark volcanic), and Rayquaza (darker emerald)
+* **Shiny Palette Redesigns**: Custom shiny palettes with matching overworld follower sprites:
+
+  | Pokemon | Shiny Design |
+  |---------|-------------|
+  | **Lugia** (Shadow Lugia) | Dark purple body, silver belly, red eyes, pink mouth |
+  | **Kyogre** | Dark orca with sapphire blue lines, aquamarine eye |
+  | **Groudon** | Dark volcanic with dark claws |
+  | **Gardevoir** | Dark gray petal, blood red eye |
+  | **Wailord** | Gray body with bluish-white belly |
+  | **Rayquaza** | Darker emerald |
+  | Treecko line | Vibrant blues/reds |
+  | Mudkip line | Brown |
+  | Spinda | Panda |
+  | Wingull | Dark gray markings |
+  | Zigzagoon | Brown-orange corgi |
+
+  ![Shadow Lugia](docs/shiny_previews/shadow_lugia.png)
+  ![Shiny Kyogre](docs/shiny_previews/shiny_kyogre.png)
+  ![Shiny Groudon](docs/shiny_previews/shiny_groudon.png)
+  ![Shiny Gardevoir](docs/shiny_previews/shiny_gardevoir.png)
 * **Save Migration v4→v5**: Automatically wipes corrupted record mixing data (TV Shows, Dewford Trends, etc.) from older saves to fix crashes
   * Valid PokeNews events (Slateport sales, Game Corner, Lilycove sales, Blend Master) are preserved through migration
 * **SE Volume Fix**: Fixed SE volume control not applying — volume is now set before the sound starts playing
