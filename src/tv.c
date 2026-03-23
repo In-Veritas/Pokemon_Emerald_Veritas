@@ -2713,6 +2713,9 @@ static bool8 IsAddingPokeNewsDisallowed(u8 newsKind)
 static void UpdatePokeNewsCountdown(u16 days)
 {
     u8 i;
+    bool8 hasActiveEvent;
+    s8 emptySlot;
+    u8 newsKind;
 
     for (i = 0; i < POKE_NEWS_COUNT; i++)
     {
@@ -2734,6 +2737,34 @@ static void UpdatePokeNewsCountdown(u16 days)
         }
     }
     CompactPokeNews();
+
+    // Guarantee at least one event is active today
+    hasActiveEvent = FALSE;
+    for (i = 0; i < POKE_NEWS_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->pokeNews[i].kind != POKENEWS_NONE
+            && gSaveBlock1Ptr->pokeNews[i].dayCountdown == 0)
+        {
+            hasActiveEvent = TRUE;
+            break;
+        }
+    }
+
+    if (!hasActiveEvent)
+    {
+        emptySlot = GetFirstEmptyPokeNewsSlot(gSaveBlock1Ptr->pokeNews);
+        if (emptySlot != -1)
+        {
+            // Pick a random event that isn't already scheduled
+            newsKind = (Random() % NUM_POKENEWS_TYPES) + 1;
+            if (IsAddingPokeNewsDisallowed(newsKind) != TRUE)
+            {
+                gSaveBlock1Ptr->pokeNews[emptySlot].kind = newsKind;
+                gSaveBlock1Ptr->pokeNews[emptySlot].dayCountdown = 0;
+                gSaveBlock1Ptr->pokeNews[emptySlot].state = POKENEWS_STATE_ACTIVE;
+            }
+        }
+    }
 }
 
 void CopyContestRankToStringVar(u8 varIdx, u8 rank)
