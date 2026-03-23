@@ -2716,6 +2716,8 @@ static void UpdatePokeNewsCountdown(u16 days)
     bool8 hasActiveEvent;
     s8 emptySlot;
     u8 newsKind;
+    u8 startKind;
+    u8 attempts;
 
     for (i = 0; i < POKE_NEWS_COUNT; i++)
     {
@@ -2755,13 +2757,19 @@ static void UpdatePokeNewsCountdown(u16 days)
         emptySlot = GetFirstEmptyPokeNewsSlot(gSaveBlock1Ptr->pokeNews);
         if (emptySlot != -1)
         {
-            // Pick a random event that isn't already scheduled
-            newsKind = (Random() % NUM_POKENEWS_TYPES) + 1;
-            if (IsAddingPokeNewsDisallowed(newsKind) != TRUE)
+            startKind = (Random() % NUM_POKENEWS_TYPES) + 1;
+
+            // Try all event types starting from random pick
+            for (attempts = 0; attempts < NUM_POKENEWS_TYPES; attempts++)
             {
-                gSaveBlock1Ptr->pokeNews[emptySlot].kind = newsKind;
-                gSaveBlock1Ptr->pokeNews[emptySlot].dayCountdown = 0;
-                gSaveBlock1Ptr->pokeNews[emptySlot].state = POKENEWS_STATE_ACTIVE;
+                newsKind = ((startKind - 1 + attempts) % NUM_POKENEWS_TYPES) + 1;
+                if (IsAddingPokeNewsDisallowed(newsKind) != TRUE)
+                {
+                    gSaveBlock1Ptr->pokeNews[emptySlot].kind = newsKind;
+                    gSaveBlock1Ptr->pokeNews[emptySlot].dayCountdown = 0;
+                    gSaveBlock1Ptr->pokeNews[emptySlot].state = POKENEWS_STATE_ACTIVE;
+                    break;
+                }
             }
         }
     }
