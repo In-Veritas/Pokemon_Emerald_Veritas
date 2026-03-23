@@ -375,7 +375,6 @@ Baby Pokémon have been reworked to be viable in battle with new abilities and c
 
 * **Save Migration v4→v5**: Automatically wipes corrupted record mixing data (TV Shows, Dewford Trends, etc.) from older saves to fix crashes
   * Valid PokeNews events (Slateport sales, Game Corner, Lilycove sales, Blend Master) are preserved through migration
-* **SE Volume Fix**: Fixed SE volume control not applying — volume is now set before the sound starts playing
 * **Southern Island Veritas Battle Fix**: Exclsior encounter now correctly requires both Latios and Latias to be caught or defeated (plus Zinnia defeated), not just one of them
 
 ### New Options Menu Items
