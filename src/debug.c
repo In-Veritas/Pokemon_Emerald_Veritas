@@ -179,6 +179,11 @@ enum { // Give
     DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW,
     DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW,
     DEBUG_GIVE_MENU_ITEM_WARP_SHADOW,
+    DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_RAYQUAZA,
+    DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_LUGIA,
+    DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_GROUDON,
+    DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_KYOGRE,
+    DEBUG_GIVE_MENU_ITEM_ENCOUNTER_LUGIA,
 };
 enum {
     DEBUG_PKM_CREATOR_MENU_ITEM_PARTY_ADD,               // Add to party
@@ -382,6 +387,7 @@ static void DebugAction_Give_DayCareEgg(u8 taskId);
 static void DebugAction_Give_GiveShadow(u8 taskId);
 static void DebugAction_Give_BattleShadow(u8 taskId);
 static void DebugAction_Give_WarpShadow(u8 taskId);
+static void DebugAction_Give_EncounterShinyLegendary(u8 taskId);
 
 static void DebugAction_PkmCreator_Party_Add(u8 taskid);
 static void DebugAction_PkmCreator_Party_Edit(u8 taskid);
@@ -579,6 +585,11 @@ static const u8 sDebugText_Give_DaycareEgg[] =          _("Daycare Egg");
 static const u8 sDebugText_Give_GiveShadow[] =          _("Give Shadow");
 static const u8 sDebugText_Give_BattleShadow[] =        _("Battle Shadow");
 static const u8 sDebugText_Give_WarpShadow[] =          _("Warp Shadow");
+static const u8 sDebugText_Give_ShinyRayquaza[] =       _("Shiny Rayquaza");
+static const u8 sDebugText_Give_ShinyLugia[] =          _("Shiny Lugia");
+static const u8 sDebugText_Give_ShinyGroudon[] =        _("Shiny Groudon");
+static const u8 sDebugText_Give_ShinyKyogre[] =         _("Shiny Kyogre");
+static const u8 sDebugText_Give_Lugia[] =               _("Lugia");
 // Pokemon Creator
 static const u8 sDebugText_PkmCreator_Party_Add[] =                 _("Party add");
 static const u8 sDebugText_PkmCreator_Party_Edit[] =                _("Party edit");
@@ -758,6 +769,11 @@ static const struct ListMenuItem sDebugMenu_Items_Give[] =
     [DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW]       = {sDebugText_Give_GiveShadow,         DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW},
     [DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW]     = {sDebugText_Give_BattleShadow,       DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW},
     [DEBUG_GIVE_MENU_ITEM_WARP_SHADOW]       = {sDebugText_Give_WarpShadow,         DEBUG_GIVE_MENU_ITEM_WARP_SHADOW},
+    [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_RAYQUAZA] = {sDebugText_Give_ShinyRayquaza, DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_RAYQUAZA},
+    [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_LUGIA]    = {sDebugText_Give_ShinyLugia,    DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_LUGIA},
+    [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_GROUDON]  = {sDebugText_Give_ShinyGroudon,  DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_GROUDON},
+    [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_KYOGRE]   = {sDebugText_Give_ShinyKyogre,   DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_KYOGRE},
+    [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_LUGIA]           = {sDebugText_Give_Lugia,         DEBUG_GIVE_MENU_ITEM_ENCOUNTER_LUGIA},
 };
 static const struct ListMenuItem sDebugMenu_Items_PkmCreator[] =
 {
@@ -863,6 +879,11 @@ static void (*const sDebugMenu_Actions_Give[])(u8) =
     [DEBUG_GIVE_MENU_ITEM_GIVE_SHADOW]       = DebugAction_Give_GiveShadow,
     [DEBUG_GIVE_MENU_ITEM_BATTLE_SHADOW]     = DebugAction_Give_BattleShadow,
     [DEBUG_GIVE_MENU_ITEM_WARP_SHADOW]       = DebugAction_Give_WarpShadow,
+    [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_RAYQUAZA] = DebugAction_Give_EncounterShinyLegendary,
+    [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_LUGIA]    = DebugAction_Give_EncounterShinyLegendary,
+    [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_GROUDON]  = DebugAction_Give_EncounterShinyLegendary,
+    [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_KYOGRE]   = DebugAction_Give_EncounterShinyLegendary,
+    [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_LUGIA]           = DebugAction_Give_EncounterShinyLegendary,
 };
 static void (*const sDebugMenu_Actions_PkmCreator[])(u8) =
 {
@@ -3734,6 +3755,50 @@ static void DebugAction_Give_WarpShadow(u8 taskId)
     DoWarp();
     ResetInitialPlayerAvatarState();
 
+    Debug_DestroyMenu_Full(taskId);
+}
+
+static void DebugAction_Give_EncounterShinyLegendary(u8 taskId)
+{
+    u32 input = gTasks[taskId].data[0];
+    u16 species;
+    u8 level;
+    bool8 shiny;
+
+    /* Determine species/level/shiny from menu selection */
+    input = ListMenu_ProcessInput(gTasks[taskId].data[0]);
+
+    switch (input)
+    {
+    case DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_RAYQUAZA:
+        species = SPECIES_RAYQUAZA; level = 70; shiny = TRUE; break;
+    case DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_LUGIA:
+        species = SPECIES_LUGIA; level = 70; shiny = TRUE; break;
+    case DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_GROUDON:
+        species = SPECIES_GROUDON; level = 70; shiny = TRUE; break;
+    case DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_KYOGRE:
+        species = SPECIES_KYOGRE; level = 70; shiny = TRUE; break;
+    case DEBUG_GIVE_MENU_ITEM_ENCOUNTER_LUGIA:
+        species = SPECIES_LUGIA; level = 70; shiny = FALSE; break;
+    default:
+        Debug_DestroyMenu(taskId);
+        Debug_ReShowMainMenu();
+        return;
+    }
+
+    ZeroEnemyPartyMons();
+    if (shiny)
+        FlagSet(FLAG_SHINY_CREATION);
+    CreateMon(&gEnemyParty[0], species, level, USE_RANDOM_IVS, FALSE, 0, OT_ID_PLAYER_ID, 0);
+    if (shiny)
+        FlagClear(FLAG_SHINY_CREATION);
+
+    gBattleTypeFlags = BATTLE_TYPE_LEGENDARY;
+    gBattleTerrain = BATTLE_TERRAIN_BUILDING;
+    gIsDebugBattle = TRUE;
+    gEnemyPartyCount = 1;
+
+    BattleSetup_StartTrainerBattle_Debug();
     Debug_DestroyMenu_Full(taskId);
 }
 
