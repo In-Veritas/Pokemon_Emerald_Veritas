@@ -329,12 +329,12 @@ Baby Pokémon have been reworked to be viable in battle with new abilities and c
 
   | Pokemon | Shiny Design |
   |---------|-------------|
-  | **Lugia** (Shadow Lugia) | Dark purple body, silver belly, red eyes, pink mouth |
+  | **Lugia** (Shadow Lugia) | Navy body, teal frills, crimson eyes, rose mouth |
   | **Kyogre** | Dark orca with sapphire blue lines, aquamarine eye |
-  | **Groudon** | Dark volcanic with dark claws |
+  | **Groudon** | Deep dark red body, orange eyes, dark blue-purple outlines |
   | **Gardevoir** | Dark gray petal, blood red eye |
   | **Wailord** | Gray body with bluish-white belly |
-  | **Rayquaza** | Darker emerald |
+  | **Rayquaza** | Darker emerald with green accents |
   | Treecko line | Vibrant blues/reds |
   | Mudkip line | Brown |
   | Spinda | Panda |
@@ -344,7 +344,35 @@ Baby Pokémon have been reworked to be viable in battle with new abilities and c
   ![Shadow Lugia](docs/shiny_previews/shadow_lugia.png)
   ![Shiny Kyogre](docs/shiny_previews/shiny_kyogre.png)
   ![Shiny Groudon](docs/shiny_previews/shiny_groudon.png)
+  ![Shiny Rayquaza](docs/shiny_previews/shiny_rayquaza.png)
   ![Shiny Gardevoir](docs/shiny_previews/shiny_gardevoir.png)
+  ![Shiny Wailord](docs/shiny_previews/shiny_wailord.png)
+
+* **4 Shiny Sparkle Colors**: Different sparkle effects based on how the shiny was obtained:
+  * **Gold** (default): Normal shiny
+  * **Light Yellow**: Shiny caught during Shiny Day event
+  * **White**: True Shiny (shiny on first roll with bonus active)
+  * **Light Blue**: True Shiny caught during Shiny Day
+
+* **Shiny Day PokeNews Event**: A random TV event that gives +1 shiny roll when active. Spreads to friends via record mixing. TV announces a rare meteorological event.
+
+* **Training Day PokeNews Event**: A random TV event with three effects when active:
+  * Double EV gains from battle (stacks with Pokérus and Macho Brace)
+  * Double potency for EV-reducing berries
+  * Wild Pokémon guaranteed minimum 10 IVs per stat
+
+* **Daily Event Guarantee**: At least one PokeNews event is active every day. Events trigger on encounters (not just catches) and spread via record mixing.
+
+* **Shadow Lugia Boss Fight**: After defeating Trainer Veritas on Southern Island, inspecting the stone triggers a Lv99 shiny Lugia boss battle with Thunder, Hydro Pump, Calm Mind, and Psycho Boost. Holds White Herb. Underwater terrain with Rayquaza battle music.
+
+* **Lv 50 Battle Mode**: New Colosseum battle option where Pokémon above Lv50 are temporarily scaled down. Pokémon at or below Lv50 keep their actual level. Original levels restored after battle.
+
+* **Auto Record Mixing**: Wired link battles automatically exchange records (secret bases, TV shows, PokeNews, etc.) before disconnecting. Shows confirmation message when exiting.
+
+* **Ability Changes**:
+  * Lugia: Pressure → **Drizzle**
+  * Ho-Oh: Pressure → **Drought**
+
 * **Save Migration v4→v5**: Automatically wipes corrupted record mixing data (TV Shows, Dewford Trends, etc.) from older saves to fix crashes
   * Valid PokeNews events (Slateport sales, Game Corner, Lilycove sales, Blend Master) are preserved through migration
 * **SE Volume Fix**: Fixed SE volume control not applying — volume is now set before the sound starts playing
