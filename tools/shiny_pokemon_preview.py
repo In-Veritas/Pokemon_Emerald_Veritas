@@ -362,6 +362,134 @@ def main():
         if not os.path.exists(ow_shiny_pal):
             print("Skipping overworld sprite: overworld_shiny.pal not found")
 
+    # --- Battle terrain composite ---
+    if os.path.exists(front_png) and os.path.exists(shiny_pal):
+        try:
+            terrain_dir = os.path.join(REPO_ROOT, "graphics", "battle_terrain")
+            terrains = [
+                ("tall_grass", (120, 180, 80)),
+                ("long_grass", (90, 150, 60)),
+                ("sand", (210, 190, 140)),
+                ("underwater", (40, 80, 160)),
+                ("water", (70, 130, 200)),
+                ("pond_water", (90, 150, 190)),
+                ("rock", (140, 120, 100)),
+                ("cave", (80, 70, 90)),
+                ("building", (180, 170, 160)),
+                ("plain", (160, 190, 140)),
+                ("sky", (130, 180, 230)),
+                ("stadium", (160, 160, 170)),
+            ]
+
+            # Try to read actual palette colors from terrain files
+            for i in range(len(terrains)):
+                pal_path = os.path.join(terrain_dir, terrains[i][0], "palette.pal")
+                if os.path.exists(pal_path):
+                    try:
+                        pal_colors = parse_jasc_pal(pal_path)
+                        # Use average of first few non-black colors as background
+                        r_sum = 0
+                        g_sum = 0
+                        b_sum = 0
+                        count = 0
+                        for c in pal_colors[1:8]:
+                            if sum(c) > 30:
+                                r_sum += c[0]
+                                g_sum += c[1]
+                                b_sum += c[2]
+                                count += 1
+                        if count > 0:
+                            terrains[i] = (terrains[i][0], (r_sum // count, g_sum // count, b_sum // count))
+                    except Exception:
+                        pass
+
+            front_img = Image.open(front_png)
+            if front_img.mode != "P":
+                front_img = front_img.convert("P", colors=16)
+
+            # Create composite: 4 columns x 3 rows, each cell 80x80
+            cols = 4
+            rows = 3
+            cell_w = 80
+            cell_h = 80
+            composite = Image.new("RGBA", (cols * cell_w, rows * cell_h))
+
+            for idx in range(len(terrains)):
+                if idx >= cols * rows:
+                    break
+                tname, bg_color = terrains[idx]
+                col = idx % cols
+                row = idx // cols
+                x_off = col * cell_w
+                y_off = row * cell_h
+
+                # Draw background
+                for py in range(cell_h):
+                    for px in range(cell_w):
+                        # Slight gradient for depth
+                        shade = 1.0 - (py / cell_h) * 0.2
+                        r = min(255, int(bg_color[0] * shade))
+                        g = min(255, int(bg_color[1] * shade))
+                        b = min(255, int(bg_color[2] * shade))
+                        composite.putpixel((x_off + px, y_off + py), (r, g, b, 255))
+
+                # Render both normal and shiny on this background
+                for pal_type in ["shiny", "normal"]:
+                    if pal_type == "shiny":
+                        palette = parse_jasc_pal(shiny_pal)
+                    else:
+                        palette = parse_jasc_pal(normal_pal)
+
+                    sprite = apply_palette_rgba(front_img, palette)
+                    sw, sh = sprite.size
+                    sx = x_off + (cell_w - sw) // 2
+                    sy = y_off + (cell_h - sh) // 2
+                    composite.paste(sprite, (sx, sy), sprite)
+                    break  # Only render shiny for now
+
+            # Save shiny composite
+            shiny_comp_path = os.path.join(OUTPUT_DIR,
+                                           "{}_shiny_terrains.png".format(folder_name))
+            composite.save(shiny_comp_path)
+            generated.append(shiny_comp_path)
+            print("Terrain composite (shiny):     {}".format(shiny_comp_path))
+
+            # Also make normal composite
+            composite_n = Image.new("RGBA", (cols * cell_w, rows * cell_h))
+            palette_n = parse_jasc_pal(normal_pal)
+            sprite_n = apply_palette_rgba(front_img, palette_n)
+
+            for idx in range(len(terrains)):
+                if idx >= cols * rows:
+                    break
+                tname, bg_color = terrains[idx]
+                col = idx % cols
+                row = idx // cols
+                x_off = col * cell_w
+                y_off = row * cell_h
+
+                for py in range(cell_h):
+                    for px in range(cell_w):
+                        shade = 1.0 - (py / cell_h) * 0.2
+                        r = min(255, int(bg_color[0] * shade))
+                        g = min(255, int(bg_color[1] * shade))
+                        b = min(255, int(bg_color[2] * shade))
+                        composite_n.putpixel((x_off + px, y_off + py), (r, g, b, 255))
+
+                sw, sh = sprite_n.size
+                sx = x_off + (cell_w - sw) // 2
+                sy = y_off + (cell_h - sh) // 2
+                composite_n.paste(sprite_n, (sx, sy), sprite_n)
+
+            normal_comp_path = os.path.join(OUTPUT_DIR,
+                                            "{}_normal_terrains.png".format(folder_name))
+            composite_n.save(normal_comp_path)
+            generated.append(normal_comp_path)
+            print("Terrain composite (normal):    {}".format(normal_comp_path))
+
+        except Exception as e:
+            print("Error creating terrain composite: {}".format(e))
+
     # Summary
     print()
     if generated:
