@@ -8,6 +8,8 @@ struct PlayerHallRecords
 };
 
 void RecordMixingPlayerSpotTriggered(void);
+bool8 StartRecordMixingDirect(void);
+bool8 IsRecordMixingTaskActive(void);
 void GetPlayerHallRecords(struct PlayerHallRecords *dst);
 
 #endif //GUARD_RECORD_MIXING_H

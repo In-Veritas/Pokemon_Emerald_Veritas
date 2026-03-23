@@ -37,6 +37,7 @@
 #include "pokemon.h"
 #include "random.h"
 #include "recorded_battle.h"
+#include "record_mixing.h"
 #include "roamer.h"
 #include "safari_zone.h"
 #include "scanline_effect.h"
@@ -2433,7 +2434,13 @@ static void EndLinkBattleInSteps(void)
         if (!IsTextPrinterActive(B_WIN_MSG))
         {
             if (IsLinkTaskFinished() == TRUE)
-                gBattleCommunication[MULTIUSE_STATE]++;
+            {
+                // Start automatic record mixing after link battle
+                if (StartRecordMixingDirect())
+                    gBattleCommunication[MULTIUSE_STATE] = 10; // Go to mixing wait
+                else
+                    gBattleCommunication[MULTIUSE_STATE]++; // Skip to close link
+            }
         }
         break;
     case 8:
@@ -2450,6 +2457,11 @@ static void EndLinkBattleInSteps(void)
             FreeBattleSpritesData();
             FreeMonSpritesGfx();
         }
+        break;
+    case 10:
+        // Wait for record mixing task to finish
+        if (!IsRecordMixingTaskActive())
+            gBattleCommunication[MULTIUSE_STATE] = 8; // Proceed to close link
         break;
     }
 }

@@ -168,6 +168,21 @@ void RecordMixingPlayerSpotTriggered(void)
     CreateTask_EnterCableClubSeat(Task_RecordMixing_Main);
 }
 
+bool8 StartRecordMixingDirect(void)
+{
+    if (!gReceivedRemoteLinkPlayers)
+        return FALSE;
+
+    CreateTask(Task_RecordMixing_Main, 10);
+    gSpecialVar_0x8005 = GetMultiplayerId();
+    return TRUE;
+}
+
+bool8 IsRecordMixingTaskActive(void)
+{
+    return FuncIsActiveTask(Task_RecordMixing_Main);
+}
+
 // these variables were const in R/S, but had to become changeable because of saveblocks changing RAM position
 static void SetSrcLookupPointers(void)
 {
