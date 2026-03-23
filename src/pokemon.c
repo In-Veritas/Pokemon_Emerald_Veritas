@@ -2386,6 +2386,18 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
     if (isTrueShiny)
         SetBoxMonData(boxMon, MON_DATA_TRUE_SHINY, &isTrueShiny);
 
+    // Mark if caught/created during Shiny Day event
+    if (IsPokeNewsActive(POKENEWS_SHINY_DAY))
+    {
+        u32 sdPersonality = GetBoxMonData(boxMon, MON_DATA_PERSONALITY, NULL);
+        u32 sdOtId = GetBoxMonData(boxMon, MON_DATA_OT_ID, NULL);
+        if (IsShinyOtIdPersonality(sdOtId, sdPersonality))
+        {
+            u32 shinyday = 1;
+            SetBoxMonData(boxMon, MON_DATA_SHINY_DAY, &shinyday);
+        }
+    }
+
     GiveBoxMonInitialMoveset(boxMon);
 }
 
@@ -4206,6 +4218,9 @@ u32 GetBoxMonData3(struct BoxPokemon *boxMon, s32 field, u8 *data)
     case MON_DATA_TRUE_SHINY:
         retVal = substruct0->free_sub0 & 1;
         break;
+    case MON_DATA_SHINY_DAY:
+        retVal = (substruct0->free_sub0 >> 2) & 1;
+        break;
     case MON_DATA_GENDER_FLAG:
         retVal = (substruct0->free_sub0 >> 1) & 1;
         break;
@@ -4544,6 +4559,9 @@ void SetBoxMonData(struct BoxPokemon *boxMon, s32 field, const void *dataArg)
         break;
     case MON_DATA_TRUE_SHINY:
         substruct0->free_sub0 = (substruct0->free_sub0 & ~1) | (*data & 1);
+        break;
+    case MON_DATA_SHINY_DAY:
+        substruct0->free_sub0 = (substruct0->free_sub0 & ~4) | ((*data & 1) << 2);
         break;
     case MON_DATA_GENDER_FLAG:
         substruct0->free_sub0 = (substruct0->free_sub0 & ~2) | ((*data & 1) << 1);

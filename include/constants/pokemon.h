@@ -75,6 +75,7 @@
 #define MON_DATA_NATURE            90
 #define MON_DATA_HIDDEN_NATURE     91
 #define MON_DATA_TRUE_SHINY        92
+#define MON_DATA_SHINY_DAY         94
 #define MON_DATA_GENDER_FLAG       93
 
 // Pokémon Stats

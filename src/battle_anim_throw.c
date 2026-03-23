@@ -2217,6 +2217,8 @@ void AnimTask_SetTargetToEffectBattler(u8 taskId)
 void TryShinyAnimation(u8 battler, struct Pokemon *mon)
 {
     bool8 isShiny;
+    bool8 trueShiny;
+    bool8 shinyDay;
     u32 otId, personality;
     u32 shinyValue;
     u8 taskCirc, taskDgnl;
@@ -2243,23 +2245,36 @@ void TryShinyAnimation(u8 battler, struct Pokemon *mon)
                 LoadCompressedSpritePaletteUsingHeap(&gBattleAnimPaletteTable[ANIM_TAG_GOLD_STARS - ANIM_SPRITES_START]);
             }
 
-            // Recolor sparkles: white for true shinies, blue for debug regular shinies
+            // Recolor sparkles based on shiny type:
+            // True Shiny + Shiny Day: light blue
+            // True Shiny: white
+            // Shiny Day: light yellow
+            // Normal shiny: gold (default, no recolor)
+            trueShiny = GetMonData(mon, MON_DATA_TRUE_SHINY);
+            shinyDay = GetMonData(mon, MON_DATA_SHINY_DAY);
             palIdx = IndexOfSpritePaletteTag(ANIM_TAG_GOLD_STARS);
             if (palIdx != 0xFF)
             {
                 palOffset = OBJ_PLTT_ID(palIdx);
-                if (GetMonData(mon, MON_DATA_TRUE_SHINY))
+                if (trueShiny && shinyDay)
                 {
+                    // True Shiny on Shiny Day: light blue
+                    BlendPalette(palOffset, 16, 13, RGB(16, 24, 31));
+                    CpuCopy16(&gPlttBufferFaded[palOffset], &gPlttBufferUnfaded[palOffset], PLTT_SIZE_4BPP);
+                }
+                else if (trueShiny)
+                {
+                    // True Shiny: white
                     BlendPalette(palOffset, 16, 13, RGB_WHITE);
                     CpuCopy16(&gPlttBufferFaded[palOffset], &gPlttBufferUnfaded[palOffset], PLTT_SIZE_4BPP);
                 }
-#if TX_DEBUG_SYSTEM_ENABLE == TRUE
-                else
+                else if (shinyDay)
                 {
-                    BlendPalette(palOffset, 16, 13, RGB(8, 12, 31));
+                    // Shiny Day: light yellow
+                    BlendPalette(palOffset, 16, 13, RGB(31, 31, 20));
                     CpuCopy16(&gPlttBufferFaded[palOffset], &gPlttBufferUnfaded[palOffset], PLTT_SIZE_4BPP);
                 }
-#endif
+                // else: normal shiny = default gold stars (no recolor)
             }
 
             taskCirc = CreateTask(Task_ShinyStars, 10);
