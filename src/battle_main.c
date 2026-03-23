@@ -2435,8 +2435,8 @@ static void EndLinkBattleInSteps(void)
         {
             if (IsLinkTaskFinished() == TRUE)
             {
-                // Start automatic record mixing after link battle
-                if (StartRecordMixingDirect())
+                // Start automatic record mixing after wired link battle only
+                if (!gWirelessCommType && StartRecordMixingDirect())
                     gBattleCommunication[MULTIUSE_STATE] = 10; // Go to mixing wait
                 else
                     gBattleCommunication[MULTIUSE_STATE]++; // Skip to close link
