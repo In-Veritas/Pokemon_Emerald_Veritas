@@ -989,6 +989,7 @@ static bool8 PrintAllOnCardBack(void)
     switch (sData->printState)
     {
     case 0:
+        sData->nextStatRow = 0;
         PrintNameOnCardBack();
         break;
     case 1:
