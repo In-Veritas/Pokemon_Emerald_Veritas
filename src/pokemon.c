@@ -2372,6 +2372,22 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
         SetBoxMonData(boxMon, MON_DATA_SPATK_IV, &iv);
         iv = (value & (MAX_IV_MASK << 10)) >> 10;
         SetBoxMonData(boxMon, MON_DATA_SPDEF_IV, &iv);
+
+        // Training Day: guarantee minimum IV of 10 per stat
+        if (IsPokeNewsActive(POKENEWS_TRAINING_DAY))
+        {
+            u8 statId;
+            u32 curIv;
+            for (statId = 0; statId < NUM_STATS; statId++)
+            {
+                curIv = GetBoxMonData(boxMon, MON_DATA_HP_IV + statId, NULL);
+                if (curIv < 10)
+                {
+                    curIv = 10 + (Random() % 22); // 10-31
+                    SetBoxMonData(boxMon, MON_DATA_HP_IV + statId, &curIv);
+                }
+            }
+        }
     }
 
     if (gSpeciesInfo[species].abilities[1])
@@ -5229,6 +5245,10 @@ bool8 PokemonUseItemEffects(struct Pokemon *mon, u16 item, u8 partyIndex, u8 mov
                         dataSigned = GetMonData(mon, sGetMonDataEVConstants[temp1], NULL);
                         evChange = temp2;
 
+                        // Training Day: double EV berry reduction potency
+                        if (evChange < 0 && IsPokeNewsActive(POKENEWS_TRAINING_DAY))
+                            evChange *= 2;
+
                         if (evChange > 0) // Increasing EV (HP or Atk)
                         {
                             // Has EV increase limit already been reached?
@@ -5454,6 +5474,11 @@ bool8 PokemonUseItemEffects(struct Pokemon *mon, u16 item, u8 partyIndex, u8 mov
                         temp2 = itemEffect[itemEffectParam];
                         dataSigned = GetMonData(mon, sGetMonDataEVConstants[temp1 + 2], NULL);
                         evChange = temp2;
+
+                        // Training Day: double EV berry reduction potency
+                        if (evChange < 0 && IsPokeNewsActive(POKENEWS_TRAINING_DAY))
+                            evChange *= 2;
+
                         if (evChange > 0) // Increasing EV
                         {
                             // Has EV increase limit already been reached?
@@ -6276,6 +6301,10 @@ void MonGainEVs(struct Pokemon *mon, u16 defeatedSpecies)
         }
 
         if (holdEffect == HOLD_EFFECT_MACHO_BRACE)
+            evIncrease *= 2;
+
+        // Training Day: double EV gains
+        if (IsPokeNewsActive(POKENEWS_TRAINING_DAY))
             evIncrease *= 2;
 
         if (totalEVs + (s16)evIncrease > MAX_TOTAL_EVS)

@@ -201,3 +201,38 @@ gPokeNewsTextShinyDay_Ending::
 	.string "shiny POKéMON, hurry! The event\l"
 	.string "ends tonight!\p"
 	.string "That's the news on POKéMON NEWS.$"
+
+gPokeNewsTextTrainingDay_Upcoming::
+	.string "Greetings!\n"
+	.string "It's time for POKéMON NEWS.\p"
+	.string "Great news for TRAINERS!\n"
+	.string "A special training phenomenon\l"
+	.string "is approaching in {STR_VAR_1} day(s)!\p"
+	.string "Experts say POKéMON will gain\n"
+	.string "effort faster and wild POKéMON\l"
+	.string "will have stronger potential!\p"
+	.string "Start preparing your teams now!\p"
+	.string "That's the news on POKéMON NEWS.$"
+
+gPokeNewsTextTrainingDay_Ongoing::
+	.string "Greetings!\n"
+	.string "It's time for POKéMON NEWS.\p"
+	.string "The training phenomenon is\n"
+	.string "happening RIGHT NOW!\p"
+	.string "TRAINERS report their POKéMON\n"
+	.string "are growing stronger than usual!\p"
+	.string "Wild POKéMON are also showing\n"
+	.string "remarkable potential today!\p"
+	.string "Get out there and train!\p"
+	.string "That's the news on POKéMON NEWS.$"
+
+gPokeNewsTextTrainingDay_Ending::
+	.string "Greetings!\n"
+	.string "It's time for POKéMON NEWS.\p"
+	.string "The training phenomenon is\n"
+	.string "fading as the day ends...\p"
+	.string "If you haven't taken advantage\n"
+	.string "of the boosted training, hurry!\p"
+	.string "Tomorrow, things return to\n"
+	.string "normal.\p"
+	.string "That's the news on POKéMON NEWS.$"
