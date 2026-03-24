@@ -18,6 +18,7 @@
 #include "m4a.h"
 #include "palette.h"
 #include "party_menu.h"
+#include "player_styles.h"
 #include "pokeball.h"
 #include "pokemon.h"
 #include "random.h"
@@ -3120,6 +3121,8 @@ static void PlayerHandleIntroTrainerBallThrow(void)
 
     paletteNum = AllocSpritePalette(0xD6F8);
     LoadCompressedPalette(gTrainerBackPicPaletteTable[trainerPicId].data, OBJ_PLTT_ID(paletteNum), PLTT_SIZE_4BPP);
+    if (GetPlayerStyle() != PLAYER_STYLE_NONE)
+        ApplyPlayerStyleToTrainerPalette(OBJ_PLTT_ID(paletteNum), gSaveBlock2Ptr->playerGender != MALE);
     gSprites[gBattlerSpriteIds[gActiveBattler]].oam.paletteNum = paletteNum;
 
     taskId = CreateTask(Task_StartSendOutAnim, 5);

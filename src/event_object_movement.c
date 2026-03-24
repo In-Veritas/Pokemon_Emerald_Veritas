@@ -24,6 +24,7 @@
 #include "metatile_behavior.h"
 #include "overworld.h"
 #include "palette.h"
+#include "player_styles.h"
 #include "pokemon.h"
 #include "pokeball.h"
 #include "random.h"
@@ -2893,9 +2894,22 @@ void FreeAndReserveObjectSpritePalettes(void)
 u8 LoadObjectEventPalette(u16 paletteTag)
 {
     u16 i = FindObjectEventPaletteIndexByTag(paletteTag);
+    u8 palSlot;
+
     if (i == 0xFF)
         return i;
-    return LoadSpritePaletteIfTagExists(&sObjectEventSpritePalettes[i]);
+    palSlot = LoadSpritePaletteIfTagExists(&sObjectEventSpritePalettes[i]);
+
+    // Apply player clothing style override
+    if (GetPlayerStyle() != PLAYER_STYLE_NONE && palSlot != 0xFF)
+    {
+        if (paletteTag == OBJ_EVENT_PAL_TAG_BRENDAN || paletteTag == OBJ_EVENT_PAL_TAG_RS_BRENDAN)
+            ApplyPlayerStyleToOWPalette(palSlot, FALSE);
+        else if (paletteTag == OBJ_EVENT_PAL_TAG_MAY || paletteTag == OBJ_EVENT_PAL_TAG_RS_MAY)
+            ApplyPlayerStyleToOWPalette(palSlot, TRUE);
+    }
+
+    return palSlot;
 }
 
 static void UNUSED LoadObjectEventPaletteSet(u16 *paletteTags)
@@ -2917,10 +2931,18 @@ static u8 LoadSpritePaletteIfTagExists(const struct SpritePalette *spritePalette
 
 void PatchObjectPalette(u16 paletteTag, u8 paletteSlot)
 {
-    // paletteTag is assumed to exist in sObjectEventSpritePalettes
     u8 paletteIndex = FindObjectEventPaletteIndexByTag(paletteTag);
 
     LoadPalette(sObjectEventSpritePalettes[paletteIndex].data, OBJ_PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
+
+    // Apply player clothing style override
+    if (GetPlayerStyle() != PLAYER_STYLE_NONE)
+    {
+        if (paletteTag == OBJ_EVENT_PAL_TAG_BRENDAN || paletteTag == OBJ_EVENT_PAL_TAG_RS_BRENDAN)
+            ApplyPlayerStyleToOWPalette(paletteSlot, FALSE);
+        else if (paletteTag == OBJ_EVENT_PAL_TAG_MAY || paletteTag == OBJ_EVENT_PAL_TAG_RS_MAY)
+            ApplyPlayerStyleToOWPalette(paletteSlot, TRUE);
+    }
 }
 
 void PatchObjectPaletteRange(const u16 *paletteTags, u8 minSlot, u8 maxSlot)

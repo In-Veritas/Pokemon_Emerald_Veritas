@@ -31,12 +31,14 @@
 #include "menu_specialized.h"
 #include "constants/field_specials.h"
 #include "event_data.h"
+#include "player_styles.h"
 
 // Top level PC menu options
 enum {
     MENU_ITEMSTORAGE,
     MENU_MAILBOX,
     MENU_DECORATION,
+    MENU_CLOTHES,
     MENU_TURNOFF
 };
 
@@ -115,6 +117,7 @@ static void Mailbox_MailOptionsProcessInput(u8);
 static void PlayerPC_ItemStorage(u8);
 static void PlayerPC_Mailbox(u8);
 static void PlayerPC_Decoration(u8);
+static void PlayerPC_Clothes(u8);
 static void PlayerPC_TurnOff(u8);
 
 static void Mailbox_DoMailMoveToBag(u8);
@@ -191,12 +194,15 @@ static const u8 *const sItemStorage_OptionDescriptions[] =
     [MENU_EXIT]     = gText_GoBackPrevMenu,
 };
 
+static const u8 sText_ChangeClothes[] = _("Clothes");
+
 static const struct MenuAction sPlayerPCMenuActions[] =
 {
-    [MENU_ITEMSTORAGE] = { gText_ItemStorage, {PlayerPC_ItemStorage} },
-    [MENU_MAILBOX]     = { gText_Mailbox,     {PlayerPC_Mailbox} },
-    [MENU_DECORATION]  = { gText_Decoration,  {PlayerPC_Decoration} },
-    [MENU_TURNOFF]     = { gText_TurnOff,     {PlayerPC_TurnOff} }
+    [MENU_ITEMSTORAGE] = { gText_ItemStorage,  {PlayerPC_ItemStorage} },
+    [MENU_MAILBOX]     = { gText_Mailbox,      {PlayerPC_Mailbox} },
+    [MENU_DECORATION]  = { gText_Decoration,   {PlayerPC_Decoration} },
+    [MENU_CLOTHES]     = { sText_ChangeClothes, {PlayerPC_Clothes} },
+    [MENU_TURNOFF]     = { gText_TurnOff,      {PlayerPC_TurnOff} }
 };
 
 static const u8 sBedroomPC_OptionOrder[] =
@@ -204,6 +210,7 @@ static const u8 sBedroomPC_OptionOrder[] =
     MENU_ITEMSTORAGE,
     MENU_MAILBOX,
     MENU_DECORATION,
+    MENU_CLOTHES,
     MENU_TURNOFF
 };
 #define NUM_BEDROOM_PC_OPTIONS ARRAY_COUNT(sBedroomPC_OptionOrder)
@@ -212,6 +219,7 @@ static const u8 sPlayerPC_OptionOrder[] =
 {
     MENU_ITEMSTORAGE,
     MENU_MAILBOX,
+    MENU_CLOTHES,
     MENU_TURNOFF
 };
 #define NUM_PLAYER_PC_OPTIONS ARRAY_COUNT(sPlayerPC_OptionOrder)
@@ -246,7 +254,7 @@ static const struct WindowTemplate sWindowTemplates_MainMenus[] =
         .tilemapLeft = 1,
         .tilemapTop = 1,
         .width = 9,
-        .height = 6,
+        .height = 8,
         .paletteNum = 15,
         .baseBlock = 1
     },
@@ -255,7 +263,7 @@ static const struct WindowTemplate sWindowTemplates_MainMenus[] =
         .tilemapLeft = 1,
         .tilemapTop = 1,
         .width = 9,
-        .height = 8,
+        .height = 10,
         .paletteNum = 15,
         .baseBlock = 1
     },
@@ -500,6 +508,11 @@ static void PlayerPC_Mailbox(u8 taskId)
 static void PlayerPC_Decoration(u8 taskId)
 {
     DoPlayerRoomDecorationMenu(taskId);
+}
+
+static void PlayerPC_Clothes(u8 taskId)
+{
+    ShowStyleMenu(taskId);
 }
 
 static void PlayerPC_TurnOff(u8 taskId)

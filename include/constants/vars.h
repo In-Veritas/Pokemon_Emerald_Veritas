@@ -242,7 +242,7 @@
 #define VAR_LINK_BATTLE_MUSIC                            0x40DE // Repurposed unused gift var for link battle music selection
 #define VAR_SHOW_ZINNIA                                  0x40DF // Repurposed unused gift var for Sky Pillar Zinnia trigger
 #define VAR_SE_VOLUME                                    0x40E0 // 0=medium(50%), 1=quiet(mute), 2=loud(100%), 3=low(25%), 4=high(75%)
-#define VAR_GIFT_UNUSED_4                                0x40E1 // Var is written to, but never read
+#define VAR_PLAYER_STYLE                                 0x40E1 // Player clothing style index (0=default, 1-24=custom styles)
 #define VAR_GIFT_UNUSED_5                                0x40E2 // Var is written to, but never read
 #define VAR_GIFT_UNUSED_6                                0x40E3 // Var is written to, but never read
 #define VAR_GIFT_UNUSED_7                                0x40E4 // var is written to, but never read

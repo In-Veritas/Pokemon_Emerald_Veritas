@@ -12,6 +12,7 @@
 #include "main.h"
 #include "m4a.h"
 #include "palette.h"
+#include "player_styles.h"
 #include "pokeball.h"
 #include "pokemon.h"
 #include "recorded_battle.h"
@@ -1679,6 +1680,8 @@ static void RecordedPlayerHandleIntroTrainerBallThrow(void)
         trainerPicId = GetPlayerPreferredBackPicId();
 
     LoadCompressedPalette(gTrainerBackPicPaletteTable[trainerPicId].data, OBJ_PLTT_ID(paletteNum), PLTT_SIZE_4BPP);
+    if (GetPlayerStyle() != PLAYER_STYLE_NONE && trainerPicId == GetPlayerPreferredBackPicId())
+        ApplyPlayerStyleToTrainerPalette(OBJ_PLTT_ID(paletteNum), gSaveBlock2Ptr->playerGender != MALE);
 
     gSprites[gBattlerSpriteIds[gActiveBattler]].oam.paletteNum = paletteNum;
 

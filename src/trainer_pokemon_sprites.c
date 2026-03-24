@@ -9,6 +9,7 @@
 #include "pokemon.h"
 #include "event_data.h"
 #include "constants/trainers.h"
+#include "player_styles.h"
 
 #define PICS_COUNT 8
 
@@ -94,6 +95,9 @@ static bool16 DecompressPic_HandleDeoxys(u16 species, u32 personality, bool8 isF
 
 static void LoadPicPaletteByTagOrSlot(u16 species, u32 otId, u32 personality, u8 paletteSlot, u16 paletteTag, bool8 isTrainer)
 {
+    bool8 isFemale;
+    u8 spritePalSlot;
+
     if (!isTrainer)
     {
         if (paletteTag == TAG_NONE)
@@ -113,11 +117,27 @@ static void LoadPicPaletteByTagOrSlot(u16 species, u32 otId, u32 personality, u8
         {
             sCreatingSpriteTemplate.paletteTag = TAG_NONE;
             LoadCompressedPalette(gTrainerFrontPicPaletteTable[species].data, OBJ_PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
+            // Apply player clothing style
+            if (GetPlayerStyle() != PLAYER_STYLE_NONE
+                && species == PlayerGenderToFrontTrainerPicId(gSaveBlock2Ptr->playerGender))
+            {
+                isFemale = (gSaveBlock2Ptr->playerGender != MALE);
+                ApplyPlayerStyleToTrainerPalette(OBJ_PLTT_ID(paletteSlot), isFemale);
+            }
         }
         else
         {
             sCreatingSpriteTemplate.paletteTag = paletteTag;
             LoadCompressedSpritePalette(&gTrainerFrontPicPaletteTable[species]);
+            // Apply player clothing style
+            if (GetPlayerStyle() != PLAYER_STYLE_NONE
+                && species == PlayerGenderToFrontTrainerPicId(gSaveBlock2Ptr->playerGender))
+            {
+                spritePalSlot = IndexOfSpritePaletteTag(gTrainerFrontPicPaletteTable[species].tag);
+                isFemale = (gSaveBlock2Ptr->playerGender != MALE);
+                if (spritePalSlot != 0xFF)
+                    ApplyPlayerStyleToTrainerPalette(OBJ_PLTT_ID(spritePalSlot), isFemale);
+            }
         }
     }
 }
@@ -125,9 +145,18 @@ static void LoadPicPaletteByTagOrSlot(u16 species, u32 otId, u32 personality, u8
 static void LoadPicPaletteBySlot(u16 species, u32 otId, u32 personality, u8 paletteSlot, bool8 isTrainer)
 {
     if (!isTrainer)
+    {
         LoadCompressedPalette(GetMonSpritePalFromSpeciesAndPersonality(species, otId, personality), PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
+    }
     else
+    {
         LoadCompressedPalette(gTrainerFrontPicPaletteTable[species].data, PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
+        if (GetPlayerStyle() != PLAYER_STYLE_NONE
+            && species == PlayerGenderToFrontTrainerPicId(gSaveBlock2Ptr->playerGender))
+        {
+            ApplyPlayerStyleToTrainerPalette(PLTT_ID(paletteSlot), gSaveBlock2Ptr->playerGender != MALE);
+        }
+    }
 }
 
 static void AssignSpriteAnimsTable(bool8 isTrainer)

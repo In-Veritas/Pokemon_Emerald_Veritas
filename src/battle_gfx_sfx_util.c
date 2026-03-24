@@ -21,6 +21,8 @@
 #include "decompress.h"
 #include "data.h"
 #include "palette.h"
+#include "player_styles.h"
+#include "event_data.h"
 #include "contest.h"
 #include "constants/songs.h"
 #include "constants/rgb.h"
@@ -681,20 +683,43 @@ void BattleGfxSfxDummy2(u16 species)
 void DecompressTrainerFrontPic(u16 frontPicId, u8 battlerId)
 {
     u8 position = GetBattlerPosition(battlerId);
+    u8 palSlot;
+    bool8 isFemale;
+
     DecompressPicFromTable_2(&gTrainerFrontPicTable[frontPicId],
                              gMonSpritesGfxPtr->sprites.ptr[position],
                              SPECIES_NONE);
     LoadCompressedSpritePalette(&gTrainerFrontPicPaletteTable[frontPicId]);
+
+    // Apply player clothing style to front pic palette
+    if (GetPlayerStyle() != PLAYER_STYLE_NONE
+        && frontPicId == PlayerGenderToFrontTrainerPicId(gSaveBlock2Ptr->playerGender))
+    {
+        palSlot = IndexOfSpritePaletteTag(gTrainerFrontPicPaletteTable[frontPicId].tag);
+        isFemale = (gSaveBlock2Ptr->playerGender != MALE);
+        if (palSlot != 0xFF)
+            ApplyPlayerStyleToTrainerPalette(OBJ_PLTT_ID(palSlot), isFemale);
+    }
 }
 
 void DecompressTrainerBackPic(u16 backPicId, u8 battlerId)
 {
     u8 position = GetBattlerPosition(battlerId);
+    bool8 isFemale;
+
     DecompressPicFromTable_2(&gTrainerBackPicTable[backPicId],
                              gMonSpritesGfxPtr->sprites.ptr[position],
                              SPECIES_NONE);
     LoadCompressedPalette(gTrainerBackPicPaletteTable[backPicId].data,
                           OBJ_PLTT_ID(battlerId), PLTT_SIZE_4BPP);
+
+    // Apply player clothing style to back pic palette
+    if (GetPlayerStyle() != PLAYER_STYLE_NONE
+        && backPicId == GetPlayerPreferredBackPicId())
+    {
+        isFemale = (gSaveBlock2Ptr->playerGender != MALE);
+        ApplyPlayerStyleToTrainerPalette(OBJ_PLTT_ID(battlerId), isFemale);
+    }
 }
 
 void BattleGfxSfxDummy3(u8 gender)

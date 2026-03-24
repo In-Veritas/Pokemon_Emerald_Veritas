@@ -38,6 +38,7 @@
 #include "money.h"
 #include "new_game.h"
 #include "palette.h"
+#include "player_styles.h"
 #include "play_time.h"
 #include "random.h"
 #include "roamer.h"
@@ -1508,6 +1509,7 @@ static void OverworldBasic(void)
     CameraUpdate();
     UpdateCameraPanning();
     BuildOamBuffer();
+    PlayerStyleOverworldUpdate();
     UpdatePaletteFade();
     UpdateTilesetAnimations();
     DoScheduledBgTilemapCopiesToVram();
