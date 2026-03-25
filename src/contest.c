@@ -31,6 +31,7 @@
 #include "battle_message.h"
 #include "event_scripts.h"
 #include "event_data.h"
+#include "player_styles.h"
 #include "strings.h"
 #include "contest_effect.h"
 #include "contest_link.h"
@@ -5822,6 +5823,8 @@ static void SetConestLiveUpdateTVData(void)
     // Players mon didn't win, don't generate show
     if (gContestFinalStandings[gContestPlayerMonIndex] != 0)
         return;
+
+    MarkContestWonForOutfit();
 
     // Get winner id (unnecessary, we now know it's gContestPlayerMonIndex)
     winner = 0;

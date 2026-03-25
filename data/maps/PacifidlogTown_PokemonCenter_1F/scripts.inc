@@ -48,3 +48,4 @@ PacifidlogTown_PokemonCenter_1F_Text_AncestorsLivedOnBoats:
 	.string "because they were searching for\l"
 	.string "something.$"
 
+

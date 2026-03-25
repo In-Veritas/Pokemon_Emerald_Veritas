@@ -549,3 +549,10 @@ gSpecials::
 	def_special Debug_MarkLastPartyMonTrueShiny
 	def_special CreateBossLugia
 	def_special BattleSetup_StartLugiaBossBattle
+	def_special CheckPartyForStarterUnlocks
+	def_special Fashionista_CountPassiveUnlocks
+	def_special Fashionista_GetNextPassiveUnlock
+	def_special Fashionista_HasShowablePokemon
+	def_special Fashionista_CheckShownPokemon
+	def_special Fashionista_UnlockOutfit
+	def_special Fashionista_GetTip

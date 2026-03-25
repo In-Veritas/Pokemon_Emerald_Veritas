@@ -115,3 +115,8 @@ LavaridgeTown_PokemonCenter_1F_Text_RivalWaits:
 	.string "I'll be here for a while, just in\n"
 	.string "case you change your mind.\p"
 	.string "See you around!$"
+
+LavaridgeTown_PokemonCenter_1F_EventScript_Fashionista::
+	setvar VAR_0x8006, 1
+	goto EventScript_Fashionista
+	end

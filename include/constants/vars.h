@@ -243,7 +243,7 @@
 #define VAR_SHOW_ZINNIA                                  0x40DF // Repurposed unused gift var for Sky Pillar Zinnia trigger
 #define VAR_SE_VOLUME                                    0x40E0 // 0=medium(50%), 1=quiet(mute), 2=loud(100%), 3=low(25%), 4=high(75%)
 #define VAR_PLAYER_STYLE                                 0x40E1 // Player clothing style index (0=default, 1-24=custom styles)
-#define VAR_GIFT_UNUSED_5                                0x40E2 // Var is written to, but never read
+#define VAR_OUTFIT_CONDITIONS                            0x40E2 // Bitmask for hook-based outfit unlock conditions
 #define VAR_GIFT_UNUSED_6                                0x40E3 // Var is written to, but never read
 #define VAR_GIFT_UNUSED_7                                0x40E4 // var is written to, but never read
 #define VAR_ROUTE117_WILD_SET                            0x40E5

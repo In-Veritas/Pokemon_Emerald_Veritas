@@ -40,3 +40,8 @@ SlateportCity_PokemonCenter_1F_Text_TradedMonWithFriend:
 	.string "If a traded POKéMON is holding an\n"
 	.string "item, it makes me twice as happy!$"
 
+SlateportCity_PokemonCenter_1F_EventScript_Fashionista::
+	setvar VAR_0x8006, 0
+	goto EventScript_Fashionista
+	end
+

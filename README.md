@@ -52,6 +52,21 @@ This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (
 * Style affects overworld sprites, battle back sprites, **bag menu sprite**, **region map/fly menu icons**, and **secret base grayscale icons**
 * Style option unlocked after defeating the Elite 4 (correctly gated behind FLAG_SYS_GAME_CLEAR)
 
+#### Outfit System
+
+* **27 unlockable clothing palette variants** for the player character, selectable via "OUTFITS" on any PC
+* Outfits change the player's colors on overworld sprites, battle sprites, trainer card, and Hall of Fame
+* Outfits are unlocked by visiting **Fashionista NPCs** in 4 Pokemon Centers:
+  * **Slateport** (Team Magma male) — stoic perfectionist personality
+  * **Lavaridge** (Team Magma female) — bubbly and flirty personality
+  * **Lilycove** (Team Aqua male) — informal graffiti artist personality
+  * **Sootopolis** (Team Aqua female) — shy and cute personality
+* Show Pokemon from your party to unlock outfits; some require multiple species caught in the Pokedex
+* Team-restricted outfits: Magma/Groudon only from Magma NPCs, Aqua/Kyogre only from Aqua NPCs
+* Passive unlocks for non-Pokemon conditions (contest wins, champion with starters, trades, etc.)
+* Each Fashionista gives a daily tip about a locked outfit, with personality-flavored dialog
+* Available outfits: Aqua, Brazil, Chikorita, Cyndaquil, Dark, Diver, Enigma, Fabulous, Forest, Groudon, Historic, Ho-Oh, Kyogre, Lugia, Magma, Master, Mudkip, Ocean, Old, Red, Redmoon, Royal, Sakura, Silver, Torchic, Totodile, Treecko
+
 #### Legendary Title Screen Animation
 
 * Added animated title screen featuring Groudon and Kyogre(Random chance after creating a Save. Without a save the Title Screen Legendary is always Rayquaza)

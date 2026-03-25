@@ -25,6 +25,7 @@
 #include "m4a.h"
 #include "mail.h"
 #include "event_data.h"
+#include "player_styles.h"
 #include "pokemon_storage_system.h"
 #include "task.h"
 #include "naming_screen.h"

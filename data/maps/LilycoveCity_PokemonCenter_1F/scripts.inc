@@ -66,3 +66,8 @@ LilycoveCity_PokemonCenter_1F_Text_HaventSeenRottenScoundrels:
 	.string "POKéMON and rip off METEORITES…\p"
 	.string "I haven't seen them around recently.$"
 
+LilycoveCity_PokemonCenter_1F_EventScript_Fashionista::
+	setvar VAR_0x8006, 2
+	goto EventScript_Fashionista
+	end
+

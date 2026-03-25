@@ -136,7 +136,7 @@ void ClearMysteryGiftVars(void)
     VarSet(VAR_SHOW_ZINNIA, 0);
     VarSet(VAR_SE_VOLUME, 0);
     VarSet(VAR_PLAYER_STYLE, 0);
-    VarSet(VAR_GIFT_UNUSED_5, 0);
+    VarSet(VAR_OUTFIT_CONDITIONS, 0);
     VarSet(VAR_GIFT_UNUSED_6, 0);
     VarSet(VAR_GIFT_UNUSED_7, 0);
 }

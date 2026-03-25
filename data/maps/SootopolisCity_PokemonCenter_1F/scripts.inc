@@ -80,3 +80,7 @@ SootopolisCity_PokemonCenter_1F_Text_ArentPokemonOurFriends:
 	.string "Aren't POKéMON our friends?\p"
 	.string "Why are they going wild this way?$"
 
+SootopolisCity_PokemonCenter_1F_EventScript_Fashionista::
+	setvar VAR_0x8006, 3
+	goto EventScript_Fashionista
+	end

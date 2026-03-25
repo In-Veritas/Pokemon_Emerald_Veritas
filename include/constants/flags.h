@@ -704,33 +704,35 @@
 #define FLAG_ROAMING_LATI_CAUGHT_OR_DEFEATED                        0x298 // Roaming Lati was caught or defeated
 #define FLAG_DEFEATED_BOSS_LUGIA                                    0x299 // Boss Lugia defeated on Southern Island
 #define FLAG_CAUGHT_BOSS_LUGIA                                     0x29A // Boss Lugia caught on Southern Island
-#define FLAG_UNUSED_0x29B                                          0x29B // Unused Flag
-#define FLAG_UNUSED_0x29C                                          0x29C // Unused Flag
-#define FLAG_UNUSED_0x29D                                          0x29D // Unused Flag
-#define FLAG_UNUSED_0x29E                                          0x29E // Unused Flag
-#define FLAG_UNUSED_0x29F                                          0x29F // Unused Flag
-#define FLAG_UNUSED_0x2A0                                          0x2A0 // Unused Flag
-#define FLAG_UNUSED_0x2A1                                          0x2A1 // Unused Flag
-#define FLAG_UNUSED_0x2A2                                          0x2A2 // Unused Flag
-#define FLAG_UNUSED_0x2A3                                          0x2A3 // Unused Flag
-#define FLAG_UNUSED_0x2A4                                          0x2A4 // Unused Flag
-#define FLAG_UNUSED_0x2A5                                          0x2A5 // Unused Flag
-#define FLAG_UNUSED_0x2A6                                          0x2A6 // Unused Flag
-#define FLAG_UNUSED_0x2A7                                          0x2A7 // Unused Flag
-#define FLAG_UNUSED_0x2A8                                          0x2A8 // Unused Flag
-#define FLAG_UNUSED_0x2A9                                          0x2A9 // Unused Flag
-#define FLAG_UNUSED_0x2AA                                          0x2AA // Unused Flag
-#define FLAG_UNUSED_0x2AB                                          0x2AB // Unused Flag
-#define FLAG_UNUSED_0x2AC                                          0x2AC // Unused Flag
-#define FLAG_UNUSED_0x2AD                                          0x2AD // Unused Flag
-#define FLAG_UNUSED_0x2AE                                          0x2AE // Unused Flag
-#define FLAG_UNUSED_0x2AF                                          0x2AF // Unused Flag
-#define FLAG_UNUSED_0x2B0                                          0x2B0 // Unused Flag
-#define FLAG_UNUSED_0x2B1                                          0x2B1 // Unused Flag
-#define FLAG_UNUSED_0x2B2                                          0x2B2 // Unused Flag
-#define FLAG_UNUSED_0x2B3                                          0x2B3 // Unused Flag
-#define FLAG_UNUSED_0x2B4                                          0x2B4 // Unused Flag
-#define FLAG_SYS_NO_COLLISION                                      0x2B5 // Unused Flag // Debug
+// Player style unlock flags (one per style, indices match sPlayerStyles[])
+#define FLAG_STYLE_UNLOCKED_BRAZIL                                 0x29B
+#define FLAG_STYLE_UNLOCKED_CHIKORITA                              0x29C
+#define FLAG_STYLE_UNLOCKED_CYNDAQUIL                              0x29D
+#define FLAG_STYLE_UNLOCKED_DARK                                   0x29E
+#define FLAG_STYLE_UNLOCKED_DIVER                                  0x29F
+#define FLAG_STYLE_UNLOCKED_ENIGMA                                 0x2A0
+#define FLAG_STYLE_UNLOCKED_FABULOUS                               0x2A1
+#define FLAG_STYLE_UNLOCKED_FOREST                                 0x2A2
+#define FLAG_STYLE_UNLOCKED_GROUDON                                0x2A3
+#define FLAG_STYLE_UNLOCKED_HISTORIC                               0x2A4
+#define FLAG_STYLE_UNLOCKED_HOOH                                   0x2A5
+#define FLAG_STYLE_UNLOCKED_KYOGRE                                 0x2A6
+#define FLAG_STYLE_UNLOCKED_LUGIA                                  0x2A7
+#define FLAG_STYLE_UNLOCKED_MAGMA                                  0x2A8
+#define FLAG_STYLE_UNLOCKED_MASTER                                 0x2A9
+#define FLAG_STYLE_UNLOCKED_MUDKIP                                 0x2AA
+#define FLAG_STYLE_UNLOCKED_OCEAN                                  0x2AB
+#define FLAG_STYLE_UNLOCKED_OLD                                    0x2AC
+#define FLAG_STYLE_UNLOCKED_RED                                    0x2AD
+#define FLAG_STYLE_UNLOCKED_REDMOON                                0x2AE
+#define FLAG_STYLE_UNLOCKED_ROYAL                                  0x2AF
+#define FLAG_STYLE_UNLOCKED_SAKURA                                 0x2B0
+#define FLAG_STYLE_UNLOCKED_AQUA                               0x2B1
+#define FLAG_STYLE_UNLOCKED_SILVER                                 0x2B2
+#define FLAG_STYLE_UNLOCKED_TORCHIC                                0x2B3
+#define FLAG_STYLE_UNLOCKED_TOTODILE                               0x2B4
+#define FLAG_STYLE_UNLOCKED_TREECKO                                0x2B5
+#define FLAG_SYS_NO_COLLISION                                      0x2B5 // Shares with TREECKO unlock (debug only)
 #define FLAG_SYS_NO_ENCOUNTER                                      0x2B6 // Unused Flag // Debug
 #define FLAG_SYS_NO_TRAINER_SEE                                    0x2B7 // Unused Flag // Debug
 #define FLAG_SYS_NO_BAG_USE                                        0x2B8 // Unused Flag // Debug

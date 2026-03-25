@@ -194,7 +194,7 @@ static const u8 *const sItemStorage_OptionDescriptions[] =
     [MENU_EXIT]     = gText_GoBackPrevMenu,
 };
 
-static const u8 sText_ChangeClothes[] = _("Clothes");
+static const u8 sText_ChangeClothes[] = _("OUTFITS");
 
 static const struct MenuAction sPlayerPCMenuActions[] =
 {

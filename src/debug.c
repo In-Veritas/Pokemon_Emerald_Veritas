@@ -184,6 +184,7 @@ enum { // Give
     DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_GROUDON,
     DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_KYOGRE,
     DEBUG_GIVE_MENU_ITEM_ENCOUNTER_LUGIA,
+    DEBUG_GIVE_MENU_ITEM_UNLOCK_ALL_OUTFITS,
 };
 enum {
     DEBUG_PKM_CREATOR_MENU_ITEM_PARTY_ADD,               // Add to party
@@ -388,6 +389,7 @@ static void DebugAction_Give_GiveShadow(u8 taskId);
 static void DebugAction_Give_BattleShadow(u8 taskId);
 static void DebugAction_Give_WarpShadow(u8 taskId);
 static void DebugAction_Give_EncounterShinyLegendary(u8 taskId);
+static void DebugAction_Give_UnlockAllOutfits(u8 taskId);
 
 static void DebugAction_PkmCreator_Party_Add(u8 taskid);
 static void DebugAction_PkmCreator_Party_Edit(u8 taskid);
@@ -590,6 +592,7 @@ static const u8 sDebugText_Give_ShinyLugia[] =          _("Shiny Lugia");
 static const u8 sDebugText_Give_ShinyGroudon[] =        _("Shiny Groudon");
 static const u8 sDebugText_Give_ShinyKyogre[] =         _("Shiny Kyogre");
 static const u8 sDebugText_Give_Lugia[] =               _("Lugia");
+static const u8 sDebugText_Give_UnlockOutfits[] =       _("Unlock All Outfits");
 // Pokemon Creator
 static const u8 sDebugText_PkmCreator_Party_Add[] =                 _("Party add");
 static const u8 sDebugText_PkmCreator_Party_Edit[] =                _("Party edit");
@@ -774,6 +777,7 @@ static const struct ListMenuItem sDebugMenu_Items_Give[] =
     [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_GROUDON]  = {sDebugText_Give_ShinyGroudon,  DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_GROUDON},
     [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_KYOGRE]   = {sDebugText_Give_ShinyKyogre,   DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_KYOGRE},
     [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_LUGIA]           = {sDebugText_Give_Lugia,         DEBUG_GIVE_MENU_ITEM_ENCOUNTER_LUGIA},
+    [DEBUG_GIVE_MENU_ITEM_UNLOCK_ALL_OUTFITS]        = {sDebugText_Give_UnlockOutfits, DEBUG_GIVE_MENU_ITEM_UNLOCK_ALL_OUTFITS},
 };
 static const struct ListMenuItem sDebugMenu_Items_PkmCreator[] =
 {
@@ -884,6 +888,7 @@ static void (*const sDebugMenu_Actions_Give[])(u8) =
     [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_GROUDON]  = DebugAction_Give_EncounterShinyLegendary,
     [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_SHINY_KYOGRE]   = DebugAction_Give_EncounterShinyLegendary,
     [DEBUG_GIVE_MENU_ITEM_ENCOUNTER_LUGIA]           = DebugAction_Give_EncounterShinyLegendary,
+    [DEBUG_GIVE_MENU_ITEM_UNLOCK_ALL_OUTFITS]        = DebugAction_Give_UnlockAllOutfits,
 };
 static void (*const sDebugMenu_Actions_PkmCreator[])(u8) =
 {
@@ -3800,6 +3805,17 @@ static void DebugAction_Give_EncounterShinyLegendary(u8 taskId)
 
     BattleSetup_StartTrainerBattle_Debug();
     Debug_DestroyMenu_Full(taskId);
+}
+
+static void DebugAction_Give_UnlockAllOutfits(u8 taskId)
+{
+    u16 flag;
+
+    for (flag = FLAG_STYLE_UNLOCKED_BRAZIL; flag <= FLAG_STYLE_UNLOCKED_TREECKO; flag++)
+        FlagSet(flag);
+    PlaySE(SE_USE_ITEM);
+    Debug_DestroyMenu(taskId);
+    Debug_ReShowMainMenu();
 }
 
 // *******************************
