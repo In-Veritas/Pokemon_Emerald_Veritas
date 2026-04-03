@@ -135,10 +135,11 @@
 #define LINK_MUSIC_VS_LEGENDARY  5
 #define LINK_MUSIC_VS_REGI       6
 #define LINK_MUSIC_VS_JIRACHI    7
-#define LINK_MUSIC_VS_MAGMA_AQUA 8
-#define LINK_MUSIC_RANDOM        9
-#define LINK_MUSIC_CANCEL        10
-#define LINK_MUSIC_COUNT         11
+#define LINK_MUSIC_VS_MAGMA_AQUA  8
+#define LINK_MUSIC_VS_ELITE_FOUR 9
+#define LINK_MUSIC_RANDOM        10
+#define LINK_MUSIC_CANCEL        11
+#define LINK_MUSIC_COUNT         12
 
 // Lilycove SS Tidal Multichoice Selections
 #define SSTIDAL_SELECTION_SLATEPORT        0

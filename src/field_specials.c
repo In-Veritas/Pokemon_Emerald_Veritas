@@ -4938,3 +4938,8 @@ void CreateBossLugia(void)
     SetMonData(&gEnemyParty[0], MON_DATA_HELD_ITEM, &move);
 }
 
+void SetVarToMultiplayerId(void)
+{
+    gSpecialVar_0x8005 = GetMultiplayerId();
+}
+

@@ -600,6 +600,15 @@ void TryBattleLinkup(void)
         minPlayers = 2;
         gLinkType = LINKTYPE_LV50_SINGLE_BATTLE;
         break;
+    case USING_LV50_DOUBLE_BATTLE:
+        minPlayers = 2;
+        gLinkType = LINKTYPE_LV50_DOUBLE_BATTLE;
+        break;
+    case USING_LV50_MULTI_BATTLE:
+        minPlayers = 4;
+        maxPlayers = 4;
+        gLinkType = LINKTYPE_LV50_MULTI_BATTLE;
+        break;
     }
 
     CreateLinkupTask(minPlayers, maxPlayers);
@@ -750,6 +759,12 @@ u8 CreateTask_ReestablishCableClubLink(void)
     case USING_LV50_SINGLE_BATTLE:
         gLinkType = LINKTYPE_LV50_SINGLE_BATTLE;
         break;
+    case USING_LV50_DOUBLE_BATTLE:
+        gLinkType = LINKTYPE_LV50_DOUBLE_BATTLE;
+        break;
+    case USING_LV50_MULTI_BATTLE:
+        gLinkType = LINKTYPE_LV50_MULTI_BATTLE;
+        break;
     case USING_TRADE_CENTER:
         gLinkType = LINKTYPE_TRADE;
         break;
@@ -835,6 +850,13 @@ static void SetLinkBattleTypeFlags(int linkService)
     case USING_LV50_SINGLE_BATTLE:
         gBattleTypeFlags = BATTLE_TYPE_LINK | BATTLE_TYPE_TRAINER;
         break;
+    case USING_LV50_DOUBLE_BATTLE:
+        gBattleTypeFlags = BATTLE_TYPE_DOUBLE | BATTLE_TYPE_LINK | BATTLE_TYPE_TRAINER;
+        break;
+    case USING_LV50_MULTI_BATTLE:
+        ReducePlayerPartyToSelectedMons();
+        gBattleTypeFlags = BATTLE_TYPE_DOUBLE | BATTLE_TYPE_LINK | BATTLE_TYPE_TRAINER | BATTLE_TYPE_MULTI;
+        break;
     }
 }
 
@@ -894,7 +916,9 @@ static void Task_StartWiredCableClubBattle(u8 taskId)
         break;
     case 5:
         SetLinkBattleTypeFlags(gSpecialVar_0x8004);
-        if (gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE)
+        if (gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE
+            || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE
+            || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
             ApplyLv50Cap();
         PlayMapChosenOrBattleBGM(0);
         CleanupOverworldWindowsAndTilemaps();
@@ -958,7 +982,9 @@ static void Task_StartWirelessCableClubBattle(u8 taskId)
     case 7:
         gLinkPlayers[0].linkType = LINKTYPE_BATTLE;
         SetLinkBattleTypeFlags(gSpecialVar_0x8004);
-        if (gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE)
+        if (gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE
+            || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE
+            || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
             ApplyLv50Cap();
         PlayMapChosenOrBattleBGM(0);
         CleanupOverworldWindowsAndTilemaps();
@@ -1025,7 +1051,7 @@ void CB2_ReturnFromCableClubBattle(void)
     UpdateTrainerFansAfterLinkBattle();
 
     if (gSpecialVar_0x8004 == USING_SINGLE_BATTLE || gSpecialVar_0x8004 == USING_DOUBLE_BATTLE
-     || gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE)
+     || gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE)
     {
         UpdatePlayerLinkBattleRecords(gLocalLinkPlayerId ^ 1);
         if (gWirelessCommType)
@@ -1056,7 +1082,9 @@ void CleanupLinkRoomState(void)
      || gSpecialVar_0x8004 == USING_DOUBLE_BATTLE
      || gSpecialVar_0x8004 == USING_MULTI_BATTLE
      || gSpecialVar_0x8004 == USING_BATTLE_TOWER
-     || gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE)
+     || gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE
+     || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE
+     || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
     {
         LoadPlayerParty();
         SavePlayerBag();

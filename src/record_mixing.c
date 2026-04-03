@@ -102,6 +102,7 @@ static struct PlayerHallRecords *sPartnerHallRecords[HALL_RECORDS_COUNT];
 static EWRAM_DATA struct RecordMixingDaycareMail sRecordMixMail = {0};
 static EWRAM_DATA union PlayerRecord *sReceivedRecords = NULL;
 static EWRAM_DATA union PlayerRecord *sSentRecord = NULL;
+static EWRAM_DATA bool8 sCalledFromBattle = FALSE;
 
 static void Task_RecordMixing_Main(u8);
 static void Task_MixingRecordsRecv(u8);
@@ -173,6 +174,7 @@ bool8 StartRecordMixingDirect(void)
     if (!gReceivedRemoteLinkPlayers)
         return FALSE;
 
+    sCalledFromBattle = TRUE;
     CreateTask(Task_RecordMixing_Main, 10);
     gSpecialVar_0x8005 = GetMultiplayerId();
     return TRUE;
@@ -359,32 +361,40 @@ static void Task_RecordMixing_Main(u8 taskId)
         if (!gTasks[tLinkTaskId].isActive)
         {
             tState = 4;
-            if (gWirelessCommType == 0)
+            if (sCalledFromBattle)
+            {
+                // Skip reestablish - battle exit handles link cleanup
+                tLinkTaskId = taskId;
+            }
+            else if (gWirelessCommType == 0)
                 tLinkTaskId = CreateTask_ReestablishCableClubLink();
             else
-                tLinkTaskId = taskId; // Point to self so state 5 doesn't check a stale task slot
+                tLinkTaskId = taskId;
 
-            PrintTextOnRecordMixing(gText_RecordMixingComplete);
+            if (!sCalledFromBattle)
+                PrintTextOnRecordMixing(gText_RecordMixingComplete);
             tTimer = 0;
         }
         break;
-    case 4: // wait 60 frames
-        if (++tTimer > 60)
+    case 4: // wait 60 frames (skip if from battle)
+        if (sCalledFromBattle || ++tTimer > 60)
             tState = 5;
         break;
-    case 5: // Wait for the task created by CreateTask_ReestablishCableClubLink
-        // For wireless, tLinkTaskId == taskId so this is always true (self is active),
-        // skip the check entirely for wireless since there's no reestablish task.
-        if (gWirelessCommType != 0 || !gTasks[tLinkTaskId].isActive)
+    case 5: // Wait for reestablish or skip if from battle
+        if (sCalledFromBattle || gWirelessCommType != 0 || !gTasks[tLinkTaskId].isActive)
         {
             Free(sReceivedRecords);
             Free(sSentRecord);
-            SetLinkWaitingForScript();
-            if (gWirelessCommType != 0)
-                CreateTask(Task_ReturnToFieldRecordMixing, 10);
-            ClearDialogWindowAndFrame(0, TRUE);
+            if (!sCalledFromBattle)
+            {
+                SetLinkWaitingForScript();
+                if (gWirelessCommType != 0)
+                    CreateTask(Task_ReturnToFieldRecordMixing, 10);
+                ClearDialogWindowAndFrame(0, TRUE);
+                ScriptContext_Enable();
+            }
+            sCalledFromBattle = FALSE;
             DestroyTask(taskId);
-            ScriptContext_Enable();
         }
         break;
     }

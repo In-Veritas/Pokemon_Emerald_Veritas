@@ -481,6 +481,8 @@ static const struct MenuAction MultichoiceList_BattleMode[] =
     {gText_DoubleBattle},
     {gText_MultiBattle},
     {gText_Lv50Battle},
+    {gText_Lv50DoubleBattle},
+    {gText_Lv50MultiBattle},
     {gText_Info2},
     {gText_Exit},
 };

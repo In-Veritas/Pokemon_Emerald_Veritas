@@ -108,6 +108,8 @@ CableClub_OnFrame:
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_DOUBLE_BATTLE, CableClub_EventScript_ExitLinkRoom
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_MULTI_BATTLE, CableClub_EventScript_ExitLinkRoom
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_LV50_SINGLE_BATTLE, CableClub_EventScript_ExitLinkRoom
+	map_script_2 VAR_CABLE_CLUB_STATE, USING_LV50_DOUBLE_BATTLE, CableClub_EventScript_ExitLinkRoom
+	map_script_2 VAR_CABLE_CLUB_STATE, USING_LV50_MULTI_BATTLE, CableClub_EventScript_ExitLinkRoom
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_TRADE_CENTER, CableClub_EventScript_ExitTradeCenter
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_RECORD_CORNER, CableClub_EventScript_ExitRecordCorner
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_UNION_ROOM, CableClub_EventScript_ExitUnionRoom
@@ -130,6 +132,36 @@ CableClub_EventScript_ShowRecordMixMessage::
 	clearflag FLAG_SYS_MIX_RECORD
 	playse SE_PIN
 	msgbox CableClub_Text_RecordsMixed, MSGBOX_DEFAULT
+	releaseall
+	end
+
+@ After multi battle: trigger record mixing while link is still active,
+@ then exit normally. Uses the existing cable club record mixing system
+@ which already handles 2-4 player synchronization.
+CableClub_EventScript_MultiMixAndExit::
+	lockall
+	special SetVarToMultiplayerId
+	special RecordMixingPlayerSpotTriggered
+	waitstate
+	goto_if_ne VAR_TEMP_RECORD_MIX_GIFT_ITEM, ITEM_NONE, CableClub_EventScript_MultiMixGotGift
+	goto CableClub_EventScript_MultiMixFinished
+	end
+
+CableClub_EventScript_MultiMixGotGift::
+	bufferitemname STR_VAR_2, VAR_TEMP_RECORD_MIX_GIFT_ITEM
+	message RecordCorner_Text_PlayerSentOverOneX
+	waitmessage
+	waitbuttonpress
+	goto CableClub_EventScript_MultiMixFinished
+	end
+
+CableClub_EventScript_MultiMixFinished::
+	call CableClub_EventScript_CloseLinkAndExitLinkRoom
+	call CableClub_EventScript_CloseDirectCornerBarrier
+	special DrawWholeMapView
+	playse SE_CLICK
+	erasebox 0, 0, 29, 19
+	goto_if_set FLAG_SYS_MIX_RECORD, CableClub_EventScript_ShowRecordMixMessage
 	releaseall
 	end
 
@@ -301,8 +333,10 @@ CableClub_EventScript_SelectBattleMode::
 	case 1, CableClub_EventScript_DoubleBattleMode
 	case 2, CableClub_EventScript_MultiBattleMode
 	case 3, CableClub_EventScript_Lv50BattleMode
-	case 4, CableClub_EventScript_BattleModeInfo
-	case 5, CableClub_EventScript_AbortLink
+	case 4, CableClub_EventScript_Lv50DoubleBattleMode
+	case 5, CableClub_EventScript_Lv50MultiBattleMode
+	case 6, CableClub_EventScript_BattleModeInfo
+	case 7, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -341,6 +375,22 @@ CableClub_EventScript_MultiBattleMode::
 
 CableClub_EventScript_Lv50BattleMode::
 	setvar VAR_0x8004, USING_LV50_SINGLE_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_SelectBattleMode
+	goto CableClub_EventScript_TryEnterColosseum
+	end
+
+CableClub_EventScript_Lv50DoubleBattleMode::
+	special HasEnoughMonsForDoubleBattle
+	goto_if_ne VAR_RESULT, PLAYER_HAS_TWO_USABLE_MONS, CableClub_EventScript_NeedTwoMonsForDoubleBattle
+	setvar VAR_0x8004, USING_LV50_DOUBLE_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_SelectBattleMode
+	goto CableClub_EventScript_TryEnterColosseum
+	end
+
+CableClub_EventScript_Lv50MultiBattleMode::
+	setvar VAR_0x8004, USING_LV50_MULTI_BATTLE
 	call CableClub_EventScript_SelectBattleMusic
 	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_SelectBattleMode
 	goto CableClub_EventScript_TryEnterColosseum
@@ -1123,8 +1173,10 @@ CableClub_EventScript_WirelessBattleSelect::
 	case 1, CableClub_EventScript_WirelessDoubleBattle
 	case 2, CableClub_EventScript_WirelessMultiBattle
 	case 3, CableClub_EventScript_WirelessLv50Battle
-	case 4, CableClub_EventScript_WirelessBattleInfo
-	case 5, CableClub_EventScript_AbortLink
+	case 4, CableClub_EventScript_WirelessLv50DoubleBattle
+	case 5, CableClub_EventScript_WirelessLv50MultiBattle
+	case 6, CableClub_EventScript_WirelessBattleInfo
+	case 7, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -1158,6 +1210,22 @@ CableClub_EventScript_WirelessMultiBattle::
 
 CableClub_EventScript_WirelessLv50Battle::
 	setvar VAR_0x8004, LINK_GROUP_LV50_SINGLE_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_WirelessBattleSelect
+	goto CableClub_EventScript_SaveAndChooseLinkLeader
+	end
+
+CableClub_EventScript_WirelessLv50DoubleBattle::
+	special HasEnoughMonsForDoubleBattle
+	goto_if_ne VAR_RESULT, PLAYER_HAS_TWO_USABLE_MONS, CableClub_EventScript_TwoMonsNeededForWirelessDoubleBattle
+	setvar VAR_0x8004, LINK_GROUP_LV50_DOUBLE_BATTLE
+	call CableClub_EventScript_SelectBattleMusic
+	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_WirelessBattleSelect
+	goto CableClub_EventScript_SaveAndChooseLinkLeader
+	end
+
+CableClub_EventScript_WirelessLv50MultiBattle::
+	setvar VAR_0x8004, LINK_GROUP_LV50_MULTI_BATTLE
 	call CableClub_EventScript_SelectBattleMusic
 	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, CableClub_EventScript_WirelessBattleSelect
 	goto CableClub_EventScript_SaveAndChooseLinkLeader

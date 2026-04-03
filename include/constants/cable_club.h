@@ -12,6 +12,8 @@
 #define USING_MINIGAME       8
 #define USING_BATTLE_TOWER   9
 #define USING_LV50_SINGLE_BATTLE 10
+#define USING_LV50_DOUBLE_BATTLE 11
+#define USING_LV50_MULTI_BATTLE  12
 
 // Return states for the group of specials that use CreateLinkupTask
 // A few also used by TryBecomeLinkLeader and TryJoinLinkGroup

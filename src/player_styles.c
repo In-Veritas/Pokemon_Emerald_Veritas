@@ -249,8 +249,11 @@ void PlayerStyleOverworldUpdate(void)
         &sPlayerStyles[si-1], gSaveBlock2Ptr->playerGender != MALE, TRUE);
 
     // Also patch the displayed buffer when no fade is running
-    // and the screen isn't blacked out (skin color != 0 means visible)
-    if (!gPaletteFade.active && gPlttBufferFaded[palBase + 1] != 0)
+    // and the screen isn't faded out. Skip if skin color (index 1) is
+    // all black (0x0000) or all white (0x7FFF) = screen is blanked.
+    if (!gPaletteFade.active
+        && gPlttBufferFaded[palBase + 1] != 0
+        && gPlttBufferFaded[palBase + 1] != 0x7FFF)
         ApplyStyleOverlay(&gPlttBufferFaded[palBase],
             &sPlayerStyles[si-1], gSaveBlock2Ptr->playerGender != MALE, TRUE);
 }

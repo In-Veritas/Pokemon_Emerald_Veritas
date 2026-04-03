@@ -2308,12 +2308,29 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
                 if (IsPokeNewsActive(POKENEWS_SHINY_DAY))
                     maxRolls++;
                 // Re-roll until shiny or out of attempts
-                do
+                // If hasFixedPersonality (e.g. Synchronize), preserve the nature
+                if (hasFixedPersonality)
                 {
-                    personality = Random32();
-                    shinyValue = HIHALF(value) ^ LOHALF(value) ^ HIHALF(personality) ^ LOHALF(personality);
-                    rolls++;
-                } while (shinyValue >= SHINY_ODDS && rolls < maxRolls);
+                    u8 nature = fixedPersonality % NUM_NATURES;
+                    do
+                    {
+                        personality = Random32();
+                        shinyValue = HIHALF(value) ^ LOHALF(value) ^ HIHALF(personality) ^ LOHALF(personality);
+                        rolls++;
+                    } while (shinyValue >= SHINY_ODDS && rolls < maxRolls);
+                    // Force the nature back if personality changed
+                    while (GetNatureFromPersonality(personality) != nature)
+                        personality++;
+                }
+                else
+                {
+                    do
+                    {
+                        personality = Random32();
+                        shinyValue = HIHALF(value) ^ LOHALF(value) ^ HIHALF(personality) ^ LOHALF(personality);
+                        rolls++;
+                    } while (shinyValue >= SHINY_ODDS && rolls < maxRolls);
+                }
                 // Mark as true shiny if shiny on the very first roll
                 if (shinyValue < SHINY_ODDS && rolls == 1)
                     isTrueShiny = TRUE;

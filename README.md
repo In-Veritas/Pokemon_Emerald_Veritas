@@ -134,8 +134,8 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 #### Battle Music Selection
 
 * Choose your preferred battle music before link battles and secret base NPC battles
-* Available tracks include VS Rival, VS Gym Leader, VS Champion, VS Legendary Beast, VS Kyogre/Groudon, VS Regi, VS Jirachi, and VS Boss (Magma/Aqua Leader)
-* VS Regi unlocks after defeating all three Regis; VS Jirachi unlocks after defeating Deoxys; VS Boss unlocks after all 8 badges
+* Available tracks include VS Rival, VS Gym Leader, VS Champion, VS Elite Four, VS Legendary Beast, VS Kyogre/Groudon, VS Regi, VS Jirachi, and VS Boss (Magma/Aqua Leader)
+* VS Elite Four unlocks after becoming Champion; VS Regi unlocks after defeating all three Regis; VS Jirachi unlocks after defeating Deoxys; VS Boss unlocks after all 8 badges
 * Selection of "Random" picks a random unlocked track
 * Menu scrolls when more options are unlocked than fit on screen
 * Default option uses the original trainer ID-based music selection
@@ -340,6 +340,9 @@ Baby Pokémon have been reworked to be viable in battle with new abilities and c
 * **Bike Dismount Weather Fix**: Dismounting the bike on weather-affected routes (e.g., Route 119 rain) now properly restores weather effects
 * **RS Style Link Battle Palette Fix**: Fixed player sprite palette mismatch during Poké Ball throw animation in link double battles when using Classic (RS) style
 * **Hall of Fame Text**: Hall of Fame screen now displays "EMERALD VERITAS" instead of the base project name
+* **Synchronize Fix**: Fixed Synchronize ability not working due to the shiny roll system overwriting the nature-locked personality. Synchronize now works 100% on wild encounters and static encounters while still allowing shiny rolls.
+* **Berry Rain Sprite Fix**: Fixed berry tree sprites appearing bright/illuminated during heavy rain until lightning strikes. Now applies weather palette darkening when berry sprites are loaded.
+* **PokeNews TV Priority**: PokeNews events (Shiny Day, Training Day) now display first when watching TV, before other shows.
 * **Shiny Palette Redesigns**: Custom shiny palettes with matching overworld follower sprites:
 
   | Pokemon | Shiny Design |
@@ -380,9 +383,9 @@ Baby Pokémon have been reworked to be viable in battle with new abilities and c
 
 * **Shadow Lugia Boss Fight**: After defeating Trainer Veritas on Southern Island, inspecting the stone triggers a Lv99 shiny Lugia boss battle with Thunder, Hydro Pump, Calm Mind, and Psycho Boost. Holds White Herb. Underwater terrain with Rayquaza battle music.
 
-* **Lv 50 Battle Mode**: New Colosseum battle option where Pokémon above Lv50 are temporarily scaled down. Pokémon at or below Lv50 keep their actual level. Original levels restored after battle.
+* **Lv 50 Battle Modes**: Lv50 Singles, Lv50 Doubles, and Lv50 Multi battle options in the Cable Club. Pokémon above Lv50 are temporarily scaled down. Original levels restored after battle. Works on both wired and wireless.
 
-* **Auto Record Mixing**: Wired link battles automatically exchange records (secret bases, TV shows, PokeNews, etc.) before disconnecting. Shows confirmation message when exiting.
+* **Auto Record Mixing**: Wired 1v1 link battles automatically exchange records (secret bases, TV shows, PokeNews, etc.) before disconnecting.
 
 * **Ability Changes**:
   * Lugia: Pressure → **Drizzle**

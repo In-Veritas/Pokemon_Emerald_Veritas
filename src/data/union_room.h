@@ -519,7 +519,9 @@ static const u8 *const sChooseTrainerTexts[NUM_LINK_GROUP_TYPES] =
     [LINK_GROUP_TOUGH_CONTEST]     = sText_ChooseLeaderToughContest,
     [LINK_GROUP_BATTLE_TOWER]      = sText_ChooseLeaderBattleTowerLv50,
     [LINK_GROUP_BATTLE_TOWER_OPEN] = sText_ChooseLeaderBattleTowerOpenLv,
-    [LINK_GROUP_LV50_SINGLE_BATTLE] = sText_ChooseTrainerSingleBattle
+    [LINK_GROUP_LV50_SINGLE_BATTLE] = sText_ChooseTrainerSingleBattle,
+    [LINK_GROUP_LV50_DOUBLE_BATTLE] = sText_ChooseTrainerDoubleBattle,
+    [LINK_GROUP_LV50_MULTI_BATTLE]  = sText_ChooseLeaderMultiBattle,
 };
 
 ALIGNED(4) static const u8 sText_SearchingForWirelessSystemWait[] = _("Searching for a WIRELESS\nCOMMUNICATION SYSTEM. Wait...");
@@ -665,7 +667,9 @@ static const u32 sLinkGroupToActivityAndCapacity[NUM_LINK_GROUP_TYPES] = {
     [LINK_GROUP_TOUGH_CONTEST]     = ACTIVITY_CONTEST_TOUGH     | LINK_GROUP_CAPACITY(2, 4),
     [LINK_GROUP_BATTLE_TOWER]      = ACTIVITY_BATTLE_TOWER      | LINK_GROUP_CAPACITY(0, 2),
     [LINK_GROUP_BATTLE_TOWER_OPEN] = ACTIVITY_BATTLE_TOWER_OPEN | LINK_GROUP_CAPACITY(0, 2),
-    [LINK_GROUP_LV50_SINGLE_BATTLE] = ACTIVITY_BATTLE_SINGLE_LV50 | LINK_GROUP_CAPACITY(0, 2)
+    [LINK_GROUP_LV50_SINGLE_BATTLE] = ACTIVITY_BATTLE_SINGLE_LV50 | LINK_GROUP_CAPACITY(0, 2),
+    [LINK_GROUP_LV50_DOUBLE_BATTLE] = ACTIVITY_BATTLE_DOUBLE_LV50 | LINK_GROUP_CAPACITY(0, 2),
+    [LINK_GROUP_LV50_MULTI_BATTLE]  = ACTIVITY_BATTLE_MULTI_LV50  | LINK_GROUP_CAPACITY(0, 4),
 };
 
 static const struct WindowTemplate sWindowTemplate_PlayerList = {
@@ -1067,6 +1071,8 @@ ALIGNED(4) static const u8 sAcceptedActivityIds_ToughContest[]    = {ACTIVITY_CO
 ALIGNED(4) static const u8 sAcceptedActivityIds_BattleTower[]     = {ACTIVITY_BATTLE_TOWER, 0xff};
 ALIGNED(4) static const u8 sAcceptedActivityIds_BattleTowerOpen[] = {ACTIVITY_BATTLE_TOWER_OPEN, 0xff};
 ALIGNED(4) static const u8 sAcceptedActivityIds_Lv50SingleBattle[] = {ACTIVITY_BATTLE_SINGLE_LV50, 0xff};
+ALIGNED(4) static const u8 sAcceptedActivityIds_Lv50DoubleBattle[] = {ACTIVITY_BATTLE_DOUBLE_LV50, 0xff};
+ALIGNED(4) static const u8 sAcceptedActivityIds_Lv50MultiBattle[] = {ACTIVITY_BATTLE_MULTI_LV50, 0xff};
 
 static const u8 *const sAcceptedActivityIds[NUM_LINK_GROUP_TYPES] = {
     [LINK_GROUP_SINGLE_BATTLE]     = sAcceptedActivityIds_SingleBattle,
@@ -1091,7 +1097,9 @@ static const u8 *const sAcceptedActivityIds[NUM_LINK_GROUP_TYPES] = {
     [LINK_GROUP_TOUGH_CONTEST]     = sAcceptedActivityIds_ToughContest,
     [LINK_GROUP_BATTLE_TOWER]      = sAcceptedActivityIds_BattleTower,
     [LINK_GROUP_BATTLE_TOWER_OPEN] = sAcceptedActivityIds_BattleTowerOpen,
-    [LINK_GROUP_LV50_SINGLE_BATTLE] = sAcceptedActivityIds_Lv50SingleBattle
+    [LINK_GROUP_LV50_SINGLE_BATTLE] = sAcceptedActivityIds_Lv50SingleBattle,
+    [LINK_GROUP_LV50_DOUBLE_BATTLE] = sAcceptedActivityIds_Lv50DoubleBattle,
+    [LINK_GROUP_LV50_MULTI_BATTLE]  = sAcceptedActivityIds_Lv50MultiBattle,
 };
 
 static const u8 sLinkGroupToURoomActivity[NUM_LINK_GROUP_TYPES + 2] =
@@ -1118,5 +1126,7 @@ static const u8 sLinkGroupToURoomActivity[NUM_LINK_GROUP_TYPES + 2] =
     [LINK_GROUP_TOUGH_CONTEST]     = ACTIVITY_CONTEST_TOUGH,
     [LINK_GROUP_BATTLE_TOWER]      = ACTIVITY_BATTLE_TOWER,
     [LINK_GROUP_BATTLE_TOWER_OPEN] = ACTIVITY_BATTLE_TOWER_OPEN,
-    [LINK_GROUP_LV50_SINGLE_BATTLE] = ACTIVITY_BATTLE_SINGLE_LV50
+    [LINK_GROUP_LV50_SINGLE_BATTLE] = ACTIVITY_BATTLE_SINGLE_LV50,
+    [LINK_GROUP_LV50_DOUBLE_BATTLE] = ACTIVITY_BATTLE_DOUBLE_LV50,
+    [LINK_GROUP_LV50_MULTI_BATTLE]  = ACTIVITY_BATTLE_MULTI_LV50,
 };

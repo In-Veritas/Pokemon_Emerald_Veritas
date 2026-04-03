@@ -353,15 +353,15 @@ EventScript_Fashionista_Text_AquaF_MaybeNext:
 EventScript_Fashionista_Text_DynamicMsg:
 	.string "{STR_VAR_2}$"
 
-@ Tip wrappers per personality
+@ Tip wrappers per personality (prefix on top line, tip below after \l)
 EventScript_Fashionista_Text_MagmaM_TipWrapper:
-	.string "Hmm... {STR_VAR_1}$"
+	.string "Hmm...\l{STR_VAR_1}$"
 EventScript_Fashionista_Text_MagmaF_TipWrapper:
-	.string "Ooh! {STR_VAR_1}$"
+	.string "Ooh, I know!\l{STR_VAR_1}$"
 EventScript_Fashionista_Text_AquaM_TipWrapper:
-	.string "Yo, check it... {STR_VAR_1}$"
+	.string "Yo, check it...\l{STR_VAR_1}$"
 EventScript_Fashionista_Text_AquaF_TipWrapper:
-	.string "W-well... {STR_VAR_1}$"
+	.string "W-well...\l{STR_VAR_1}$"
 
 @ ==========================================
 @ TEXT - Magma Male (Stoic perfectionist)
