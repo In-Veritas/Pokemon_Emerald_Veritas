@@ -22,6 +22,7 @@
 #include "data.h"
 #include "palette.h"
 #include "player_styles.h"
+#include "link.h"
 #include "event_data.h"
 #include "contest.h"
 #include "constants/songs.h"
@@ -685,13 +686,15 @@ void DecompressTrainerFrontPic(u16 frontPicId, u8 battlerId)
     u8 position = GetBattlerPosition(battlerId);
     u8 palSlot;
     bool8 isFemale;
+    u8 i;
+    u8 remoteStyle;
 
     DecompressPicFromTable_2(&gTrainerFrontPicTable[frontPicId],
                              gMonSpritesGfxPtr->sprites.ptr[position],
                              SPECIES_NONE);
     LoadCompressedSpritePalette(&gTrainerFrontPicPaletteTable[frontPicId]);
 
-    // Apply player clothing style to front pic palette
+    // Apply local player clothing style
     if (GetPlayerStyle() != PLAYER_STYLE_NONE
         && frontPicId == PlayerGenderToFrontTrainerPicId(gSaveBlock2Ptr->playerGender))
     {
@@ -700,12 +703,30 @@ void DecompressTrainerFrontPic(u16 frontPicId, u8 battlerId)
         if (palSlot != 0xFF)
             ApplyPlayerStyleToTrainerPalette(OBJ_PLTT_ID(palSlot), isFemale);
     }
+    // Apply remote link player clothing style
+    else if (gBattleTypeFlags & BATTLE_TYPE_LINK)
+    {
+        for (i = 0; i < MAX_LINK_PLAYERS; i++)
+        {
+            remoteStyle = LINK_STYLE_ID(gLinkPlayers[i].neverRead);
+            if (remoteStyle != 0
+                && frontPicId == PlayerGenderToFrontTrainerPicId(gLinkPlayers[i].gender))
+            {
+                palSlot = IndexOfSpritePaletteTag(gTrainerFrontPicPaletteTable[frontPicId].tag);
+                if (palSlot != 0xFF)
+                    ApplyStyleToTrainerPaletteById(remoteStyle, OBJ_PLTT_ID(palSlot), gLinkPlayers[i].gender != MALE);
+                break;
+            }
+        }
+    }
 }
 
 void DecompressTrainerBackPic(u16 backPicId, u8 battlerId)
 {
     u8 position = GetBattlerPosition(battlerId);
     bool8 isFemale;
+    u8 i;
+    u8 remoteStyle;
 
     DecompressPicFromTable_2(&gTrainerBackPicTable[backPicId],
                              gMonSpritesGfxPtr->sprites.ptr[position],
@@ -713,12 +734,27 @@ void DecompressTrainerBackPic(u16 backPicId, u8 battlerId)
     LoadCompressedPalette(gTrainerBackPicPaletteTable[backPicId].data,
                           OBJ_PLTT_ID(battlerId), PLTT_SIZE_4BPP);
 
-    // Apply player clothing style to back pic palette
+    // Apply local player clothing style
     if (GetPlayerStyle() != PLAYER_STYLE_NONE
         && backPicId == GetPlayerPreferredBackPicId())
     {
         isFemale = (gSaveBlock2Ptr->playerGender != MALE);
         ApplyPlayerStyleToTrainerPalette(OBJ_PLTT_ID(battlerId), isFemale);
+    }
+    // Apply remote link player clothing style
+    else if (gBattleTypeFlags & BATTLE_TYPE_LINK)
+    {
+        for (i = 0; i < MAX_LINK_PLAYERS; i++)
+        {
+            remoteStyle = LINK_STYLE_ID(gLinkPlayers[i].neverRead);
+            if (remoteStyle != 0
+                && (backPicId == (u16)(gLinkPlayers[i].gender + TRAINER_BACK_PIC_BRENDAN)
+                 || backPicId == (u16)(gLinkPlayers[i].gender + TRAINER_BACK_PIC_RUBY_SAPPHIRE_BRENDAN)))
+            {
+                ApplyStyleToTrainerPaletteById(remoteStyle, OBJ_PLTT_ID(battlerId), gLinkPlayers[i].gender != MALE);
+                break;
+            }
+        }
     }
 }
 

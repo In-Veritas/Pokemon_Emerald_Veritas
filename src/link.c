@@ -335,6 +335,10 @@ static void InitLocalLinkPlayer(void)
     {
         gLocalLinkPlayer.progressFlags |= 0x10;
     }
+    // Pack outfit style (bits 0-5) and RS flag (bit 6) into neverRead
+    gLocalLinkPlayer.neverRead = (VarGet(VAR_PLAYER_STYLE) & 0x3F)
+                               | (FlagGet(FLAG_PLAYER_STYLE_RS) ? 0x40 : 0);
+
 }
 
 static void VBlankCB_LinkError(void)

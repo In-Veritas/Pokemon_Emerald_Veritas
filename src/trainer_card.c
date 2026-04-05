@@ -6,6 +6,7 @@
 #include "window.h"
 #include "malloc.h"
 #include "link.h"
+#include "player_styles.h"
 #include "bg.h"
 #include "sound.h"
 #include "frontier_pass.h"
@@ -48,6 +49,7 @@ struct TrainerCardData
     u8 bgPalLoadState;
     u8 flipDrawState;
     bool8 isLink;
+    u8 linkCardId;
     u8 timeColonBlinkTimer;
     bool8 timeColonInvisible;
     bool8 onBack;
@@ -1888,6 +1890,7 @@ void ShowTrainerCardInLink(u8 cardId, void (*callback)(void))
     sData = AllocZeroed(sizeof(*sData));
     sData->callback2 = callback;
     sData->isLink = TRUE;
+    sData->linkCardId = cardId;
     sData->trainerCard = gTrainerCards[cardId];
     sData->language = gLinkPlayers[cardId].language;
     SetMainCallback2(CB2_InitTrainerCard);
@@ -1950,6 +1953,9 @@ static u8 VersionToCardType(u8 version)
 
 static void CreateTrainerCardTrainerPic(void)
 {
+    u8 remoteStyle;
+    bool8 isRemoteRS;
+
     if (InUnionRoom() == TRUE && gReceivedRemoteLinkPlayers == 1)
     {
         CreateTrainerCardTrainerPicSprite(FacilityClassToPicIndex(sData->trainerCard.unionRoomClass),
@@ -1959,9 +1965,27 @@ static void CreateTrainerCardTrainerPic(void)
                     8,
                     WIN_TRAINER_PIC);
     }
+    else if (sData->isLink)
+    {
+        // Remote player's card: use their RS flag and outfit style
+        isRemoteRS = LINK_STYLE_IS_RS(gLinkPlayers[sData->linkCardId].neverRead);
+        {
+            u8 styleCardType = isRemoteRS ? CARD_TYPE_RS : CARD_TYPE_EMERALD;
+            CreateTrainerCardTrainerPicSprite(FacilityClassToPicIndex(sTrainerPicFacilityClass[styleCardType][sData->trainerCard.gender]),
+                        TRUE,
+                        sTrainerPicOffset[sData->isHoenn][sData->trainerCard.gender][0],
+                        sTrainerPicOffset[sData->isHoenn][sData->trainerCard.gender][1],
+                        8,
+                        WIN_TRAINER_PIC);
+        }
+        // Apply remote player's outfit style to the trainer card palette
+        remoteStyle = LINK_STYLE_ID(gLinkPlayers[sData->linkCardId].neverRead);
+        if (remoteStyle != 0)
+            ApplyStyleToTrainerPaletteById(remoteStyle, PLTT_ID(8), sData->trainerCard.gender != MALE);
+    }
     else
     {
-        // Choose Emerald or RS protagonist art on the trainer card based on look style
+        // Local player's card
         u8 styleCardType = FlagGet(FLAG_PLAYER_STYLE_RS) ? CARD_TYPE_RS : CARD_TYPE_EMERALD;
         CreateTrainerCardTrainerPicSprite(FacilityClassToPicIndex(sTrainerPicFacilityClass[styleCardType][sData->trainerCard.gender]),
                     TRUE,

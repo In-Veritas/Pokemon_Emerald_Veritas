@@ -207,6 +207,20 @@ void ApplyPlayerStyleToOWPalette(u8 paletteSlot, bool8 isFemale)
     CpuCopy16(&gPlttBufferUnfaded[OBJ_PLTT_ID(paletteSlot)], &gPlttBufferFaded[OBJ_PLTT_ID(paletteSlot)], PLTT_SIZE_4BPP);
 }
 
+void ApplyStyleToOWPaletteById(u8 styleId, u8 paletteSlot, bool8 isFemale)
+{
+    if (styleId == 0 || styleId > PLAYER_STYLE_COUNT) return;
+    ApplyStyleOverlay(&gPlttBufferUnfaded[OBJ_PLTT_ID(paletteSlot)], &sPlayerStyles[styleId-1], isFemale, TRUE);
+    CpuCopy16(&gPlttBufferUnfaded[OBJ_PLTT_ID(paletteSlot)], &gPlttBufferFaded[OBJ_PLTT_ID(paletteSlot)], PLTT_SIZE_4BPP);
+}
+
+void ApplyStyleToTrainerPaletteById(u8 styleId, u16 paletteOffset, bool8 isFemale)
+{
+    if (styleId == 0 || styleId > PLAYER_STYLE_COUNT) return;
+    ApplyStyleOverlay(&gPlttBufferUnfaded[paletteOffset], &sPlayerStyles[styleId-1], isFemale, FALSE);
+    CpuCopy16(&gPlttBufferUnfaded[paletteOffset], &gPlttBufferFaded[paletteOffset], PLTT_SIZE_4BPP);
+}
+
 void ApplyPlayerStyleToTrainerPalette(u16 off, bool8 isFemale)
 {
     u16 si = GetPlayerStyle();

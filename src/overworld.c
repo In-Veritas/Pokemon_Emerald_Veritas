@@ -3246,7 +3246,11 @@ static void CreateLinkPlayerSprite(u8 linkPlayerId, u8 gameVersion)
             objEvent->spriteId = CreateObjectGraphicsSprite(GetRSAvatarGraphicsIdByGender(linkGender(objEvent)), SpriteCB_LinkPlayer, 0, 0, 0);
             break;
         case VERSION_EMERALD:
-            objEvent->spriteId = CreateObjectGraphicsSprite(GetRivalAvatarGraphicsIdByStateIdAndGender(PLAYER_AVATAR_STATE_NORMAL, linkGender(objEvent)), SpriteCB_LinkPlayer, 0, 0, 0);
+            // Use RS sprite if remote player has RS flag set
+            if (LINK_STYLE_IS_RS(gLinkPlayers[linkPlayerId].neverRead))
+                objEvent->spriteId = CreateObjectGraphicsSprite(GetRSAvatarGraphicsIdByGender(linkGender(objEvent)), SpriteCB_LinkPlayer, 0, 0, 0);
+            else
+                objEvent->spriteId = CreateObjectGraphicsSprite(GetRivalAvatarGraphicsIdByStateIdAndGender(PLAYER_AVATAR_STATE_NORMAL, linkGender(objEvent)), SpriteCB_LinkPlayer, 0, 0, 0);
             break;
         }
 
@@ -3254,6 +3258,14 @@ static void CreateLinkPlayerSprite(u8 linkPlayerId, u8 gameVersion)
         sprite->coordOffsetEnabled = TRUE;
         sprite->data[0] = linkPlayerId;
         objEvent->triggerGroundEffectsOnMove = FALSE;
+
+        // Apply remote player's outfit palette if they have one
+        {
+            u8 remoteStyle = LINK_STYLE_ID(gLinkPlayers[linkPlayerId].neverRead);
+            if (remoteStyle != 0)
+                ApplyStyleToOWPaletteById(remoteStyle,
+                    sprite->oam.paletteNum, gLinkPlayers[linkPlayerId].gender != MALE);
+        }
     }
 }
 

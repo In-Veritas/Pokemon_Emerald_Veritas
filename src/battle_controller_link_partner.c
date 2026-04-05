@@ -12,6 +12,7 @@
 #include "data.h"
 #include "link.h"
 #include "main.h"
+#include "player_styles.h"
 #include "m4a.h"
 #include "palette.h"
 #include "pokeball.h"
@@ -1559,6 +1560,12 @@ static void LinkPartnerHandleIntroTrainerBallThrow(void)
     }
 
     LoadCompressedPalette(gTrainerBackPicPaletteTable[trainerPicId].data, OBJ_PLTT_ID(paletteNum), PLTT_SIZE_4BPP);
+    {
+        u8 lpIdx = GetBattlerMultiplayerId(gActiveBattler);
+        u8 remoteStyle = LINK_STYLE_ID(gLinkPlayers[lpIdx].neverRead);
+        if (remoteStyle != 0)
+            ApplyStyleToTrainerPaletteById(remoteStyle, OBJ_PLTT_ID(paletteNum), gLinkPlayers[lpIdx].gender != MALE);
+    }
 
     gSprites[gBattlerSpriteIds[gActiveBattler]].oam.paletteNum = paletteNum;
 

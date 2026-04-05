@@ -66,6 +66,7 @@ This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (
 * Passive unlocks for non-Pokemon conditions (contest wins, champion with starters, trades, etc.)
 * Each Fashionista gives a daily tip about a locked outfit, with personality-flavored dialog
 * Available outfits: Aqua, Brazil, Chikorita, Cyndaquil, Dark, Diver, Enigma, Fabulous, Forest, Groudon, Historic, Ho-Oh, Kyogre, Lugia, Magma, Master, Mudkip, Ocean, Old, Red, Redmoon, Royal, Sakura, Silver, Torchic, Totodile, Treecko
+* **Link outfit sharing**: Other players see your outfit and Emerald/RS style in the Cable Club, during link battles, and on your trainer card
 
 #### Legendary Title Screen Animation
 
@@ -353,6 +354,7 @@ Baby Pokémon have been reworked to be viable in battle with new abilities and c
   | **Gardevoir** | Dark gray petal, blood red eye |
   | **Wailord** | Gray body with bluish-white belly |
   | **Rayquaza** | Darker emerald with green accents |
+  | **Salamence** | Dark grey body, crimson red wings and eyes |
   | Treecko line | Vibrant blues/reds |
   | Mudkip line | Brown |
   | Spinda | Panda |
