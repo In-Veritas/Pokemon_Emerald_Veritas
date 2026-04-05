@@ -53,6 +53,8 @@ CableClub_OnWarp:
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_DOUBLE_BATTLE, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_MULTI_BATTLE, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_LV50_SINGLE_BATTLE, CableClub_EventScript_CheckTurnAttendant
+	map_script_2 VAR_CABLE_CLUB_STATE, USING_LV50_DOUBLE_BATTLE, CableClub_EventScript_CheckTurnAttendant
+	map_script_2 VAR_CABLE_CLUB_STATE, USING_LV50_MULTI_BATTLE, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_TRADE_CENTER, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_RECORD_CORNER, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_UNION_ROOM, CableClub_EventScript_CheckTurnAttendant
@@ -71,6 +73,8 @@ CableClub_OnLoad:
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_DOUBLE_BATTLE, CableClub_EventScript_OnLoadFromColosseum
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_MULTI_BATTLE, CableClub_EventScript_OnLoadFromColosseum
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_LV50_SINGLE_BATTLE, CableClub_EventScript_OnLoadFromColosseum
+	goto_if_eq VAR_CABLE_CLUB_STATE, USING_LV50_DOUBLE_BATTLE, CableClub_EventScript_OnLoadFromColosseum
+	goto_if_eq VAR_CABLE_CLUB_STATE, USING_LV50_MULTI_BATTLE, CableClub_EventScript_OnLoadFromColosseum
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_TRADE_CENTER, CableClub_EventScript_OnLoadFromTradeCenter
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_RECORD_CORNER, CableClub_EventScript_OnLoadFromRecordCorner
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_UNION_ROOM, CableClub_EventScript_OnLoadFromUnionRoom
@@ -412,6 +416,7 @@ CableClub_EventScript_SelectBattleMusic::
 	case LINK_MUSIC_VS_REGI, CableClub_EventScript_MusicVsRegi
 	case LINK_MUSIC_VS_JIRACHI, CableClub_EventScript_MusicVsJirachi
 	case LINK_MUSIC_VS_MAGMA_AQUA, CableClub_EventScript_MusicVsMagmaAqua
+	case LINK_MUSIC_VS_ELITE_FOUR, CableClub_EventScript_MusicVsEliteFour
 	case LINK_MUSIC_RANDOM, CableClub_EventScript_MusicRandom
 	case LINK_MUSIC_CANCEL, CableClub_EventScript_MusicCancel
 	case MULTI_B_PRESSED, CableClub_EventScript_MusicCancel
@@ -451,6 +456,10 @@ CableClub_EventScript_MusicVsJirachi::
 
 CableClub_EventScript_MusicVsMagmaAqua::
 	setvar VAR_LINK_BATTLE_MUSIC, MUS_VS_AQUA_MAGMA_LEADER
+	return
+
+CableClub_EventScript_MusicVsEliteFour::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_VS_ELITE_FOUR
 	return
 
 CableClub_EventScript_MusicRandom::
@@ -501,6 +510,7 @@ CableClub_EventScript_EnterColosseum::
 	waitdooranim
 	release
 	goto_if_eq VAR_0x8004, USING_MULTI_BATTLE, CableClub_EventScript_WarpTo4PColosseum
+	goto_if_eq VAR_0x8004, USING_LV50_MULTI_BATTLE, CableClub_EventScript_WarpTo4PColosseum
 	special SetCableClubWarp
 	warp MAP_BATTLE_COLOSSEUM_2P, 6, 8
 	special DoCableClubWarp
@@ -526,6 +536,8 @@ CableClub_EventScript_AbortLinkIncorrectNumberOfBattlers::
 	case USING_DOUBLE_BATTLE, CableClub_EventScript_AbortLinkWrongNumberForDoubleBattle
 	case USING_MULTI_BATTLE,  CableClub_EventScript_AbortLinkNeedFourPlayers
 	case USING_LV50_SINGLE_BATTLE, CableClub_EventScript_AbortLinkWrongNumberForSingleBattle
+	case USING_LV50_DOUBLE_BATTLE, CableClub_EventScript_AbortLinkWrongNumberForDoubleBattle
+	case USING_LV50_MULTI_BATTLE, CableClub_EventScript_AbortLinkNeedFourPlayers
 	goto CableClub_EventScript_AbortLinkIncorrectNumberOfParticipants
 	end
 
