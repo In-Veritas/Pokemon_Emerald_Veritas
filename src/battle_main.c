@@ -2435,9 +2435,13 @@ static void EndLinkBattleInSteps(void)
         {
             if (IsLinkTaskFinished() == TRUE)
             {
-                // Start automatic record mixing after wired 1v1 link battle
-                if (!gWirelessCommType && !(gBattleTypeFlags & BATTLE_TYPE_MULTI) && StartRecordMixingDirect())
+                // Start automatic record mixing after wired link battle
+                if (!gWirelessCommType && StartRecordMixingDirect())
+                {
                     gBattleCommunication[MULTIUSE_STATE] = 10; // Go to mixing wait
+                    gBattleCommunication[1] = 0; // Timeout seconds counter
+                    gBattleCommunication[2] = 0; // Timeout frame sub-counter
+                }
                 else
                     gBattleCommunication[MULTIUSE_STATE]++; // Skip to close link
             }
@@ -2459,9 +2463,21 @@ static void EndLinkBattleInSteps(void)
         }
         break;
     case 10:
-        // Wait for record mixing task to finish
+        // Wait for record mixing task to finish, with 30s timeout
         if (!IsRecordMixingTaskActive())
+        {
             gBattleCommunication[MULTIUSE_STATE] = 8; // Proceed to close link
+        }
+        else if (++gBattleCommunication[2] >= 60)
+        {
+            gBattleCommunication[2] = 0;
+            if (++gBattleCommunication[1] >= 30)
+            {
+                // 30 second timeout - abort mixing gracefully
+                AbortRecordMixing();
+                gBattleCommunication[MULTIUSE_STATE] = 8;
+            }
+        }
         break;
     }
 }

@@ -129,6 +129,8 @@ CableClub_EventScript_ExitLinkRoom::
 	playse SE_CLICK
 	erasebox 0, 0, 29, 19
 	goto_if_set FLAG_SYS_MIX_RECORD, CableClub_EventScript_ShowRecordMixMessage
+	special CheckRecordMixingAborted
+	goto_if_eq VAR_RESULT, TRUE, CableClub_EventScript_ShowRecordMixError
 	releaseall
 	end
 
@@ -139,33 +141,9 @@ CableClub_EventScript_ShowRecordMixMessage::
 	releaseall
 	end
 
-@ After multi battle: trigger record mixing while link is still active,
-@ then exit normally. Uses the existing cable club record mixing system
-@ which already handles 2-4 player synchronization.
-CableClub_EventScript_MultiMixAndExit::
-	lockall
-	special SetVarToMultiplayerId
-	special RecordMixingPlayerSpotTriggered
-	waitstate
-	goto_if_ne VAR_TEMP_RECORD_MIX_GIFT_ITEM, ITEM_NONE, CableClub_EventScript_MultiMixGotGift
-	goto CableClub_EventScript_MultiMixFinished
-	end
-
-CableClub_EventScript_MultiMixGotGift::
-	bufferitemname STR_VAR_2, VAR_TEMP_RECORD_MIX_GIFT_ITEM
-	message RecordCorner_Text_PlayerSentOverOneX
-	waitmessage
-	waitbuttonpress
-	goto CableClub_EventScript_MultiMixFinished
-	end
-
-CableClub_EventScript_MultiMixFinished::
-	call CableClub_EventScript_CloseLinkAndExitLinkRoom
-	call CableClub_EventScript_CloseDirectCornerBarrier
-	special DrawWholeMapView
-	playse SE_CLICK
-	erasebox 0, 0, 29, 19
-	goto_if_set FLAG_SYS_MIX_RECORD, CableClub_EventScript_ShowRecordMixMessage
+CableClub_EventScript_ShowRecordMixError::
+	playse SE_BOO
+	msgbox CableClub_Text_RecordMixError, MSGBOX_DEFAULT
 	releaseall
 	end
 

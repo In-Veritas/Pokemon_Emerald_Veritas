@@ -103,12 +103,14 @@ static EWRAM_DATA struct RecordMixingDaycareMail sRecordMixMail = {0};
 static EWRAM_DATA union PlayerRecord *sReceivedRecords = NULL;
 static EWRAM_DATA union PlayerRecord *sSentRecord = NULL;
 static EWRAM_DATA bool8 sCalledFromBattle = FALSE;
+EWRAM_DATA bool8 gRecordMixingAborted = FALSE;
 
 static void Task_RecordMixing_Main(u8);
 static void Task_MixingRecordsRecv(u8);
 static void Task_SendPacket(u8);
 static void Task_CopyReceiveBuffer(u8);
 static void Task_SendPacket_SwitchToReceive(u8);
+static void Task_RecordMixing_SoundEffect(u8);
 static void *LoadPtrFromTaskData(const u16 *);
 static void StorePtrInTaskData(void *, u16 *);
 static u8 GetMultiplayerId_(void);
@@ -175,6 +177,7 @@ bool8 StartRecordMixingDirect(void)
         return FALSE;
 
     sCalledFromBattle = TRUE;
+    FlagSet(FLAG_SYS_MIX_RECORD); // Set optimistically; cleared on abort
     CreateTask(Task_RecordMixing_Main, 10);
     gSpecialVar_0x8005 = GetMultiplayerId();
     return TRUE;
@@ -183,6 +186,42 @@ bool8 StartRecordMixingDirect(void)
 bool8 IsRecordMixingTaskActive(void)
 {
     return FuncIsActiveTask(Task_RecordMixing_Main);
+}
+
+void AbortRecordMixing(void)
+{
+    u8 i;
+
+    // Destroy all mixing-related tasks
+    for (i = 0; i < NUM_TASKS; i++)
+    {
+        if (gTasks[i].isActive
+            && (gTasks[i].func == Task_RecordMixing_Main
+             || gTasks[i].func == Task_MixingRecordsRecv
+             || gTasks[i].func == Task_SendPacket
+             || gTasks[i].func == Task_CopyReceiveBuffer
+             || gTasks[i].func == Task_SendPacket_SwitchToReceive
+             || gTasks[i].func == Task_DoRecordMixing
+             || gTasks[i].func == Task_RecordMixing_SoundEffect))
+        {
+            DestroyTask(i);
+        }
+    }
+    DestroyRecordMixingLights();
+    FlagClear(FLAG_SYS_MIX_RECORD);
+    gRecordMixingAborted = TRUE;
+    // Free allocated buffers
+    if (sReceivedRecords != NULL)
+    {
+        Free(sReceivedRecords);
+        sReceivedRecords = NULL;
+    }
+    if (sSentRecord != NULL)
+    {
+        Free(sSentRecord);
+        sSentRecord = NULL;
+    }
+    sCalledFromBattle = FALSE;
 }
 
 // these variables were const in R/S, but had to become changeable because of saveblocks changing RAM position

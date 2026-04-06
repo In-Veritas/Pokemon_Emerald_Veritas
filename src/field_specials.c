@@ -21,6 +21,7 @@
 #include "item_icon.h"
 #include "link.h"
 #include "list_menu.h"
+#include "record_mixing.h"
 #include "main.h"
 #include "mystery_gift.h"
 #include "match_call.h"
@@ -4941,5 +4942,18 @@ void CreateBossLugia(void)
 void SetVarToMultiplayerId(void)
 {
     gSpecialVar_0x8005 = GetMultiplayerId();
+}
+
+void CheckRecordMixingAborted(void)
+{
+    if (gRecordMixingAborted)
+    {
+        gSpecialVar_Result = TRUE;
+        gRecordMixingAborted = FALSE;
+    }
+    else
+    {
+        gSpecialVar_Result = FALSE;
+    }
 }
 

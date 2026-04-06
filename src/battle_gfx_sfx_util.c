@@ -27,6 +27,7 @@
 #include "contest.h"
 #include "constants/songs.h"
 #include "constants/rgb.h"
+#include "constants/trainers.h"
 #include "constants/battle_palace.h"
 
 extern const u8 gBattlePalaceNatureToMoveTarget[];
