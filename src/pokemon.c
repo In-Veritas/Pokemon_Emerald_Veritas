@@ -2318,9 +2318,22 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
                         shinyValue = HIHALF(value) ^ LOHALF(value) ^ HIHALF(personality) ^ LOHALF(personality);
                         rolls++;
                     } while (shinyValue >= SHINY_ODDS && rolls < maxRolls);
-                    // Force the nature back if personality changed
-                    while (GetNatureFromPersonality(personality) != nature)
-                        personality++;
+                    // Preserve nature while keeping shininess if shiny
+                    if (shinyValue < SHINY_ODDS)
+                    {
+                        // Shiny: rebuild personality with correct nature AND shiny XOR
+                        u16 tid = LOHALF(value) ^ HIHALF(value);
+                        do {
+                            personality = Random32();
+                            personality = (((tid ^ (Random() % SHINY_ODDS)) ^ LOHALF(personality)) << 16) | LOHALF(personality);
+                        } while (GetNatureFromPersonality(personality) != nature);
+                    }
+                    else
+                    {
+                        // Not shiny: just fix the nature
+                        while (GetNatureFromPersonality(personality) != nature)
+                            personality++;
+                    }
                 }
                 else
                 {
