@@ -1098,11 +1098,100 @@ static bool16 IsInflitratedSpaceCenter(struct WarpData *warp)
     return FALSE;
 }
 
+// Maps abnormal weather location index (1-based) to the route mapNum hosting it.
+// Indices 1..8 are Terra Cave (Groudon), 9..16 are Marine Cave (Kyogre).
+static const u8 sAbnormalWeatherRouteMapNums[] = {
+    MAP_NUM(ROUTE114), MAP_NUM(ROUTE114),
+    MAP_NUM(ROUTE115), MAP_NUM(ROUTE115),
+    MAP_NUM(ROUTE116), MAP_NUM(ROUTE116),
+    MAP_NUM(ROUTE118), MAP_NUM(ROUTE118),
+    MAP_NUM(ROUTE105), MAP_NUM(ROUTE105),
+    MAP_NUM(ROUTE125), MAP_NUM(ROUTE125),
+    MAP_NUM(ROUTE127), MAP_NUM(ROUTE127),
+    MAP_NUM(ROUTE129), MAP_NUM(ROUTE129),
+};
+
+// If the player is on the route currently hosting the active Terra Cave or
+// Marine Cave AND the corresponding legendary has not been defeated yet,
+// return the matching weather song so the route plays drought/drizzle music
+// while the legendary is still present. Returns MUS_DUMMY otherwise so the
+// route falls through to its normal map music.
+static u16 GetActiveAbnormalWeatherRouteMusic(struct WarpData *warp)
+{
+    u16 abnormalWeather;
+
+    if (warp->mapGroup != 0)
+        return MUS_DUMMY;
+    abnormalWeather = VarGet(VAR_ABNORMAL_WEATHER_LOCATION);
+    if (abnormalWeather == ABNORMAL_WEATHER_NONE)
+        return MUS_DUMMY;
+    if (abnormalWeather > ABNORMAL_WEATHER_LOCATIONS)
+        return MUS_DUMMY;
+    if (warp->mapNum != sAbnormalWeatherRouteMapNums[abnormalWeather - 1])
+        return MUS_DUMMY;
+    if (abnormalWeather < MARINE_CAVE_LOCATIONS_START)
+    {
+        // Terra Cave (Groudon)
+        if (FlagGet(FLAG_DEFEATED_GROUDON))
+            return MUS_DUMMY;
+        return MUS_WEATHER_GROUDON;
+    }
+    // Marine Cave (Kyogre)
+    if (FlagGet(FLAG_DEFEATED_KYOGRE))
+        return MUS_DUMMY;
+    return MUS_ABNORMAL_WEATHER;
+}
+
+// Random playlist for the link battle rooms (2P and 4P colosseum). Picks a
+// fresh entry each time the player walks in. The 4 tracks are equally weighted.
+static const u16 sBattleColosseumPlaylist[] = {
+    MUS_RG_TITLE,            // FRLG title screen
+    MUS_RG_NEW_GAME_INTRO,   // "Welcome to the world of Pokemon"
+    MUS_RG_ENCOUNTER_BOY,    // Brendan theme
+    MUS_RG_ENCOUNTER_GIRL,   // May theme
+};
+
+static bool32 IsBattleColosseumWarp(struct WarpData *warp)
+{
+    if (warp->mapGroup != MAP_GROUP(BATTLE_COLOSSEUM_2P))
+        return FALSE;
+    return warp->mapNum == MAP_NUM(BATTLE_COLOSSEUM_2P)
+        || warp->mapNum == MAP_NUM(BATTLE_COLOSSEUM_4P);
+}
+
+static u16 GetBattleColosseumMusic(struct WarpData *warp)
+{
+    static u16 sCachedColosseumMusic = MUS_DUMMY;
+
+    if (!IsBattleColosseumWarp(warp))
+        return MUS_DUMMY;
+
+    // Re-roll only on a fresh entry: the player's current location is not
+    // (yet) the warp destination. Mid-stay calls match -> return the cached
+    // pick so the song stays stable until the player leaves and comes back.
+    if (gSaveBlock1Ptr->location.mapGroup != warp->mapGroup
+     || gSaveBlock1Ptr->location.mapNum != warp->mapNum)
+    {
+        sCachedColosseumMusic = sBattleColosseumPlaylist[
+            Random() % ARRAY_COUNT(sBattleColosseumPlaylist)];
+    }
+    return sCachedColosseumMusic;
+}
+
 u16 GetLocationMusic(struct WarpData *warp)
 {
+    u16 weatherMusic;
+    u16 colosseumMusic;
+
     if (NoMusicInSotopolisWithLegendaries(warp) == TRUE)
         return MUS_NONE;
-    else if (ShouldLegendaryMusicPlayAtLocation(warp) == TRUE)
+    colosseumMusic = GetBattleColosseumMusic(warp);
+    if (colosseumMusic != MUS_DUMMY)
+        return colosseumMusic;
+    weatherMusic = GetActiveAbnormalWeatherRouteMusic(warp);
+    if (weatherMusic != MUS_DUMMY)
+        return weatherMusic;
+    if (ShouldLegendaryMusicPlayAtLocation(warp) == TRUE)
         return MUS_ABNORMAL_WEATHER;
     else if (IsInflitratedSpaceCenter(warp) == TRUE)
         return MUS_ENCOUNTER_MAGMA;

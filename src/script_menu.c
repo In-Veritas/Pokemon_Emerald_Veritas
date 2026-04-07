@@ -7,8 +7,10 @@
 #include "item.h"
 #include "list_menu.h"
 #include "menu.h"
+#include "overworld.h"
 #include "palette.h"
 #include "pokedex.h"
+#include "constants/game_stat.h"
 #include "pokemon.h"
 #include "random.h"
 #include "script.h"
@@ -573,6 +575,8 @@ static const u8 *const sLinkBattleMusicNames[] =
     [LINK_MUSIC_VS_JIRACHI]    = gText_LinkMusic_VsJirachi,
     [LINK_MUSIC_VS_MAGMA_AQUA]  = gText_LinkMusic_VsMagmaAqua,
     [LINK_MUSIC_VS_ELITE_FOUR] = gText_LinkMusic_VsEliteFour,
+    [LINK_MUSIC_VS_SHADOW]     = gText_LinkMusic_Shadow,
+    [LINK_MUSIC_VS_FRIENDS]    = gText_LinkMusic_VsFriends,
     [LINK_MUSIC_RANDOM]        = gText_LinkMusic_Random,
     [LINK_MUSIC_CANCEL]        = gText_Cancel2,
 };
@@ -589,6 +593,8 @@ static const u16 sLinkBattleMusicIds[] =
     [LINK_MUSIC_VS_JIRACHI]    = MUS_RG_VS_DEOXYS,
     [LINK_MUSIC_VS_MAGMA_AQUA] = MUS_VS_AQUA_MAGMA_LEADER,
     [LINK_MUSIC_VS_ELITE_FOUR] = MUS_VS_ELITE_FOUR,
+    [LINK_MUSIC_VS_SHADOW]     = MUS_RG_VS_CHAMPION,
+    [LINK_MUSIC_VS_FRIENDS]    = MUS_RG_VS_GYM_LEADER,
 };
 
 static bool8 IsLinkMusicUnlocked(u8 musicIndex)
@@ -625,6 +631,10 @@ static bool8 IsLinkMusicUnlocked(u8 musicIndex)
         return FlagGet(FLAG_BADGE08_GET);
     case LINK_MUSIC_VS_ELITE_FOUR:
         return FlagGet(FLAG_IS_CHAMPION);
+    case LINK_MUSIC_VS_SHADOW:
+        return HasAllKantoMons();
+    case LINK_MUSIC_VS_FRIENDS:
+        return GetGameStat(GAME_STAT_LINK_BATTLE_WINS) >= 10;
     default:
         return FALSE;
     }
@@ -738,11 +748,11 @@ void GetLinkBattleMusicSelection(void)
 
 void SetRandomLinkBattleMusic(void)
 {
-    u16 unlockedMusic[9];
+    u16 unlockedMusic[LINK_MUSIC_RANDOM];
     u8 count = 0;
     u8 i;
 
-    for (i = LINK_MUSIC_VS_TRAINER; i <= LINK_MUSIC_VS_MAGMA_AQUA; i++)
+    for (i = LINK_MUSIC_VS_TRAINER; i < LINK_MUSIC_RANDOM; i++)
     {
         if (IsLinkMusicUnlocked(i))
         {

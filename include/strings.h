@@ -3262,6 +3262,8 @@ extern const u8 gText_LinkMusic_VsRegi[];
 extern const u8 gText_LinkMusic_VsJirachi[];
 extern const u8 gText_LinkMusic_VsMagmaAqua[];
 extern const u8 gText_LinkMusic_VsEliteFour[];
+extern const u8 gText_LinkMusic_Shadow[];
+extern const u8 gText_LinkMusic_VsFriends[];
 extern const u8 gText_LinkMusic_Random[];
 extern const u8 gText_CheckObtainedRibbons[];
 extern const u8 gText_PutAwayPokenav[];
