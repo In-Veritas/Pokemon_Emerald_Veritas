@@ -939,7 +939,7 @@ BattleScript_EffectLeafBlade2::
 	goto BattleScript_MoveEnd
 
 BattleScript_EffectBlazeKick::
-	setmoveeffect MOVE_EFFECT_BURN_FLINCH
+	setmoveeffect MOVE_EFFECT_BURN
 	goto BattleScript_EffectHit
 
 BattleScript_EffectRecoil::
