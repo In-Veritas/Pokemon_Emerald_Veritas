@@ -1072,6 +1072,11 @@ u8 GetItemVirtualPocket(u16 itemId)
     if (fieldFunc == ItemUseOutOfBattle_Mail)
         return BATTLE_POCKET;
 
+    // Shoal Salt and Shoal Shell are crafting components for Shell Bell — keep
+    // them in the regular items pocket rather than treasures.
+    if (itemId == ITEM_SHOAL_SALT || itemId == ITEM_SHOAL_SHELL)
+        return ITEMS_POCKET;
+
     // Treasures: no field use, no hold effect, no battle use
     if (fieldFunc == ItemUseOutOfBattle_CannotUse && holdEffect == 0 && battleUsage == 0)
         return TREASURES_POCKET;
