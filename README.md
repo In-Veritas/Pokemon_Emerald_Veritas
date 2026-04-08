@@ -4,13 +4,11 @@
 
 # Pokémon Emerald Veritas
 
-**Pokémon Emerald Veritas** aims to be the **ultimate Hoenn experience** in a single ROM. The goal isn't to remake one specific Hoenn game — it's to capture how the *whole* Hoenn era felt, so that fans of Ruby, Sapphire, Emerald, FireRed/LeafGreen, and any other game from that period can come back to one cartridge and find what they remember. Built on top of that, the multiplayer side has been completely rebuilt because **playing this game with friends should feel as good as playing it alone**.
+**Pokémon Emerald Veritas** aims to be the **ultimate Hoenn experience** in a single ROM. The goal isn't to remake one specific Hoenn game — it's to capture how the *whole* Hoenn era felt, so that fans of Ruby, Sapphire and Emerald can come back to one cartridge and find what they remember. Built on top of that, the multiplayer side has been completely rebuilt because **playing this game with friends should feel as good as playing it alone**.
 
 ## About This Project
 
-Veritas pulls from across the Hoenn era. The title screen and intro cycle through Ruby/Sapphire/Emerald cinematics. The player can switch between Emerald and Classic (RS) sprite styles at any time and unlock 27 alternate clothing palettes from Fashionista NPCs scattered across the region — themed after Johto starters, Kanto/Johto trainers, legendary motifs, team paths, and Hoenn classics. Music includes original Emerald tracks, FRLG ports for the Veritas-specific link rooms and boss fights, and a couple of Gen 2 themes for the trade and record rooms. After your first save, the title screen rotates Groudon and Kyogre alongside Rayquaza. A handful of shinies (Hoenn legendaries, starters, and a few common encounters) have been redesigned because the vanilla recolors were *visually* boring — that's a polish detail, not the point of the hack.
-
-The *real* reason Veritas exists is the multiplayer side, and that one's personal.
+Veritas pulls from across the Hoenn era. The title screen and intro cycle through Ruby/Sapphire/Emerald cinematics. The player can switch between Emerald and Classic (RS) sprite styles at any time and unlock 27 alternate clothing palettes from Fashionista NPCs scattered across the region — themed after Johto starters, Kanto/Johto trainers, legendary motifs, team paths, and Hoenn classics. Music includes original Emerald tracks, FRLG ports for the Veritas-specific link rooms and boss fights, and a couple of Gen 2 themes for the trade and record rooms. After your first save, the title screen rotates Groudon and Kyogre alongside Rayquaza. A handful of shinies (Hoenn legendaries, starters, and a few common encounters) have been redesigned.
 
 I grew up in Brazil where almost nobody around me had a Game Boy. Most of my time with these games was solitary, but the rare times I *did* get to interact with another kid's cartridge stuck with me forever. A traded Pokémon carrying somebody else's OT on the summary screen. Their secret base showing up inside my game after we mixed records, decorated exactly the way they'd wanted it. Even just knowing that a small piece of someone else's journey was living quietly inside my own cartridge — that felt like magic to me. It still does.
 
@@ -18,7 +16,7 @@ So when I started building Veritas I put the link features right at the center o
 
 If you're playing solo this is a polished Emerald with a lot of QoL and post-game content. If you're playing with friends, this is the version I wish I'd had.
 
-The single-player experience is tuned to be approachable for casuals while still rewarding experienced players: shiny odds get a generous re-roll system, EVs and IVs are easier to manage, level cap and Nuzlocke options are built in, and post-game encounters are reworked into proper boss fights. Some of base Emerald Enhanced's more fiddly tools (gift shinies, stat editor, dive speed) have been removed to keep the experience consistent across players.
+The single-player experience is tuned to be approachable for casuals while still rewarding experienced players: shiny odds get a generous re-roll system, EVs and IVs are easier to manage, and post-game encounters are reworked into proper boss fights. Some of base Emerald Enhanced's more fiddly tools (gift shinies, stat editor, dive speed) have been removed to keep the experience consistent across players.
 
 This is my first ROM hack and it's an active project — suggestions and feedback are very welcome.
 
