@@ -1151,6 +1151,9 @@ static const u16 sBattleColosseumPlaylist[] = {
     MUS_RG_ENCOUNTER_GIRL,   // May theme
 };
 
+// File-scope static (agbcc: function-local statics cause linker errors).
+EWRAM_DATA static u16 sCachedColosseumMusic = 0;
+
 static bool32 IsBattleColosseumWarp(struct WarpData *warp)
 {
     if (warp->mapGroup != MAP_GROUP(BATTLE_COLOSSEUM_2P))
@@ -1161,8 +1164,6 @@ static bool32 IsBattleColosseumWarp(struct WarpData *warp)
 
 static u16 GetBattleColosseumMusic(struct WarpData *warp)
 {
-    static u16 sCachedColosseumMusic = MUS_DUMMY;
-
     if (!IsBattleColosseumWarp(warp))
         return MUS_DUMMY;
 
