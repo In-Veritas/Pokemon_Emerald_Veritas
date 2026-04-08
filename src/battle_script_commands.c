@@ -3452,13 +3452,19 @@ static void Cmd_getexp(void)
                 if (gBitTable[i] & sentIn)
                     viaSentIn++;
 
-                // Added EXP. ALL to EXPShare calculation 
-                if (FlagGet(FLAG_EXP_ALL)
-                    && !(GetMonData(&gPlayerParty[i], MON_DATA_LEVEL) == MAX_LEVEL
-                    || levelCappedNuzlocke(GetMonData(&gPlayerParty[i], MON_DATA_LEVEL))))
-                    viaExpShare++;
+                // Under FLAG_EXP_ALL, ignore the held-item Exp Share entirely
+                // (no stacking) and only count eligible (alive, not max-level,
+                // not level-capped) mons in the divisor.
+                if (FlagGet(FLAG_EXP_ALL))
+                {
+                    if (!(GetMonData(&gPlayerParty[i], MON_DATA_LEVEL) == MAX_LEVEL
+                        || levelCappedNuzlocke(GetMonData(&gPlayerParty[i], MON_DATA_LEVEL))))
+                        viaExpShare++;
+                }
                 else if (holdEffect == HOLD_EFFECT_EXP_SHARE)
+                {
                     viaExpShare++;
+                }
             }
 
             calculatedExp = gSpeciesInfo[gBattleMons[gBattlerFainted].species].expYield * gBattleMons[gBattlerFainted].level / 7;
@@ -3466,7 +3472,21 @@ static void Cmd_getexp(void)
             if (luckyEggCheck)
                 calculatedExp = (calculatedExp * 150) / 100;
 
-            if (viaExpShare) // at least one mon is getting exp via exp share or EXP. ALL is turned on
+            if (FlagGet(FLAG_EXP_ALL))
+            {
+                // Veritas EXP. ALL: equal share among every eligible party
+                // member (participants AND non-participants), with a 50%
+                // total payout boost. viaExpShare already counts every
+                // eligible mon (including participants) when FLAG_EXP_ALL
+                // is set, so it serves as the divisor.
+                *exp = SAFE_DIV((calculatedExp * 3) / 2, viaExpShare);
+                if (*exp == 0)
+                    *exp = 1;
+                // Mirror into gExpShareExp; case 2 below sources its
+                // payout from gExpShareExp under FLAG_EXP_ALL.
+                gExpShareExp = *exp;
+            }
+            else if (viaExpShare) // held-item Exp Share present (gen 3 split)
             {
                 *exp = SAFE_DIV(calculatedExp / 2, viaSentIn);
                 if (*exp == 0)
@@ -3528,12 +3548,16 @@ static void Cmd_getexp(void)
                 if (GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_HP)
                     && !GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_IS_EGG))
                 {
-                    if (gBattleStruct->sentInPokes & 1)
+                    // Under FLAG_EXP_ALL the participant gets the same
+                    // equal share as everyone else (no participant bonus),
+                    // so start at 0 and let the FLAG_EXP_ALL block below
+                    // add the single shared value.
+                    if ((gBattleStruct->sentInPokes & 1) && !FlagGet(FLAG_EXP_ALL))
                         gBattleMoveDamage = *exp;
                     else
                         gBattleMoveDamage = 0;
 
-                    // Added EXP. ALL to EXP. Share calculation 
+                    // Added EXP. ALL to EXP. Share calculation
                     if (FlagGet(FLAG_EXP_ALL))
                     {
                         gExpAllMessCheck = TRUE;
