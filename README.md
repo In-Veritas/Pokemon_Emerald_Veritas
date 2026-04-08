@@ -65,8 +65,85 @@ This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (
 * Team-restricted outfits: Magma/Groudon only from Magma NPCs, Aqua/Kyogre only from Aqua NPCs
 * Passive unlocks for non-Pokemon conditions (contest wins, champion with starters, trades, etc.)
 * Each Fashionista gives a daily tip about a locked outfit, with personality-flavored dialog
-* Available outfits: Aqua, Brazil, Chikorita, Cyndaquil, Dark, Diver, Enigma, Fabulous, Forest, Groudon, Historic, Ho-Oh, Kyogre, Lugia, Magma, Master, Mudkip, Ocean, Old, Red, Redmoon, Royal, Sakura, Silver, Torchic, Totodile, Treecko
 * **Link outfit sharing**: Other players see your outfit and Emerald/RS style in the Cable Club, during link battles, and on your trainer card
+
+##### Outfit Previews
+
+A small sampler of the easier outfits — show the right Pokémon to a Fashionista and they're yours.
+
+<table>
+  <tr>
+    <td align="center"><b>Treecko</b><br><img src="docs/outfit_previews/Treecko.png" alt="Treecko outfit" width="280"></td>
+    <td align="center"><b>Mudkip</b><br><img src="docs/outfit_previews/Mudkip.png" alt="Mudkip outfit" width="280"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Forest</b><br><img src="docs/outfit_previews/Forest.png" alt="Forest outfit" width="280"></td>
+    <td align="center"><b>Ocean</b><br><img src="docs/outfit_previews/Ocean.png" alt="Ocean outfit" width="280"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Royal</b><br><img src="docs/outfit_previews/Royal.png" alt="Royal outfit" width="280"></td>
+    <td align="center"><b>Brazil</b><br><img src="docs/outfit_previews/Brazil.png" alt="Brazil outfit" width="280"></td>
+  </tr>
+</table>
+
+<details>
+<summary><b>🔒 Hidden Rewards (click to expand — minor spoilers)</b></summary>
+
+The rare and themed unlocks. Most are tied to legendary captures, post-game milestones, team paths, or cross-game tributes. Pick your team and explore.
+
+**Johto Starter Tributes**
+
+<table>
+  <tr>
+    <td align="center"><b>Chikorita</b><br><img src="docs/outfit_previews/Chikorita.png" alt="Chikorita outfit" width="280"></td>
+    <td align="center"><b>Cyndaquil</b><br><img src="docs/outfit_previews/Cyndaquil.png" alt="Cyndaquil outfit" width="280"></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><b>Totodile</b><br><img src="docs/outfit_previews/Totodile.png" alt="Totodile outfit" width="280"></td>
+  </tr>
+</table>
+
+**Legendary Themes** — earned by capturing/defeating their namesakes
+
+<table>
+  <tr>
+    <td align="center"><b>Master (Lugia)</b><br><img src="docs/outfit_previews/Lugia.png" alt="Lugia outfit" width="280"></td>
+    <td align="center"><b>Ho-Oh</b><br><img src="docs/outfit_previews/HoOh.png" alt="Ho-Oh outfit" width="280"></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><b>Fabulous (Mewtwo)</b><br><img src="docs/outfit_previews/Mewtwo.png" alt="Mewtwo outfit" width="280"></td>
+  </tr>
+</table>
+
+**Team Paths** — Magma fashionistas unlock these for the volcano team, Aqua fashionistas for the ocean team
+
+<table>
+  <tr>
+    <td align="center"><b>Magma</b><br><img src="docs/outfit_previews/Magma.png" alt="Magma outfit" width="280"></td>
+    <td align="center"><b>Groudon</b><br><img src="docs/outfit_previews/Groudon.png" alt="Groudon outfit" width="280"></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><b>Kyogre</b><br><img src="docs/outfit_previews/Kyogre.png" alt="Kyogre outfit" width="280"></td>
+  </tr>
+</table>
+
+**Cross-Game Tributes** — for the OG fans
+
+<table>
+  <tr>
+    <td align="center"><b>Red (Lyra)</b><br><img src="docs/outfit_previews/Lyra.png" alt="Lyra/Red outfit" width="280"></td>
+    <td align="center"><b>Silver (Rocket)</b><br><img src="docs/outfit_previews/Rocket.png" alt="Rocket/Silver outfit" width="280"></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><b>Redmoon (Crystal)</b><br><img src="docs/outfit_previews/Crystal.png" alt="Crystal/Redmoon outfit" width="280"></td>
+  </tr>
+</table>
+
+…and several more not pictured here. Visit the Fashionistas to find them all.
+
+</details>
+
+The full unlockable list (27 outfits): Aqua, Brazil, Chikorita, Cyndaquil, Dark, Diver, Enigma, Fabulous, Forest, Groudon, Historic, Ho-Oh, Kyogre, Master, Magma, Mudkip, Ocean, Old, Red, Redmoon, Royal, Sakura, Silver, Torchic, Totodile, Treecko.
 
 #### Legendary Title Screen Animation
 
@@ -344,29 +421,134 @@ Baby Pokémon have been reworked to be viable in battle with new abilities and c
 * **Synchronize Fix**: Fixed Synchronize ability not working due to the shiny roll system overwriting the nature-locked personality. Synchronize now works 100% on wild encounters and static encounters while still allowing shiny rolls.
 * **Berry Rain Sprite Fix**: Fixed berry tree sprites appearing bright/illuminated during heavy rain until lightning strikes. Now applies weather palette darkening when berry sprites are loaded.
 * **PokeNews TV Priority**: PokeNews events (Shiny Day, Training Day) now display first when watching TV, before other shows.
-* **Shiny Palette Redesigns**: Custom shiny palettes with matching overworld follower sprites:
+* **Shiny Palette Redesigns**: Hand-tuned shiny palettes for legendaries, starters, and common route encounters, each paired with a matching overworld follower sprite.
 
-  | Pokemon | Shiny Design |
-  |---------|-------------|
-  | **Lugia** (Shadow Lugia) | Navy body, teal frills, crimson eyes, rose mouth |
-  | **Kyogre** | Dark orca with sapphire blue lines, aquamarine eye |
-  | **Groudon** | Deep dark red body, orange eyes, dark blue-purple outlines |
-  | **Gardevoir** | Dark gray petal, blood red eye |
-  | **Wailord** | Gray body with bluish-white belly |
-  | **Rayquaza** | Darker emerald with green accents |
-  | **Salamence** | Dark grey body, crimson red wings and eyes |
-  | Treecko line | Vibrant blues/reds |
-  | Mudkip line | Brown |
-  | Spinda | Panda |
-  | Wingull | Dark gray markings |
-  | Zigzagoon | Brown-orange corgi |
+#### Hoenn Legendary Trio
 
-  ![Shadow Lugia](docs/shiny_previews/shadow_lugia.png)
-  ![Shiny Kyogre](docs/shiny_previews/shiny_kyogre.png)
-  ![Shiny Groudon](docs/shiny_previews/shiny_groudon.png)
-  ![Shiny Rayquaza](docs/shiny_previews/shiny_rayquaza.png)
-  ![Shiny Gardevoir](docs/shiny_previews/shiny_gardevoir.png)
-  ![Shiny Wailord](docs/shiny_previews/shiny_wailord.png)
+The headline shinies of Pokémon Emerald Veritas. Each of the three superancient/sky legendaries was redesigned from scratch with a distinct identity rather than the vanilla recolor.
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_groudon.png" alt="Shiny Groudon" width="160"><br>
+      <b>★ Groudon ★</b><br>
+      <sub>The Continent Pokémon</sub><br>
+      <sub>Deep dark red body, glowing orange eyes,<br>blue-purple outlines</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_rayquaza.png" alt="Shiny Rayquaza" width="160"><br>
+      <b>★ Rayquaza ★</b><br>
+      <sub>The Sky High Pokémon</sub><br>
+      <sub>Darker emerald body with vivid<br>green accents and orange eyes</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_kyogre.png" alt="Shiny Kyogre" width="160"><br>
+      <b>★ Kyogre ★</b><br>
+      <sub>The Sea Basin Pokémon</sub><br>
+      <sub>Dark orca silhouette with sapphire blue<br>line patterns and an aquamarine eye</sub>
+    </td>
+  </tr>
+</table>
+
+#### Other Notable Redesigns
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shadow_lugia.png" alt="Shadow Lugia" width="120"><br>
+      <b>Shadow Lugia</b><br>
+      <sub>Navy body · teal frills<br>crimson eyes · rose mouth</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_salamence.png" alt="Shiny Salamence" width="120"><br>
+      <b>Salamence</b><br>
+      <sub>Dark grey body<br>crimson wings · red eyes</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_gardevoir.png" alt="Shiny Gardevoir" width="120"><br>
+      <b>Gardevoir</b><br>
+      <sub>Dark gray petal<br>blood red eye</sub>
+    </td>
+  </tr>
+</table>
+
+#### Hoenn Starter Lines
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_treecko.png" alt="Shiny Treecko" width="120"><br>
+      <b>Treecko</b><br>
+      <sub>Vibrant blue and red</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_grovyle.png" alt="Shiny Grovyle" width="120"><br>
+      <b>Grovyle</b><br>
+      <sub>Vibrant blue and red</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_sceptile.png" alt="Shiny Sceptile" width="120"><br>
+      <b>Sceptile</b><br>
+      <sub>Vibrant blue and red</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/shiny_previews/shiny_mudkip.png" alt="Shiny Mudkip" width="120"><br>
+      <b>Mudkip</b><br>
+      <sub>Earthen brown</sub>
+    </td>
+    <td align="center">
+      <img src="docs/shiny_previews/shiny_marshtomp.png" alt="Shiny Marshtomp" width="120"><br>
+      <b>Marshtomp</b><br>
+      <sub>Earthen brown</sub>
+    </td>
+    <td align="center">
+      <img src="docs/shiny_previews/shiny_swampert.png" alt="Shiny Swampert" width="120"><br>
+      <b>Swampert</b><br>
+      <sub>Earthen brown</sub>
+    </td>
+  </tr>
+</table>
+
+#### Route Encounters
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_wailord.png" alt="Shiny Wailord" width="120"><br>
+      <b>Wailord</b><br>
+      <sub>Gray body<br>bluish-white belly</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_wingull.png" alt="Shiny Wingull" width="120"><br>
+      <b>Wingull</b><br>
+      <sub>Dark gray markings</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_pelipper.png" alt="Shiny Pelipper" width="120"><br>
+      <b>Pelipper</b><br>
+      <sub>Dark gray markings</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/shiny_previews/shiny_zigzagoon.png" alt="Shiny Zigzagoon" width="120"><br>
+      <b>Zigzagoon</b><br>
+      <sub>Brown-orange corgi</sub>
+    </td>
+    <td align="center">
+      <img src="docs/shiny_previews/shiny_linoone.png" alt="Shiny Linoone" width="120"><br>
+      <b>Linoone</b><br>
+      <sub>Brown-orange corgi</sub>
+    </td>
+    <td align="center">
+      <img src="docs/shiny_previews/shiny_spinda.png" alt="Shiny Spinda" width="120"><br>
+      <b>Spinda</b><br>
+      <sub>Panda</sub>
+    </td>
+  </tr>
+</table>
 
 * **4 Shiny Sparkle Colors**: Different sparkle effects based on how the shiny was obtained:
   * **Gold** (default): Normal shiny
