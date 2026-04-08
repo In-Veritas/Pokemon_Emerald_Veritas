@@ -4,21 +4,36 @@
 
 # Pokémon Emerald Veritas
 
-Hey thanks for checking this out! Emerald Veritas is a rom hack I made based on Exclsior's Emerald Enhanced. I made this mostly to play with my friends but feel free to try it if you want to.
+**Pokémon Emerald Veritas** aims to be the **ultimate Hoenn experience** in a single ROM. The goal isn't to remake one specific Hoenn game — it's to capture how the *whole* Hoenn era felt, so that fans of Ruby, Sapphire, Emerald, FireRed/LeafGreen, and any other game from that period can come back to one cartridge and find what they remember. Built on top of that, the multiplayer side has been completely rebuilt because **playing this game with friends should feel as good as playing it alone**.
 
 ## About This Project
 
-I believe that Legacy and Enhanced both do an excellent job in capturing Emerald's essence, but since I wanted something more abstract as in "Hoenn's" essence, I made some slight changes. In Veritas, title screens and intros both share cutscenes and elements from Ruby and Sapphire, and the player may choose to get a Ruby/Sapphire look for their character.
+Veritas pulls from across the Hoenn era. The title screen and intro cycle through Ruby/Sapphire/Emerald cinematics. The player can switch between Emerald and Classic (RS) sprite styles at any time and unlock 27 alternate clothing palettes from Fashionista NPCs scattered across the region — themed after Johto starters, Kanto/Johto trainers, legendary motifs, team paths, and Hoenn classics. Music includes original Emerald tracks, FRLG ports for the Veritas-specific link rooms and boss fights, and a couple of Gen 2 themes for the trade and record rooms. After your first save, the title screen rotates Groudon and Kyogre alongside Rayquaza. A handful of shinies (Hoenn legendaries, starters, and a few common encounters) have been redesigned because the vanilla recolors were *visually* boring — that's a polish detail, not the point of the hack.
 
-After creating a save game, the player also unlocks Groudon and Kyogre for the title screen. 
+The *real* reason Veritas exists is the multiplayer side, and that one's personal.
 
-This version also removes some things from enhanced, such as the gift shiny Pokemon, Stat editor, and Dive speed. The general idea is to give a bit less control to the player and make the experience more noob friendly for casuals whilst also giving enough options so that experienced players can get a kick out of it. 
+I grew up in Brazil where almost nobody around me had a Game Boy. Most of my time with these games was solitary, but the rare times I *did* get to interact with another kid's cartridge stuck with me forever. A traded Pokémon carrying somebody else's OT on the summary screen. Their secret base showing up inside my game after we mixed records, decorated exactly the way they'd wanted it. Even just knowing that a small piece of someone else's journey was living quietly inside my own cartridge — that felt like magic to me. It still does.
 
-I also removed the gift Milotic from Legacy in order to make feebas more unique.
+So when I started building Veritas I put the link features right at the center of the hack. Every system that lets a friend leave a fingerprint on your save — secret bases, record mixing, traded Pokémon, link battles — got rebuilt to be cleaner, easier to actually use, and more memorable. Records mix automatically after a wired battle so nobody has to trek back to the Pokémon Center. Secret base battles can be doubles with their own VS cutscene and music selection. Wireless minigames give real prizes and live in two places now. Lv50 cable modes let you battle a friend regardless of where each of you is in your respective stories. The full breakdown is in the **[Multiplayer & Link Features](#multiplayer--link-features)** section below — it's the longest section of this README for a reason.
 
-Pokémon Emerald Veritas is a fork of [Pokémon Emerald Legacy Enhanced](https://github.com/Exclsior/Pokemon_Emerald_Legacy_Enhanced) by Exclsior, which itself is based on [Pokémon Emerald Legacy](https://github.com/cRz-Shadows/Pokemon_Emerald_Legacy) by TheSmithPlays and the Legacy team. This ROM hack builds upon the excellent foundation of both projects while adding its own unique flavor and modifications.
+If you're playing solo this is a polished Emerald with a lot of QoL and post-game content. If you're playing with friends, this is the version I wish I'd had.
 
-This is my first ROM Hack, so any suggestions and feedback are highly appreciated!
+The single-player experience is tuned to be approachable for casuals while still rewarding experienced players: shiny odds get a generous re-roll system, EVs and IVs are easier to manage, level cap and Nuzlocke options are built in, and post-game encounters are reworked into proper boss fights. Some of base Emerald Enhanced's more fiddly tools (gift shinies, stat editor, dive speed) have been removed to keep the experience consistent across players.
+
+This is my first ROM hack and it's an active project — suggestions and feedback are very welcome.
+
+### Credits
+
+Veritas stands on the shoulders of two excellent projects without which it would not exist:
+
+- **[Pokémon Emerald Legacy Enhanced](https://github.com/Exclsior/Pokemon_Emerald_Legacy_Enhanced)** by **[Exclsior](https://github.com/Exclsior)** — the direct parent of Veritas. Supplied the modernized engine, the shiny re-roll framework, the level cap and Nuzlocke systems, the bag categorization base, and many of the QoL systems Veritas extends.
+- **[Pokémon Emerald Legacy](https://github.com/cRz-Shadows/Pokemon_Emerald_Legacy)** by **TheSmithPlays** and the Legacy team — the foundation Enhanced itself was built on.
+
+#### Special Thanks
+
+🙏 **Huge thanks to [Exclsior](https://github.com/Exclsior)** for personally helping me through countless questions while I was building this hack — answering decomp questions, pointing me at the right files, debugging tricky systems, and being generous with their time as I learned. Veritas only exists in the form it does because Exclsior was patient with a first-time ROM hacker.
+
+Veritas is a sister project to Legacy and Enhanced, not a fork-with-tweaks. Most of the systems have been rewritten or extended for the multiplayer focus and the Hoenn-essence direction, but every line of base code I started from came from those two projects, and full credit for that work belongs to their authors.
 
 **Base Version**: Emerald Legacy Enhanced v1.1.4
 
@@ -30,6 +45,58 @@ This is my first ROM Hack, so any suggestions and feedback are highly appreciate
 ## What's New in Veritas
 
 This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (see [Base Features](#base-features-from-emerald-legacy-enhanced) below), plus the following additions and changes:
+
+### Multiplayer & Link Features
+
+The reason Veritas exists. Vanilla Emerald has a *lot* of multiplayer content (link battles, secret bases, record mixing, contests, three wireless minigames, the Battle Frontier multi room) but most of it is awkward to actually use with friends. Veritas reworks the whole link path so everything just works.
+
+#### Auto Record Mixing After Link Battles
+
+* After any wired 1v1 link battle, records (secret bases, TV shows, PokéNews, daily events, etc.) **mix automatically** before disconnecting — no more walking back to the Pokémon Center 2F to mix manually.
+* The Pokémon Center 2F shows a **"Records mixed!"** confirmation message on exit, or **"An error occurred while mixing records"** with a 30-second graceful timeout if something hangs.
+* Multi (4-player) link battles also auto-mix records on exit.
+* Fixes the long-standing wireless record mixing exit hang.
+
+#### Battle Music Selection
+
+* Pick the music for your link battles and secret base battles before the fight starts. Available tracks include VS Rival, VS Gym Leader, VS Champion, VS Elite Four, VS Legendary Beast, VS Kyogre/Groudon, VS Regi, VS Jirachi, VS Boss (Magma/Aqua Leader), and a **"Random"** option that picks any unlocked track.
+* Tracks unlock as you progress: VS Elite Four after becoming Champion, VS Regi after the three Regis, VS Jirachi after Deoxys, etc.
+* Two extra unlockable tracks specific to Veritas: **"Shadow"** (FRLG Champion theme, unlocks at 150 Kanto Pokédex entries caught) and **"VS Friends"** (FRLG Gym Leader theme, unlocks at 10 link battle wins).
+* Selection menu scrolls when more options are unlocked than fit on screen.
+
+#### Secret Base Battles — Single OR Double
+
+* When you challenge a secret base trainer, you're prompted to pick **Single Battle** or **Double Battle** instead of always being forced into single. Double mode is gated on having at least 2 usable Pokémon.
+* Secret base battles also get a **VS mugshot transition** (the same dramatic intro Elite Four / Champion battles get), dynamically showing the opponent's NPC trainer sprite.
+* Secret bases that exist on records you mixed with friends become full battles with proper mugshots and music selection — feels like a real boss fight.
+
+#### Wireless Minigame Overhaul
+
+All three wireless minigames are accessible from **both** the Mossdeep Game Corner *and* the **Direct Corner** (Pokémon Center 2F wireless lobby), with rebalanced rewards:
+
+* **Berry Crush**: Berry Powder output **doubled** for every berry type.
+* **Pokémon Jump**: Expanded prize pool unlocked by score tiers — Lucky Egg, Leftovers, Focus Band, Scope Lens, King's Rock, Up-Grade, PP Max, and **Master Ball at 20,000+ points**.
+* **Dodrio Berry Picking**: No longer requires a Dodrio in your party. **All players** receive prizes (not just the winner), and rarity odds improve with more players. Prize pool includes rare berries, Nugget, Rare Candy, PP Up/Max, and Master Ball.
+* See [`docs/MINIGAMES_REWARDS.md`](docs/MINIGAMES_REWARDS.md) for the full reward tables.
+
+#### Lv 50 Cable Club Battle Modes
+
+* The Cable Club now offers **Lv50 Singles**, **Lv50 Doubles**, and **Lv50 Multi** in addition to the standard battle modes.
+* Pokémon above Lv50 are temporarily scaled down for the duration of the battle and restored to their original levels afterward — no need for a competitive box.
+* Works on both wired and wireless link.
+
+#### Outfit and Style Sharing in Link
+
+* When you join a link battle or the Cable Club room, **other players see your unlocked outfit and Emerald/RS style** on your overworld sprite, your back/front battle pics, your Poké Ball send-out animation, and your trainer card.
+* Uses an existing unused field in the link player struct, so it's fully backwards-compatible.
+
+#### Dedicated Link Room Music
+
+* The 2P link battle room and 4P multi battle room now play a **random FRLG track** per entry from a 4-track playlist (FRLG title screen, "Welcome to the world of Pokémon", Brendan theme, May theme) instead of the placeholder town music.
+* The Record Corner and Trade Center also got dedicated themes (GSC Pewter/Saffron city theme).
+* Lilycove, Mossdeep, Sootopolis, and Pacifidlog Pokémon Centers play the Crystal Comm Center theme to feel like proper hub locations for online play.
+
+---
 
 ### Added Features
 
@@ -295,14 +362,20 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 
 #### Legendary Encounter Rework
 
-* Legendary encounters have higher levels and custom movesets for a greater challenge:
-  * **Regi trio** (Lv65): Ancient Power, Lock On + signature OHKO move + Rest/Zap Cannon
-  * **Kanto birds** (Lv70): Full offensive movesets with signature moves
-  * **Johto beasts** (Lv70): Competitive movesets with coverage moves
-  * **Mewtwo** (Lv80): Calm Mind, Thunderbolt, Psychic, Amnesia
-  * **Deoxys** (Lv85): Psycho Boost, Hyper Beam, Superpower, Recover
-  * **Jirachi** (Lv30): Psychic, Refresh, Doom Desire, Rest
-  * **Rayquaza** (Lv70): Rest, ExtremeSpeed, Outrage (no longer knows Fly at encounter)
+* Legendary encounters have higher levels and custom movesets for a greater challenge. The exact levels and movesets are hidden below to avoid spoiling the fights.
+
+<details>
+<summary><b>🔒 Show legendary levels & movesets (spoilers)</b></summary>
+
+* **Regi trio** (Lv65): Ancient Power, Lock On + signature OHKO move + Rest/Zap Cannon
+* **Kanto birds** (Lv70): Full offensive movesets with signature moves
+* **Johto beasts** (Lv70): Competitive movesets with coverage moves
+* **Mewtwo** (Lv80): Calm Mind, Thunderbolt, Psychic, Amnesia
+* **Deoxys** (Lv85): Psycho Boost, Hyper Beam, Superpower, Recover
+* **Jirachi** (Lv30): Psychic, Refresh, Doom Desire, Rest
+* **Rayquaza** (Lv70): Rest, ExtremeSpeed, Outrage (no longer knows Fly at encounter)
+
+</details>
 
 #### Daycare Egg to PC
 
