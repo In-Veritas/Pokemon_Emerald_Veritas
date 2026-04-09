@@ -2902,13 +2902,22 @@ u8 LoadObjectEventPalette(u16 paletteTag)
         return i;
     palSlot = LoadSpritePaletteIfTagExists(&sObjectEventSpritePalettes[i]);
 
-    // Apply player clothing style override
+    // Apply player clothing style override — only to the PLAYER's own gender
+    // tag, not the rival's. Both the player and rival use the same palette
+    // tags (OBJ_EVENT_PAL_TAG_BRENDAN / MAY), so without the gender gate the
+    // rival would also receive the player's outfit palette.
     if (GetPlayerStyle() != PLAYER_STYLE_NONE && palSlot != 0xFF)
     {
-        if (paletteTag == OBJ_EVENT_PAL_TAG_BRENDAN || paletteTag == OBJ_EVENT_PAL_TAG_RS_BRENDAN)
-            ApplyPlayerStyleToOWPalette(palSlot, FALSE);
-        else if (paletteTag == OBJ_EVENT_PAL_TAG_MAY || paletteTag == OBJ_EVENT_PAL_TAG_RS_MAY)
-            ApplyPlayerStyleToOWPalette(palSlot, TRUE);
+        if (gSaveBlock2Ptr->playerGender == MALE)
+        {
+            if (paletteTag == OBJ_EVENT_PAL_TAG_BRENDAN || paletteTag == OBJ_EVENT_PAL_TAG_RS_BRENDAN)
+                ApplyPlayerStyleToOWPalette(palSlot, FALSE);
+        }
+        else
+        {
+            if (paletteTag == OBJ_EVENT_PAL_TAG_MAY || paletteTag == OBJ_EVENT_PAL_TAG_RS_MAY)
+                ApplyPlayerStyleToOWPalette(palSlot, TRUE);
+        }
     }
 
     return palSlot;
@@ -2937,13 +2946,19 @@ void PatchObjectPalette(u16 paletteTag, u8 paletteSlot)
 
     LoadPalette(sObjectEventSpritePalettes[paletteIndex].data, OBJ_PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
 
-    // Apply player clothing style override
+    // Apply player clothing style override — player gender only (see above)
     if (GetPlayerStyle() != PLAYER_STYLE_NONE)
     {
-        if (paletteTag == OBJ_EVENT_PAL_TAG_BRENDAN || paletteTag == OBJ_EVENT_PAL_TAG_RS_BRENDAN)
-            ApplyPlayerStyleToOWPalette(paletteSlot, FALSE);
-        else if (paletteTag == OBJ_EVENT_PAL_TAG_MAY || paletteTag == OBJ_EVENT_PAL_TAG_RS_MAY)
-            ApplyPlayerStyleToOWPalette(paletteSlot, TRUE);
+        if (gSaveBlock2Ptr->playerGender == MALE)
+        {
+            if (paletteTag == OBJ_EVENT_PAL_TAG_BRENDAN || paletteTag == OBJ_EVENT_PAL_TAG_RS_BRENDAN)
+                ApplyPlayerStyleToOWPalette(paletteSlot, FALSE);
+        }
+        else
+        {
+            if (paletteTag == OBJ_EVENT_PAL_TAG_MAY || paletteTag == OBJ_EVENT_PAL_TAG_RS_MAY)
+                ApplyPlayerStyleToOWPalette(paletteSlot, TRUE);
+        }
     }
 }
 
