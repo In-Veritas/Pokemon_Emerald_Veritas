@@ -576,8 +576,10 @@ void PlaySE(u16 songNum)
     u16 vol = 128;
 
     if (seVolume == 1)
-        return; // quiet: mute all SEs
-    if (seVolume == 2)
+        vol = 0;   // quiet: play silently (do NOT early-return, or state
+                   // machines that wait on IsSEPlaying() after PlaySE —
+                   // e.g. the evolution scene — hang forever)
+    else if (seVolume == 2)
         vol = 256; // loud: 100%
     else if (seVolume == 3)
         vol = 64;  // low: 25%
