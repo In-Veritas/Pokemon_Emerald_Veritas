@@ -12,7 +12,7 @@ Veritas pulls from across the Hoenn era. The title screen and intro cycle throug
 
 I grew up in Brazil where almost nobody around me had a Game Boy. Most of my time with these games was solitary, but the rare times I *did* get to interact with another kid's cartridge stuck with me forever. A traded Pokémon carrying somebody else's OT on the summary screen. Their secret base showing up inside my game after we mixed records, decorated exactly the way they'd wanted it. Even just knowing that a small piece of someone else's journey was living quietly inside my own cartridge — that felt like magic to me. It still does.
 
-So when I started building Veritas I put the link features right at the center of the hack. Every system that lets a friend leave a fingerprint on your save — secret bases, record mixing, traded Pokémon, link battles — got rebuilt to be cleaner, easier to actually use, and more memorable. Records mix automatically after a wired battle so nobody has to trek back to the Pokémon Center. Secret base battles can be doubles with their own VS cutscene and music selection. Wireless minigames give real prizes and live in two places now. Lv50 cable modes let you battle a friend regardless of where each of you is in your respective stories. The full breakdown is in the **[Multiplayer & Link Features](#multiplayer--link-features)** section below — it's the longest section of this README for a reason.
+So when I started building Veritas I put the link features right at the center of the hack. Every system that lets a friend leave a fingerprint on your save — secret bases, record mixing, traded Pokémon, link battles — got rebuilt to be cleaner, easier to actually use, and more memorable. Secret base battles can be doubles with their own VS cutscene and music selection. Wireless minigames give real prizes and live in two places now. Lv50 cable modes let you battle a friend regardless of where each of you is in your respective stories. The full breakdown is in the **[Multiplayer & Link Features](#multiplayer--link-features)** section below — it's the longest section of this README for a reason.
 
 If you're playing solo this is a polished Emerald with a lot of QoL and post-game content. If you're playing with friends, this is the version I wish I'd had.
 
@@ -47,13 +47,6 @@ This fork includes (almost) all features from Pokémon Emerald Legacy Enhanced (
 ### Multiplayer & Link Features
 
 The reason Veritas exists. Vanilla Emerald has a *lot* of multiplayer content (link battles, secret bases, record mixing, contests, three wireless minigames, the Battle Frontier multi room) but most of it is awkward to actually use with friends. Veritas reworks the whole link path so everything just works.
-
-#### Auto Record Mixing After Link Battles
-
-* After any wired 1v1 link battle, records (secret bases, TV shows, PokéNews, daily events, etc.) **mix automatically** before disconnecting — no more walking back to the Pokémon Center 2F to mix manually.
-* The Pokémon Center 2F shows a **"Records mixed!"** confirmation message on exit, or **"An error occurred while mixing records"** with a 30-second graceful timeout if something hangs.
-* Multi (4-player) link battles also auto-mix records on exit.
-* Fixes the long-standing wireless record mixing exit hang.
 
 #### Battle Music Selection
 
@@ -640,8 +633,6 @@ The headline shinies of Pokémon Emerald Veritas. Each of the three superancient
 * **Shadow Lugia Boss Fight**: After defeating Trainer Veritas on Southern Island, inspecting the stone triggers a Lv99 shiny Lugia boss battle with Thunder, Hydro Pump, Calm Mind, and Psycho Boost. Holds White Herb. Underwater terrain with Rayquaza battle music.
 
 * **Lv 50 Battle Modes**: Lv50 Singles, Lv50 Doubles, and Lv50 Multi battle options in the Cable Club. Pokémon above Lv50 are temporarily scaled down. Original levels restored after battle. Works on both wired and wireless.
-
-* **Auto Record Mixing**: Wired 1v1 link battles automatically exchange records (secret bases, TV shows, PokeNews, etc.) before disconnecting.
 
 * **Ability Changes**:
   * Lugia: Pressure → **Drizzle**

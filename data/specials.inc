@@ -551,7 +551,6 @@ gSpecials::
 	def_special BattleSetup_StartLugiaBossBattle
 	def_special CheckPartyForStarterUnlocks
 	def_special SetVarToMultiplayerId
-	def_special CheckRecordMixingAborted
 	def_special Fashionista_CountPassiveUnlocks
 	def_special Fashionista_GetNextPassiveUnlock
 	def_special Fashionista_HasShowablePokemon

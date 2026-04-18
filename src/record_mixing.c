@@ -102,15 +102,12 @@ static struct PlayerHallRecords *sPartnerHallRecords[HALL_RECORDS_COUNT];
 static EWRAM_DATA struct RecordMixingDaycareMail sRecordMixMail = {0};
 static EWRAM_DATA union PlayerRecord *sReceivedRecords = NULL;
 static EWRAM_DATA union PlayerRecord *sSentRecord = NULL;
-static EWRAM_DATA bool8 sCalledFromBattle = FALSE;
-EWRAM_DATA bool8 gRecordMixingAborted = FALSE;
 
 static void Task_RecordMixing_Main(u8);
 static void Task_MixingRecordsRecv(u8);
 static void Task_SendPacket(u8);
 static void Task_CopyReceiveBuffer(u8);
 static void Task_SendPacket_SwitchToReceive(u8);
-static void Task_RecordMixing_SoundEffect(u8);
 static void *LoadPtrFromTaskData(const u16 *);
 static void StorePtrInTaskData(void *, u16 *);
 static u8 GetMultiplayerId_(void);
@@ -169,59 +166,6 @@ static const u8 sDaycareMailSwapIds_4Player[NUM_SWAP_COMBOS][4] =
 void RecordMixingPlayerSpotTriggered(void)
 {
     CreateTask_EnterCableClubSeat(Task_RecordMixing_Main);
-}
-
-bool8 StartRecordMixingDirect(void)
-{
-    if (!gReceivedRemoteLinkPlayers)
-        return FALSE;
-
-    sCalledFromBattle = TRUE;
-    FlagSet(FLAG_SYS_MIX_RECORD); // Set optimistically; cleared on abort
-    CreateTask(Task_RecordMixing_Main, 10);
-    gSpecialVar_0x8005 = GetMultiplayerId();
-    return TRUE;
-}
-
-bool8 IsRecordMixingTaskActive(void)
-{
-    return FuncIsActiveTask(Task_RecordMixing_Main);
-}
-
-void AbortRecordMixing(void)
-{
-    u8 i;
-
-    // Destroy all mixing-related tasks
-    for (i = 0; i < NUM_TASKS; i++)
-    {
-        if (gTasks[i].isActive
-            && (gTasks[i].func == Task_RecordMixing_Main
-             || gTasks[i].func == Task_MixingRecordsRecv
-             || gTasks[i].func == Task_SendPacket
-             || gTasks[i].func == Task_CopyReceiveBuffer
-             || gTasks[i].func == Task_SendPacket_SwitchToReceive
-             || gTasks[i].func == Task_DoRecordMixing
-             || gTasks[i].func == Task_RecordMixing_SoundEffect))
-        {
-            DestroyTask(i);
-        }
-    }
-    DestroyRecordMixingLights();
-    FlagClear(FLAG_SYS_MIX_RECORD);
-    gRecordMixingAborted = TRUE;
-    // Free allocated buffers
-    if (sReceivedRecords != NULL)
-    {
-        Free(sReceivedRecords);
-        sReceivedRecords = NULL;
-    }
-    if (sSentRecord != NULL)
-    {
-        Free(sSentRecord);
-        sSentRecord = NULL;
-    }
-    sCalledFromBattle = FALSE;
 }
 
 // these variables were const in R/S, but had to become changeable because of saveblocks changing RAM position
@@ -400,40 +344,32 @@ static void Task_RecordMixing_Main(u8 taskId)
         if (!gTasks[tLinkTaskId].isActive)
         {
             tState = 4;
-            if (sCalledFromBattle)
-            {
-                // Skip reestablish - battle exit handles link cleanup
-                tLinkTaskId = taskId;
-            }
-            else if (gWirelessCommType == 0)
+            if (gWirelessCommType == 0)
                 tLinkTaskId = CreateTask_ReestablishCableClubLink();
             else
-                tLinkTaskId = taskId;
+                tLinkTaskId = taskId; // Point to self so state 5 doesn't check a stale task slot
 
-            if (!sCalledFromBattle)
-                PrintTextOnRecordMixing(gText_RecordMixingComplete);
+            PrintTextOnRecordMixing(gText_RecordMixingComplete);
             tTimer = 0;
         }
         break;
-    case 4: // wait 60 frames (skip if from battle)
-        if (sCalledFromBattle || ++tTimer > 60)
+    case 4: // wait 60 frames
+        if (++tTimer > 60)
             tState = 5;
         break;
-    case 5: // Wait for reestablish or skip if from battle
-        if (sCalledFromBattle || gWirelessCommType != 0 || !gTasks[tLinkTaskId].isActive)
+    case 5: // Wait for the task created by CreateTask_ReestablishCableClubLink
+        // For wireless, tLinkTaskId == taskId so this is always true (self is active),
+        // skip the check entirely for wireless since there's no reestablish task.
+        if (gWirelessCommType != 0 || !gTasks[tLinkTaskId].isActive)
         {
             Free(sReceivedRecords);
             Free(sSentRecord);
-            if (!sCalledFromBattle)
-            {
-                SetLinkWaitingForScript();
-                if (gWirelessCommType != 0)
-                    CreateTask(Task_ReturnToFieldRecordMixing, 10);
-                ClearDialogWindowAndFrame(0, TRUE);
-                ScriptContext_Enable();
-            }
-            sCalledFromBattle = FALSE;
+            SetLinkWaitingForScript();
+            if (gWirelessCommType != 0)
+                CreateTask(Task_ReturnToFieldRecordMixing, 10);
+            ClearDialogWindowAndFrame(0, TRUE);
             DestroyTask(taskId);
+            ScriptContext_Enable();
         }
         break;
     }

@@ -128,22 +128,6 @@ CableClub_EventScript_ExitLinkRoom::
 	special DrawWholeMapView
 	playse SE_CLICK
 	erasebox 0, 0, 29, 19
-	goto_if_set FLAG_SYS_MIX_RECORD, CableClub_EventScript_ShowRecordMixMessage
-	special CheckRecordMixingAborted
-	goto_if_eq VAR_RESULT, TRUE, CableClub_EventScript_ShowRecordMixError
-	releaseall
-	end
-
-CableClub_EventScript_ShowRecordMixMessage::
-	clearflag FLAG_SYS_MIX_RECORD
-	playse SE_PIN
-	msgbox CableClub_Text_RecordsMixed, MSGBOX_DEFAULT
-	releaseall
-	end
-
-CableClub_EventScript_ShowRecordMixError::
-	playse SE_BOO
-	msgbox CableClub_Text_RecordMixError, MSGBOX_DEFAULT
 	releaseall
 	end
 

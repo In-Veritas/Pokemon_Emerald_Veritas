@@ -37,7 +37,6 @@
 #include "pokemon.h"
 #include "random.h"
 #include "recorded_battle.h"
-#include "record_mixing.h"
 #include "roamer.h"
 #include "safari_zone.h"
 #include "scanline_effect.h"
@@ -2434,17 +2433,7 @@ static void EndLinkBattleInSteps(void)
         if (!IsTextPrinterActive(B_WIN_MSG))
         {
             if (IsLinkTaskFinished() == TRUE)
-            {
-                // Start automatic record mixing after wired link battle
-                if (!gWirelessCommType && StartRecordMixingDirect())
-                {
-                    gBattleCommunication[MULTIUSE_STATE] = 10; // Go to mixing wait
-                    gBattleCommunication[1] = 0; // Timeout seconds counter
-                    gBattleCommunication[2] = 0; // Timeout frame sub-counter
-                }
-                else
-                    gBattleCommunication[MULTIUSE_STATE]++; // Skip to close link
-            }
+                gBattleCommunication[MULTIUSE_STATE]++;
         }
         break;
     case 8:
@@ -2460,23 +2449,6 @@ static void EndLinkBattleInSteps(void)
             FreeBattleResources();
             FreeBattleSpritesData();
             FreeMonSpritesGfx();
-        }
-        break;
-    case 10:
-        // Wait for record mixing task to finish, with 30s timeout
-        if (!IsRecordMixingTaskActive())
-        {
-            gBattleCommunication[MULTIUSE_STATE] = 8; // Proceed to close link
-        }
-        else if (++gBattleCommunication[2] >= 60)
-        {
-            gBattleCommunication[2] = 0;
-            if (++gBattleCommunication[1] >= 30)
-            {
-                // 30 second timeout - abort mixing gracefully
-                AbortRecordMixing();
-                gBattleCommunication[MULTIUSE_STATE] = 8;
-            }
         }
         break;
     }

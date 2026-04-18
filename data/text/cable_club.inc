@@ -493,11 +493,3 @@ CableClub_Text_ExplainWirelessClub:
 CableClub_Text_HopeYouEnjoyWirelessSystem:
 	.string "I hope you enjoy the Wireless\n"
 	.string "Communication System.$"
-
-CableClub_Text_RecordsMixed:
-	.string "Records were mixed with your\n"
-	.string "battle opponent!$"
-
-CableClub_Text_RecordMixError:
-	.string "An error occurred while mixing\n"
-	.string "records with your opponent.$"
