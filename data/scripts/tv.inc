@@ -12,12 +12,24 @@ EventScript_TV::
 
 EventScript_TryDoTVShow::
 	specialvar VAR_0x8004, GetRandomActiveShowIdx
-	goto_if_eq VAR_0x8004, 255, EventScript_MomDadMightLikeThis2
+	goto_if_eq VAR_0x8004, 255, EventScript_TryActivePokeNewsFallback
 	specialvar VAR_RESULT, GetNextActiveShowIfMassOutbreak
-	goto_if_eq VAR_RESULT, 255, EventScript_MomDadMightLikeThis2
+	goto_if_eq VAR_RESULT, 255, EventScript_TryActivePokeNewsFallback
 	copyvar VAR_0x8004, VAR_RESULT
 	specialvar VAR_RESULT, GetSelectedTVShow
 	goto_if_ne VAR_RESULT, 0, EventScript_DoTVShow
+	goto EventScript_TryActivePokeNewsFallback
+	end
+
+@ When no regular TV show has a broadcast ready, try to re-air an active
+@ daily PokeNews event (Shiny Day, Training Day, etc.) instead of going
+@ straight to the "nothing on TV" message. Falls through if none are active.
+EventScript_TryActivePokeNewsFallback::
+	special TryDoActivePokeNewsFallback
+	goto_if_eq VAR_RESULT, FALSE, EventScript_MomDadMightLikeThis2
+	waitmessage
+	waitbuttonpress
+	goto EventScript_TurnOffTV
 	end
 
 EventScript_MomDadMightLikeThis1::

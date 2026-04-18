@@ -2191,6 +2191,12 @@ void TryPutLotteryWinnerReportOnAir(void)
 {
     TVShow *show;
 
+    // Veritas: encoding is now 1..5 for 1..5-digit matches (previously 1..4 for 2..5).
+    // Skip the TV broadcast for the 1-digit consolation tier so only real wins go on air,
+    // and map the remaining tiers to the original whichPrize values (0=Jackpot..3=Third).
+    if (gSpecialVar_0x8004 < 2)
+        return;
+
     sCurTVShowSlot = FindFirstEmptyRecordMixTVShowSlot(gSaveBlock1Ptr->tvShows);
     if (sCurTVShowSlot != -1 && IsRecordMixShowAlreadySpawned(TVSHOW_LOTTO_WINNER, FALSE) != TRUE)
     {
@@ -2198,7 +2204,7 @@ void TryPutLotteryWinnerReportOnAir(void)
         show->lottoWinner.kind = TVSHOW_LOTTO_WINNER;
         show->lottoWinner.active = FALSE; // NOTE: Show is not active until passed via Record Mix.
         StringCopy(show->lottoWinner.playerName, gSaveBlock2Ptr->playerName);
-        show->lottoWinner.whichPrize = 4 - gSpecialVar_0x8004;
+        show->lottoWinner.whichPrize = 5 - gSpecialVar_0x8004;
         show->lottoWinner.item = gSpecialVar_0x8005;
         StorePlayerIdInRecordMixShow(show);
         show->lottoWinner.language = gGameLanguage;
@@ -2652,6 +2658,45 @@ void DoPokeNews(void)
     }
 }
 
+// Fallback when no regular TV show is selected: if any PokeNews event
+// is currently active (Shiny Day, Training Day, etc.), re-broadcast its
+// ongoing/ending announcement so the TV is never silent while an event runs.
+// Sets gSpecialVar_Result = TRUE if something was broadcast, FALSE otherwise.
+void TryDoActivePokeNewsFallback(void)
+{
+    u8 i;
+    u8 activeSlots[POKE_NEWS_COUNT];
+    u8 activeCount = 0;
+    u8 chosen;
+    u8 kind;
+
+    for (i = 0; i < POKE_NEWS_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->pokeNews[i].kind != POKENEWS_NONE
+         && gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_ACTIVE
+         && gSaveBlock1Ptr->pokeNews[i].dayCountdown == 0)
+        {
+            activeSlots[activeCount++] = i;
+        }
+    }
+
+    if (activeCount == 0)
+    {
+        gSpecialVar_Result = FALSE;
+        return;
+    }
+
+    chosen = activeSlots[Random() % activeCount];
+    kind = gSaveBlock1Ptr->pokeNews[chosen].kind;
+
+    if (gLocalTime.hours < 20)
+        ShowFieldMessage(sPokeNewsTextGroup_Ongoing[kind]);
+    else
+        ShowFieldMessage(sPokeNewsTextGroup_Ending[kind]);
+
+    gSpecialVar_Result = TRUE;
+}
+
 bool8 IsPokeNewsActive(u8 newsKind)
 {
     u8 i;
@@ -2718,6 +2763,9 @@ static void UpdatePokeNewsCountdown(u16 days)
     u8 newsKind;
     u8 startKind;
     u8 attempts;
+    s8 soonestSlot;
+    u16 soonestCountdown;
+    bool8 placed;
 
     for (i = 0; i < POKE_NEWS_COUNT; i++)
     {
@@ -2754,12 +2802,16 @@ static void UpdatePokeNewsCountdown(u16 days)
 
     if (!hasActiveEvent)
     {
+        placed = FALSE;
         emptySlot = GetFirstEmptyPokeNewsSlot(gSaveBlock1Ptr->pokeNews);
         if (emptySlot != -1)
         {
             startKind = (Random() % NUM_POKENEWS_TYPES) + 1;
 
-            // Try all event types starting from random pick
+            // Try all event types starting from random pick.
+            // Only accepts a type that isn't already scheduled (active or pending),
+            // since duplicates of the same kind break IsPokeNewsActive (which only
+            // inspects the first matching entry).
             for (attempts = 0; attempts < NUM_POKENEWS_TYPES; attempts++)
             {
                 newsKind = ((startKind - 1 + attempts) % NUM_POKENEWS_TYPES) + 1;
@@ -2768,8 +2820,34 @@ static void UpdatePokeNewsCountdown(u16 days)
                     gSaveBlock1Ptr->pokeNews[emptySlot].kind = newsKind;
                     gSaveBlock1Ptr->pokeNews[emptySlot].dayCountdown = 0;
                     gSaveBlock1Ptr->pokeNews[emptySlot].state = POKENEWS_STATE_ACTIVE;
+                    placed = TRUE;
                     break;
                 }
+            }
+        }
+
+        // Fallback: all event types are already queued as pending future events
+        // (or the slot list is full). Promote the pending event with the smallest
+        // remaining countdown to be active today, so the "one event per day"
+        // guarantee still holds. Without this, days where all 6 types happen to
+        // already be on standby would have zero active events.
+        if (!placed)
+        {
+            soonestSlot = -1;
+            soonestCountdown = 0xFFFF;
+            for (i = 0; i < POKE_NEWS_COUNT; i++)
+            {
+                if (gSaveBlock1Ptr->pokeNews[i].kind != POKENEWS_NONE
+                    && gSaveBlock1Ptr->pokeNews[i].dayCountdown < soonestCountdown)
+                {
+                    soonestCountdown = gSaveBlock1Ptr->pokeNews[i].dayCountdown;
+                    soonestSlot = i;
+                }
+            }
+            if (soonestSlot != -1)
+            {
+                gSaveBlock1Ptr->pokeNews[soonestSlot].dayCountdown = 0;
+                gSaveBlock1Ptr->pokeNews[soonestSlot].state = POKENEWS_STATE_ACTIVE;
             }
         }
     }

@@ -377,6 +377,7 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 #### Lottery Corner Improvement
 
 * Lowered the matching threshold from 2 digits to 1 digit, making the lottery more accessible
+* Fixed a bug where the lowered threshold was silently ignored: 1-digit matches now actually pay out (a Poke Ball consolation prize) instead of being dropped into the "no match" branch
 
 #### Mirage Island Rework
 

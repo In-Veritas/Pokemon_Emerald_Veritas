@@ -13,6 +13,7 @@ static EWRAM_DATA u16 sOtIdDigit = 0;
 
 static const u16 sLotteryPrizes[] =
 {
+    ITEM_POKE_BALL,  // 1-digit match (Veritas: consolation prize)
     ITEM_PP_UP,
     ITEM_EXP_SHARE,
     ITEM_MAX_REVIVE,
@@ -69,7 +70,7 @@ void PickLotteryCornerTicket(void)
 
                 if (numMatchingDigits > gSpecialVar_0x8004 && numMatchingDigits > 0)
                 {
-                    gSpecialVar_0x8004 = numMatchingDigits - 1;
+                    gSpecialVar_0x8004 = numMatchingDigits;
                     box = TOTAL_BOXES_COUNT;
                     slot = i;
                 }
@@ -91,7 +92,7 @@ void PickLotteryCornerTicket(void)
 
                 if (numMatchingDigits > gSpecialVar_0x8004 && numMatchingDigits > 0)
                 {
-                    gSpecialVar_0x8004 = numMatchingDigits - 1;
+                    gSpecialVar_0x8004 = numMatchingDigits;
                     box = i;
                     slot = j;
                 }
