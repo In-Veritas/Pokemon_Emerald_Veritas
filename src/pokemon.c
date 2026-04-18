@@ -2321,7 +2321,9 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
                     // Preserve nature while keeping shininess if shiny
                     if (shinyValue < SHINY_ODDS)
                     {
-                        // Shiny: rebuild personality with correct nature AND shiny XOR
+                        // Shiny: rebuild personality with correct nature AND shiny XOR.
+                        // Synchronize-provided personality is caller-crafted, so a shiny
+                        // produced here is never a "true shiny" (no natural initial roll).
                         u16 tid = LOHALF(value) ^ HIHALF(value);
                         do {
                             personality = Random32();
@@ -2337,16 +2339,28 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
                 }
                 else
                 {
-                    do
+                    // Check whether the INITIAL (random) personality generated at the top of
+                    // CreateBoxMon is already shiny against this OT. This counts as the first
+                    // roll. Only an initial-roll shiny qualifies as a TRUE SHINY; any shiny
+                    // produced later by the re-roll loop is a normal (non-true) shiny.
+                    shinyValue = HIHALF(value) ^ LOHALF(value) ^ HIHALF(personality) ^ LOHALF(personality);
+                    rolls = 1;  // initial personality already counts as roll #1
+                    if (shinyValue < SHINY_ODDS)
                     {
-                        personality = Random32();
-                        shinyValue = HIHALF(value) ^ LOHALF(value) ^ HIHALF(personality) ^ LOHALF(personality);
-                        rolls++;
-                    } while (shinyValue >= SHINY_ODDS && rolls < maxRolls);
+                        // Initial personality is already shiny: keep it, flag as true shiny.
+                        isTrueShiny = TRUE;
+                    }
+                    else
+                    {
+                        // Need more rolls? Re-roll until shiny or out of attempts.
+                        while (shinyValue >= SHINY_ODDS && rolls < maxRolls)
+                        {
+                            personality = Random32();
+                            shinyValue = HIHALF(value) ^ LOHALF(value) ^ HIHALF(personality) ^ LOHALF(personality);
+                            rolls++;
+                        }
+                    }
                 }
-                // Mark as true shiny if shiny on the very first roll
-                if (shinyValue < SHINY_ODDS && rolls == 1)
-                    isTrueShiny = TRUE;
             }
         }
         SetBoxMonData(boxMon, MON_DATA_PERSONALITY, &personality);
