@@ -719,6 +719,8 @@ static void Task_HandleLinkMusicListInput(u8 taskId)
 
         DestroyListMenuTask(sLinkMusicListTaskId, NULL, NULL);
         ClearToTransparentAndRemoveWindow(sLinkMusicWindowId);
+        // Tall list overlaps the dialog; dismiss it so the next step opens fresh.
+        ClearDialogWindowAndFrameToTransparent(0, TRUE);
         DestroyTask(taskId);
         ScriptContext_Enable();
     }
