@@ -358,7 +358,7 @@ Fix: skip eggs at the very top of case 2 the same way level-capped mons are skip
 
 ### 6.2 Latios + Latias breeding
 
-* New compatibility tier `PARENTS_LEGENDARY_PAIR = 5` in `include/constants/daycare.h` — about a 5 % egg chance per 256 steps in the daycare.
+* New compatibility tier `PARENTS_LEGENDARY_PAIR = 1` in `include/constants/daycare.h` — about a 1 % egg chance per 256 steps in the daycare.
 * `GetDaycareCompatibilityScore` in `src/daycare.c` special-cases the Latios + Latias pair before the `EGG_GROUP_NO_EGGS_DISCOVERED` blocklist; pairing either with Ditto returns `PARENTS_INCOMPATIBLE`.
 * `DetermineEggSpeciesAndParentSlots` overrides the offspring species: male egg → Latios, female egg → Latias (driven by the existing `EGG_GENDER_MALE` bit on `offspringPersonality`).
 * `SetInitialEggData` writes `LEGENDARY_PAIR_EGG_CYCLES = 200` into the egg's `MON_DATA_FRIENDSHIP` (the hatch counter) for these eggs, capped at 255 to fit the u8 storage.

@@ -3,7 +3,7 @@
 
 // Parent compatibility scores
 #define PARENTS_INCOMPATIBLE       0
-#define PARENTS_LEGENDARY_PAIR     5  // Latios + Latias — very rare; egg roll ~5% per 256 steps
+#define PARENTS_LEGENDARY_PAIR     1  // Latios + Latias — very rare; egg roll ~1% per 256 steps
 #define PARENTS_LOW_COMPATIBILITY  20
 #define PARENTS_MED_COMPATIBILITY  50
 #define PARENTS_MAX_COMPATIBILITY  70
