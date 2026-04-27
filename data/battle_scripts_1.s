@@ -3307,6 +3307,30 @@ BattleScript_OverworldWeatherStarts::
 	playanimation_var BS_ATTACKER, sB_ANIM_ARG1
 	end3
 
+BattleScript_AirLockActivates::
+	pause B_WAIT_TIME_SHORT
+	printstring STRINGID_AIRLOCKACTIVATES
+	waitmessage B_WAIT_TIME_LONG
+	end3
+
+@ Replays weather announcement + animation; dispatches on animArg1 (B_ANIM_*_CONTINUES).
+BattleScript_WeatherResumes::
+	playanimation_var BS_ATTACKER, sB_ANIM_ARG1
+	jumpifbyte CMP_EQUAL, sB_ANIM_ARG1, B_ANIM_SUN_CONTINUES, BattleScript_WeatherResumesSun
+	jumpifbyte CMP_EQUAL, sB_ANIM_ARG1, B_ANIM_SANDSTORM_CONTINUES, BattleScript_WeatherResumesSandHail
+	jumpifbyte CMP_EQUAL, sB_ANIM_ARG1, B_ANIM_HAIL_CONTINUES, BattleScript_WeatherResumesSandHail
+	printfromtable gRainContinuesStringIds
+	waitmessage B_WAIT_TIME_LONG
+	end3
+BattleScript_WeatherResumesSun::
+	printstring STRINGID_SUNLIGHTSTRONG
+	waitmessage B_WAIT_TIME_LONG
+	end3
+BattleScript_WeatherResumesSandHail::
+	printfromtable gSandStormHailContinuesStringIds
+	waitmessage B_WAIT_TIME_LONG
+	end3
+
 BattleScript_SideStatusWoreOff::
 	printstring STRINGID_PKMNSXWOREOFF
 	waitmessage B_WAIT_TIME_LONG

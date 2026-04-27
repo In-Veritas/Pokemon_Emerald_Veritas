@@ -443,6 +443,7 @@ struct BattleStruct
     u8 alreadyStatusedMoveAttempt; // As bits for battlers; For example when using Thunder Wave on an already paralyzed Pokémon.
     bool8 checkedMoveBoostedByAbility:1;
     bool8 checkedMagmaArmor:1;
+    bool8 weatherSuppressed:1;
 };
 
 // The palaceFlags member of struct BattleStruct contains 1 flag per move to indicate which moves the AI should consider,

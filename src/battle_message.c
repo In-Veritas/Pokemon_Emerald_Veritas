@@ -439,6 +439,7 @@ static const u8 sText_MagmaArmorActivated[] = _("{B_DEF_NAME_WITH_PREFIX}'s {B_D
 static const u8 sText_BabyCharmInfatuated[] = _("{B_SCR_ACTIVE_NAME_WITH_PREFIX}'s {B_SCR_ACTIVE_ABILITY}\ncharmed the opposing POKéMON!");
 static const u8 sText_QuickLearnerActivated[] = _("{B_DEF_NAME_WITH_PREFIX}'s {B_DEF_ABILITY}\nboosted its stats!");
 static const u8 sText_MysticTempoActivated[] = _("{B_ATK_NAME_WITH_PREFIX}'s {B_ATK_ABILITY}\nsharply boosted its {B_BUFF1}!");
+static const u8 sText_AirLockActivates[] = _("The effects of the weather\ndisappeared.");
 
 const u8 * const gStatNamesTable[NUM_BATTLE_STATS] =
 {
@@ -902,7 +903,8 @@ const u8 * const gBattleStringsTable[BATTLESTRINGS_COUNT - BATTLESTRINGS_TABLE_S
     [STRINGID_POKEMONPICKUPMULTIPLE - BATTLESTRINGS_TABLE_START] = sText_PokemonPickupMultipleText,
     [STRINGID_BABYCHARMINFATUATED - BATTLESTRINGS_TABLE_START] = sText_BabyCharmInfatuated,
     [STRINGID_QUICKLEARNERACTIVATED - BATTLESTRINGS_TABLE_START] = sText_QuickLearnerActivated,
-    [STRINGID_MYSTICTEMPOACTIVATED - BATTLESTRINGS_TABLE_START] = sText_MysticTempoActivated
+    [STRINGID_MYSTICTEMPOACTIVATED - BATTLESTRINGS_TABLE_START] = sText_MysticTempoActivated,
+    [STRINGID_AIRLOCKACTIVATES - BATTLESTRINGS_TABLE_START] = sText_AirLockActivates
 };
 
 const u16 gMissStringIds[] =

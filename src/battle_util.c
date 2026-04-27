@@ -1349,7 +1349,9 @@ u8 DoFieldEndTurnEffects(void)
                     gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_RAIN_CONTINUES;
                 }
 
-                BattleScriptExecute(BattleScript_RainContinuesOrEnds);
+                // Duration still ticks while suppressed, but skip the visual+message.
+                if (WEATHER_HAS_EFFECT)
+                    BattleScriptExecute(BattleScript_RainContinuesOrEnds);
                 effect++;
             }
             gBattleStruct->turnCountersTracker++;
@@ -1369,7 +1371,9 @@ u8 DoFieldEndTurnEffects(void)
 
                 gBattleScripting.animArg1 = B_ANIM_SANDSTORM_CONTINUES;
                 gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SANDSTORM;
-                BattleScriptExecute(gBattlescriptCurrInstr);
+                // Duration still ticks while suppressed, but skip damage+animation.
+                if (WEATHER_HAS_EFFECT)
+                    BattleScriptExecute(gBattlescriptCurrInstr);
                 effect++;
             }
             gBattleStruct->turnCountersTracker++;
@@ -1387,7 +1391,8 @@ u8 DoFieldEndTurnEffects(void)
                     gBattlescriptCurrInstr = BattleScript_SunlightContinues;
                 }
 
-                BattleScriptExecute(gBattlescriptCurrInstr);
+                if (WEATHER_HAS_EFFECT)
+                    BattleScriptExecute(gBattlescriptCurrInstr);
                 effect++;
             }
             gBattleStruct->turnCountersTracker++;
@@ -1407,7 +1412,8 @@ u8 DoFieldEndTurnEffects(void)
 
                 gBattleScripting.animArg1 = B_ANIM_HAIL_CONTINUES;
                 gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_HAIL;
-                BattleScriptExecute(gBattlescriptCurrInstr);
+                if (WEATHER_HAS_EFFECT)
+                    BattleScriptExecute(gBattlescriptCurrInstr);
                 effect++;
             }
             gBattleStruct->turnCountersTracker++;
@@ -2468,6 +2474,38 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
         case ABILITYEFFECT_ON_SWITCHIN: // 0
             if (gBattlerAttacker >= gBattlersCount)
                 gBattlerAttacker = battler;
+            // No suppressor on field anymore: clear the flag. If weather is still
+            // up, also announce the resume + replay its animation.
+            if (gBattleStruct->weatherSuppressed && WEATHER_HAS_EFFECT)
+            {
+                gBattleStruct->weatherSuppressed = FALSE;
+                if (gBattleWeather != 0)
+                {
+                    if (gBattleWeather & B_WEATHER_RAIN)
+                    {
+                        gBattleScripting.animArg1 = B_ANIM_RAIN_CONTINUES;
+                        gBattleCommunication[MULTISTRING_CHOOSER] =
+                            (gBattleWeather & B_WEATHER_RAIN_DOWNPOUR) ? B_MSG_DOWNPOUR_CONTINUES : B_MSG_RAIN_CONTINUES;
+                    }
+                    else if (gBattleWeather & B_WEATHER_SUN)
+                    {
+                        gBattleScripting.animArg1 = B_ANIM_SUN_CONTINUES;
+                    }
+                    else if (gBattleWeather & B_WEATHER_SANDSTORM)
+                    {
+                        gBattleScripting.animArg1 = B_ANIM_SANDSTORM_CONTINUES;
+                        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SANDSTORM;
+                    }
+                    else if (gBattleWeather & B_WEATHER_HAIL)
+                    {
+                        gBattleScripting.animArg1 = B_ANIM_HAIL_CONTINUES;
+                        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_HAIL;
+                    }
+                    gBattleScripting.battler = battler;
+                    BattleScriptPushCursorAndCallback(BattleScript_WeatherResumes);
+                    effect++;
+                }
+            }
             switch (gLastUsedAbility)
             {
             case ABILITYEFFECT_SWITCH_IN_WEATHER:
@@ -2516,6 +2554,13 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
                 if (!(gBattleWeather & B_WEATHER_RAIN_PERMANENT))
                 {
                     gBattleWeather = (B_WEATHER_RAIN_PERMANENT | B_WEATHER_RAIN_TEMPORARY);
+                    // If a suppressor is already out, push its announce first so it
+                    // runs after Drizzle's "made it rain" message (LIFO callback stack).
+                    if (!WEATHER_HAS_EFFECT && !gBattleStruct->weatherSuppressed)
+                    {
+                        gBattleStruct->weatherSuppressed = TRUE;
+                        BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
+                    }
                     BattleScriptPushCursorAndCallback(BattleScript_DrizzleActivates);
                     gBattleScripting.battler = battler;
                     effect++;
@@ -2525,6 +2570,11 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
                 if (!(gBattleWeather & B_WEATHER_SANDSTORM_PERMANENT))
                 {
                     gBattleWeather = B_WEATHER_SANDSTORM;
+                    if (!WEATHER_HAS_EFFECT && !gBattleStruct->weatherSuppressed)
+                    {
+                        gBattleStruct->weatherSuppressed = TRUE;
+                        BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
+                    }
                     BattleScriptPushCursorAndCallback(BattleScript_SandstreamActivates);
                     gBattleScripting.battler = battler;
                     effect++;
@@ -2534,6 +2584,11 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
                 if (!(gBattleWeather & B_WEATHER_SUN_PERMANENT))
                 {
                     gBattleWeather = B_WEATHER_SUN;
+                    if (!WEATHER_HAS_EFFECT && !gBattleStruct->weatherSuppressed)
+                    {
+                        gBattleStruct->weatherSuppressed = TRUE;
+                        BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
+                    }
                     BattleScriptPushCursorAndCallback(BattleScript_DroughtActivates);
                     gBattleScripting.battler = battler;
                     effect++;
@@ -2604,6 +2659,14 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
                             *(&gBattleStruct->formToChangeInto) = effect - 1;
                             break;
                         }
+                    }
+                    // Pushed after Castform so Air Lock message runs first (LIFO callback stack).
+                    if (gBattleWeather != 0 && !gBattleStruct->weatherSuppressed)
+                    {
+                        gBattleStruct->weatherSuppressed = TRUE;
+                        gBattleScripting.battler = battler;
+                        BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
+                        effect++;
                     }
                 }
                 break;
