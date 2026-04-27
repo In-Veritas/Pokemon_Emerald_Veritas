@@ -426,6 +426,17 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 
 * Light Ball now boosts Special Attack for Pikachu, Pichu, Minun, and Plusle (not just Pikachu)
 
+#### Lucky Egg Stacks (with diminishing returns)
+
+* Holding multiple Lucky Eggs across the party now stacks the EXP bonus, but each successive egg contributes only **half** the bonus of the previous one — so the total payout asymptotes at 2× rather than running away
+* **1** Lucky Egg → 1.50× battle EXP
+* **2** Lucky Eggs → 1.75× battle EXP
+* **3** Lucky Eggs → 1.87× battle EXP
+* **4** Lucky Eggs → 1.94× battle EXP
+* **5** Lucky Eggs → 1.97× battle EXP
+* **6+** Lucky Eggs → effectively 2.00× battle EXP
+* Eggs (the unhatched kind) still don't gain EXP — only living party members holding Lucky Eggs are counted
+
 #### Umbreon Learns Thief
 
 * **Thief** added to Umbreon's learnset at **Lv 60**

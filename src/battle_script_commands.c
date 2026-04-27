@@ -3427,7 +3427,7 @@ static void Cmd_getexp(void)
         {
             u16 calculatedExp;
             s32 viaSentIn;
-            bool32 luckyEggCheck = FALSE;
+            u32 luckyEggCount = 0;
             gExpAllMessCheck = FALSE;
 
             for (viaSentIn = 0, i = 0; i < PARTY_SIZE; i++)
@@ -3441,10 +3441,12 @@ static void Cmd_getexp(void)
                     holdEffect = gSaveBlock1Ptr->enigmaBerry.holdEffect;
                 else
                     holdEffect = ItemId_GetHoldEffect(item);
-                
-                // Added Lucky Egg to increase all battle EXP
+
+                // Count Lucky Eggs in the party. Multiple eggs stack with
+                // diminishing returns (see formula at the calculatedExp
+                // multiplier below).
                 if (holdEffect == HOLD_EFFECT_LUCKY_EGG)
-                    luckyEggCheck = TRUE;
+                    luckyEggCount++;
                 
                 if (GetMonData(&gPlayerParty[i], MON_DATA_HP) == 0)
                 continue;
@@ -3469,8 +3471,23 @@ static void Cmd_getexp(void)
 
             calculatedExp = gSpeciesInfo[gBattleMons[gBattlerFainted].species].expYield * gBattleMons[gBattlerFainted].level / 7;
 
-            if (luckyEggCheck)
-                calculatedExp = (calculatedExp * 150) / 100;
+            // Lucky Egg stack with diminishing returns. Each successive egg
+            // contributes half as much bonus as the previous one, so the
+            // total multiplier asymptotes at 2.0x:
+            //   1 egg  -> 1.50x   (200 - 50)
+            //   2 eggs -> 1.75x   (200 - 25)
+            //   3 eggs -> 1.87x   (200 - 12)
+            //   4 eggs -> 1.94x   (200 - 6)
+            //   5 eggs -> 1.97x   (200 - 3)
+            //   6+     -> ~2.00x
+            // Integer-safe: bonus = 100 >> n, capped at 7 shifts so the
+            // right shift never reaches the undefined-behavior region.
+            if (luckyEggCount > 0)
+            {
+                u32 shift = (luckyEggCount > 7) ? 7 : luckyEggCount;
+                u32 multiplierX100 = 200u - (100u >> shift);
+                calculatedExp = (calculatedExp * multiplierX100) / 100;
+            }
 
             if (FlagGet(FLAG_EXP_ALL))
             {
