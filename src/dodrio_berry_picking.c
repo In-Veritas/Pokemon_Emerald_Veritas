@@ -33,7 +33,7 @@
 #define MAX_BERRIES 9999
 
 // The minimum score needed to receive a prize
-#define PRIZE_SCORE 3000
+#define PRIZE_SCORE 1000
 
 // Difficulty increases as berries are eaten. The rate of new berries increases and the types of berries changes
 // When the max difficulty is reached it starts again from the beginning
@@ -82,6 +82,7 @@ enum {
     PACKET_GAME_STATE,
     PACKET_PICK_STATE,
     PACKET_READY_END,
+    PACKET_GAME_STARTED,
 };
 
 enum {
@@ -283,9 +284,12 @@ EWRAM_DATA static u16 * sBerrySpriteIds[NUM_BERRY_COLUMNS] = {NULL};
 EWRAM_DATA static u16 * sBerryIconSpriteIds[NUM_BERRY_TYPES] = {NULL};
 EWRAM_DATA static struct StatusBar * sStatusBar = NULL;
 EWRAM_DATA static struct DodrioGame_Gfx * sGfx = NULL;
-EWRAM_DATA static u16 sReceivedPrizeIds[6] = {0};
-EWRAM_DATA static u8 sNumReceivedPrizes = 0;
-EWRAM_DATA static u8 sPrizeListBuffer[128] = {0};
+// Sized to hold the maximum theoretical prize count: 10 items + 10 winner bonus
+// at 20k+ plus extra room for Shiny Charm + post-20k growth (1/1000 over).
+#define MAX_RECEIVED_PRIZES 128
+EWRAM_DATA static u16 sReceivedPrizeIds[MAX_RECEIVED_PRIZES] = {0};
+EWRAM_DATA static u16 sNumReceivedPrizes = 0;
+EWRAM_DATA static u8 sPrizeListBuffer[1024] = {0};
 
 static bool32 sExitingGame;
 
@@ -398,6 +402,8 @@ static void SetDodrioAnim(u8, u8);
 static u8 GetNewBerryIdByDifficulty(u8, u8);
 static void UpdateStatusBarAnim(u8);
 static u32 RecvPacket_ReadyToStart(u32);
+static void SendPacket_GameStarted(void);
+static u32 RecvPacket_GameStarted(void);
 static u32 IncrementWithLimit(u32, u32);
 static u32 Min(u32, u32);
 static u32 GetScore(u8);
@@ -604,7 +610,10 @@ static const u16 sPrizeTier_Uncommon[] = {
 };
 
 static const u16 sPrizeTier_Rare[] = {
-    ITEM_NUGGET, ITEM_RARE_CANDY, ITEM_PP_UP
+    ITEM_NUGGET, ITEM_RARE_CANDY, ITEM_PP_UP,
+    ITEM_PEARL, ITEM_BIG_PEARL,
+    ITEM_HP_UP, ITEM_PROTEIN, ITEM_IRON,
+    ITEM_CARBOS, ITEM_CALCIUM, ITEM_ZINC,
 };
 
 static const u16 sPrizeTier_UltraRare[] = {
@@ -902,6 +911,16 @@ static void WaitGameStart(void)
     {
     case 0:
         if (sGame->startGame)
+        {
+            sGame->state++;
+            sGame->countdownEndDelay = 0;
+        }
+        break;
+    case 1:
+        // Hold here briefly so the leader keeps broadcasting PACKET_GAME_STARTED
+        // and any straggling member receives it before the leader advances out
+        // of FUNC_WAIT_START (which would stop the broadcast).
+        if (++sGame->countdownEndDelay > 30)
             SetGameFunc(FUNC_PLAY_GAME);
         break;
     }
@@ -1602,6 +1621,10 @@ static void SendLinkData_Leader(void)
 {
     switch (sGame->funcId)
     {
+    case FUNC_WAIT_START:
+        if (sGame->startGame)
+            SendPacket_GameStarted();
+        break;
     case FUNC_PLAY_GAME:
         SendPacket_GameState(&sGame->player,
                              &sGame->players[0].comm,
@@ -1631,6 +1654,10 @@ static void RecvLinkData_Member(void)
 {
     switch (sGame->funcId)
     {
+    case FUNC_WAIT_START:
+        if (RecvPacket_GameStarted())
+            sGame->startGame = TRUE;
+        break;
     case FUNC_PLAY_GAME:
         RecvPacket_GameState(sGame->multiplayerId,
                             &sGame->players[sGame->multiplayerId],
@@ -1663,8 +1690,11 @@ static void SendLinkData_Member(void)
     switch (sGame->funcId)
     {
     case FUNC_WAIT_START:
+        // Keep sending ready every frame until the leader broadcasts the
+        // PACKET_GAME_STARTED ack. startGame is now set by RecvLinkData_Member
+        // when the ack arrives — never locally — so the leader is guaranteed
+        // to have received this player's ready before either side advances.
         SendPacket_ReadyToStart(TRUE);
-        sGame->startGame = TRUE;
         break;
     case FUNC_PLAY_GAME:
         if (sGame->player.comm.pickState != PICK_NONE)
@@ -2875,33 +2905,64 @@ static u8 TryGivePrize(void)
 {
     u8 multiplayerId = sGame->multiplayerId;
     u32 score = GetScore(multiplayerId);
-    u8 numItems = 0;
+    u32 numItems = 0;
     u8 isWinner = 0;
     u8 tierIndex = 0;
-    u8 i;
+    u32 i;
     u8 givenAny = 0;
     u8 bagFull = 0;
     u16 itemId;
+    u32 winnerBonus = 0;
+    u8 gaveMasterBallThisGame = 0;
+    u8 gaveShinyCharmThisGame = 0;
 
     if (score < PRIZE_SCORE)
         return NO_PRIZE;
 
-    /* Determine number of items based on score */
-    if (score >= 16000)
-        numItems = 5;
+    // Score-tier item count and winner bonus.
+    // After 20000, every additional 1000 points adds one item to both players and the winner total.
+    if (score >= 20000)
+    {
+        u32 over = (score - 20000) / 1000;
+        numItems = 10 + over;
+        winnerBonus = 10 + over; // winner total = 20 + over; bonus on top of numItems
+    }
+    else if (score >= 16000)
+    {
+        numItems = 10;
+        winnerBonus = 10; // winner total 20
+    }
     else if (score >= 12000)
-        numItems = 4;
+    {
+        numItems = 5;
+        winnerBonus = 2; // winner total 7
+    }
     else if (score >= 8000)
-        numItems = 3;
+    {
+        numItems = 4;
+        winnerBonus = 1; // winner total 5
+    }
     else if (score >= 5000)
+    {
+        numItems = 3;
+        winnerBonus = 1; // winner total 4
+    }
+    else if (score >= 3000)
+    {
         numItems = 2;
-    else
+        winnerBonus = 1; // winner total 3
+    }
+    else /* >= 1000 */
+    {
         numItems = 1;
+        winnerBonus = 1; // winner total 2
+    }
 
-    /* Winner gets +1 bonus item */
+    /* Winner adds the bonus on top of the per-player count */
     if (GetScore(multiplayerId) == GetHighestScore())
         isWinner = 1;
-    numItems += isWinner;
+    if (isWinner)
+        numItems += winnerBonus;
 
     /* Determine tier index from player count (3=0, 4=1, 5=2) */
     switch (sGame->numPlayers)
@@ -2913,14 +2974,51 @@ static u8 TryGivePrize(void)
 
     /* Roll and give each item independently */
     sNumReceivedPrizes = 0;
-    for (i = 0; i < numItems; i++)
+
+    // 20000+: each player gets a guaranteed Shiny Charm, capped at 1 ever
+    // (CheckBagHasItem returns TRUE if the player already owns one from any source).
+    if (score >= 20000 && !CheckBagHasItem(ITEM_SHINY_CHARM, 1))
+    {
+        if (CheckBagHasSpace(ITEM_SHINY_CHARM, 1))
+        {
+            AddBagItem(ITEM_SHINY_CHARM, 1);
+            sReceivedPrizeIds[sNumReceivedPrizes++] = ITEM_SHINY_CHARM;
+            givenAny = 1;
+            gaveShinyCharmThisGame = 1;
+        }
+        else
+        {
+            bagFull = 1;
+        }
+    }
+
+    for (i = 0; i < numItems && sNumReceivedPrizes < MAX_RECEIVED_PRIZES; i++)
     {
         itemId = RollPrizeItem(tierIndex);
+
+        // Master Ball is capped at 1 per game. If we've already given one this run,
+        // re-roll up to a few times until we get a non-Master-Ball, then fall back.
+        if (itemId == ITEM_MASTER_BALL && gaveMasterBallThisGame)
+        {
+            u8 reroll;
+            for (reroll = 0; reroll < 8 && itemId == ITEM_MASTER_BALL; reroll++)
+                itemId = RollPrizeItem(tierIndex);
+            if (itemId == ITEM_MASTER_BALL)
+                itemId = sPrizeTier_Common[Random() % ARRAY_COUNT(sPrizeTier_Common)];
+        }
+
+        // Avoid double-awarding the Shiny Charm even if the egg-with-shiny-doduo path
+        // ever lands one in the legendary tier in the future.
+        if (itemId == ITEM_SHINY_CHARM && (gaveShinyCharmThisGame || CheckBagHasItem(ITEM_SHINY_CHARM, 1)))
+            itemId = sPrizeTier_Common[Random() % ARRAY_COUNT(sPrizeTier_Common)];
+
         if (CheckBagHasSpace(itemId, 1))
         {
             AddBagItem(itemId, 1);
             sReceivedPrizeIds[sNumReceivedPrizes++] = itemId;
             givenAny = 1;
+            if (itemId == ITEM_MASTER_BALL)
+                gaveMasterBallThisGame = 1;
         }
         else
         {
@@ -2932,11 +3030,12 @@ static u8 TryGivePrize(void)
     if (givenAny)
     {
         u8 *dst = sPrizeListBuffer;
+        u8 *bufEnd = sPrizeListBuffer + sizeof(sPrizeListBuffer) - 32; // safety margin
         u8 nameBuf[20];
         u8 lineWidth = 0;
         u8 nameWidth;
 
-        for (i = 0; i < sNumReceivedPrizes; i++)
+        for (i = 0; i < sNumReceivedPrizes && dst < bufEnd; i++)
         {
             CopyItemName(sReceivedPrizeIds[i], nameBuf);
             nameWidth = GetStringWidth(FONT_NARROW, nameBuf, -1);
@@ -3430,6 +3529,29 @@ static bool32 RecvPacket_ReadyToEnd(u32 playerId)
         return packet->ready;
 
     return FALSE;
+}
+
+struct GameStartedPacket
+{
+    u8 id;
+};
+
+static void SendPacket_GameStarted(void)
+{
+    struct GameStartedPacket packet;
+    packet.id = PACKET_GAME_STARTED;
+    Rfu_SendPacket(&packet);
+}
+
+static u32 RecvPacket_GameStarted(void)
+{
+    struct GameStartedPacket *packet;
+
+    if ((gRecvCmds[0][0] & RFUCMD_MASK) != RFUCMD_SEND_PACKET)
+        return FALSE;
+
+    packet = (void *)&gRecvCmds[0][1];
+    return packet->id == PACKET_GAME_STARTED;
 }
 
 static const struct BgTemplate sBgTemplates[] =

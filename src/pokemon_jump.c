@@ -2064,7 +2064,7 @@ static void TryUpdateScore(void)
             if (sPokemonJump->comm.jumpsInRow < MAX_JUMPS)
                 sPokemonJump->comm.jumpsInRow++;
 
-            AddJumpScore(10);
+            AddJumpScore(20);
             SetLinkTimeInterval(LINK_INTERVAL_SHORT);
         }
     }
@@ -2234,7 +2234,7 @@ static void ClearUnreadField(void)
 
 // Bonuses given depend on the number of
 // players that jumped at the same time
-static const int sScoreBonuses[MAX_RFU_PLAYERS + 1] = {0, 0, 50, 100, 200, 500};
+static const int sScoreBonuses[MAX_RFU_PLAYERS + 1] = {0, 0, 100, 200, 400, 1000};
 
 static int GetScoreBonus(int numPlayers)
 {
@@ -2247,20 +2247,8 @@ static void TryUpdateExcellentsRecord(u16 excellentsInRow)
         sPokemonJump->excellentsInRowRecord = excellentsInRow;
 }
 
-// Tier 0: Always available (score 5000+)
+// Tier 0: 1000+ — base pool
 static const u16 sPrizeItems_Common[] = {
-    ITEM_LEPPA_BERRY,
-    ITEM_LUM_BERRY,
-    ITEM_SITRUS_BERRY,
-    ITEM_FIGY_BERRY,
-    ITEM_WIKI_BERRY,
-    ITEM_MAGO_BERRY,
-    ITEM_AGUAV_BERRY,
-    ITEM_IAPAPA_BERRY,
-};
-
-// Tier 1: Unlocked at 8000+
-static const u16 sPrizeItems_Uncommon[] = {
     ITEM_POMEG_BERRY,
     ITEM_KELPSY_BERRY,
     ITEM_QUALOT_BERRY,
@@ -2268,26 +2256,79 @@ static const u16 sPrizeItems_Uncommon[] = {
     ITEM_GREPA_BERRY,
     ITEM_TAMATO_BERRY,
     ITEM_NUGGET,
+    ITEM_MOOMOO_MILK,
+    ITEM_BERRY_JUICE,
+    ITEM_LAVA_COOKIE,
 };
 
-// Tier 2: Unlocked at 12000+
+// Tier 1: 3000+ — added on top of Common
+static const u16 sPrizeItems_Uncommon[] = {
+    ITEM_BIG_PEARL,
+    ITEM_FIRE_STONE,
+    ITEM_WATER_STONE,
+    ITEM_THUNDER_STONE,
+    ITEM_LEAF_STONE,
+    ITEM_MOON_STONE,
+    ITEM_SUN_STONE,
+    ITEM_STAR_PIECE,
+    ITEM_RETRO_MAIL,
+};
+
+// Tier 2: 5000+ — supplements + rare candy + dream mail
 static const u16 sPrizeItems_Rare[] = {
+    ITEM_HP_UP,
+    ITEM_PROTEIN,
+    ITEM_IRON,
+    ITEM_CARBOS,
+    ITEM_CALCIUM,
+    ITEM_ZINC,
+    ITEM_RARE_CANDY,
+    ITEM_DREAM_MAIL,
+};
+
+// Tier 3: 8000+ — first Master Ball entry
+static const u16 sPrizeItems_VeryRare[] = {
     ITEM_LUCKY_EGG,
     ITEM_LEFTOVERS,
     ITEM_FOCUS_BAND,
     ITEM_RARE_CANDY,
     ITEM_PP_UP,
+    ITEM_SACRED_ASH,
+    ITEM_MASTER_BALL,
+    ITEM_BEAD_MAIL,
 };
 
-// Tier 3: Unlocked at 16000+
-static const u16 sPrizeItems_VeryRare[] = {
+// Tier 4: 10000+ — Choice Band, Soul Dew, +1 Master Ball
+static const u16 sPrizeItems_Elite[] = {
+    ITEM_CHOICE_BAND,
+    ITEM_SOUL_DEW,
+    ITEM_MASTER_BALL,
+};
+
+// Tier 5: 12000+ — +1 Master Ball, late-game held items
+static const u16 sPrizeItems_Master[] = {
+    ITEM_MASTER_BALL,
     ITEM_SCOPE_LENS,
     ITEM_KINGS_ROCK,
     ITEM_UP_GRADE,
     ITEM_PP_MAX,
+    ITEM_METAL_COAT,
 };
 
-// Tier 4: Unlocked at 20000+
+// Tier 6: 16000+ — +1 Master Ball, type-boosting elemental items, top-tier berries, Fab Mail, Amulet Coin
+static const u16 sPrizeItems_Mythical[] = {
+    ITEM_MASTER_BALL,
+    ITEM_MYSTIC_WATER,
+    ITEM_NEVER_MELT_ICE,
+    ITEM_STARF_BERRY,
+    ITEM_ENIGMA_BERRY,
+    ITEM_LANSAT_BERRY,
+    ITEM_FAB_MAIL,
+    ITEM_AMULET_COIN,
+};
+
+// Tier 7: 20000+ — +1 Master Ball
+// (Egg with random shiny Pokémon is part of the spec but deferred — it requires a custom egg-give mechanic.)
 static const u16 sPrizeItems_Legendary[] = {
     ITEM_MASTER_BALL,
 };
@@ -2297,12 +2338,17 @@ struct {
     u32 quantity;
 } static const sPrizeQuantityData[] =
 {
-    { .score =  5000, .quantity = 1},
-    { .score =  8000, .quantity = 2},
-    { .score = 12000, .quantity = 3},
-    { .score = 16000, .quantity = 4},
-    { .score = 20000, .quantity = 5},
+    { .score =  1000, .quantity =  1},
+    { .score =  3000, .quantity =  2},
+    { .score =  5000, .quantity =  3},
+    { .score =  8000, .quantity =  5},
+    { .score = 10000, .quantity =  8},
+    { .score = 12000, .quantity = 10},
+    { .score = 16000, .quantity = 15},
+    { .score = 20000, .quantity = 20},
 };
+
+#define PRIZE_QUANTITY_MAX 63   // 6-bit field; covers up to score 20000 + 43000 = 63000 in growth
 
 static bool32 HasEnoughScoreForPrize(void)
 {
@@ -2312,22 +2358,48 @@ static bool32 HasEnoughScoreForPrize(void)
         return FALSE;
 }
 
+// Pack (item, quantity) into 16 bits: 10 bits item id (max 1023), 6 bits quantity (max 63).
+// Item IDs in our pools are all <= ITEM_SHINY_CHARM (400), well within 10 bits.
 static u16 GetPrizeData(void)
 {
-    u16 itemId = GetPrizeItemId();
-    u16 quantity = GetPrizeQuantity();
-    return (quantity << 12) | (itemId & 0xFFF);
+    u16 itemId;
+    u16 quantity;
+    u32 score = sPokemonJump->comm.jumpScore;
+
+    // 20000+: guarantee one Shiny Charm if the player doesn't already have one,
+    // in place of the random roll for that game. Subsequent 20000+ runs yield the
+    // normal random prize. This caps the total Shiny Charm count at 1 per save.
+    if (score >= 20000 && !CheckBagHasItem(ITEM_SHINY_CHARM, 1))
+    {
+        itemId = ITEM_SHINY_CHARM;
+        quantity = 1;
+    }
+    else
+    {
+        itemId = GetPrizeItemId();
+        quantity = GetPrizeQuantity();
+
+        // Master Ball is hard-capped at 1 per game even though the pool stacks
+        // multiple entries to bias the roll towards it at high scores.
+        if (itemId == ITEM_MASTER_BALL)
+            quantity = 1;
+    }
+
+    if (quantity > PRIZE_QUANTITY_MAX)
+        quantity = PRIZE_QUANTITY_MAX;
+
+    return (quantity << 10) | (itemId & 0x3FF);
 }
 
 static void UnpackPrizeData(u16 data, u16 *itemId, u16 *quantity)
 {
-    *quantity = data >> 12;
-    *itemId = data & 0xFFF;
+    *quantity = data >> 10;
+    *itemId = data & 0x3FF;
 }
 
 static u16 GetPrizeItemId(void)
 {
-    u16 pool[25];
+    u16 pool[80];
     u16 poolSize = 0;
     u32 score = sPokemonJump->comm.jumpScore;
     u32 i;
@@ -2336,20 +2408,35 @@ static u16 GetPrizeItemId(void)
     for (i = 0; i < ARRAY_COUNT(sPrizeItems_Common); i++)
         pool[poolSize++] = sPrizeItems_Common[i];
 
-    if (score >= 8000)
+    if (score >= 3000)
     {
         for (i = 0; i < ARRAY_COUNT(sPrizeItems_Uncommon); i++)
             pool[poolSize++] = sPrizeItems_Uncommon[i];
     }
-    if (score >= 12000)
+    if (score >= 5000)
     {
         for (i = 0; i < ARRAY_COUNT(sPrizeItems_Rare); i++)
             pool[poolSize++] = sPrizeItems_Rare[i];
     }
-    if (score >= 16000)
+    if (score >= 8000)
     {
         for (i = 0; i < ARRAY_COUNT(sPrizeItems_VeryRare); i++)
             pool[poolSize++] = sPrizeItems_VeryRare[i];
+    }
+    if (score >= 10000)
+    {
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Elite); i++)
+            pool[poolSize++] = sPrizeItems_Elite[i];
+    }
+    if (score >= 12000)
+    {
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Master); i++)
+            pool[poolSize++] = sPrizeItems_Master[i];
+    }
+    if (score >= 16000)
+    {
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Mythical); i++)
+            pool[poolSize++] = sPrizeItems_Mythical[i];
     }
     if (score >= 20000)
     {
@@ -2364,15 +2451,23 @@ static u16 GetPrizeItemId(void)
 static u16 GetPrizeQuantity(void)
 {
     u32 quantity, i;
+    u32 score = sPokemonJump->comm.jumpScore;
 
     quantity = 0;
     for (i = 0; i < ARRAY_COUNT(sPrizeQuantityData); i++)
     {
-        if (sPokemonJump->comm.jumpScore >= sPrizeQuantityData[i].score)
+        if (score >= sPrizeQuantityData[i].score)
             quantity = sPrizeQuantityData[i].quantity;
         else
             break;
     }
+
+    // Beyond 20000, every additional 1000 points adds one more item.
+    if (score > 20000)
+        quantity += (score - 20000) / 1000;
+
+    if (quantity > PRIZE_QUANTITY_MAX)
+        quantity = PRIZE_QUANTITY_MAX;
 
     return quantity;
 }
