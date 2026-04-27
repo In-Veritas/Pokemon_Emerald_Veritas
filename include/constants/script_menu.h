@@ -125,6 +125,8 @@
 #define MULTI_FOSSIL_POST_GAME             114
 #define MULTI_SHINY_LATI                   115
 #define MULTI_LINK_BATTLE_MUSIC            116
+#define MULTI_RECORD_CORNER_OPTIONS        117  // Wireless record mix vs. view minigame records
+#define MULTI_MINIGAME_RECORDS             118  // Pokemon Jump / Berry Crush / Dodrio / Exit
 
 // Link Battle Music Selections
 #define LINK_MUSIC_VS_TRAINER    0

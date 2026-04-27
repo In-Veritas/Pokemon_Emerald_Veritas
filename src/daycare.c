@@ -38,6 +38,11 @@ EWRAM_DATA static u16 sHatchedEggFinalMoves[MAX_MON_MOVES] = {0};
 EWRAM_DATA static u16 sHatchedEggEggMoves[EGG_MOVES_ARRAY_COUNT] = {0};
 EWRAM_DATA static u16 sHatchedEggMotherMoves[MAX_MON_MOVES] = {0};
 
+// Toggle that flips on every 256-step hatch tick. Used to halve the effective
+// decrement rate for Latios/Latias eggs so they take ~100k steps to hatch.
+// Reset on save load (ephemeral); the averaging-out across resets is harmless.
+EWRAM_DATA static u8 sLegendaryHatchTickParity = 0;
+
 #include "data/pokemon/egg_moves.h"
 
 static const struct WindowTemplate sDaycareLevelMenuWindowTemplate =
@@ -532,6 +537,11 @@ static void RemoveIVIndexFromList(u8 *ivs, u8 selectedIv)
     }
 }
 
+static const u8 sInheritableIvStats[NUM_STATS] = {
+    MON_DATA_HP_IV, MON_DATA_ATK_IV, MON_DATA_DEF_IV,
+    MON_DATA_SPEED_IV, MON_DATA_SPATK_IV, MON_DATA_SPDEF_IV,
+};
+
 static void InheritIVs(struct Pokemon *egg, struct DayCare *daycare)
 {
     u8 i;
@@ -539,6 +549,9 @@ static void InheritIVs(struct Pokemon *egg, struct DayCare *daycare)
     u8 availableIVs[NUM_STATS];
     u8 whichParents[INHERITED_IV_COUNT];
     u8 iv;
+    u8 perfect;
+    u8 parentIv0;
+    u8 parentIv1;
 
     // Initialize a list of IV indices.
     for (i = 0; i < NUM_STATS; i++)
@@ -591,6 +604,16 @@ static void InheritIVs(struct Pokemon *egg, struct DayCare *daycare)
                 SetMonData(egg, MON_DATA_SPDEF_IV, &iv);
                 break;
         }
+    }
+
+    // Any 31 IV on either parent is guaranteed to pass; overrides the random 3-IV pass above.
+    perfect = 31;
+    for (i = 0; i < NUM_STATS; i++)
+    {
+        parentIv0 = GetBoxMonData(&daycare->mons[0].mon, sInheritableIvStats[i]);
+        parentIv1 = GetBoxMonData(&daycare->mons[1].mon, sInheritableIvStats[i]);
+        if (parentIv0 == 31 || parentIv1 == 31)
+            SetMonData(egg, sInheritableIvStats[i], &perfect);
     }
 }
 
@@ -872,6 +895,18 @@ static u16 DetermineEggSpeciesAndParentSlots(struct DayCare *daycare, u8 *parent
         eggSpecies = SPECIES_VOLBEAT;
     }
 
+    // Veritas: Latios + Latias offspring is a Latios if male, Latias if female.
+    // Gender is encoded in the offspringPersonality top bit when GenerateEggPersonality
+    // selects gender, mirroring how Nidoran/Volbeat pairs work above.
+    if ((species[parentSlots[0]] == SPECIES_LATIAS && species[parentSlots[1]] == SPECIES_LATIOS) ||
+        (species[parentSlots[0]] == SPECIES_LATIOS && species[parentSlots[1]] == SPECIES_LATIAS))
+    {
+        if (daycare->offspringPersonality & EGG_GENDER_MALE)
+            eggSpecies = SPECIES_LATIOS;
+        else
+            eggSpecies = SPECIES_LATIAS;
+    }
+
     // Make Ditto the "mother" slot if the other daycare mon is male.
     if (species[parentSlots[1]] == SPECIES_DITTO && GetBoxMonGender(&daycare->mons[parentSlots[0]].mon) != MON_FEMALE)
     {
@@ -974,7 +1009,19 @@ static void SetInitialEggData(struct Pokemon *mon, u16 species, struct DayCare *
     language = LANGUAGE_JAPANESE;
     SetMonData(mon, MON_DATA_POKEBALL, &ball);
     SetMonData(mon, MON_DATA_NICKNAME, sJapaneseEggNickname);
-    SetMonData(mon, MON_DATA_FRIENDSHIP, &gSpeciesInfo[species].eggCycles);
+    if (species == SPECIES_LATIOS || species == SPECIES_LATIAS)
+    {
+        // Cap at 255 (u8 storage) and apply the slow-decrement gate during
+        // hatching so the effective hatch time is well over 100k steps.
+        u8 cycles = LEGENDARY_PAIR_EGG_CYCLES;
+        if (cycles > 255)
+            cycles = 255;
+        SetMonData(mon, MON_DATA_FRIENDSHIP, &cycles);
+    }
+    else
+    {
+        SetMonData(mon, MON_DATA_FRIENDSHIP, &gSpeciesInfo[species].eggCycles);
+    }
     SetMonData(mon, MON_DATA_MET_LEVEL, &metLevel);
     SetMonData(mon, MON_DATA_LANGUAGE, &language);
 }
@@ -1007,6 +1054,15 @@ static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
     {
         u32 eggCycles;
         u8 toSub = GetEggCyclesToSubtract();
+        u16 eggSpecies;
+        bool32 slowHatch;
+        bool32 skipThisTick;
+
+        // Flip the slow-hatch parity toggle every time the 256-step boundary
+        // is crossed. Latios/Latias eggs decrement only when the toggle is 0,
+        // halving their effective decrement rate.
+        sLegendaryHatchTickParity ^= 1;
+        skipThisTick = sLegendaryHatchTickParity;
 
         for (i = 0; i < gPlayerPartyCount; i++)
         {
@@ -1015,9 +1071,15 @@ static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
             if (GetMonData(&gPlayerParty[i], MON_DATA_SANITY_IS_BAD_EGG))
                 continue;
 
+            eggSpecies = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES);
+            slowHatch = (eggSpecies == SPECIES_LATIOS || eggSpecies == SPECIES_LATIAS);
+
             eggCycles = GetMonData(&gPlayerParty[i], MON_DATA_FRIENDSHIP);
             if (eggCycles != 0)
             {
+                if (slowHatch && skipThisTick)
+                    continue;
+
                 if (eggCycles >= toSub)
                     eggCycles -= toSub;
                 else
@@ -1138,6 +1200,22 @@ static u8 GetDaycareCompatibilityScore(struct DayCare *daycare)
         genders[i] = GetGenderFromSpeciesAndPersonality(species[i], personality);
         eggGroups[i][0] = gSpeciesInfo[species[i]].eggGroups[0];
         eggGroups[i][1] = gSpeciesInfo[species[i]].eggGroups[1];
+    }
+
+    // Veritas: Latios + Latias is a special legendary pair that can breed even
+    // though both are in EGG_GROUP_NO_EGGS_DISCOVERED. The compatibility score
+    // is intentionally tiny so eggs are rare. Pairing either with Ditto is
+    // explicitly forbidden — these legendaries can only breed with each other.
+    if ((species[0] == SPECIES_LATIOS && species[1] == SPECIES_LATIAS) ||
+        (species[0] == SPECIES_LATIAS && species[1] == SPECIES_LATIOS))
+    {
+        return PARENTS_LEGENDARY_PAIR;
+    }
+    if ((species[0] == SPECIES_LATIOS || species[0] == SPECIES_LATIAS ||
+         species[1] == SPECIES_LATIOS || species[1] == SPECIES_LATIAS) &&
+        (species[0] == SPECIES_DITTO || species[1] == SPECIES_DITTO))
+    {
+        return PARENTS_INCOMPATIBLE;
     }
 
     // check unbreedable egg group

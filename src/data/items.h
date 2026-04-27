@@ -691,10 +691,13 @@ const struct Item gItems[] =
         .fieldUseFunc = ItemUseOutOfBattle_CannotUse,
     },
 
-    [ITEM_034] =
+    [ITEM_MYSTERY_EGG] =
     {
-        .name = _("????????"),
-        .itemId = ITEM_NONE,
+        // Wireless-minigame reward. Listed by name in the prize list, but never
+        // ends up in the bag — the minigame consumes this id to add an actual
+        // Pokemon Egg to the party (or to the PC if the party is full).
+        .name = _("Mystery Egg"),
+        .itemId = ITEM_MYSTERY_EGG,
         .price = 0,
         .description = sDummyDesc,
         .pocket = POCKET_ITEMS,

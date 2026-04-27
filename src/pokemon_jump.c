@@ -30,6 +30,9 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/items.h"
+#include "constants/flags.h"
+#include "constants/species.h"
+#include "script_pokemon_util.h"
 
 #define MAX_JUMP_SCORE 99990
 #define MAX_JUMPS 9999
@@ -240,6 +243,21 @@ struct PokemonJump
     u16 timer;
     u16 prizeItemId;
     u16 prizeItemQuantity;
+    // Multi-roll prize state (refactor): leader broadcasts a 16-bit seed via
+    // comm.data; every player runs the same LCG sequence to deterministically
+    // generate the same prize list. Items are awarded silently and shown in a
+    // paginated summary that accumulates across every round in this session.
+    u16 prizeLcgState;
+    u16 prizeRolled[80];        // this round's rolls
+    u8 prizeRolledCount;
+    u16 prizeSession[256];      // cumulative items earned this whole session
+    u16 prizeSessionCount;
+    u8 prizePagingState;
+    u16 prizePageStart;         // start index in session list for current page
+    bool8 prizeBagFull;
+    bool8 gaveMasterBallThisGame;
+    bool8 gaveShinyCharmThisGame;
+    bool8 prizeAwarded;
     u16 playAgainComm;
     u8 unused3; // Set to 0, never read
     u8 playAgainState;
@@ -348,9 +366,14 @@ static void TryUpdateExcellentsRecord(u16);
 static bool32 HasEnoughScoreForPrize(void);
 static u16 GetPrizeData(void);
 static void UnpackPrizeData(u16, u16 *, u16 *);
-static u16 GetPrizeItemId(void);
-static u16 GetPrizeQuantity(void);
+static void GeneratePrizeList(void);
+static u16 RollOnePrizeFromPool(u32);
+static u32 GetPrizeQuantityForScore(u32);
+static u16 PrizeLcgNext(void);
 static u16 GetQuantityLimitedByBag(u16, u16);
+static void PrintReceivedPrizesPage(void);
+static u16 BuildPrizePageString(u8 *dst, u16 startIdx, u16 *outNextIdx);
+static void AppendRoundPrizesToSession(void);
 static void SpriteCB_Star(struct Sprite *);
 static void SpriteCB_MonHitShake(struct Sprite *);
 static void SpriteCB_MonHitFlash(struct Sprite *);
@@ -566,6 +589,15 @@ static void InitGame(struct PokemonJump *jump)
     jump->numPlayers = GetLinkPlayerCount();
     jump->comm.funcId = FUNC_RESET_GAME;
     jump->comm.data = 0;
+    // Reset session-cumulative prize tracking. These persist across rounds
+    // within a single lobby session and only get cleared here, on first entry.
+    jump->prizeSessionCount = 0;
+    jump->prizePageStart = 0;
+    jump->prizePagingState = 0;
+    jump->prizeAwarded = FALSE;
+    jump->gaveMasterBallThisGame = FALSE;
+    jump->gaveShinyCharmThisGame = FALSE;
+    jump->prizeRolledCount = 0;
     InitPlayerAndJumpTypes();
     ResetForNewGame(jump);
     if (jump->numPlayers == MAX_RFU_PLAYERS)
@@ -768,6 +800,8 @@ static void SetFunc_Leader(u8 funcId)
     sPokemonJump->helperState = 0;
     sPokemonJump->funcActive = TRUE;
     sPokemonJump->allPlayersReady = FALSE;
+    if (funcId == FUNC_GIVE_PRIZE)
+        sPokemonJump->prizeAwarded = FALSE;
     for (i = 1; i < sPokemonJump->numPlayers; i++)
         sPokemonJump->players[i].funcFinished = FALSE;
 }
@@ -853,6 +887,8 @@ static void SetFunc_Member(u8 funcId)
     sPokemonJump->mainState = 0;
     sPokemonJump->helperState = 0;
     sPokemonJump->funcActive = TRUE;
+    if (funcId == FUNC_GIVE_PRIZE)
+        sPokemonJump->prizeAwarded = FALSE;
     sPokemonJump->players[sPokemonJump->multiplayerId].funcFinished = FALSE;
 }
 
@@ -1453,17 +1489,129 @@ static bool32 DoVineHitEffect(void)
     return TRUE;
 }
 
+// Multi-roll prize state machine.
+// State 0:  generate the deterministic roll list, award all items silently
+//           (Mystery Egg -> shiny egg to party/PC; Master Ball cap; Shiny
+//           Charm 20k+ flag-gated and additive). Then print the first page.
+// State 1:  fanfare on the page-message
+// State 2:  wait for A/B or 180-frame timeout
+// State 3:  if more pages remain, clear current message and advance
+//           prizePageStart, then back to state 0b (re-print the next page).
+// State 4:  remove message window & finish
 static bool32 TryGivePrize(void)
 {
     switch (sPokemonJump->helperState)
     {
     case 0:
-        UnpackPrizeData(sPokemonJump->comm.data, &sPokemonJump->prizeItemId, &sPokemonJump->prizeItemQuantity);
-        PrintPrizeMessage(sPokemonJump->prizeItemId, sPokemonJump->prizeItemQuantity);
+        if (!sPokemonJump->prizeAwarded)
+        {
+            u32 idx;
+            u32 score;
+            sPokemonJump->prizePagingState = 0;
+            sPokemonJump->prizePageStart = 0;
+            sPokemonJump->prizeBagFull = FALSE;
+            sPokemonJump->gaveMasterBallThisGame = FALSE;
+            sPokemonJump->gaveShinyCharmThisGame = FALSE;
+            score = sPokemonJump->comm.jumpScore;
+
+            GeneratePrizeList();
+
+            // Shiny Charm: additive at 20k+, but only once per save (FLAG-gated
+            // since the player can own multiple shiny charms from other sources).
+            if (score >= 20000 && !FlagGet(FLAG_RECEIVED_JUMP_SHINY_CHARM))
+            {
+                if (CheckBagHasSpace(ITEM_SHINY_CHARM, 1))
+                {
+                    AddBagItem(ITEM_SHINY_CHARM, 1);
+                    FlagSet(FLAG_RECEIVED_JUMP_SHINY_CHARM);
+                    sPokemonJump->gaveShinyCharmThisGame = TRUE;
+                    // Prepend the charm to the rolled list so it appears first
+                    // in the summary.
+                    if (sPokemonJump->prizeRolledCount < ARRAY_COUNT(sPokemonJump->prizeRolled))
+                    {
+                        u32 j;
+                        for (j = sPokemonJump->prizeRolledCount; j > 0; j--)
+                            sPokemonJump->prizeRolled[j] = sPokemonJump->prizeRolled[j - 1];
+                        sPokemonJump->prizeRolled[0] = ITEM_SHINY_CHARM;
+                        sPokemonJump->prizeRolledCount++;
+                    }
+                }
+                else
+                {
+                    sPokemonJump->prizeBagFull = TRUE;
+                }
+            }
+
+            // Award rolled items
+            for (idx = 0; idx < sPokemonJump->prizeRolledCount; idx++)
+            {
+                u16 itemId = sPokemonJump->prizeRolled[idx];
+
+                // Skip the prepended Shiny Charm — it was already awarded above.
+                if (idx == 0 && itemId == ITEM_SHINY_CHARM && sPokemonJump->gaveShinyCharmThisGame)
+                    continue;
+
+                // Master Ball cap: only one ever per game.
+                if (itemId == ITEM_MASTER_BALL && sPokemonJump->gaveMasterBallThisGame)
+                {
+                    // Replace this entry with a Common-tier item so the display
+                    // and bag award stay in sync across all players.
+                    itemId = sPrizeItems_Common[PrizeLcgNext() % ARRAY_COUNT(sPrizeItems_Common)];
+                    sPokemonJump->prizeRolled[idx] = itemId;
+                }
+
+                // Random Shiny Charms from the pool are blocked — only the 20k+
+                // guarantee path can grant the charm.
+                if (itemId == ITEM_SHINY_CHARM)
+                {
+                    itemId = sPrizeItems_Common[PrizeLcgNext() % ARRAY_COUNT(sPrizeItems_Common)];
+                    sPokemonJump->prizeRolled[idx] = itemId;
+                }
+
+                if (itemId == ITEM_MYSTERY_EGG)
+                {
+                    // The mystery-egg slot doesn't go to the bag — produce a
+                    // guaranteed-shiny egg of a random species and add it to
+                    // party / PC.
+                    GiveMinigameShinyEgg(PickRandomMinigameEggSpecies());
+                    continue;
+                }
+
+                if (CheckBagHasSpace(itemId, 1))
+                {
+                    AddBagItem(itemId, 1);
+                    if (itemId == ITEM_MASTER_BALL)
+                        sPokemonJump->gaveMasterBallThisGame = TRUE;
+                }
+                else
+                {
+                    sPokemonJump->prizeBagFull = TRUE;
+                }
+            }
+
+            // Fold this round's items into the session-cumulative list. The
+            // prize window then renders the WHOLE session, not just this round,
+            // so a player can see everything they've earned across all rounds
+            // played in this lobby.
+            AppendRoundPrizesToSession();
+            // Restart pagination at the top of the session list each round so
+            // the player always sees the running total from the beginning.
+            sPokemonJump->prizePageStart = 0;
+            sPokemonJump->prizePagingState = 0;
+
+            sPokemonJump->prizeAwarded = TRUE;
+        }
+
+        if (sPokemonJump->prizeSessionCount == 0)
+        {
+            // No items at all — exit without showing a prize window.
+            return FALSE;
+        }
+
+        PrintReceivedPrizesPage();
         sPokemonJump->helperState++;
         break;
     case 1:
-    case 4:
         if (!DoPrizeMessageAndFanfare())
         {
             sPokemonJump->timer = 0;
@@ -1471,10 +1619,8 @@ static bool32 TryGivePrize(void)
         }
         break;
     case 2:
-    case 5:
-        // Wait to continue after message
         sPokemonJump->timer++;
-        if (JOY_NEW(A_BUTTON | B_BUTTON) || sPokemonJump->timer > 180)
+        if (JOY_NEW(A_BUTTON | B_BUTTON) || sPokemonJump->timer > 240)
         {
             ClearMessageWindow();
             sPokemonJump->helperState++;
@@ -1483,30 +1629,19 @@ static bool32 TryGivePrize(void)
     case 3:
         if (!RemoveMessageWindow())
         {
-            sPokemonJump->prizeItemQuantity = GetQuantityLimitedByBag(sPokemonJump->prizeItemId, sPokemonJump->prizeItemQuantity);
-            if (sPokemonJump->prizeItemQuantity && AddBagItem(sPokemonJump->prizeItemId, sPokemonJump->prizeItemQuantity))
+            if (sPokemonJump->prizePageStart < sPokemonJump->prizeSessionCount)
             {
-                if (!CheckBagHasSpace(sPokemonJump->prizeItemId, 1))
-                {
-                    // An item was given successfully, but no room for any more.
-                    // It's possible the full prize quantity had to be limited
-                    PrintPrizeFilledBagMessage(sPokemonJump->prizeItemId);
-                    sPokemonJump->helperState = 4; // Do message
-                }
-                else
-                {
-                    sPokemonJump->helperState = 6; // Exit
-                    break;
-                }
+                // More pages remain. Re-enter state 0 path to print next page.
+                sPokemonJump->helperState = 0;
+                // Skip the award block since prizeAwarded is TRUE.
             }
             else
             {
-                PrintNoRoomForPrizeMessage(sPokemonJump->prizeItemId);
-                sPokemonJump->helperState = 4; // Do message
+                sPokemonJump->helperState = 4;
             }
         }
         break;
-    case 6:
+    case 4:
         if (!RemoveMessageWindow())
             return FALSE;
         break;
@@ -2327,10 +2462,10 @@ static const u16 sPrizeItems_Mythical[] = {
     ITEM_AMULET_COIN,
 };
 
-// Tier 7: 20000+ — +1 Master Ball
-// (Egg with random shiny Pokémon is part of the spec but deferred — it requires a custom egg-give mechanic.)
+// Tier 7: 20000+ — +1 Master Ball, Mystery Egg (random-shiny Pokemon, can be legendary)
 static const u16 sPrizeItems_Legendary[] = {
     ITEM_MASTER_BALL,
+    ITEM_MYSTERY_EGG,
 };
 
 struct {
@@ -2358,102 +2493,57 @@ static bool32 HasEnoughScoreForPrize(void)
         return FALSE;
 }
 
-// Pack (item, quantity) into 16 bits: 10 bits item id (max 1023), 6 bits quantity (max 63).
-// Item IDs in our pools are all <= ITEM_SHINY_CHARM (400), well within 10 bits.
-static u16 GetPrizeData(void)
+// Multi-roll prize generation. The leader picks a random 16-bit seed and
+// broadcasts it via comm.data; every player runs the same LCG below and so
+// generates the same prize list. Each player still awards items into their
+// own bag and gates the per-save Shiny Charm by FLAG_RECEIVED_JUMP_SHINY_CHARM.
+
+static u16 PrizeLcgNext(void)
 {
-    u16 itemId;
-    u16 quantity;
-    u32 score = sPokemonJump->comm.jumpScore;
-
-    // 20000+: guarantee one Shiny Charm if the player doesn't already have one,
-    // in place of the random roll for that game. Subsequent 20000+ runs yield the
-    // normal random prize. This caps the total Shiny Charm count at 1 per save.
-    if (score >= 20000 && !CheckBagHasItem(ITEM_SHINY_CHARM, 1))
-    {
-        itemId = ITEM_SHINY_CHARM;
-        quantity = 1;
-    }
-    else
-    {
-        itemId = GetPrizeItemId();
-        quantity = GetPrizeQuantity();
-
-        // Master Ball is hard-capped at 1 per game even though the pool stacks
-        // multiple entries to bias the roll towards it at high scores.
-        if (itemId == ITEM_MASTER_BALL)
-            quantity = 1;
-    }
-
-    if (quantity > PRIZE_QUANTITY_MAX)
-        quantity = PRIZE_QUANTITY_MAX;
-
-    return (quantity << 10) | (itemId & 0x3FF);
+    sPokemonJump->prizeLcgState = sPokemonJump->prizeLcgState * 1103u + 12345u;
+    return sPokemonJump->prizeLcgState;
 }
 
-static void UnpackPrizeData(u16 data, u16 *itemId, u16 *quantity)
+// Builds the unified item pool for the player's score and writes one roll's
+// item id. The pool grows progressively per the score-tier spec; Master Ball
+// is stacked across high tiers to bias rolls towards it at the top.
+static u16 RollOnePrizeFromPool(u32 score)
 {
-    *quantity = data >> 10;
-    *itemId = data & 0x3FF;
-}
-
-static u16 GetPrizeItemId(void)
-{
-    u16 pool[80];
+    u16 pool[96];
     u16 poolSize = 0;
-    u32 score = sPokemonJump->comm.jumpScore;
     u32 i;
-    u16 index;
 
     for (i = 0; i < ARRAY_COUNT(sPrizeItems_Common); i++)
         pool[poolSize++] = sPrizeItems_Common[i];
-
     if (score >= 3000)
-    {
         for (i = 0; i < ARRAY_COUNT(sPrizeItems_Uncommon); i++)
             pool[poolSize++] = sPrizeItems_Uncommon[i];
-    }
     if (score >= 5000)
-    {
         for (i = 0; i < ARRAY_COUNT(sPrizeItems_Rare); i++)
             pool[poolSize++] = sPrizeItems_Rare[i];
-    }
     if (score >= 8000)
-    {
         for (i = 0; i < ARRAY_COUNT(sPrizeItems_VeryRare); i++)
             pool[poolSize++] = sPrizeItems_VeryRare[i];
-    }
     if (score >= 10000)
-    {
         for (i = 0; i < ARRAY_COUNT(sPrizeItems_Elite); i++)
             pool[poolSize++] = sPrizeItems_Elite[i];
-    }
     if (score >= 12000)
-    {
         for (i = 0; i < ARRAY_COUNT(sPrizeItems_Master); i++)
             pool[poolSize++] = sPrizeItems_Master[i];
-    }
     if (score >= 16000)
-    {
         for (i = 0; i < ARRAY_COUNT(sPrizeItems_Mythical); i++)
             pool[poolSize++] = sPrizeItems_Mythical[i];
-    }
     if (score >= 20000)
-    {
         for (i = 0; i < ARRAY_COUNT(sPrizeItems_Legendary); i++)
             pool[poolSize++] = sPrizeItems_Legendary[i];
-    }
 
-    index = Random() % poolSize;
-    return pool[index];
+    return pool[PrizeLcgNext() % poolSize];
 }
 
-static u16 GetPrizeQuantity(void)
+static u32 GetPrizeQuantityForScore(u32 score)
 {
-    u32 quantity, i;
-    u32 score = sPokemonJump->comm.jumpScore;
-
-    quantity = 0;
+    u32 quantity = 0;
+    u32 i;
     for (i = 0; i < ARRAY_COUNT(sPrizeQuantityData); i++)
     {
         if (score >= sPrizeQuantityData[i].score)
@@ -2461,15 +2551,47 @@ static u16 GetPrizeQuantity(void)
         else
             break;
     }
-
-    // Beyond 20000, every additional 1000 points adds one more item.
     if (score > 20000)
         quantity += (score - 20000) / 1000;
-
-    if (quantity > PRIZE_QUANTITY_MAX)
-        quantity = PRIZE_QUANTITY_MAX;
-
+    if (quantity > ARRAY_COUNT(sPokemonJump->prizeRolled))
+        quantity = ARRAY_COUNT(sPokemonJump->prizeRolled);
     return quantity;
+}
+
+// Leader-only: produce a non-zero seed and stash it in comm.data so members
+// receive it and roll the same list. Returns the seed.
+static u16 GetPrizeData(void)
+{
+    u16 seed = Random() & 0xFFFF;
+    if (seed == 0)
+        seed = 1;
+    return seed;
+}
+
+// Fills sPokemonJump->prizeRolled[] with deterministic rolls driven by the
+// shared seed in comm.data. Master Ball cap and Shiny Charm exclusion happen
+// during the give phase, not here, so every player sees the same name list
+// regardless of bag contents.
+static void GeneratePrizeList(void)
+{
+    u32 score = sPokemonJump->comm.jumpScore;
+    u32 quantity = GetPrizeQuantityForScore(score);
+    u32 i;
+
+    sPokemonJump->prizeLcgState = sPokemonJump->comm.data;
+    if (sPokemonJump->prizeLcgState == 0)
+        sPokemonJump->prizeLcgState = 1;
+
+    sPokemonJump->prizeRolledCount = 0;
+    for (i = 0; i < quantity; i++)
+        sPokemonJump->prizeRolled[sPokemonJump->prizeRolledCount++] = RollOnePrizeFromPool(score);
+}
+
+static void UnpackPrizeData(u16 data, u16 *itemId, u16 *quantity)
+{
+    *itemId = 0;
+    *quantity = 0;
+    (void)data;
 }
 
 static u16 GetQuantityLimitedByBag(u16 item, u16 quantity)
@@ -3649,6 +3771,101 @@ static void PrintPrizeMessage(u16 itemId, u16 quantity)
     AddTextPrinterParameterized(sPokemonJumpGfx->msgWindowId, FONT_NORMAL, sPokemonJumpGfx->prizeMsg, 0, 1, TEXT_SKIP_DRAW, NULL);
     CopyWindowToVram(sPokemonJumpGfx->msgWindowId, COPYWIN_GFX);
     sPokemonJumpGfx->fanfare = MUS_LEVEL_UP;
+    sPokemonJumpGfx->msgWindowState = 0;
+}
+
+// File-scope copy of the trailer string so it isn't a per-call static (which
+// can hit linker quirks with agbcc on some files per CLAUDE.md).
+static const u8 sText_AndMoreJump[] = _("...and more!");
+
+// Appends the freshly-rolled items from prizeRolled[] onto the session-cumulative
+// prizeSession[] list. Drops anything past the session cap silently — at that
+// point the rewards window is already saturated. Also drops the dummy
+// ITEM_MYSTERY_EGG slot so the session view still tells the player they got
+// "Mystery Egg" once even though the real reward was the egg in the party.
+static void AppendRoundPrizesToSession(void)
+{
+    u32 i;
+    for (i = 0; i < sPokemonJump->prizeRolledCount; i++)
+    {
+        if (sPokemonJump->prizeSessionCount >= ARRAY_COUNT(sPokemonJump->prizeSession))
+            break;
+        sPokemonJump->prizeSession[sPokemonJump->prizeSessionCount++] = sPokemonJump->prizeRolled[i];
+    }
+}
+
+// Builds a comma-separated list of item names from the SESSION list starting at
+// startIdx into dst. Stops when it has enough items to fill ~3 message lines
+// and writes the next index to read in *outNextIdx. If items remain past that,
+// appends "...and more!". Returns the number of items the page consumed.
+#define PRIZE_PAGE_MAX_LINES 3
+#define PRIZE_PAGE_LINE_PX 200
+static u16 BuildPrizePageString(u8 *dst, u16 startIdx, u16 *outNextIdx)
+{
+    u8 nameBuf[20];
+    u32 lineWidth = 0;
+    u32 nameWidth;
+    u8 lines = 1;
+    u16 i;
+    u16 written = 0;
+
+    for (i = startIdx; i < sPokemonJump->prizeSessionCount; i++)
+    {
+        CopyItemName(sPokemonJump->prizeSession[i], nameBuf);
+        nameWidth = GetStringWidth(FONT_NORMAL, nameBuf, -1);
+
+        if (written > 0)
+        {
+            if (lineWidth + 12 + nameWidth > PRIZE_PAGE_LINE_PX)
+            {
+                if (lines >= PRIZE_PAGE_MAX_LINES)
+                    break;
+                *dst++ = CHAR_NEWLINE;
+                lineWidth = 0;
+                lines++;
+            }
+            else
+            {
+                *dst++ = CHAR_COMMA;
+                *dst++ = CHAR_SPACE;
+                lineWidth += 12;
+            }
+        }
+
+        dst = StringCopy(dst, nameBuf);
+        lineWidth += nameWidth;
+        written++;
+    }
+
+    *outNextIdx = startIdx + written;
+
+    // If items remain beyond this page, append "...and more!" on a fresh line.
+    if (*outNextIdx < sPokemonJump->prizeSessionCount)
+    {
+        if (lines < PRIZE_PAGE_MAX_LINES)
+            *dst++ = CHAR_NEWLINE;
+        dst = StringCopy(dst, sText_AndMoreJump);
+    }
+    *dst = EOS;
+    return written;
+}
+
+static void PrintReceivedPrizesPage(void)
+{
+    u16 nextIdx = sPokemonJump->prizePageStart;
+    bool8 isFirstPage = (sPokemonJump->prizePagingState == 0);
+
+    BuildPrizePageString(sPokemonJumpGfx->prizeMsg, sPokemonJump->prizePageStart, &nextIdx);
+    sPokemonJump->prizePageStart = nextIdx;
+    sPokemonJump->prizePagingState = 1;
+
+    sPokemonJumpGfx->msgWindowId = AddMessageWindow(2, 8, 26, 4);
+    AddTextPrinterParameterized(sPokemonJumpGfx->msgWindowId, FONT_NORMAL,
+                                sPokemonJumpGfx->prizeMsg, 0, 1, TEXT_SKIP_DRAW, NULL);
+    CopyWindowToVram(sPokemonJumpGfx->msgWindowId, COPYWIN_GFX);
+    // Only play the fanfare on the first page so subsequent pages feel like a
+    // quick continuation rather than a fresh celebration.
+    sPokemonJumpGfx->fanfare = isFirstPage ? MUS_LEVEL_UP : MUS_DUMMY;
     sPokemonJumpGfx->msgWindowState = 0;
 }
 

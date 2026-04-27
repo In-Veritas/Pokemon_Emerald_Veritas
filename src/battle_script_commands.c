@@ -3512,6 +3512,19 @@ static void Cmd_getexp(void)
     case 2: // set exp value to the poke in expgetter_id and print message
         if (gBattleControllerExecFlags == 0)
         {
+            // Skip eggs entirely. The original gate at the inner if{} only
+            // suppressed the exp-computation branch but left state advancement
+            // and downstream consumption of gBattleMoveDamage in place, so an
+            // egg in slot 0 with Exp All / Exp Share active was effectively
+            // gaining EXP. Jumping directly to case 5 mirrors how lvl-capped
+            // mons are skipped a few branches down.
+            if (GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_IS_EGG))
+            {
+                gBattleStruct->sentInPokes >>= 1;
+                gBattleScripting.getexpState = 5;
+                gBattleMoveDamage = 0;
+                break;
+            }
             item = GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_HELD_ITEM);
 
             if (item == ITEM_ENIGMA_BERRY)
@@ -6873,6 +6886,11 @@ static void Cmd_setrain(void)
         gBattleWeather = B_WEATHER_RAIN_TEMPORARY;
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_RAIN;
         gWishFutureKnock.weatherDuration = 5;
+        if (!WEATHER_HAS_EFFECT && !gBattleStruct->weatherSuppressed)
+        {
+            gBattleStruct->weatherSuppressed = TRUE;
+            BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
+        }
     }
     gBattlescriptCurrInstr++;
 }
@@ -7733,6 +7751,11 @@ static void Cmd_setsandstorm(void)
         gBattleWeather = B_WEATHER_SANDSTORM_TEMPORARY;
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_SANDSTORM;
         gWishFutureKnock.weatherDuration = 5;
+        if (!WEATHER_HAS_EFFECT && !gBattleStruct->weatherSuppressed)
+        {
+            gBattleStruct->weatherSuppressed = TRUE;
+            BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
+        }
     }
     gBattlescriptCurrInstr++;
 }
@@ -8914,6 +8937,11 @@ static void Cmd_setsunny(void)
         gBattleWeather = B_WEATHER_SUN_TEMPORARY;
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_SUNLIGHT;
         gWishFutureKnock.weatherDuration = 5;
+        if (!WEATHER_HAS_EFFECT && !gBattleStruct->weatherSuppressed)
+        {
+            gBattleStruct->weatherSuppressed = TRUE;
+            BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
+        }
     }
 
     gBattlescriptCurrInstr++;
@@ -9197,6 +9225,11 @@ static void Cmd_sethail(void)
         gBattleWeather = B_WEATHER_HAIL_TEMPORARY;
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_HAIL;
         gWishFutureKnock.weatherDuration = 5;
+        if (!WEATHER_HAS_EFFECT && !gBattleStruct->weatherSuppressed)
+        {
+            gBattleStruct->weatherSuppressed = TRUE;
+            BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
+        }
     }
 
     gBattlescriptCurrInstr++;

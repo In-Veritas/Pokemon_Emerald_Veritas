@@ -3,6 +3,9 @@
 
 u8 ScriptGiveMon(u16, u8, u16, u32, u32, u8);
 u8 ScriptGiveEgg(u16);
+u8 GiveMinigameShinyEgg(u16);
+u8 GiveMinigameShinyEggEx(u16 species, bool8 perfectIvs);
+u16 PickRandomMinigameEggSpecies(void);
 void CreateScriptedWildMon(u16, u8, u16);
 void ScriptSetMonMoveSlot(u8, u16, u8);
 void ReducePlayerPartyToSelectedMons(void);

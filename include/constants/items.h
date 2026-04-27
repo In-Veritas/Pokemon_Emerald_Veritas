@@ -19,7 +19,7 @@
 
 // Note: If moving ball IDs around, updating FIRST_BALL/LAST_BALL is not sufficient
 //       Several places expect the ball IDs to be first and contiguous (e.g. gBattlescriptsForBallThrow and MON_DATA_POKEBALL)
-//       If adding new balls, it's easiest to insert them after the last ball and increment the below IDs (and removing ITEM_034 for example)
+//       If adding new balls, it's easiest to insert them after the last ball and increment the below IDs (and removing ITEM_MYSTERY_EGG for example)
 #define FIRST_BALL ITEM_MASTER_BALL
 #define LAST_BALL  ITEM_PREMIER_BALL
 
@@ -63,7 +63,7 @@
 #define ITEM_BLUE_SHARD 49
 #define ITEM_YELLOW_SHARD 50
 #define ITEM_GREEN_SHARD 51
-#define ITEM_034 52
+#define ITEM_MYSTERY_EGG 52  // Wireless-minigame reward; never enters the bag — its purpose is to display "Mystery Egg" on the prize list while the actual egg is added to the party (or PC if the party is full)
 #define ITEM_035 53
 #define ITEM_036 54
 #define ITEM_037 55

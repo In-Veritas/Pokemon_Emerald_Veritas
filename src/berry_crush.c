@@ -3021,11 +3021,16 @@ static u32 Cmd_TabulateResults(struct BerryCrushGame *game, u8 *args)
         temp1 = Q_24_8_TO_INT(temp1);
         game->results.silkiness = temp1 & 0x7F;
 
-        // Calculate amount of powder
+        // Calculate amount of powder.
+        // Veritas: 1.5x multiplier on the base powder yield. The vanilla
+        // formula (powder * playerCount * silkiness/100) felt too punishing,
+        // so we lift the ratio modestly without changing the curve. Q_24_8(150)/100
+        // equals 1.5 in Q24.8, so multiplying by it yields a 1.5x boost.
         temp1 = Q_24_8(temp1);
         temp1 = MathUtil_Div32(temp1, Q_24_8(100));
         temp2 = Q_24_8(game->powder * game->playerCount);
         temp2 = MathUtil_Mul32(temp2, temp1);
+        temp2 = MathUtil_Mul32(temp2, MathUtil_Div32(Q_24_8(150), Q_24_8(100)));
         game->results.powder = Q_24_8_TO_INT(temp2);
 
         // Choose random second results page

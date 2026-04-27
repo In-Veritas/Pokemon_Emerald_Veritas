@@ -23,8 +23,11 @@
 #include "text_window.h"
 #include "window.h"
 #include "constants/items.h"
+#include "constants/flags.h"
+#include "constants/species.h"
 #include "constants/songs.h"
 #include "characters.h"
+#include "script_pokemon_util.h"
 
 // Note that in this file 'Dodrio Berry Picking' is often
 // shortened to DodrioGame or just Game for convenience
@@ -284,12 +287,21 @@ EWRAM_DATA static u16 * sBerrySpriteIds[NUM_BERRY_COLUMNS] = {NULL};
 EWRAM_DATA static u16 * sBerryIconSpriteIds[NUM_BERRY_TYPES] = {NULL};
 EWRAM_DATA static struct StatusBar * sStatusBar = NULL;
 EWRAM_DATA static struct DodrioGame_Gfx * sGfx = NULL;
-// Sized to hold the maximum theoretical prize count: 10 items + 10 winner bonus
-// at 20k+ plus extra room for Shiny Charm + post-20k growth (1/1000 over).
+// Sized to hold the maximum theoretical per-round prize count: 10 items + 10
+// winner bonus at 20k+ plus extra room for Shiny Charm + post-20k growth.
 #define MAX_RECEIVED_PRIZES 128
 EWRAM_DATA static u16 sReceivedPrizeIds[MAX_RECEIVED_PRIZES] = {0};
 EWRAM_DATA static u16 sNumReceivedPrizes = 0;
+
+// Session-cumulative list — accumulates across every round played in this
+// lobby session, so the rewards window can show everything the player has
+// earned, not just the most recent round. Reset on game entry.
+#define MAX_SESSION_PRIZES 256
+EWRAM_DATA static u16 sSessionPrizeIds[MAX_SESSION_PRIZES] = {0};
+EWRAM_DATA static u16 sSessionPrizeCount = 0;
+
 EWRAM_DATA static u8 sPrizeListBuffer[1024] = {0};
+EWRAM_DATA static u16 sPrizePageStartIdx = 0;
 
 static bool32 sExitingGame;
 
@@ -669,6 +681,9 @@ void StartDodrioBerryPicking(u16 partyId, void (*exitCallback)(void))
     {
         ResetTasksAndSprites();
         InitDodrioGame(sGame);
+        // Reset session-cumulative reward tracking for this lobby session.
+        sSessionPrizeCount = 0;
+        sPrizePageStartIdx = 0;
         sGame->exitCallback = exitCallback;
         sGame->multiplayerId = GetMultiplayerId();
         sGame->player = sGame->players[sGame->multiplayerId];
@@ -2884,6 +2899,85 @@ enum {
     NO_PRIZE,
 };
 
+// Build one page of the prize list into sPrizeListBuffer starting at startIdx.
+// Returns the next index to read (== sNumReceivedPrizes when finished). Appends
+// "...and more!" when more items remain. Used by the prize-display state machine
+// for scrollable rewards.
+static const u8 sText_AndMore[] = _("...and more!");
+
+#define PRIZE_PAGE_LINE_PX 210
+#define PRIZE_PAGE_MAX_LINES 2 // Result window only has room for 2 narrow-font lines
+
+static u16 BuildDodrioPrizePage(u16 startIdx)
+{
+    u8 *dst = sPrizeListBuffer;
+    u8 *bufEnd = sPrizeListBuffer + sizeof(sPrizeListBuffer) - 32;
+    u8 nameBuf[20];
+    u32 lineWidth = 0;
+    u32 nameWidth;
+    u8 lines = 1;
+    u16 i;
+    u16 written = 0;
+
+    if (startIdx >= sSessionPrizeCount)
+    {
+        *dst = EOS;
+        return startIdx;
+    }
+
+    for (i = startIdx; i < sSessionPrizeCount && dst < bufEnd; i++)
+    {
+        CopyItemName(sSessionPrizeIds[i], nameBuf);
+        nameWidth = GetStringWidth(FONT_NARROW, nameBuf, -1);
+
+        if (written > 0)
+        {
+            if (lineWidth + 12 + nameWidth > PRIZE_PAGE_LINE_PX)
+            {
+                if (lines >= PRIZE_PAGE_MAX_LINES)
+                    break;
+                *dst++ = CHAR_NEWLINE;
+                lineWidth = 0;
+                lines++;
+            }
+            else
+            {
+                *dst++ = CHAR_COMMA;
+                *dst++ = CHAR_SPACE;
+                lineWidth += 12;
+            }
+        }
+
+        dst = StringCopy(dst, nameBuf);
+        lineWidth += nameWidth;
+        written++;
+    }
+
+    // If items remain past this page, append "...and more!" on a new line.
+    if (i < sSessionPrizeCount)
+    {
+        if (lines < PRIZE_PAGE_MAX_LINES)
+            *dst++ = CHAR_NEWLINE;
+        dst = StringCopy(dst, sText_AndMore);
+    }
+    *dst = EOS;
+    return i;
+}
+
+// Append every item awarded this round to the session-cumulative list. The
+// rewards window paginates over this combined list so the player sees every
+// prize they've earned across the whole lobby session.
+static void AppendSessionPrizes(void)
+{
+    u16 j;
+    for (j = 0; j < sNumReceivedPrizes; j++)
+    {
+        if (sSessionPrizeCount >= MAX_SESSION_PRIZES)
+            break;
+        sSessionPrizeIds[sSessionPrizeCount++] = sReceivedPrizeIds[j];
+    }
+}
+
 static u16 RollPrizeItem(u8 tierIndex)
 {
     u8 roll = Random() % 100;
@@ -2897,8 +2991,15 @@ static u16 RollPrizeItem(u8 tierIndex)
         return sPrizeTier_Rare[Random() % ARRAY_COUNT(sPrizeTier_Rare)];
     else if (roll < thresholds[3])
         return sPrizeTier_UltraRare[Random() % ARRAY_COUNT(sPrizeTier_UltraRare)];
-    else
+    // Legendary: 50/50 Master Ball vs Mystery Egg, but if the player already
+    // received the once-per-save shiny Doduo egg, the egg slot collapses to
+    // Master Ball so the legendary tier still produces a meaningful prize.
+    else if (FlagGet(FLAG_RECEIVED_DODRIO_SHINY_DODUO_EGG))
         return ITEM_MASTER_BALL;
+    else if (Random() & 1)
+        return ITEM_MASTER_BALL;
+    else
+        return ITEM_MYSTERY_EGG;
 }
 
 static u8 TryGivePrize(void)
@@ -2975,13 +3076,15 @@ static u8 TryGivePrize(void)
     /* Roll and give each item independently */
     sNumReceivedPrizes = 0;
 
-    // 20000+: each player gets a guaranteed Shiny Charm, capped at 1 ever
-    // (CheckBagHasItem returns TRUE if the player already owns one from any source).
-    if (score >= 20000 && !CheckBagHasItem(ITEM_SHINY_CHARM, 1))
+    // 20000+: each player gets a guaranteed Shiny Charm, but only once ever
+    // across the whole save (gated by FLAG_RECEIVED_DODRIO_SHINY_CHARM so it
+    // can't be farmed by tossing the existing Shiny Charm and replaying).
+    if (score >= 20000 && !FlagGet(FLAG_RECEIVED_DODRIO_SHINY_CHARM))
     {
         if (CheckBagHasSpace(ITEM_SHINY_CHARM, 1))
         {
             AddBagItem(ITEM_SHINY_CHARM, 1);
+            FlagSet(FLAG_RECEIVED_DODRIO_SHINY_CHARM);
             sReceivedPrizeIds[sNumReceivedPrizes++] = ITEM_SHINY_CHARM;
             givenAny = 1;
             gaveShinyCharmThisGame = 1;
@@ -3007,10 +3110,32 @@ static u8 TryGivePrize(void)
                 itemId = sPrizeTier_Common[Random() % ARRAY_COUNT(sPrizeTier_Common)];
         }
 
-        // Avoid double-awarding the Shiny Charm even if the egg-with-shiny-doduo path
-        // ever lands one in the legendary tier in the future.
-        if (itemId == ITEM_SHINY_CHARM && (gaveShinyCharmThisGame || CheckBagHasItem(ITEM_SHINY_CHARM, 1)))
+        // Shiny Charm should never come from the random pool (only as the 20k+ guarantee).
+        if (itemId == ITEM_SHINY_CHARM)
             itemId = sPrizeTier_Common[Random() % ARRAY_COUNT(sPrizeTier_Common)];
+
+        // Mystery Egg: never enters the bag. Hand the player a guaranteed-shiny
+        // Doduo egg with perfect 31 IVs in every stat, then set the once-per-save
+        // flag so the legendary tier never produces a second one. The Mystery Egg
+        // id still goes on the prize list for display.
+        if (itemId == ITEM_MYSTERY_EGG)
+        {
+            if (FlagGet(FLAG_RECEIVED_DODRIO_SHINY_DODUO_EGG))
+            {
+                // Defensive — RollPrizeItem already gates on the flag, but if
+                // anything else introduces a duplicate Mystery Egg roll, fall
+                // back to a Master Ball so the player isn't shorted.
+                itemId = ITEM_MASTER_BALL;
+            }
+            else
+            {
+                GiveMinigameShinyEggEx(SPECIES_DODUO, TRUE);
+                FlagSet(FLAG_RECEIVED_DODRIO_SHINY_DODUO_EGG);
+                sReceivedPrizeIds[sNumReceivedPrizes++] = ITEM_MYSTERY_EGG;
+                givenAny = 1;
+                continue;
+            }
+        }
 
         if (CheckBagHasSpace(itemId, 1))
         {
@@ -3026,42 +3151,10 @@ static u8 TryGivePrize(void)
         }
     }
 
-    /* Build display string listing received items */
+    // The display string is now built page-by-page from sReceivedPrizeIds[] by
+    // BuildDodrioPrizePage so that extremely large prize lists can scroll.
     if (givenAny)
-    {
-        u8 *dst = sPrizeListBuffer;
-        u8 *bufEnd = sPrizeListBuffer + sizeof(sPrizeListBuffer) - 32; // safety margin
-        u8 nameBuf[20];
-        u8 lineWidth = 0;
-        u8 nameWidth;
-
-        for (i = 0; i < sNumReceivedPrizes && dst < bufEnd; i++)
-        {
-            CopyItemName(sReceivedPrizeIds[i], nameBuf);
-            nameWidth = GetStringWidth(FONT_NARROW, nameBuf, -1);
-
-            /* Add separator before 2nd+ item */
-            if (i > 0)
-            {
-                /* Check if adding ", Name" would overflow line (~210px usable) */
-                if (lineWidth + 12 + nameWidth > 210)
-                {
-                    *dst++ = CHAR_NEWLINE;
-                    lineWidth = 0;
-                }
-                else
-                {
-                    *dst++ = CHAR_COMMA;
-                    *dst++ = CHAR_SPACE;
-                    lineWidth += 12;
-                }
-            }
-
-            dst = StringCopy(dst, nameBuf);
-            lineWidth += nameWidth;
-        }
-        *dst = EOS;
-    }
+        sPrizeListBuffer[0] = EOS;
 
     if (!givenAny)
         return PRIZE_NO_ROOM;
@@ -5073,11 +5166,17 @@ static void ShowResults(void)
         x = (224 - strWidth) / 2;
         AddTextPrinterParameterized(sGfx->windowIds[0], FONT_NORMAL, gText_AnnouncingPrizes, x, 1, TEXT_SKIP_DRAW, NULL);
         prizeState = TryGivePrize();
+        // Roll this round's awarded items into the session list, then page
+        // through the cumulative session view from the top.
         if (prizeState == PRIZE_RECEIVED || prizeState == PRIZE_FILLED_BAG)
+            AppendSessionPrizes();
+        sPrizePageStartIdx = 0;
+        if (sSessionPrizeCount > 0 && (prizeState == PRIZE_RECEIVED || prizeState == PRIZE_FILLED_BAG))
         {
+            sPrizePageStartIdx = BuildDodrioPrizePage(0);
             AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NORMAL, gText_ReceivedPrizes, 0, 1, TEXT_SKIP_DRAW, NULL);
             AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NARROW, sPrizeListBuffer, 0, 17, TEXT_SKIP_DRAW, NULL);
-            if (prizeState == PRIZE_FILLED_BAG)
+            if (prizeState == PRIZE_FILLED_BAG && sPrizePageStartIdx >= sSessionPrizeCount)
                 AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NARROW, gText_FilledStorageSpace, 0, 45, TEXT_SKIP_DRAW, NULL);
         }
         else if (prizeState == PRIZE_NO_ROOM)
@@ -5103,7 +5202,21 @@ static void ShowResults(void)
         {
             sGfx->timer = 0;
             PlaySE(SE_SELECT);
-            sGfx->state++;
+            // If more session prize pages remain, render the next one and stay
+            // in the display loop instead of advancing past the prize window.
+            if (sPrizePageStartIdx < sSessionPrizeCount)
+            {
+                FillWindowPixelBuffer(sGfx->windowIds[1], PIXEL_FILL(1));
+                sPrizePageStartIdx = BuildDodrioPrizePage(sPrizePageStartIdx);
+                AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NORMAL, gText_ReceivedPrizes, 0, 1, TEXT_SKIP_DRAW, NULL);
+                AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NARROW, sPrizeListBuffer, 0, 17, TEXT_SKIP_DRAW, NULL);
+                CopyWindowToVram(sGfx->windowIds[1], COPYWIN_GFX);
+                sGfx->state = 10; // re-blit and wait again
+            }
+            else
+            {
+                sGfx->state++;
+            }
         }
         break;
     default:

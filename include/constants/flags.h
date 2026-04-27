@@ -98,7 +98,7 @@
 #define FLAG_RESCUED_BIRCH                                  0x52
 #define FLAG_LEGENDARIES_IN_SOOTOPOLIS                      0x53
 
-#define FLAG_UNUSED_0x054                                   0x54  // Unused Flag
+#define FLAG_RECEIVED_JUMP_SHINY_CHARM                      0x54  // Set when the Pokemon Jump 20k+ Shiny Charm prize has been awarded; never given twice
 #define FLAG_UNLOCKED_BIKE_SWITCHING                        0x55
 
 #define FLAG_HIDE_CONTEST_POKE_BALL                         0x56  // Always set after new game, object it hides is added directly
@@ -1291,8 +1291,8 @@
 #define FLAG_DISABLE_SURFMUSIC                                      0x4DC // Flag for disabling Surf music when surfing
 #define FLAG_DISABLE_BIKEMUSIC                                      0x4DD // Flag for disabling Bike music when biking
 #define FLAG_ENABLE_NICKNAME                                        0x4DE // Flag for enabling use of Nickname changer within Party Menu
-#define FLAG_UNUSED_0x4E0                                           0x4E0 // Unused Flag
-#define FLAG_UNUSED_0x4E1                                           0x4E1 // Unused Flag
+#define FLAG_RECEIVED_DODRIO_SHINY_CHARM                            0x4E0 // Dodrio Berry Picking 20k+ Shiny Charm one-shot
+#define FLAG_RECEIVED_DODRIO_SHINY_DODUO_EGG                        0x4E1 // Dodrio Berry Picking Mystery Egg shiny Doduo one-shot
 #define FLAG_UNUSED_0x4E2                                           0x4E2 // Unused Flag
 #define FLAG_UNUSED_0x4E3                                           0x4E3 // Unused Flag
 #define FLAG_UNUSED_0x4E4                                           0x4E4 // Unused Flag

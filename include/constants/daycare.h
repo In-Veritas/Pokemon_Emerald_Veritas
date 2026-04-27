@@ -3,9 +3,14 @@
 
 // Parent compatibility scores
 #define PARENTS_INCOMPATIBLE       0
+#define PARENTS_LEGENDARY_PAIR     5  // Latios + Latias — very rare; egg roll ~5% per 256 steps
 #define PARENTS_LOW_COMPATIBILITY  20
 #define PARENTS_MED_COMPATIBILITY  50
 #define PARENTS_MAX_COMPATIBILITY  70
+
+// Hatch counter for the Latios/Latias legendary pair: ~100k steps to hatch.
+// Hatch ticks roughly once every 256 steps, so 391 cycles ≈ 100k steps.
+#define LEGENDARY_PAIR_EGG_CYCLES 200
 
 // Daycare state
 #define DAYCARE_NO_MONS     0

@@ -542,6 +542,26 @@ static const struct MenuAction MultichoiceList_WirelessMinigame[] =
     {gText_Exit},
 };
 
+// Top-level Record Corner choice: link up via wireless to mix records, or
+// view the player's local minigame top scores.
+static const u8 sText_LinkRecords[] = _("Link records");
+static const u8 sText_MinigameRecords[] = _("Minigame records");
+static const struct MenuAction MultichoiceList_RecordCornerOptions[] =
+{
+    {sText_LinkRecords},
+    {sText_MinigameRecords},
+    {gText_Exit},
+};
+
+// Per-game minigame record screens.
+static const struct MenuAction MultichoiceList_MinigameRecords[] =
+{
+    {gText_PokemonJump},
+    {gText_BerryCrush},
+    {gText_DodrioBerryPicking},
+    {gText_Exit},
+};
+
 static const struct MenuAction MultichoiceList_LinkLeader[] =
 {
     {gText_JoinGroup},
@@ -948,6 +968,8 @@ static const struct MultichoiceListStruct sMultichoiceLists[] =
     [MULTI_FALLARBOR_TENT_RULES]       = MULTICHOICE(MultichoiceList_FallarborTentRules),
     [MULTI_TAG_MATCH_TYPE]             = MULTICHOICE(MultichoiceList_TagMatchType),
     [MULTI_SHINY_LATI]                 = MULTICHOICE(MultichoiceList_ShinyLati),
+    [MULTI_RECORD_CORNER_OPTIONS]      = MULTICHOICE(MultichoiceList_RecordCornerOptions),
+    [MULTI_MINIGAME_RECORDS]           = MULTICHOICE(MultichoiceList_MinigameRecords),
 };
 
 const u8 *const gStdStrings[] =

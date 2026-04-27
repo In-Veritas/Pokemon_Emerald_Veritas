@@ -1591,6 +1591,12 @@ void StartUnionRoomBattle(u16 battleFlags)
 static void WarpForWirelessMinigame(u16 linkService, u16 x, u16 y)
 {
     VarSet(VAR_CABLE_CLUB_STATE, linkService);
+    // SetCableClubWarp records the player's current tile so the post-minigame
+    // re-warp lands on a valid Cable Club tile. Without this call, the saved
+    // dynamic warp may still point at a Union Room tile from a previous link
+    // session, causing the player to exit through the wrong door and the
+    // metatile under their feet to render incorrectly.
+    SetCableClubWarp();
     SetWarpDestination(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum, WARP_ID_NONE, x, y);
     SetDynamicWarpWithCoords(0, gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum, WARP_ID_NONE, x, y);
     WarpIntoMap();

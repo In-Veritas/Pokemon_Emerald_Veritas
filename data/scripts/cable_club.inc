@@ -605,6 +605,19 @@ CableClub_EventScript_CantTradeEnigmaBerry::
 
 CableClub_EventScript_RecordCorner::
 	copyvar VAR_0x8007, VAR_LAST_TALKED
+	multichoice 0, 0, MULTI_RECORD_CORNER_OPTIONS, FALSE
+	switch VAR_RESULT
+	case 0, CableClub_EventScript_RecordCornerLinkup
+	case 1, CableClub_EventScript_MinigameRecords
+	case 2, CableClub_EventScript_RecordCornerExit
+	case MULTI_B_PRESSED, CableClub_EventScript_RecordCornerExit
+	end
+
+CableClub_EventScript_RecordCornerExit::
+	releaseall
+	end
+
+CableClub_EventScript_RecordCornerLinkup::
 	call Common_EventScript_SaveGame
 	goto_if_eq VAR_RESULT, 0, CableClub_EventScript_AbortLink
 	message gText_PleaseWaitForLink
@@ -621,6 +634,31 @@ CableClub_EventScript_RecordCorner::
 	goto_if_eq VAR_RESULT, LINKUP_FAILED, CableClub_EventScript_AbortLink
 	goto_if_eq VAR_RESULT, LINKUP_CONNECTION_ERROR, CableClub_EventScript_AbortLinkConnectionError
 	end
+
+CableClub_EventScript_MinigameRecords::
+	multichoice 0, 0, MULTI_MINIGAME_RECORDS, FALSE
+	switch VAR_RESULT
+	case 0, CableClub_EventScript_ShowPokemonJumpRecords
+	case 1, CableClub_EventScript_ShowBerryCrushRecords
+	case 2, CableClub_EventScript_ShowDodrioBerryPickingRecords
+	case 3, CableClub_EventScript_RecordCornerExit
+	case MULTI_B_PRESSED, CableClub_EventScript_RecordCornerExit
+	end
+
+CableClub_EventScript_ShowPokemonJumpRecords::
+	special ShowPokemonJumpRecords
+	waitstate
+	goto CableClub_EventScript_MinigameRecords
+
+CableClub_EventScript_ShowBerryCrushRecords::
+	special ShowBerryCrushRankings
+	waitstate
+	goto CableClub_EventScript_MinigameRecords
+
+CableClub_EventScript_ShowDodrioBerryPickingRecords::
+	special ShowDodrioBerryPickingRecords
+	waitstate
+	goto CableClub_EventScript_MinigameRecords
 
 CableClub_EventScript_EnterRecordCorner::
 	setvar VAR_0x8004, USING_RECORD_CORNER

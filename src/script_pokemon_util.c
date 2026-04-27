@@ -122,6 +122,52 @@ u8 ScriptGiveEgg(u16 species)
     return GiveMonToPlayer(&mon);
 }
 
+// Wireless minigame reward helper: produces a guaranteed-shiny egg of the given
+// species and hands it to the player (party first, PC if full). FLAG_SHINY_CREATION
+// is honored by CreateBoxMon and auto-cleared after generation. If perfectIvs is
+// TRUE, all six IVs are forced to 31 (used for the once-per-save shiny Doduo).
+u8 GiveMinigameShinyEgg(u16 species)
+{
+    return GiveMinigameShinyEggEx(species, FALSE);
+}
+
+u8 GiveMinigameShinyEggEx(u16 species, bool8 perfectIvs)
+{
+    struct Pokemon mon;
+    u8 isEgg;
+
+    if (species == SPECIES_NONE || species >= SPECIES_EGG)
+        species = SPECIES_DODUO; // safe fallback
+
+    FlagSet(FLAG_SHINY_CREATION);
+    CreateEgg(&mon, species, TRUE);
+    isEgg = TRUE;
+    SetMonData(&mon, MON_DATA_IS_EGG, &isEgg);
+
+    if (perfectIvs)
+    {
+        u8 maxIv = 31;
+        SetMonData(&mon, MON_DATA_HP_IV, &maxIv);
+        SetMonData(&mon, MON_DATA_ATK_IV, &maxIv);
+        SetMonData(&mon, MON_DATA_DEF_IV, &maxIv);
+        SetMonData(&mon, MON_DATA_SPEED_IV, &maxIv);
+        SetMonData(&mon, MON_DATA_SPATK_IV, &maxIv);
+        SetMonData(&mon, MON_DATA_SPDEF_IV, &maxIv);
+    }
+
+    return GiveMonToPlayer(&mon);
+}
+
+// Pick a random species in [1, NUM_SPECIES) for the Pokemon Jump 20k+ legendary
+// reward. Legendaries are intentionally allowed.
+u16 PickRandomMinigameEggSpecies(void)
+{
+    u16 species = 1 + (Random() % (NUM_SPECIES - 1));
+    if (species == SPECIES_NONE || species >= SPECIES_EGG)
+        species = SPECIES_DODUO;
+    return species;
+}
+
 void HasEnoughMonsForDoubleBattle(void)
 {
     switch (GetMonsStateToDoubles())
