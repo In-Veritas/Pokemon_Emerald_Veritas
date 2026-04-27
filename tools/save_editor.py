@@ -623,46 +623,243 @@ class SaveFile:
             print("  Invalid input.")
 
     # =========================================================================
-    # Bard / Old Man
+    # Mauville Old Man
     # =========================================================================
 
-    def view_bard_lyrics(self):
+    OLDMAN_NAMES = {
+        0: "Bard",
+        1: "Hipster",
+        2: "Trader",
+        3: "Storyteller",
+        4: "Giddy",
+        5: "Unused1",
+        6: "Unused2",
+    }
+
+    # Default Bard song lyrics: SHAKE IT DO THE DIET DANCE
+    DEFAULT_BARD_LYRICS = [0x2811, 0x1029, 0x1018, 0x0E0D, 0x1A1A, 0x1A1D]
+
+    # Default Trader decorations (DECOR_DUSKULL_DOLL=91, DECOR_BALL_CUSHION=107, DECOR_TIRE=37, DECOR_PRETTY_FLOWERS=21)
+    DEFAULT_TRADER_DECORATIONS = [91, 107, 37, 21]
+    DEFAULT_TRADER_NAMES = ["TRISTAN", "PHILIP", "DENNIS", "ROBERTO"]
+
+    def _get_expected_old_man_type(self):
+        """Get the old man type that this save's trainer ID maps to."""
+        public_id, _ = self.get_trainer_id()
+        return (public_id % 10) // 2
+
+    def view_old_man(self):
         sb1 = self._get_saveblock1_data()
         off = SB1_OFF_OLD_MAN
         man_id = sb1[off]
+        expected = self._get_expected_old_man_type()
 
-        print("\n--- Bard / Old Man ---")
-        print(f"  Old Man type: {man_id} (0=Bard(default), 1=Bard, 2=Hipster, 3=Trader, 4=Storyteller)")
+        print("\n--- Mauville Old Man ---")
+        type_name = self.OLDMAN_NAMES.get(man_id, f"Unknown({man_id})")
+        expected_name = self.OLDMAN_NAMES.get(expected, f"Unknown({expected})")
+        print(f"  Current type: {man_id} ({type_name})")
+        print(f"  Expected type (from trainer ID): {expected} ({expected_name})")
 
-        if man_id not in (0, 1):
-            print("  Old Man is not currently the Bard.")
+        if man_id > 6:
+            print("  WARNING: Old man type is invalid/corrupted!")
+            print(f"  Raw first 16 bytes: {' '.join(f'{sb1[off+i]:02X}' for i in range(16))}")
             return
 
+        if man_id == 0:  # BARD
+            self._view_bard_details(sb1, off)
+        elif man_id == 1:  # HIPSTER
+            self._view_hipster_details(sb1, off)
+        elif man_id == 2:  # TRADER
+            self._view_trader_details(sb1, off)
+        elif man_id == 3:  # STORYTELLER
+            self._view_storyteller_details(sb1, off)
+        elif man_id == 4:  # GIDDY
+            self._view_giddy_details(sb1, off)
+
+        # Show raw hex
+        raw = sb1[off:off + SIZEOF_OLD_MAN]
+        print(f"\n  Raw hex (64 bytes):")
+        for row in range(4):
+            start = row * 16
+            hex_str = ' '.join(f'{raw[start+i]:02X}' for i in range(16))
+            print(f"    +0x{start:02X}: {hex_str}")
+
+    def _view_bard_details(self, sb1, off):
         print("  Song lyrics (Easy Chat word IDs):")
         for i in range(6):
             word = struct.unpack_from('<H', sb1, off + 2 + i * 2)[0]
             print(f"    Word {i + 1}: 0x{word:04X}")
-
         print("  Temporary lyrics:")
         for i in range(6):
             word = struct.unpack_from('<H', sb1, off + 14 + i * 2)[0]
             print(f"    Word {i + 1}: 0x{word:04X}")
-
+        player_name = decode_gba_string(sb1[off + 0x1A:off + 0x22], 8)
+        print(f"  Player name: {player_name}")
         has_changed = sb1[off + 0x29]
         print(f"  Has changed song: {'Yes' if has_changed else 'No'}")
+        print(f"  Language: {sb1[off + 0x2A]}")
+
+    def _view_hipster_details(self, sb1, off):
+        taught = sb1[off + 1]
+        print(f"  Has taught word: {'Yes' if taught else 'No'}")
+        print(f"  Language: {sb1[off + 2]}")
+
+    def _view_trader_details(self, sb1, off):
+        print("  Decorations & traders:")
+        decor_names = {91: "Duskull Doll", 107: "Ball Cushion", 37: "Tire", 21: "Pretty Flowers"}
+        for i in range(4):
+            decor_id = sb1[off + 1 + i]
+            decor_name = decor_names.get(decor_id, f"Decor #{decor_id}")
+            # playerNames are at offset 5, each 11 bytes
+            name_off = off + 5 + i * 11
+            name = decode_gba_string(sb1[name_off:name_off + 11], 11)
+            lang = sb1[off + 50 + i]  # language array at offset 50
+            print(f"    Slot {i + 1}: {decor_name} (id={decor_id}), trader={name}, lang={lang}")
+        already_traded = sb1[off + 49]
+        print(f"  Already traded: {'Yes' if already_traded else 'No'}")
+
+    def _view_storyteller_details(self, sb1, off):
+        already_recorded = sb1[off + 1]
+        print(f"  Already recorded: {'Yes' if already_recorded else 'No'}")
+        print("  Tales:")
+        for i in range(4):
+            stat_id = sb1[off + 4 + i]
+            name_off = off + 8 + i * 7  # PLAYER_NAME_LENGTH = 7
+            name = decode_gba_string(sb1[name_off:name_off + 7], 7)
+            stat_val_off = off + 36 + i * 4
+            stat_val = struct.unpack_from('<I', sb1, stat_val_off)[0]
+            lang = sb1[off + 52 + i]
+            if stat_id == 0:
+                print(f"    Tale {i + 1}: (empty)")
+            else:
+                print(f"    Tale {i + 1}: statID={stat_id}, trainer={name}, value={stat_val}, lang={lang}")
+
+    def _view_giddy_details(self, sb1, off):
+        tale_counter = sb1[off + 1]
+        question_num = sb1[off + 2]
+        print(f"  Tale counter: {tale_counter}")
+        print(f"  Question num: {question_num}")
+        print("  Random words:")
+        for i in range(10):
+            word = struct.unpack_from('<H', sb1, off + 4 + i * 2)[0]
+            print(f"    Word {i + 1}: 0x{word:04X}")
+        print(f"  Question list: {[sb1[off + 0x18 + i] for i in range(8)]}")
+        print(f"  Language: {sb1[off + 0x20]}")
+
+    def set_old_man_type(self):
+        """Change which old man is in the Mauville Pokemon Center."""
+        sb1 = self._get_saveblock1_data()
+        off = SB1_OFF_OLD_MAN
+        current = sb1[off]
+        expected = self._get_expected_old_man_type()
+
+        print(f"\n  Current old man: {current} ({self.OLDMAN_NAMES.get(current, 'Unknown')})")
+        print(f"  Expected (from trainer ID): {expected} ({self.OLDMAN_NAMES.get(expected, 'Unknown')})")
+        print()
+        print("  Available types:")
+        for k, v in self.OLDMAN_NAMES.items():
+            if k <= 4:
+                marker = " <-- current" if k == current else ""
+                marker += " (default for this save)" if k == expected else ""
+                print(f"    {k}. {v}{marker}")
+
+        print()
+        try:
+            choice = input("  Select new type (0-4, or Enter to cancel): ").strip()
+            if not choice:
+                print("  Cancelled.")
+                return
+            new_type = int(choice)
+            if new_type < 0 or new_type > 4:
+                print("  Invalid type.")
+                return
+        except ValueError:
+            print("  Invalid input.")
+            return
+
+        # Zero out the entire old man union, then set up the new type
+        self._reset_old_man_to_type(new_type)
+        print(f"  Old man changed to {new_type} ({self.OLDMAN_NAMES[new_type]}) with initial settings.")
+
+    def reset_old_man(self):
+        """Reset the old man to its initial state based on trainer ID."""
+        expected = self._get_expected_old_man_type()
+        sb1 = self._get_saveblock1_data()
+        off = SB1_OFF_OLD_MAN
+        current = sb1[off]
+
+        print(f"\n  Current old man: {current} ({self.OLDMAN_NAMES.get(current, 'Unknown/Corrupted')})")
+        print(f"  Save's default (from trainer ID): {expected} ({self.OLDMAN_NAMES[expected]})")
+        print(f"  This will reset to {expected} ({self.OLDMAN_NAMES[expected]}) with initial settings.")
+
+        confirm = input("  Confirm reset? (y/n): ").strip().lower()
+        if confirm != 'y':
+            print("  Cancelled.")
+            return
+
+        self._reset_old_man_to_type(expected)
+        print(f"  Old man reset to {expected} ({self.OLDMAN_NAMES[expected]}) with initial settings.")
+
+    def _reset_old_man_to_type(self, man_type):
+        """Zero out the old man union and initialize it as the given type."""
+        sb1 = self._get_saveblock1_data()
+        off = SB1_OFF_OLD_MAN
+
+        # Zero out entire 64-byte union
+        for i in range(SIZEOF_OLD_MAN):
+            sb1[off + i] = 0
+
+        if man_type == 0:  # BARD
+            sb1[off] = 0  # id
+            for i, word in enumerate(self.DEFAULT_BARD_LYRICS):
+                struct.pack_into('<H', sb1, off + 2 + i * 2, word)
+            for i, word in enumerate(self.DEFAULT_BARD_LYRICS):
+                struct.pack_into('<H', sb1, off + 14 + i * 2, word)
+            sb1[off + 0x29] = 0  # hasChangedSong = FALSE
+            sb1[off + 0x2A] = 2  # language = LANGUAGE_ENGLISH
+        elif man_type == 1:  # HIPSTER
+            sb1[off] = 1  # id
+            sb1[off + 1] = 0  # taughtWord = FALSE
+            sb1[off + 2] = 2  # language = LANGUAGE_ENGLISH
+        elif man_type == 2:  # TRADER
+            sb1[off] = 2  # id
+            for i in range(4):
+                sb1[off + 1 + i] = self.DEFAULT_TRADER_DECORATIONS[i]
+            for i, name in enumerate(self.DEFAULT_TRADER_NAMES):
+                name_off = off + 5 + i * 11
+                encoded = encode_gba_string(name, 11)
+                for j in range(11):
+                    sb1[name_off + j] = encoded[j]
+            sb1[off + 49] = 0  # alreadyTraded = FALSE
+            for i in range(4):
+                sb1[off + 50 + i] = 2  # language = LANGUAGE_ENGLISH
+        elif man_type == 3:  # STORYTELLER
+            sb1[off] = 3  # id
+            sb1[off + 1] = 0  # alreadyRecorded = FALSE
+            # gameStatIDs[4] all 0 (already zeroed)
+            # trainerNames already zeroed
+        elif man_type == 4:  # GIDDY
+            sb1[off] = 4  # id
+            sb1[off + 1] = 0  # taleCounter = 0
+            sb1[off + 0x20] = 2  # language = LANGUAGE_ENGLISH
+
+        self._write_saveblock1_data(sb1)
+
+    def view_bard_lyrics(self):
+        self.view_old_man()
 
     def reset_bard_lyrics(self):
         sb1 = self._get_saveblock1_data()
         off = SB1_OFF_OLD_MAN
 
-        sb1[off] = 1  # MAUVILLE_MAN_BARD
-        default_lyrics = [0x2811, 0x1029, 0x1018, 0x0E0D, 0x1A1A, 0x1A1D]
+        sb1[off] = 0  # MAUVILLE_MAN_BARD
 
-        for i, word in enumerate(default_lyrics):
+        for i, word in enumerate(self.DEFAULT_BARD_LYRICS):
             struct.pack_into('<H', sb1, off + 2 + i * 2, word)
-        for i, word in enumerate(default_lyrics):
+        for i, word in enumerate(self.DEFAULT_BARD_LYRICS):
             struct.pack_into('<H', sb1, off + 14 + i * 2, word)
         sb1[off + 0x29] = 0
+        sb1[off + 0x2A] = 2  # language = LANGUAGE_ENGLISH
 
         self._write_saveblock1_data(sb1)
         print("Bard lyrics reset to defaults (SHAKE IT DO THE DIET DANCE).")
@@ -1320,7 +1517,7 @@ class SaveFile:
         if not remaining:
             if corrupt_entries:
                 print("\n  All corruptions fixed!")
-                print("  Use option 16/17 to save to disk!")
+                print("  Use option 18/19 to save to disk!")
             return
 
         print(f"\n  {len(remaining)} entry/entries still need manual correction:")
@@ -1427,20 +1624,21 @@ def print_menu():
     print("  2. View player info")
     print("  3. View trainer card data")
     print("  4. View/Edit money")
-    print("  5. View Bard song lyrics")
-    print("  6. Reset Bard lyrics to defaults")
-    print("  7. View link battle records")
-    print("  8. Clear link battle records")
-    print("  9. View TV shows")
-    print(" 10. View PokeNews")
-    print(" 11. View/Edit mixed records")
-    print(" 12. View sector layout")
-    print(" 13. Verify checksums")
-    print(" 14. Recalculate all checksums")
-    print(" 15. Scan for corrupted text")
-    print(" 16. Set HOF debut time")
-    print(" 17. Save file")
-    print(" 18. Save file as (new path)")
+    print("  5. View Mauville Old Man")
+    print("  6. Change Mauville Old Man type")
+    print("  7. Reset Mauville Old Man to initial state")
+    print("  8. View link battle records")
+    print("  9. Clear link battle records")
+    print(" 10. View TV shows")
+    print(" 11. View PokeNews")
+    print(" 12. View/Edit mixed records")
+    print(" 13. View sector layout")
+    print(" 14. Verify checksums")
+    print(" 15. Recalculate all checksums")
+    print(" 16. Scan for corrupted text")
+    print(" 17. Set HOF debut time")
+    print(" 18. Save file")
+    print(" 19. Save file as (new path)")
     print("  0. Exit")
     print("========================================")
 
@@ -1520,23 +1718,27 @@ def main():
             if not loaded:
                 print("No save file loaded.")
                 continue
-            save.view_bard_lyrics()
+            save.view_old_man()
 
         elif choice == '6':
             if not loaded:
                 print("No save file loaded.")
                 continue
-            confirm = input("Reset Bard lyrics to defaults? (y/n): ").strip().lower()
-            if confirm == 'y':
-                save.reset_bard_lyrics()
+            save.set_old_man_type()
 
         elif choice == '7':
             if not loaded:
                 print("No save file loaded.")
                 continue
-            save.view_link_battle_records()
+            save.reset_old_man()
 
         elif choice == '8':
+            if not loaded:
+                print("No save file loaded.")
+                continue
+            save.view_link_battle_records()
+
+        elif choice == '9':
             if not loaded:
                 print("No save file loaded.")
                 continue
@@ -1544,19 +1746,19 @@ def main():
             if confirm == 'y':
                 save.clear_link_battle_records()
 
-        elif choice == '9':
+        elif choice == '10':
             if not loaded:
                 print("No save file loaded.")
                 continue
             save.view_tv_shows()
 
-        elif choice == '10':
+        elif choice == '11':
             if not loaded:
                 print("No save file loaded.")
                 continue
             save.view_poke_news()
 
-        elif choice == '11':
+        elif choice == '12':
             if not loaded:
                 print("No save file loaded.")
                 continue
@@ -1602,7 +1804,7 @@ def main():
             else:
                 print("Invalid option.")
 
-        elif choice == '12':
+        elif choice == '13':
             if not loaded:
                 print("No save file loaded.")
                 continue
@@ -1616,7 +1818,7 @@ def main():
                 save.view_sector_info(0)
                 save.view_sector_info(1)
 
-        elif choice == '13':
+        elif choice == '14':
             if not loaded:
                 print("No save file loaded.")
                 continue
@@ -1629,7 +1831,7 @@ def main():
                 else:
                     print(f"Slot {slot + 1}: All checksums valid.")
 
-        elif choice == '14':
+        elif choice == '15':
             if not loaded:
                 print("No save file loaded.")
                 continue
@@ -1637,19 +1839,19 @@ def main():
             if confirm == 'y':
                 save.recalculate_all_checksums()
 
-        elif choice == '15':
+        elif choice == '16':
             if not loaded:
                 print("No save file loaded.")
                 continue
             save.scan_corrupted_text()
 
-        elif choice == '16':
+        elif choice == '17':
             if not loaded:
                 print("No save file loaded.")
                 continue
             save.view_and_set_hof_time()
 
-        elif choice == '17':
+        elif choice == '18':
             if not loaded:
                 print("No save file loaded.")
                 continue
@@ -1658,7 +1860,7 @@ def main():
                 save.recalculate_all_checksums()
                 save.save()
 
-        elif choice == '18':
+        elif choice == '19':
             if not loaded:
                 print("No save file loaded.")
                 continue
