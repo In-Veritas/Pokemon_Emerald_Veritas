@@ -1299,12 +1299,24 @@ static bool32 GivePrize_Member(void)
         return TRUE;
 }
 
+// Threshold above which a finished Pokemon Jump round triggers a flash save.
+// Below this score we still update records in-memory, but skip the heavy
+// Task_LinkFullSave so casual rounds don't pause for the saving message.
+#define POKEJUMP_SAVE_SCORE_THRESHOLD 3000
+
 static bool32 SavePokeJump(void)
 {
     switch (sPokemonJump->mainState)
     {
     case 0:
         TryUpdateRecords(sPokemonJump->comm.jumpScore, sPokemonJump->comm.jumpsInRow, sPokemonJump->comm.data);
+        if (sPokemonJump->comm.jumpScore < POKEJUMP_SAVE_SCORE_THRESHOLD)
+        {
+            // Skip the flash save below the threshold. Records are already
+            // updated in EWRAM and will persist on the next overworld save.
+            sPokemonJump->nextFuncId = FUNC_ASK_PLAY_AGAIN;
+            return FALSE;
+        }
         SetUpPokeJumpGfxFuncById(GFXFUNC_MSG_SAVING);
         sPokemonJump->mainState++;
         break;

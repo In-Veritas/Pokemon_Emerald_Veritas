@@ -37,6 +37,10 @@
 
 // The minimum score needed to receive a prize
 #define PRIZE_SCORE 1000
+// Above this score the game runs a Task_LinkFullSave at the end of the round.
+// Below this it still updates records in-memory but skips the heavy save so
+// quick low-score rounds don't pause for the saving message.
+#define DODRIO_SAVE_SCORE 3000
 
 // Difficulty increases as berries are eaten. The rate of new berries increases and the types of berries changes
 // When the max difficulty is reached it starts again from the beginning
@@ -1224,7 +1228,11 @@ static void AskPlayAgain(void)
     switch (sGame->state)
     {
     case 0:
-        if (GetScore(sGame->multiplayerId) >= PRIZE_SCORE)
+        // Trigger the flash save only when the score is high enough. Records
+        // are still updated in-memory by TryUpdateRecords above (in DoResults),
+        // so progress isn't lost on low-score rounds — just deferred to the
+        // next overworld save.
+        if (GetScore(sGame->multiplayerId) >= DODRIO_SAVE_SCORE)
         {
             SetGfxFuncById(GFXFUNC_MSG_SAVING);
         }

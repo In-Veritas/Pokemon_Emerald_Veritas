@@ -36,6 +36,7 @@
 #include "pokedex.h"
 #include "pokemon.h"
 #include "random.h"
+#include "record_mixing.h"
 #include "recorded_battle.h"
 #include "roamer.h"
 #include "safari_zone.h"
@@ -79,6 +80,9 @@ static void EndLinkBattleInSteps(void);
 static void CB2_InitAskRecordBattle(void);
 static void CB2_AskRecordBattle(void);
 static void AskRecordBattle(void);
+static void CB2_PostBattleRecordMixing(void);
+static void CB2_RunPostBattleRecordMixing(void);
+static void Task_PostMixResumeBattleTeardown(u8 taskId);
 static void SpriteCB_MoveWildMonToRight(struct Sprite *sprite);
 static void SpriteCB_WildMonShowHealthbox(struct Sprite *sprite);
 static void SpriteCB_WildMonAnimate(struct Sprite *sprite);
@@ -199,6 +203,10 @@ EWRAM_DATA u16 gChosenMoveByBattler[MAX_BATTLERS_COUNT] = {0};
 EWRAM_DATA u8 gMoveResultFlags = 0;
 EWRAM_DATA u32 gHitMarker = 0;
 EWRAM_DATA static u8 sUnusedBattlersArray[MAX_BATTLERS_COUNT] = {0};
+// Local player's answer to the post-battle "mix records?" prompt.
+// 0 = undecided, 1 = yes, 2 = no. Synced to peers via LINKCMD_RENDEZVOUS_CHOICE
+// in gSendCmd[1] every frame while the prompt is up.
+EWRAM_DATA static u8 sLocalRendezvousAnswer = 0;
 EWRAM_DATA u8 gBideTarget[MAX_BATTLERS_COUNT] = {0};
 EWRAM_DATA u8 gUnusedFirstBattleVar2 = 0; // Never read
 EWRAM_DATA u16 gSideStatuses[NUM_BATTLE_SIDES] = {0};
@@ -2377,11 +2385,29 @@ static void EndLinkBattleInSteps(void)
                 }
                 else if (!gMain.anyLinkBattlerHasFrontierPass)
                 {
-                    // No players can record this battle, end
-                    SetMainCallback2(gMain.savedCallback);
-                    FreeBattleResources();
-                    FreeBattleSpritesData();
-                    FreeMonSpritesGfx();
+                    // Nobody has the Frontier Pass. This branch fires
+                    // unanimously on every client because sFrontierPassFlag
+                    // is ORed across all peers in recorded_battle.c, so all
+                    // GBAs take the same path from here. Offer the
+                    // auto-record-mix prompt if the link is still alive and
+                    // this is a "normal" 2-4 player link battle (not Frontier).
+                    if (gReceivedRemoteLinkPlayers
+                     && GetLinkPlayerCount() >= 2
+                     && !(gBattleTypeFlags & (BATTLE_TYPE_FRONTIER | BATTLE_TYPE_BATTLE_TOWER)))
+                    {
+                        // State 20 does a clean VRAM/sprite reset and fades
+                        // back in so the prompt draws on a fresh battle
+                        // textbox, not on top of Vs screen residue.
+                        gBattleCommunication[MULTIUSE_STATE] = 20;
+                    }
+                    else
+                    {
+                        // Not eligible — vanilla early-exit.
+                        SetMainCallback2(gMain.savedCallback);
+                        FreeBattleResources();
+                        FreeBattleSpritesData();
+                        FreeMonSpritesGfx();
+                    }
                 }
                 else if (gReceivedRemoteLinkPlayers == 0)
                 {
@@ -2445,6 +2471,178 @@ static void EndLinkBattleInSteps(void)
         if (!gMain.anyLinkBattlerHasFrontierPass || gWirelessCommType || gReceivedRemoteLinkPlayers != 1)
         {
             gMain.anyLinkBattlerHasFrontierPass = FALSE;
+            SetMainCallback2(gMain.savedCallback);
+            FreeBattleResources();
+            FreeBattleSpritesData();
+            FreeMonSpritesGfx();
+        }
+        break;
+    // ----- Post-battle auto-record-mix rendezvous (Veritas). -----
+    // Entered from state 2 when nobody has the Frontier Pass AND the link
+    // is alive AND the battle wasn't a Frontier/Tower match. All peers
+    // take this branch synchronously because the entry condition depends
+    // only on synced globals (sFrontierPassFlag is OR-aggregated across
+    // peers, gLinkPlayers[].version comes from the link handshake,
+    // gBattleTypeFlags is identical on all clients).
+    case 20:
+        // Wipe any Vs-screen residue and rebuild a clean battle-textbox UI.
+        // Matches the CB2_InitAskRecordBattle pattern (the vanilla example
+        // of swapping mid-teardown while keeping the link alive).
+        CpuFill32(0, (void *)VRAM, VRAM_SIZE);
+        ResetPaletteFade();
+        gBattle_BG0_X = 0; gBattle_BG0_Y = 0;
+        gBattle_BG1_X = 0; gBattle_BG1_Y = 0;
+        gBattle_BG2_X = 0; gBattle_BG2_Y = 0;
+        gBattle_BG3_X = 0; gBattle_BG3_Y = 0;
+        InitBattleBgsVideo();
+        LoadCompressedPalette(gBattleTextboxPalette, BG_PLTT_ID(0), 2 * PLTT_SIZE_4BPP);
+        LoadBattleMenuWindowGfx();
+        ResetSpriteData();
+        ResetTasks();
+        FreeAllSpritePalettes();
+        gReservedSpritePaletteCount = MAX_BATTLERS_COUNT;
+        SetVBlankCallback(VBlankCB_Battle);
+        ShowBg(0);
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0x10, 0, RGB_BLACK);
+        gBattleCommunication[MULTIUSE_STATE] = 21;
+        break;
+    case 21:
+        // Wait for fade-in to finish, then show the question.
+        if (!gPaletteFade.active)
+        {
+            BattlePutTextOnWindow(gText_AskMixRecords, B_WIN_MSG);
+            sLocalRendezvousAnswer = 0;
+            gBattleCommunication[MULTIUSE_STATE] = 22;
+        }
+        break;
+    case 22:
+        // Question text done printing — open the yes/no cursor.
+        if (!IsTextPrinterActive(B_WIN_MSG))
+        {
+            HandleBattleWindow(YESNOBOX_X_Y, 0);
+            BattlePutTextOnWindow(gText_BattleYesNoChoice, B_WIN_YESNO);
+            gBattleCommunication[CURSOR_POSITION] = 0; // Default to Yes.
+            BattleCreateYesNoCursorAt(0);
+            gBattleCommunication[MULTIUSE_STATE] = 23;
+        }
+        break;
+    case 23:
+        // Rendezvous handshake. Every client writes its current answer
+        // into gSendCmd each frame; the link driver ships it on the next
+        // VBlank, and every client reads everybody's answer via gRecvCmds.
+        // Symmetric — no master/non-master branches here, so all 4
+        // consoles converge on the same decision on the same frame.
+        gSendCmd[0] = LINKCMD_RENDEZVOUS_CHOICE;
+        gSendCmd[1] = sLocalRendezvousAnswer;
+
+        if (!gReceivedRemoteLinkPlayers)
+        {
+            // Link dropped mid-prompt — fall through to the vanilla
+            // early-exit. Safer than hanging.
+            HandleBattleWindow(YESNOBOX_X_Y, WINDOW_CLEAR);
+            gBattleCommunication[MULTIUSE_STATE] = 25;
+            break;
+        }
+
+        // Accept cursor input until this client commits an answer.
+        if (sLocalRendezvousAnswer == 0)
+        {
+            if (JOY_NEW(DPAD_UP))
+            {
+                if (gBattleCommunication[CURSOR_POSITION] != 0)
+                {
+                    PlaySE(SE_SELECT);
+                    BattleDestroyYesNoCursorAt(gBattleCommunication[CURSOR_POSITION]);
+                    gBattleCommunication[CURSOR_POSITION] = 0;
+                    BattleCreateYesNoCursorAt(0);
+                }
+            }
+            else if (JOY_NEW(DPAD_DOWN))
+            {
+                if (gBattleCommunication[CURSOR_POSITION] == 0)
+                {
+                    PlaySE(SE_SELECT);
+                    BattleDestroyYesNoCursorAt(gBattleCommunication[CURSOR_POSITION]);
+                    gBattleCommunication[CURSOR_POSITION] = 1;
+                    BattleCreateYesNoCursorAt(1);
+                }
+            }
+            else if (JOY_NEW(A_BUTTON))
+            {
+                PlaySE(SE_SELECT);
+                sLocalRendezvousAnswer = (gBattleCommunication[CURSOR_POSITION] == 0) ? 1 : 2;
+                HandleBattleWindow(YESNOBOX_X_Y, WINDOW_CLEAR);
+            }
+            else if (JOY_NEW(B_BUTTON))
+            {
+                PlaySE(SE_SELECT);
+                sLocalRendezvousAnswer = 2;
+                HandleBattleWindow(YESNOBOX_X_Y, WINDOW_CLEAR);
+            }
+        }
+
+        // Converge when every peer has sent a concrete 1 or 2. No
+        // timeout: if a peer takes 30 seconds to answer, everybody
+        // waits — same contract as manual record mixing at the Record
+        // Corner. Any single NO aborts for everyone.
+        {
+            bool32 allReady = TRUE;
+            bool32 anyNo = FALSE;
+            u32 p;
+            u32 count = GetLinkPlayerCount();
+
+            for (p = 0; p < count; p++)
+            {
+                if (gRecvCmds[p][0] != LINKCMD_RENDEZVOUS_CHOICE)
+                    allReady = FALSE;
+                else if (gRecvCmds[p][1] == 0)
+                    allReady = FALSE;
+                else if (gRecvCmds[p][1] == 2)
+                    anyNo = TRUE;
+            }
+
+            if (allReady)
+            {
+                // Stop broadcasting RENDEZVOUS_CHOICE so it can't leak
+                // into the next link-protocol phase.
+                gSendCmd[0] = 0;
+                gSendCmd[1] = 0;
+                gBattleCommunication[MULTIUSE_STATE] = anyNo ? 25 : 24;
+            }
+        }
+        break;
+    case 24:
+        // All peers agreed — fade to black before the CB2 swap.
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
+        gBattleCommunication[MULTIUSE_STATE] = 26;
+        break;
+    case 25:
+        // Declined or link died — fade to black before vanilla exit.
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
+        gBattleCommunication[MULTIUSE_STATE] = 27;
+        break;
+    case 26:
+        // Post-fade: swap to the mixing CB2. Deliberately set
+        // gSpecialVar_0x8005 = our link id so Task_RecordMixing_Main
+        // state 0's SetLocalLinkPlayerId(gSpecialVar_0x8005) sees our
+        // real seat, not whatever the battle last wrote to 0x8005
+        // (this was the seat-id-bleed bug from the previous attempt).
+        if (!gPaletteFade.active)
+        {
+            m4aMPlayAllStop();
+            FreeAllWindowBuffers();
+            FreeBattleSpritesData();
+            FreeMonSpritesGfx();
+            gSpecialVar_0x8005 = gLocalLinkPlayer.id;
+            gPostBattleMixActive = TRUE;
+            SetMainCallback2(CB2_PostBattleRecordMixing);
+        }
+        break;
+    case 27:
+        // Post-fade: vanilla early-exit (same as the original
+        // "nobody can record" branch in state 2).
+        if (!gPaletteFade.active)
+        {
             SetMainCallback2(gMain.savedCallback);
             FreeBattleResources();
             FreeBattleSpritesData();
@@ -2654,10 +2852,27 @@ static void AskRecordBattle(void)
             gMain.anyLinkBattlerHasFrontierPass = FALSE;
             if (!gPaletteFade.active)
             {
-                SetMainCallback2(gMain.savedCallback);
-                FreeBattleResources();
-                FreeBattleSpritesData();
-                FreeMonSpritesGfx();
+                // Veritas: when the link is still alive and this is a normal
+                // 2-4 player link battle (not Frontier/Tower), route into the
+                // post-battle record-mix rendezvous (state 20 of
+                // CB2_EndLinkBattle). Without this, players who carry the
+                // Frontier Pass enter AskRecordBattle and exit to overworld
+                // here, never seeing the record-mix prompt — that's the
+                // "question is never asked" bug.
+                if (gReceivedRemoteLinkPlayers
+                 && GetLinkPlayerCount() >= 2
+                 && !(gBattleTypeFlags & (BATTLE_TYPE_FRONTIER | BATTLE_TYPE_BATTLE_TOWER)))
+                {
+                    gBattleCommunication[MULTIUSE_STATE] = 20;
+                    SetMainCallback2(CB2_EndLinkBattle);
+                }
+                else
+                {
+                    SetMainCallback2(gMain.savedCallback);
+                    FreeBattleResources();
+                    FreeBattleSpritesData();
+                    FreeMonSpritesGfx();
+                }
             }
         }
         break;
@@ -2711,6 +2926,79 @@ static void AskRecordBattle(void)
             }
         }
         break;
+    }
+}
+
+// ----- Post-battle auto-record-mix support -----
+// The mixing task itself lives in src/record_mixing.c; this file owns the
+// CB2 swap (away from CB2_EndLinkBattle, into a clean mixing context) and
+// the swap back to EndLinkBattleInSteps state 8 after mixing finishes.
+
+static void CB2_PostBattleRecordMixing(void)
+{
+    // One-shot init. Mirrors CB2_InitAskRecordBattle's layout so the UI
+    // sits on battle-textbox bg/palette. Tasks/sprites were already
+    // freed in EndLinkBattleInSteps state 26 just before the CB2 swap;
+    // calling ResetTasks here also disposes of anything that might have
+    // leaked from the rendezvous phase.
+    CpuFill32(0, (void *)VRAM, VRAM_SIZE);
+    ResetPaletteFade();
+    gBattle_BG0_X = 0; gBattle_BG0_Y = 0;
+    gBattle_BG1_X = 0; gBattle_BG1_Y = 0;
+    gBattle_BG2_X = 0; gBattle_BG2_Y = 0;
+    gBattle_BG3_X = 0; gBattle_BG3_Y = 0;
+    InitBattleBgsVideo();
+    LoadCompressedPalette(gBattleTextboxPalette, BG_PLTT_ID(0), 2 * PLTT_SIZE_4BPP);
+    LoadBattleMenuWindowGfx();
+    ResetSpriteData();
+    ResetTasks();
+    FreeAllSpritePalettes();
+    gReservedSpritePaletteCount = MAX_BATTLERS_COUNT;
+    SetVBlankCallback(VBlankCB_Battle);
+    ShowBg(0);
+    BeginNormalPaletteFade(PALETTES_ALL, 0, 0x10, 0, RGB_BLACK);
+    SetMainCallback2(CB2_RunPostBattleRecordMixing);
+
+    // Kick off the mixing task. Must happen AFTER ResetTasks() so the
+    // mixing task survives; gPostBattleMixActive was set by the
+    // rendezvous state machine before this CB2 was installed.
+    StartRecordMixingPostBattle();
+}
+
+static void CB2_RunPostBattleRecordMixing(void)
+{
+    // Generic frame loop for the duration of the mix. Mirrors
+    // CB2_AskRecordBattle — nothing mix-specific here, the mixing task
+    // and its sub-tasks drive all the actual work.
+    RunTasks();
+    AnimateSprites();
+    BuildOamBuffer();
+    RunTextPrinters();
+    UpdatePaletteFade();
+}
+
+// Called from Task_RecordMixing_Main state 5 (record_mixing.c) when a
+// post-battle mix finishes. Fades to black, then Task_PostMixResumeBattleTeardown
+// hands control back to CB2_EndLinkBattle at state 8 so the vanilla
+// close-link / return-to-field flow runs untouched.
+void ExitPostBattleMix(void)
+{
+    BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
+    CreateTask(Task_PostMixResumeBattleTeardown, 0);
+}
+
+static void Task_PostMixResumeBattleTeardown(u8 taskId)
+{
+    if (!gPaletteFade.active)
+    {
+        gPostBattleMixActive = FALSE;
+        SetVBlankCallback(VBlankCB_Battle);
+        // Resume at state 8 (SetCloseLinkCallback on wired, noop on
+        // wireless) so vanilla teardown closes the link and returns to
+        // gMain.savedCallback = CB2_ReturnFromCableClubBattle.
+        gBattleCommunication[MULTIUSE_STATE] = 8;
+        SetMainCallback2(CB2_EndLinkBattle);
+        DestroyTask(taskId);
     }
 }
 
