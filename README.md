@@ -87,6 +87,13 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 * The Record Corner and Trade Center also got dedicated themes (GSC Pewter/Saffron city theme).
 * Lilycove, Mossdeep, Sootopolis, and Pacifidlog Pokémon Centers play the Crystal Comm Center theme to feel like proper hub locations for online play.
 
+#### Auto Record Mixing After Link Battles
+
+* After a normal 2P or 4P link battle ends, every player is asked **"Mix records with the linked players?"** on the post-battle screen. If **everyone** picks Yes, records mix immediately over the same link session — no walk to the Record Corner, no re-connecting.
+* The handshake is symmetric: every console broadcasts its Yes/No every frame until all peers have committed an answer, so players selecting a few seconds apart all converge correctly and all four consoles see the mixing screen. No timeout — if a peer is slow, the others wait, same as the Record Corner contract.
+* Any single **No** aborts the mix for everyone and the battle teardown proceeds normally.
+* Skipped automatically for Battle Frontier and Battle Tower link matches, and whenever anyone has the Frontier Pass (the vanilla "record this battle?" prompt takes priority in that case).
+
 ---
 
 ### Added Features
@@ -374,6 +381,13 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 * Displays which box the egg was sent to
 * If PC boxes are also full, the egg stays at the daycare
 
+#### Perfect IV Inheritance
+
+* Any stat where either daycare parent has a 31 IV is guaranteed to pass to the egg
+* Stacks with the vanilla 3-random-IV inheritance: the 31 IVs override whichever random stat was rolled for that slot
+* Leaves shiny mechanics (Masuda method, Shiny Charm rolls) untouched — only touches IV values
+* Makes breeding toward a fully-perfect Pokémon tractable instead of requiring a long grind
+
 #### Lottery Corner Improvement
 
 * Lowered the matching threshold from 2 digits to 1 digit, making the lottery more accessible
@@ -411,6 +425,12 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 #### Light Ball Enhancement
 
 * Light Ball now boosts Special Attack for Pikachu, Pichu, Minun, and Plusle (not just Pikachu)
+
+#### Umbreon Learns Thief
+
+* **Thief** added to Umbreon's learnset at **Lv 60**
+* Umbreon can also now learn Thief via TM
+* Gives the Dark-type eeveelution a reliable offensive option that matches its typing
 
 #### Default Options for New Games
 
@@ -480,6 +500,8 @@ Baby Pokémon have been reworked to be viable in battle with new abilities and c
 * **Blaze Kick Flinch Effect**: Blaze Kick now has independent burn and flinch chances (like Fire Fang), instead of only applying burn
 * **Contest Room RS Style Fix**: Contest lobby now correctly uses RS player sprites when Classic (Ruby/Sapphire) style is selected
 * **Link Battle Music Fix**: Link battle music selection was being ignored — both wired and wireless battles now correctly use the player's chosen music
+* **Battle Music Dialog Cleanup**: Selecting a song from a long list used to leave an empty rectangle on the prompt dialog box where the scrolling list had been drawn. The dialog box now dismisses cleanly when the list closes, so the next script step (battle mode prompt or transition to the Colosseum) opens fresh without any stale artifacts
+* **Air Lock / Cloud Nine Full Weather Suspend**: In vanilla Emerald, Air Lock and Cloud Nine only silently negate weather damage calculations — the rain/sun/sandstorm/hail visuals kept playing and the end-of-turn "Rain continues to fall" message still fired, making it look like the weather was still in effect. Now, whenever a Pokémon with Air Lock or Cloud Nine is on the field, the game announces **"The effects of the weather disappeared."** on switch-in, and the weather animation + end-of-turn message are suppressed until the last suppressor leaves. When the suppressor switches out or faints and the weather is still active, the appropriate "rain/sun/sandstorm/hail continues" message replays along with its animation. Works correctly in multi battles (any of the four active slots can hold the suppressor). The weather duration counter keeps ticking while suppressed, so a 5-turn Rain Dance still expires on schedule — matching Gen 5+ behavior
 * **Bike Dismount Weather Fix**: Dismounting the bike on weather-affected routes (e.g., Route 119 rain) now properly restores weather effects
 * **RS Style Link Battle Palette Fix**: Fixed player sprite palette mismatch during Poké Ball throw animation in link double battles when using Classic (RS) style
 * **Hall of Fame Text**: Hall of Fame screen now displays "EMERALD VERITAS" instead of the base project name
