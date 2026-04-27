@@ -34,6 +34,9 @@
 #include "international_string_util.h"
 #include "constants/battle_frontier.h"
 #include "dewford_trend.h"
+#include "constants/battle.h"
+#include "battle_main.h"
+#include "battle_message.h"
 
 // Number of bytes of the record transferred at a time
 #define BUFFER_CHUNK_SIZE 200
@@ -103,6 +106,14 @@ static EWRAM_DATA struct RecordMixingDaycareMail sRecordMixMail = {0};
 static EWRAM_DATA union PlayerRecord *sReceivedRecords = NULL;
 static EWRAM_DATA union PlayerRecord *sSentRecord = NULL;
 
+// TRUE while a post-battle auto-mix is running. Gates three points in
+// Task_RecordMixing_Main: skip the overworld-only CreateRecordMixingLights,
+// skip CreateTask_ReestablishCableClubLink (we're not returning to cable
+// club), and hand control back to battle teardown instead of the field
+// return callbacks. Set by StartRecordMixingPostBattle, cleared in
+// ExitPostBattleMix.
+EWRAM_DATA bool8 gPostBattleMixActive = FALSE;
+
 static void Task_RecordMixing_Main(u8);
 static void Task_MixingRecordsRecv(u8);
 static void Task_SendPacket(u8);
@@ -166,6 +177,19 @@ static const u8 sDaycareMailSwapIds_4Player[NUM_SWAP_COMBOS][4] =
 void RecordMixingPlayerSpotTriggered(void)
 {
     CreateTask_EnterCableClubSeat(Task_RecordMixing_Main);
+}
+
+// Entry point for post-battle auto-mix.
+// Caller (CB2_PostBattleRecordMixing in battle_main.c) is responsible for:
+//   - Setting gSpecialVar_0x8005 = gLocalLinkPlayer.id BEFORE calling this
+//     (so state 0's SetLocalLinkPlayerId lands on our real seat, not
+//     whatever the battle last wrote to 0x8005).
+//   - Setting gPostBattleMixActive = TRUE.
+//   - Having a clean bg0 / textbox palette / VBlank set up for the mixing
+//     window to draw into.
+void StartRecordMixingPostBattle(void)
+{
+    CreateTask(Task_RecordMixing_Main, 80);
 }
 
 // these variables were const in R/S, but had to become changeable because of saveblocks changing RAM position
@@ -285,9 +309,20 @@ static void ReceiveExchangePacket(u32 multiplayerId)
 
 static void PrintTextOnRecordMixing(const u8 *src)
 {
-    DrawDialogueFrame(0, FALSE);
-    AddTextPrinterParameterized(0, FONT_NORMAL, src, 0, 1, 0, NULL);
-    CopyWindowToVram(0, COPYWIN_FULL);
+    if (gPostBattleMixActive)
+    {
+        // Battle-native text path. DrawDialogueFrame uses overworld
+        // message-box gfx/palette that aren't loaded in the post-battle
+        // mixing CB2 (which uses gBattleTextboxPalette + battle menu
+        // window gfx), so we draw via BattlePutTextOnWindow instead.
+        BattlePutTextOnWindow(src, B_WIN_MSG);
+    }
+    else
+    {
+        DrawDialogueFrame(0, FALSE);
+        AddTextPrinterParameterized(0, FONT_NORMAL, src, 0, 1, 0, NULL);
+        CopyWindowToVram(0, COPYWIN_FULL);
+    }
 }
 
 #define tCounter data[0]
@@ -321,7 +356,8 @@ static void Task_RecordMixing_Main(u8 taskId)
         VarSet(VAR_TEMP_MIXED_RECORDS, 1);
         sReadyToReceive = FALSE;
         PrepareExchangePacket();
-        CreateRecordMixingLights();
+        if (!gPostBattleMixActive)
+            CreateRecordMixingLights();
         tState = 1;
         tLinkTaskId = CreateTask(Task_MixingRecordsRecv, 80);
         tSoundTaskId = CreateTask(Task_RecordMixing_SoundEffect, 81);
@@ -331,7 +367,8 @@ static void Task_RecordMixing_Main(u8 taskId)
         {
             tState = 2;
             FlagSet(FLAG_SYS_MIX_RECORD);
-            DestroyRecordMixingLights();
+            if (!gPostBattleMixActive)
+                DestroyRecordMixingLights();
             DestroyTask(tSoundTaskId);
         }
         break;
@@ -344,7 +381,7 @@ static void Task_RecordMixing_Main(u8 taskId)
         if (!gTasks[tLinkTaskId].isActive)
         {
             tState = 4;
-            if (gWirelessCommType == 0)
+            if (gWirelessCommType == 0 && !gPostBattleMixActive)
                 tLinkTaskId = CreateTask_ReestablishCableClubLink();
             else
                 tLinkTaskId = taskId; // Point to self so state 5 doesn't check a stale task slot
@@ -360,16 +397,27 @@ static void Task_RecordMixing_Main(u8 taskId)
     case 5: // Wait for the task created by CreateTask_ReestablishCableClubLink
         // For wireless, tLinkTaskId == taskId so this is always true (self is active),
         // skip the check entirely for wireless since there's no reestablish task.
-        if (gWirelessCommType != 0 || !gTasks[tLinkTaskId].isActive)
+        // For post-battle auto-mix, same deal (tLinkTaskId == self, no reestablish).
+        if (gWirelessCommType != 0 || gPostBattleMixActive || !gTasks[tLinkTaskId].isActive)
         {
             Free(sReceivedRecords);
             Free(sSentRecord);
-            SetLinkWaitingForScript();
-            if (gWirelessCommType != 0)
-                CreateTask(Task_ReturnToFieldRecordMixing, 10);
-            ClearDialogWindowAndFrame(0, TRUE);
-            DestroyTask(taskId);
-            ScriptContext_Enable();
+            if (gPostBattleMixActive)
+            {
+                // Hand control back to EndLinkBattleInSteps (state 8: close link).
+                // ExitPostBattleMix owns the fade-out and CB2/VBlank restore.
+                ExitPostBattleMix();
+                DestroyTask(taskId);
+            }
+            else
+            {
+                SetLinkWaitingForScript();
+                if (gWirelessCommType != 0)
+                    CreateTask(Task_ReturnToFieldRecordMixing, 10);
+                ClearDialogWindowAndFrame(0, TRUE);
+                DestroyTask(taskId);
+                ScriptContext_Enable();
+            }
         }
         break;
     }

@@ -10,4 +10,8 @@ struct PlayerHallRecords
 void RecordMixingPlayerSpotTriggered(void);
 void GetPlayerHallRecords(struct PlayerHallRecords *dst);
 
+// Post-battle auto-mix (after link battle, before link close).
+extern bool8 gPostBattleMixActive;
+void StartRecordMixingPostBattle(void);
+
 #endif //GUARD_RECORD_MIXING_H

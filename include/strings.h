@@ -175,6 +175,7 @@ extern const u8 gText_ABtnTitleScreen[];
 extern const u8 gText_ABtnRegistrationCounter[];
 extern const u8 gText_MixingRecords[];
 extern const u8 gText_RecordMixingComplete[];
+extern const u8 gText_AskMixRecords[];
 extern const u8 gText_EmptyString2[];
 extern const u8 gText_Confirm3[];
 extern const u8 gText_Cancel4[];
