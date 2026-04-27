@@ -1133,13 +1133,14 @@ CableClub_EventScript_DirectCornerSelectService::
 	checkitem ITEM_POWDER_JAR
 	goto_if_eq VAR_RESULT, FALSE, CableClub_EventScript_DirectCornerNoBerry
 	goto_if_set FLAG_VISITED_MAUVILLE_CITY, CableClub_EventScript_DirectCornerSelectAllServices
+	@ Berry Crush is now hosted from the Minigames submenu, not this top-level
+	@ wireless-services list. Cases renumbered accordingly.
 	multichoice 0, 0, MULTI_WIRELESS_NO_RECORD, FALSE
 	switch VAR_RESULT
 	case 0, CableClub_EventScript_WirelessTrade
 	case 1, CableClub_EventScript_WirelessBattleSelect
-	case 2, CableClub_EventScript_WirelessBerryCrush
-	case 3, CableClub_EventScript_WirelessMinigames
-	case 4, CableClub_EventScript_AbortLink
+	case 2, CableClub_EventScript_WirelessMinigames
+	case 3, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -1149,9 +1150,8 @@ CableClub_EventScript_DirectCornerSelectAllServices::
 	case 0, CableClub_EventScript_WirelessTrade
 	case 1, CableClub_EventScript_WirelessBattleSelect
 	case 2, CableClub_EventScript_WirelessRecordMix
-	case 3, CableClub_EventScript_WirelessBerryCrush
-	case 4, CableClub_EventScript_WirelessMinigames
-	case 5, CableClub_EventScript_AbortLink
+	case 3, CableClub_EventScript_WirelessMinigames
+	case 4, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -1286,8 +1286,27 @@ CableClub_EventScript_WirelessMinigames::
 	switch VAR_RESULT
 	case 0, CableClub_EventScript_WirelessPokemonJump
 	case 1, CableClub_EventScript_WirelessDodrioBerryPicking
-	case 2, CableClub_EventScript_DirectCornerSelectService
+	case 2, CableClub_EventScript_MinigameBerryCrush
+	case 3, CableClub_EventScript_DirectCornerSelectService
 	case MULTI_B_PRESSED, CableClub_EventScript_DirectCornerSelectService
+	end
+
+@ Berry Crush launcher invoked from the Minigames submenu. Mirrors
+@ CableClub_EventScript_WirelessBerryCrush but, on a "no berry" outcome,
+@ aborts cleanly instead of dropping the player back into the wireless
+@ services list (which is the wrong context here).
+CableClub_EventScript_MinigameBerryCrush::
+	msgbox CableClub_Text_UseBerryCrush, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, CableClub_EventScript_AbortLink
+	special HasAtLeastOneBerry
+	goto_if_eq VAR_RESULT, FALSE, CableClub_EventScript_MinigameBerryCrushNoBerry
+	setvar VAR_0x8004, LINK_GROUP_BERRY_CRUSH
+	goto CableClub_EventScript_SaveAndChooseLinkLeader
+	end
+
+CableClub_EventScript_MinigameBerryCrushNoBerry::
+	msgbox CableClub_Text_NeedBerryForBerryCrush, MSGBOX_DEFAULT
+	releaseall
 	end
 
 CableClub_EventScript_WirelessPokemonJump::
@@ -1510,7 +1529,8 @@ MossdeepCity_GameCorner_1F_EventScript_InfoMan2::
 	switch VAR_RESULT
 	case 0, MossdeepCity_GameCorner_1F_EventScript_PokemonJumpInfo
 	case 1, MossdeepCity_GameCorner_1F_EventScript_DodrioBerryPickingInfo
-	case 2, MossdeepCity_GameCorner_1F_EventScript_MinigameInfoExit
+	case 2, MossdeepCity_GameCorner_1F_EventScript_BerryCrushInfo
+	case 3, MossdeepCity_GameCorner_1F_EventScript_MinigameInfoExit
 	case MULTI_B_PRESSED, MossdeepCity_GameCorner_1F_EventScript_MinigameInfoExit
 	end
 
@@ -1521,6 +1541,11 @@ MossdeepCity_GameCorner_1F_EventScript_PokemonJumpInfo::
 
 MossdeepCity_GameCorner_1F_EventScript_DodrioBerryPickingInfo::
 	msgbox MossdeepCity_GameCorner_1F_Text_DodrioBerryPickingInfo, MSGBOX_DEFAULT
+	release
+	end
+
+MossdeepCity_GameCorner_1F_EventScript_BerryCrushInfo::
+	msgbox CableClub_Text_UseBerryCrush, MSGBOX_DEFAULT
 	release
 	end
 
@@ -1543,7 +1568,8 @@ MossdeepCity_GameCorner_1F_EventScript_OldMan2::
 	switch VAR_RESULT
 	case 0, MossdeepCity_GameCorner_1F_EventScript_PlayPokemonJump
 	case 1, MossdeepCity_GameCorner_1F_EventScript_PlayDodrioBerryPicking
-	case 2, MossdeepCity_GameCorner_1F_EventScript_AbortMinigame
+	case 2, MossdeepCity_GameCorner_1F_EventScript_PlayBerryCrush
+	case 3, MossdeepCity_GameCorner_1F_EventScript_AbortMinigame
 	case MULTI_B_PRESSED, MossdeepCity_GameCorner_1F_EventScript_AbortMinigame
 	end
 
@@ -1570,6 +1596,22 @@ MossdeepCity_GameCorner_1F_EventScript_PlayDodrioBerryPicking::
 	goto_if_eq VAR_RESULT, 0, MossdeepCity_GameCorner_1F_EventScript_AbortMinigame
 	setvar VAR_0x8004, LINK_GROUP_BERRY_PICKING
 	goto MossdeepCity_GameCorner_1F_EventScript_ChooseLinkLeader
+	end
+
+MossdeepCity_GameCorner_1F_EventScript_PlayBerryCrush::
+	msgbox CableClub_Text_UseBerryCrush, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, MossdeepCity_GameCorner_1F_EventScript_AbortMinigame
+	special HasAtLeastOneBerry
+	goto_if_eq VAR_RESULT, FALSE, MossdeepCity_GameCorner_1F_EventScript_BerryCrushNoBerry
+	call Common_EventScript_SaveGame
+	goto_if_eq VAR_RESULT, 0, MossdeepCity_GameCorner_1F_EventScript_AbortMinigame
+	setvar VAR_0x8004, LINK_GROUP_BERRY_CRUSH
+	goto MossdeepCity_GameCorner_1F_EventScript_ChooseLinkLeader
+	end
+
+MossdeepCity_GameCorner_1F_EventScript_BerryCrushNoBerry::
+	msgbox CableClub_Text_NeedBerryForBerryCrush, MSGBOX_DEFAULT
+	goto MossdeepCity_GameCorner_1F_EventScript_AbortMinigame
 	end
 
 MossdeepCity_GameCorner_1F_EventScript_ChooseLinkLeader::

@@ -201,6 +201,10 @@ CableClub_Text_CanMixRecords::
 	.string "The records of two to four players\n"
 	.string "can be mixed together.$"
 
+CableClub_Text_PlayMinigames::
+	.string "Play wireless minigames\n"
+	.string "with up to five TRAINERS.$"
+
 @ Unused
 CableClub_Text_GuideToVariousServices:
 	.string "A guide to the WIRELESS CLUB's\n"

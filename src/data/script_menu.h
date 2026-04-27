@@ -497,8 +497,7 @@ static const struct MenuAction MultichoiceList_LinkServicesNoRecord[] =
 {
     {gText_TradeCenter},
     {gText_Colosseum},
-    {gText_BerryCrush3},
-    {gText_Minigames},
+    {gText_Minigames}, // Berry Crush moved into the Minigames submenu (cable_club.inc)
     {gText_Exit},
 };
 
@@ -507,8 +506,7 @@ static const struct MenuAction MultichoiceList_LinkServicesAll[] =
     {gText_TradeCenter},
     {gText_Colosseum},
     {gText_RecordCorner},
-    {gText_BerryCrush3},
-    {gText_Minigames},
+    {gText_Minigames}, // Berry Crush moved into the Minigames submenu (cable_club.inc)
     {gText_Exit},
 };
 
@@ -539,6 +537,7 @@ static const struct MenuAction MultichoiceList_WirelessMinigame[] =
 {
     {gText_PokemonJump},
     {gText_DodrioBerryPicking},
+    {gText_BerryCrush},
     {gText_Exit},
 };
 
@@ -1047,13 +1046,14 @@ static const u8 *const sWirelessOptionsNoBerryCrush[] =
     CableClub_Text_YouMayTradeHere,
     CableClub_Text_YouMayBattleHere,
     CableClub_Text_CanMixRecords,
+    CableClub_Text_PlayMinigames,
     CableClub_Text_CancelSelectedItem,
 };
 static const u8 *const sWirelessOptions_NoRecordMix[] =
 {
     CableClub_Text_YouMayTradeHere,
     CableClub_Text_YouMayBattleHere,
-    CableClub_Text_CanMakeBerryPowder,
+    CableClub_Text_PlayMinigames,
     CableClub_Text_CancelSelectedItem,
 };
 static const u8 *const sWirelessOptions_AllServices[] =
@@ -1061,7 +1061,7 @@ static const u8 *const sWirelessOptions_AllServices[] =
     CableClub_Text_YouMayTradeHere,
     CableClub_Text_YouMayBattleHere,
     CableClub_Text_CanMixRecords,
-    CableClub_Text_CanMakeBerryPowder,
+    CableClub_Text_PlayMinigames,
     CableClub_Text_CancelSelectedItem,
 };
 static const u8 *const sCableClubOptions_NoRecordMix[] =
@@ -1074,5 +1074,6 @@ static const u8 *const sWirelessOptions_NoRecordMixBerryCrush[] =
 {
     CableClub_Text_YouMayTradeHere,
     CableClub_Text_YouMayBattleHere,
+    CableClub_Text_PlayMinigames,
     CableClub_Text_CancelSelectedItem,
 };
