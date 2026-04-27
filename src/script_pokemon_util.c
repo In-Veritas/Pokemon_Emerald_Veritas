@@ -158,14 +158,19 @@ u8 GiveMinigameShinyEggEx(u16 species, bool8 perfectIvs)
     return GiveMonToPlayer(&mon);
 }
 
-// Pick a random species in [1, NUM_SPECIES) for the Pokemon Jump 20k+ legendary
-// reward. Legendaries are intentionally allowed.
+// Pick a random species in [1, NUM_SPECIES) for the Pokemon Jump Mystery Egg
+// reward. The picked species is then walked back to its first-stage form via
+// GetEggSpecies so the egg always hatches into an unevolved Pokémon — never an
+// already-evolved one. Legendaries are still permitted (they are their own
+// first stage). Species with longer evolution chains are slightly more likely
+// to surface (any of their evolution stages, when picked, maps back to the
+// same base) — that's intentional flavor: common Pokémon are more common.
 u16 PickRandomMinigameEggSpecies(void)
 {
     u16 species = 1 + (Random() % (NUM_SPECIES - 1));
     if (species == SPECIES_NONE || species >= SPECIES_EGG)
         species = SPECIES_DODUO;
-    return species;
+    return GetEggSpecies(species);
 }
 
 void HasEnoughMonsForDoubleBattle(void)
