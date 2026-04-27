@@ -125,16 +125,16 @@ Each game produces N independent rolls from a unified pool that grows with score
 |  3 000+ | Big Pearl, Fire/Water/Thunder/Leaf/Moon/Sun Stone, Star Piece, Retro Mail |
 |  5 000+ | HP Up, Protein, Iron, Carbos, Calcium, Zinc, Rare Candy, Dream Mail |
 |  8 000+ | Lucky Egg, Leftovers, Focus Band, Rare Candy, PP Up, Sacred Ash, **Master Ball** (×1), Bead Mail |
-| 10 000+ | Choice Band, Soul Dew, **Master Ball** (×2 total), **Mystery Egg** (a guaranteed-shiny random-species egg, can be legendary) |
+| 10 000+ | Choice Band, Soul Dew, **Master Ball** (×2 total) |
 | 12 000+ | **Master Ball** (×3 total), Scope Lens, King's Rock, Up-Grade, PP Max, Metal Coat |
-| 16 000+ | **Master Ball** (×4 total), Mystic Water, Never-Melt Ice, Starf, Enigma, Lansat Berry, Fab Mail, Amulet Coin |
+| 16 000+ | **Master Ball** (×4 total), Mystic Water, Never-Melt Ice, Starf, Enigma, Lansat Berry, Fab Mail, Amulet Coin, **Mystery Egg** (a guaranteed-shiny random-species egg, can be legendary) |
 | 20 000+ | **Master Ball** (×5 total) |
 
 **Master Ball cap.** When a roll lands on `ITEM_MASTER_BALL` and a Master Ball was already awarded this game, the entry is replaced by a random Common-tier item. The display list and bag award stay in sync.
 
 **Shiny Charm bonus.** At 20 000+, the player additionally receives **one Shiny Charm**, prepended to the prize list. This is one-shot per save — gated by `FLAG_RECEIVED_JUMP_SHINY_CHARM` (slot `0x054`, formerly `FLAG_UNUSED_0x054`) so the player can't farm it by tossing the existing charm and replaying. The Dodrio Berry Picking minigame has its own independent one-shot via `FLAG_RECEIVED_DODRIO_SHINY_CHARM` (slot `0x4E0`), so a player can earn **two** minigame-sourced Shiny Charms total — one from each game.
 
-**Mystery Egg.** A new placeholder item `ITEM_MYSTERY_EGG` (slot `0x034`, formerly `ITEM_034`) enters the prize pool at the **10 000+** Elite tier and never enters the bag. When rolled, the player receives a guaranteed-shiny egg of a random species (helper `GiveMinigameShinyEgg` in `src/script_pokemon_util.c`) added to the party — or sent to the PC if the party is full. The "Mystery Egg" name still appears on the prize list.
+**Mystery Egg.** A new placeholder item `ITEM_MYSTERY_EGG` (slot `0x034`, formerly `ITEM_034`) enters the prize pool at the **16 000+** Mythical tier and never enters the bag. When rolled, the player receives a guaranteed-shiny egg of a random species (helper `GiveMinigameShinyEgg` in `src/script_pokemon_util.c`) added to the party — or sent to the PC if the party is full. The "Mystery Egg" name still appears on the prize list.
 
 ### 1.8 Scrollable, session-cumulative rewards window
 

@@ -2445,12 +2445,11 @@ static const u16 sPrizeItems_VeryRare[] = {
     ITEM_BEAD_MAIL,
 };
 
-// Tier 4: 10000+ — Choice Band, Soul Dew, +1 Master Ball, Mystery Egg
+// Tier 4: 10000+ — Choice Band, Soul Dew, +1 Master Ball
 static const u16 sPrizeItems_Elite[] = {
     ITEM_CHOICE_BAND,
     ITEM_SOUL_DEW,
     ITEM_MASTER_BALL,
-    ITEM_MYSTERY_EGG,
 };
 
 // Tier 5: 12000+ — +1 Master Ball, late-game held items
@@ -2463,7 +2462,7 @@ static const u16 sPrizeItems_Master[] = {
     ITEM_METAL_COAT,
 };
 
-// Tier 6: 16000+ — +1 Master Ball, type-boosting elemental items, top-tier berries, Fab Mail, Amulet Coin
+// Tier 6: 16000+ — +1 Master Ball, type-boosting elemental items, top-tier berries, Fab Mail, Amulet Coin, Mystery Egg
 static const u16 sPrizeItems_Mythical[] = {
     ITEM_MASTER_BALL,
     ITEM_MYSTIC_WATER,
@@ -2473,6 +2472,7 @@ static const u16 sPrizeItems_Mythical[] = {
     ITEM_LANSAT_BERRY,
     ITEM_FAB_MAIL,
     ITEM_AMULET_COIN,
+    ITEM_MYSTERY_EGG,
 };
 
 // Tier 7: 20000+ — +1 Master Ball
