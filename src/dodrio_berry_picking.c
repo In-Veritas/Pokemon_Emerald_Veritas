@@ -3132,8 +3132,14 @@ static u8 TryGivePrize(void)
             {
                 // Defensive — RollPrizeItem already gates on the flag, but if
                 // anything else introduces a duplicate Mystery Egg roll, fall
-                // back to a Master Ball so the player isn't shorted.
-                itemId = ITEM_MASTER_BALL;
+                // back to a meaningful prize. Respect the master-ball cap:
+                // if a Master Ball was already given this round, downgrade
+                // the fallback to an Ultra Rare so we don't silently bypass
+                // the cap by routing through the egg slot.
+                if (gaveMasterBallThisGame)
+                    itemId = sPrizeTier_UltraRare[Random() % ARRAY_COUNT(sPrizeTier_UltraRare)];
+                else
+                    itemId = ITEM_MASTER_BALL;
             }
             else
             {
@@ -5178,7 +5184,6 @@ static void ShowResults(void)
         // through the cumulative session view from the top.
         if (prizeState == PRIZE_RECEIVED || prizeState == PRIZE_FILLED_BAG)
             AppendSessionPrizes();
-        sPrizePageStartIdx = 0;
         if (sSessionPrizeCount > 0 && (prizeState == PRIZE_RECEIVED || prizeState == PRIZE_FILLED_BAG))
         {
             sPrizePageStartIdx = BuildDodrioPrizePage(0);
@@ -5190,6 +5195,16 @@ static void ShowResults(void)
         else if (prizeState == PRIZE_NO_ROOM)
         {
             AddTextPrinterParameterized(sGfx->windowIds[1], FONT_NORMAL, gText_CantHoldAnyMore, 0, 1, TEXT_SKIP_DRAW, NULL);
+            // Pin the page index past the end of the session list so the A-press
+            // handler in state 11 doesn't accidentally start paging through
+            // prior rounds' rewards on top of the "Can't hold any more" message.
+            sPrizePageStartIdx = sSessionPrizeCount;
+        }
+        else
+        {
+            // No prize at all (score below threshold path is gated earlier in
+            // state 8 and skips to 127, but be safe). Same pin as above.
+            sPrizePageStartIdx = sSessionPrizeCount;
         }
         CopyWindowToVram(sGfx->windowIds[0], COPYWIN_GFX);
         CopyWindowToVram(sGfx->windowIds[1], COPYWIN_GFX);
