@@ -3249,6 +3249,7 @@ static const u16 sUmbreonLevelUpLearnset[] = {
     LEVEL_UP_MOVE(42, MOVE_MEAN_LOOK),
     LEVEL_UP_MOVE(47, MOVE_SCREECH),
     LEVEL_UP_MOVE(52, MOVE_MOONLIGHT),
+    LEVEL_UP_MOVE(60, MOVE_THIEF),
     LEVEL_UP_END
 };
 

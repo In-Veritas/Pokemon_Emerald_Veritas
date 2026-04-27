@@ -5148,6 +5148,7 @@ const union {
         .RAIN_DANCE = TRUE,
         .FRUSTRATION = TRUE,
         .IRON_TAIL = TRUE,
+        .THIEF = TRUE,
         .RETURN = TRUE,
         .DIG = TRUE,
         .PSYCHIC = TRUE,
