@@ -2445,11 +2445,12 @@ static const u16 sPrizeItems_VeryRare[] = {
     ITEM_BEAD_MAIL,
 };
 
-// Tier 4: 10000+ — Choice Band, Soul Dew, +1 Master Ball
+// Tier 4: 10000+ — Choice Band, Soul Dew, +1 Master Ball, Mystery Egg
 static const u16 sPrizeItems_Elite[] = {
     ITEM_CHOICE_BAND,
     ITEM_SOUL_DEW,
     ITEM_MASTER_BALL,
+    ITEM_MYSTERY_EGG,
 };
 
 // Tier 5: 12000+ — +1 Master Ball, late-game held items
@@ -2474,10 +2475,9 @@ static const u16 sPrizeItems_Mythical[] = {
     ITEM_AMULET_COIN,
 };
 
-// Tier 7: 20000+ — +1 Master Ball, Mystery Egg (random-shiny Pokemon, can be legendary)
+// Tier 7: 20000+ — +1 Master Ball
 static const u16 sPrizeItems_Legendary[] = {
     ITEM_MASTER_BALL,
-    ITEM_MYSTERY_EGG,
 };
 
 struct {
