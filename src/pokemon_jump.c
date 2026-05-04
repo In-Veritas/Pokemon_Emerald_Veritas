@@ -382,6 +382,7 @@ static void UpdateVineSwing(int);
 static void StartPokeJumpGfx(struct PokemonJumpGfx *);
 static void InitPokeJumpGfx(struct PokemonJumpGfx *);
 static void FreeWindowsAndDigitObj(void);
+static void FreeShinyJumpSparkleAssets(void);
 static void SetUpPokeJumpGfxFuncById(int);
 static bool32 IsPokeJumpGfxFuncFinished(void);
 static void SetUpResetVineGfx(void);
@@ -580,6 +581,7 @@ void StartPokemonJump(u16 partyId, MainCallback exitCallback)
 
 static void FreePokemonJump(void)
 {
+    FreeShinyJumpSparkleAssets();
     FreeWindowsAndDigitObj();
     Free(sPokemonJump);
 }
@@ -1501,6 +1503,222 @@ static bool32 DoVineHitEffect(void)
     return TRUE;
 }
 
+// Tier 0: 1000+ — base pool
+static const u16 sPrizeItems_Common[] = {
+    ITEM_POMEG_BERRY,
+    ITEM_KELPSY_BERRY,
+    ITEM_QUALOT_BERRY,
+    ITEM_HONDEW_BERRY,
+    ITEM_GREPA_BERRY,
+    ITEM_TAMATO_BERRY,
+    ITEM_NUGGET,
+    ITEM_MOOMOO_MILK,
+    ITEM_BERRY_JUICE,
+    ITEM_LAVA_COOKIE,
+};
+
+// Tier 1: 3000+ — added on top of Common
+static const u16 sPrizeItems_Uncommon[] = {
+    ITEM_BIG_PEARL,
+    ITEM_FIRE_STONE,
+    ITEM_WATER_STONE,
+    ITEM_THUNDER_STONE,
+    ITEM_LEAF_STONE,
+    ITEM_MOON_STONE,
+    ITEM_SUN_STONE,
+    ITEM_STAR_PIECE,
+    ITEM_RETRO_MAIL,
+};
+
+// Tier 2: 5000+ — supplements + rare candy + dream mail
+static const u16 sPrizeItems_Rare[] = {
+    ITEM_HP_UP,
+    ITEM_PROTEIN,
+    ITEM_IRON,
+    ITEM_CARBOS,
+    ITEM_CALCIUM,
+    ITEM_ZINC,
+    ITEM_RARE_CANDY,
+    ITEM_DREAM_MAIL,
+};
+
+// Tier 3: 8000+ — first Master Ball entry
+static const u16 sPrizeItems_VeryRare[] = {
+    ITEM_LUCKY_EGG,
+    ITEM_LEFTOVERS,
+    ITEM_FOCUS_BAND,
+    ITEM_RARE_CANDY,
+    ITEM_PP_UP,
+    ITEM_SACRED_ASH,
+    ITEM_MASTER_BALL,
+    ITEM_BEAD_MAIL,
+};
+
+// Tier 4: 10000+ — Choice Band, Soul Dew, +1 Master Ball
+static const u16 sPrizeItems_Elite[] = {
+    ITEM_CHOICE_BAND,
+    ITEM_SOUL_DEW,
+    ITEM_MASTER_BALL,
+};
+
+// Tier 5: 12000+ — +1 Master Ball, late-game held items
+static const u16 sPrizeItems_Master[] = {
+    ITEM_MASTER_BALL,
+    ITEM_SCOPE_LENS,
+    ITEM_KINGS_ROCK,
+    ITEM_UP_GRADE,
+    ITEM_PP_MAX,
+    ITEM_METAL_COAT,
+};
+
+// Tier 6: 16000+ — +1 Master Ball, type-boosting elemental items, top-tier berries, Fab Mail, Amulet Coin, Mystery Egg
+static const u16 sPrizeItems_Mythical[] = {
+    ITEM_MASTER_BALL,
+    ITEM_MYSTIC_WATER,
+    ITEM_NEVER_MELT_ICE,
+    ITEM_STARF_BERRY,
+    ITEM_ENIGMA_BERRY,
+    ITEM_LANSAT_BERRY,
+    ITEM_FAB_MAIL,
+    ITEM_AMULET_COIN,
+    ITEM_MYSTERY_EGG,
+};
+
+// Tier 7: 20000+ — +1 Master Ball
+static const u16 sPrizeItems_Legendary[] = {
+    ITEM_MASTER_BALL,
+};
+
+struct {
+    u32 score;
+    u32 quantity;
+} static const sPrizeQuantityData[] =
+{
+    { .score =  1000, .quantity =  1},
+    { .score =  3000, .quantity =  2},
+    { .score =  5000, .quantity =  3},
+    { .score =  8000, .quantity =  5},
+    { .score = 10000, .quantity =  8},
+    { .score = 12000, .quantity = 10},
+    { .score = 16000, .quantity = 15},
+    { .score = 20000, .quantity = 20},
+};
+
+#define PRIZE_QUANTITY_MAX 63   // 6-bit field; covers up to score 20000 + 43000 = 63000 in growth
+
+static bool32 HasEnoughScoreForPrize(void)
+{
+    if (sPokemonJump->comm.jumpScore >= sPrizeQuantityData[0].score)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+// Multi-roll prize generation. The leader picks a random 16-bit seed and
+// broadcasts it via comm.data; every player runs the same LCG below but mixes
+// in their own multiplayerId so each player gets a DIFFERENT prize list while
+// still sharing the same seed for synchronization. Each player still awards
+// items into their own bag and gates the per-save Shiny Charm by
+// FLAG_RECEIVED_JUMP_SHINY_CHARM.
+
+static u16 PrizeLcgNext(void)
+{
+    sPokemonJump->prizeLcgState = sPokemonJump->prizeLcgState * 1103u + 12345u;
+    return sPokemonJump->prizeLcgState;
+}
+
+// Builds the unified item pool for the player's score and writes one roll's
+// item id. The pool grows progressively per the score-tier spec; Master Ball
+// is stacked across high tiers to bias rolls towards it at the top.
+static u16 RollOnePrizeFromPool(u32 score)
+{
+    u16 pool[96];
+    u16 poolSize = 0;
+    u32 i;
+
+    for (i = 0; i < ARRAY_COUNT(sPrizeItems_Common); i++)
+        pool[poolSize++] = sPrizeItems_Common[i];
+    if (score >= 3000)
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Uncommon); i++)
+            pool[poolSize++] = sPrizeItems_Uncommon[i];
+    if (score >= 5000)
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Rare); i++)
+            pool[poolSize++] = sPrizeItems_Rare[i];
+    if (score >= 8000)
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_VeryRare); i++)
+            pool[poolSize++] = sPrizeItems_VeryRare[i];
+    if (score >= 10000)
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Elite); i++)
+            pool[poolSize++] = sPrizeItems_Elite[i];
+    if (score >= 12000)
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Master); i++)
+            pool[poolSize++] = sPrizeItems_Master[i];
+    if (score >= 16000)
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Mythical); i++)
+            pool[poolSize++] = sPrizeItems_Mythical[i];
+    if (score >= 20000)
+        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Legendary); i++)
+            pool[poolSize++] = sPrizeItems_Legendary[i];
+
+    return pool[PrizeLcgNext() % poolSize];
+}
+
+static u32 GetPrizeQuantityForScore(u32 score)
+{
+    u32 quantity = 0;
+    u32 i;
+    for (i = 0; i < ARRAY_COUNT(sPrizeQuantityData); i++)
+    {
+        if (score >= sPrizeQuantityData[i].score)
+            quantity = sPrizeQuantityData[i].quantity;
+        else
+            break;
+    }
+    if (score > 20000)
+        quantity += (score - 20000) / 1000;
+    if (quantity > ARRAY_COUNT(sPokemonJump->prizeRolled))
+        quantity = ARRAY_COUNT(sPokemonJump->prizeRolled);
+    return quantity;
+}
+
+// Leader-only: produce a non-zero seed and stash it in comm.data so members
+// receive it and roll the same list. Returns the seed.
+static u16 GetPrizeData(void)
+{
+    u16 seed = Random() & 0xFFFF;
+    if (seed == 0)
+        seed = 1;
+    return seed;
+}
+
+// Fills sPokemonJump->prizeRolled[] with rolls driven by the shared seed in
+// comm.data XOR'd with the player's multiplayerId so every player gets a
+// DIFFERENT prize list. Master Ball cap and Shiny Charm exclusion happen
+// during the give phase, not here.
+static void GeneratePrizeList(void)
+{
+    u32 score = sPokemonJump->comm.jumpScore;
+    u32 quantity = GetPrizeQuantityForScore(score);
+    u32 i;
+
+    // Multiply the player id by a large odd constant before mixing so adjacent
+    // ids produce uncorrelated streams (LCGs are sensitive to small seed deltas).
+    sPokemonJump->prizeLcgState = sPokemonJump->comm.data ^ ((u16)(sPokemonJump->multiplayerId * 0x9E37u));
+    if (sPokemonJump->prizeLcgState == 0)
+        sPokemonJump->prizeLcgState = 1;
+
+    sPokemonJump->prizeRolledCount = 0;
+    for (i = 0; i < quantity; i++)
+        sPokemonJump->prizeRolled[sPokemonJump->prizeRolledCount++] = RollOnePrizeFromPool(score);
+}
+
+static void UnpackPrizeData(u16 data, u16 *itemId, u16 *quantity)
+{
+    *itemId = 0;
+    *quantity = 0;
+    (void)data;
+}
+
 // Multi-roll prize state machine.
 // State 0:  generate the deterministic roll list, award all items silently
 //           (Mystery Egg -> shiny egg to party/PC; Master Ball cap; Shiny
@@ -2381,7 +2599,7 @@ static void ClearUnreadField(void)
 
 // Bonuses given depend on the number of
 // players that jumped at the same time
-static const int sScoreBonuses[MAX_RFU_PLAYERS + 1] = {0, 0, 100, 200, 400, 1000};
+static const int sScoreBonuses[MAX_RFU_PLAYERS + 1] = {0, 0, 50, 100, 200, 500};
 
 static int GetScoreBonus(int numPlayers)
 {
@@ -2394,217 +2612,9 @@ static void TryUpdateExcellentsRecord(u16 excellentsInRow)
         sPokemonJump->excellentsInRowRecord = excellentsInRow;
 }
 
-// Tier 0: 1000+ — base pool
-static const u16 sPrizeItems_Common[] = {
-    ITEM_POMEG_BERRY,
-    ITEM_KELPSY_BERRY,
-    ITEM_QUALOT_BERRY,
-    ITEM_HONDEW_BERRY,
-    ITEM_GREPA_BERRY,
-    ITEM_TAMATO_BERRY,
-    ITEM_NUGGET,
-    ITEM_MOOMOO_MILK,
-    ITEM_BERRY_JUICE,
-    ITEM_LAVA_COOKIE,
-};
-
-// Tier 1: 3000+ — added on top of Common
-static const u16 sPrizeItems_Uncommon[] = {
-    ITEM_BIG_PEARL,
-    ITEM_FIRE_STONE,
-    ITEM_WATER_STONE,
-    ITEM_THUNDER_STONE,
-    ITEM_LEAF_STONE,
-    ITEM_MOON_STONE,
-    ITEM_SUN_STONE,
-    ITEM_STAR_PIECE,
-    ITEM_RETRO_MAIL,
-};
-
-// Tier 2: 5000+ — supplements + rare candy + dream mail
-static const u16 sPrizeItems_Rare[] = {
-    ITEM_HP_UP,
-    ITEM_PROTEIN,
-    ITEM_IRON,
-    ITEM_CARBOS,
-    ITEM_CALCIUM,
-    ITEM_ZINC,
-    ITEM_RARE_CANDY,
-    ITEM_DREAM_MAIL,
-};
-
-// Tier 3: 8000+ — first Master Ball entry
-static const u16 sPrizeItems_VeryRare[] = {
-    ITEM_LUCKY_EGG,
-    ITEM_LEFTOVERS,
-    ITEM_FOCUS_BAND,
-    ITEM_RARE_CANDY,
-    ITEM_PP_UP,
-    ITEM_SACRED_ASH,
-    ITEM_MASTER_BALL,
-    ITEM_BEAD_MAIL,
-};
-
-// Tier 4: 10000+ — Choice Band, Soul Dew, +1 Master Ball
-static const u16 sPrizeItems_Elite[] = {
-    ITEM_CHOICE_BAND,
-    ITEM_SOUL_DEW,
-    ITEM_MASTER_BALL,
-};
-
-// Tier 5: 12000+ — +1 Master Ball, late-game held items
-static const u16 sPrizeItems_Master[] = {
-    ITEM_MASTER_BALL,
-    ITEM_SCOPE_LENS,
-    ITEM_KINGS_ROCK,
-    ITEM_UP_GRADE,
-    ITEM_PP_MAX,
-    ITEM_METAL_COAT,
-};
-
-// Tier 6: 16000+ — +1 Master Ball, type-boosting elemental items, top-tier berries, Fab Mail, Amulet Coin, Mystery Egg
-static const u16 sPrizeItems_Mythical[] = {
-    ITEM_MASTER_BALL,
-    ITEM_MYSTIC_WATER,
-    ITEM_NEVER_MELT_ICE,
-    ITEM_STARF_BERRY,
-    ITEM_ENIGMA_BERRY,
-    ITEM_LANSAT_BERRY,
-    ITEM_FAB_MAIL,
-    ITEM_AMULET_COIN,
-    ITEM_MYSTERY_EGG,
-};
-
-// Tier 7: 20000+ — +1 Master Ball
-static const u16 sPrizeItems_Legendary[] = {
-    ITEM_MASTER_BALL,
-};
-
-struct {
-    u32 score;
-    u32 quantity;
-} static const sPrizeQuantityData[] =
-{
-    { .score =  1000, .quantity =  1},
-    { .score =  3000, .quantity =  2},
-    { .score =  5000, .quantity =  3},
-    { .score =  8000, .quantity =  5},
-    { .score = 10000, .quantity =  8},
-    { .score = 12000, .quantity = 10},
-    { .score = 16000, .quantity = 15},
-    { .score = 20000, .quantity = 20},
-};
-
-#define PRIZE_QUANTITY_MAX 63   // 6-bit field; covers up to score 20000 + 43000 = 63000 in growth
-
-static bool32 HasEnoughScoreForPrize(void)
-{
-    if (sPokemonJump->comm.jumpScore >= sPrizeQuantityData[0].score)
-        return TRUE;
-    else
-        return FALSE;
-}
-
-// Multi-roll prize generation. The leader picks a random 16-bit seed and
-// broadcasts it via comm.data; every player runs the same LCG below and so
-// generates the same prize list. Each player still awards items into their
-// own bag and gates the per-save Shiny Charm by FLAG_RECEIVED_JUMP_SHINY_CHARM.
-
-static u16 PrizeLcgNext(void)
-{
-    sPokemonJump->prizeLcgState = sPokemonJump->prizeLcgState * 1103u + 12345u;
-    return sPokemonJump->prizeLcgState;
-}
-
-// Builds the unified item pool for the player's score and writes one roll's
-// item id. The pool grows progressively per the score-tier spec; Master Ball
-// is stacked across high tiers to bias rolls towards it at the top.
-static u16 RollOnePrizeFromPool(u32 score)
-{
-    u16 pool[96];
-    u16 poolSize = 0;
-    u32 i;
-
-    for (i = 0; i < ARRAY_COUNT(sPrizeItems_Common); i++)
-        pool[poolSize++] = sPrizeItems_Common[i];
-    if (score >= 3000)
-        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Uncommon); i++)
-            pool[poolSize++] = sPrizeItems_Uncommon[i];
-    if (score >= 5000)
-        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Rare); i++)
-            pool[poolSize++] = sPrizeItems_Rare[i];
-    if (score >= 8000)
-        for (i = 0; i < ARRAY_COUNT(sPrizeItems_VeryRare); i++)
-            pool[poolSize++] = sPrizeItems_VeryRare[i];
-    if (score >= 10000)
-        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Elite); i++)
-            pool[poolSize++] = sPrizeItems_Elite[i];
-    if (score >= 12000)
-        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Master); i++)
-            pool[poolSize++] = sPrizeItems_Master[i];
-    if (score >= 16000)
-        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Mythical); i++)
-            pool[poolSize++] = sPrizeItems_Mythical[i];
-    if (score >= 20000)
-        for (i = 0; i < ARRAY_COUNT(sPrizeItems_Legendary); i++)
-            pool[poolSize++] = sPrizeItems_Legendary[i];
-
-    return pool[PrizeLcgNext() % poolSize];
-}
-
-static u32 GetPrizeQuantityForScore(u32 score)
-{
-    u32 quantity = 0;
-    u32 i;
-    for (i = 0; i < ARRAY_COUNT(sPrizeQuantityData); i++)
-    {
-        if (score >= sPrizeQuantityData[i].score)
-            quantity = sPrizeQuantityData[i].quantity;
-        else
-            break;
-    }
-    if (score > 20000)
-        quantity += (score - 20000) / 1000;
-    if (quantity > ARRAY_COUNT(sPokemonJump->prizeRolled))
-        quantity = ARRAY_COUNT(sPokemonJump->prizeRolled);
-    return quantity;
-}
-
-// Leader-only: produce a non-zero seed and stash it in comm.data so members
-// receive it and roll the same list. Returns the seed.
-static u16 GetPrizeData(void)
-{
-    u16 seed = Random() & 0xFFFF;
-    if (seed == 0)
-        seed = 1;
-    return seed;
-}
-
-// Fills sPokemonJump->prizeRolled[] with deterministic rolls driven by the
-// shared seed in comm.data. Master Ball cap and Shiny Charm exclusion happen
-// during the give phase, not here, so every player sees the same name list
-// regardless of bag contents.
-static void GeneratePrizeList(void)
-{
-    u32 score = sPokemonJump->comm.jumpScore;
-    u32 quantity = GetPrizeQuantityForScore(score);
-    u32 i;
-
-    sPokemonJump->prizeLcgState = sPokemonJump->comm.data;
-    if (sPokemonJump->prizeLcgState == 0)
-        sPokemonJump->prizeLcgState = 1;
-
-    sPokemonJump->prizeRolledCount = 0;
-    for (i = 0; i < quantity; i++)
-        sPokemonJump->prizeRolled[sPokemonJump->prizeRolledCount++] = RollOnePrizeFromPool(score);
-}
-
-static void UnpackPrizeData(u16 data, u16 *itemId, u16 *quantity)
-{
-    *itemId = 0;
-    *quantity = 0;
-    (void)data;
-}
+// (Prize tables and helpers were moved above TryGivePrize so that the
+// state machine can reference them directly via ARRAY_COUNT, which needs
+// the complete array type.)
 
 static u16 GetQuantityLimitedByBag(u16 item, u16 quantity)
 {
@@ -3175,10 +3185,111 @@ static void Gfx_ResetMonSpriteSubpriorities(struct PokemonJumpGfx *jumpGfx)
         jumpGfx->monSprites[i]->subpriority = jumpGfx->monSpriteSubpriorities[i];
 }
 
+// Shiny intro feedback for Pokemon Jump. When a shiny Pokémon does its
+// initial intro bounce we play SE_SHINY and spawn three rising "gold star"
+// sparkle sprites around it. Borrows the ANIM_TAG_GOLD_STARS sprite sheet
+// and palette already used by the battle shiny animation
+// (src/battle_anim_throw.c TryShinyAnimation) so we don't need new gfx.
+//
+// Asset lifecycle:
+//   - sShinyJumpSparkleAssetsLoaded tracks whether WE loaded the sheet/pal.
+//     If TRUE on FreePokemonJump we free; otherwise we leave it alone (in
+//     case a battle had loaded it before we got here, which would be
+//     unusual but defensive-coded).
+//   - The load happens on first shiny intro per session, not on minigame
+//     init, so non-shiny lobbies pay nothing.
+
+EWRAM_DATA static bool8 sShinyJumpSparkleAssetsLoaded = FALSE;
+
+static void SpriteCB_PokeJumpShinySparkle(struct Sprite *sprite)
+{
+    sprite->data[0]++;
+    // Drift the sparkle gently upward over its lifetime.
+    sprite->y2 = -(sprite->data[0] >> 1);
+    // Brief on/off flicker so it reads as "sparkly" rather than a solid mark.
+    sprite->invisible = ((sprite->data[0] >> 2) & 1) != 0;
+    // Destroy after ~half a second; OAM/tile slot is recycled by the engine.
+    if (sprite->data[0] >= 30)
+        DestroySprite(sprite);
+}
+
+static const struct SpriteTemplate sSpriteTemplate_PokeJumpShinySparkle =
+{
+    .tileTag = ANIM_TAG_GOLD_STARS,
+    .paletteTag = ANIM_TAG_GOLD_STARS,
+    .oam = &gOamData_AffineOff_ObjNormal_8x8,
+    .anims = gDummySpriteAnimTable,
+    .images = NULL,
+    .affineAnims = gDummySpriteAffineAnimTable,
+    .callback = SpriteCB_PokeJumpShinySparkle,
+};
+
+static const s8 sShinyJumpSparkleOffsets[3][2] =
+{
+    { -12, -10 },
+    {  12, -10 },
+    {   0, -18 },
+};
+
+static void LoadShinyJumpSparkleAssetsIfNeeded(void)
+{
+    if (sShinyJumpSparkleAssetsLoaded)
+        return;
+    // Skip the load if something else (a battle anim that ran earlier this
+    // session) has the sheet/pal in VRAM already; just remember that WE
+    // didn't load it so we don't accidentally free it on cleanup.
+    if (GetSpriteTileStartByTag(ANIM_TAG_GOLD_STARS) == 0xFFFF)
+    {
+        LoadCompressedSpriteSheetUsingHeap(&gBattleAnimPicTable[ANIM_TAG_GOLD_STARS - ANIM_SPRITES_START]);
+        LoadCompressedSpritePaletteUsingHeap(&gBattleAnimPaletteTable[ANIM_TAG_GOLD_STARS - ANIM_SPRITES_START]);
+        sShinyJumpSparkleAssetsLoaded = TRUE;
+    }
+}
+
+static void FreeShinyJumpSparkleAssets(void)
+{
+    if (sShinyJumpSparkleAssetsLoaded)
+    {
+        FreeSpriteTilesByTag(ANIM_TAG_GOLD_STARS);
+        FreeSpritePaletteByTag(ANIM_TAG_GOLD_STARS);
+        sShinyJumpSparkleAssetsLoaded = FALSE;
+    }
+}
+
+static void TryShinyJumpSparkle(struct PokemonJumpGfx *jumpGfx, int multiplayerId)
+{
+    struct PokemonJump_MonInfo *info;
+    struct Sprite *monSprite;
+    u8 i;
+
+    info = &sPokemonJump->monInfo[multiplayerId];
+    if (!IsShinyOtIdPersonality(info->otId, info->personality))
+        return;
+
+    PlaySE(SE_SHINY);
+    LoadShinyJumpSparkleAssetsIfNeeded();
+
+    monSprite = jumpGfx->monSprites[multiplayerId];
+    if (monSprite == NULL)
+        return;
+
+    // Three sparkles around the Pokémon's intro position; all share the
+    // same 30-frame lifetime so they read as a single burst, not three
+    // independent flickers. data[0] starts at 0 (CreateSprite zeroes it).
+    for (i = 0; i < ARRAY_COUNT(sShinyJumpSparkleOffsets); i++)
+    {
+        CreateSprite(&sSpriteTemplate_PokeJumpShinySparkle,
+                     monSprite->x + sShinyJumpSparkleOffsets[i][0],
+                     monSprite->y + sShinyJumpSparkleOffsets[i][1],
+                     0);
+    }
+}
+
 static void Gfx_StartMonIntroBounce(struct PokemonJumpGfx *jumpGfx, int multiplayerId)
 {
     ResetPokeJumpSpriteData(jumpGfx->monSprites[multiplayerId]);
     jumpGfx->monSprites[multiplayerId]->callback = SpriteCB_MonIntroBounce;
+    TryShinyJumpSparkle(jumpGfx, multiplayerId);
 }
 
 static bool32 Gfx_IsMonIntroBounceActive(struct PokemonJumpGfx *jumpGfx)

@@ -126,11 +126,6 @@ u8 ScriptGiveEgg(u16 species)
 // species and hands it to the player (party first, PC if full). FLAG_SHINY_CREATION
 // is honored by CreateBoxMon and auto-cleared after generation. If perfectIvs is
 // TRUE, all six IVs are forced to 31 (used for the once-per-save shiny Doduo).
-u8 GiveMinigameShinyEgg(u16 species)
-{
-    return GiveMinigameShinyEggEx(species, FALSE);
-}
-
 u8 GiveMinigameShinyEggEx(u16 species, bool8 perfectIvs)
 {
     struct Pokemon mon;
@@ -156,6 +151,11 @@ u8 GiveMinigameShinyEggEx(u16 species, bool8 perfectIvs)
     }
 
     return GiveMonToPlayer(&mon);
+}
+
+u8 GiveMinigameShinyEgg(u16 species)
+{
+    return GiveMinigameShinyEggEx(species, FALSE);
 }
 
 // Pick a random species in [1, NUM_SPECIES) for the Pokemon Jump Mystery Egg
