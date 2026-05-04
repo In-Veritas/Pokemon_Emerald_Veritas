@@ -194,6 +194,7 @@ static const struct {
     u16 moves[MAX_MON_MOVES];
     u8 level;
     u8 location;
+    u8 probability; // 0 = use default (50%); otherwise % encounter rate while outbreak is active
 } sPokeOutbreakSpeciesList[] = {
     {
         .species = SPECIES_SEEDOT,
@@ -208,10 +209,58 @@ static const struct {
         .location = MAP_NUM(ROUTE114),
     },
     {
-        .species = SPECIES_SEEDOT,
-        .moves = {MOVE_HARDEN, MOVE_GROWTH, MOVE_NATURE_POWER, MOVE_LEECH_SEED},
+        .species = SPECIES_SKITTY,
+        .moves = {MOVE_GROWL, MOVE_TACKLE, MOVE_TAIL_WHIP, MOVE_ATTRACT},
+        .level = 8,
+        .location = MAP_NUM(ROUTE116),
+    },
+    {
+        .species = SPECIES_SURSKIT,
+        .moves = {MOVE_BUBBLE, MOVE_QUICK_ATTACK, MOVE_SWEET_SCENT, MOVE_WATER_SPORT},
         .level = 13,
         .location = MAP_NUM(ROUTE117),
+    },
+    {
+        .species = SPECIES_ZIGZAGOON,
+        .moves = {MOVE_TACKLE, MOVE_GROWL, MOVE_TAIL_WHIP, MOVE_HEADBUTT},
+        .level = 7,
+        .location = MAP_NUM(ROUTE103),
+    },
+    {
+        .species = SPECIES_WURMPLE,
+        .moves = {MOVE_TACKLE, MOVE_STRING_SHOT, MOVE_POISON_STING},
+        .level = 4,
+        .location = MAP_NUM(ROUTE101),
+    },
+    {
+        .species = SPECIES_TAILLOW,
+        .moves = {MOVE_PECK, MOVE_GROWL, MOVE_FOCUS_ENERGY, MOVE_QUICK_ATTACK},
+        .level = 9,
+        .location = MAP_NUM(ROUTE104),
+    },
+    {
+        .species = SPECIES_SHROOMISH,
+        .moves = {MOVE_ABSORB, MOVE_TACKLE, MOVE_STUN_SPORE, MOVE_LEECH_SEED},
+        .level = 8,
+        .location = MAP_NUM(PETALBURG_WOODS),
+    },
+    {
+        .species = SPECIES_ELECTRIKE,
+        .moves = {MOVE_THUNDER_WAVE, MOVE_LEER, MOVE_HOWL, MOVE_QUICK_ATTACK},
+        .level = 14,
+        .location = MAP_NUM(ROUTE110),
+    },
+    {
+        .species = SPECIES_GULPIN,
+        .moves = {MOVE_POUND, MOVE_YAWN, MOVE_POISON_GAS, MOVE_SLUDGE},
+        .level = 17,
+        .location = MAP_NUM(ROUTE110),
+    },
+    {
+        .species = SPECIES_SPINDA,
+        .moves = {MOVE_TACKLE, MOVE_UPROAR, MOVE_FAINT_ATTACK, MOVE_PSYBEAM},
+        .level = 18,
+        .location = MAP_NUM(ROUTE113),
     },
     {
         .species = SPECIES_SEEDOT,
@@ -219,11 +268,136 @@ static const struct {
         .level = 25,
         .location = MAP_NUM(ROUTE120),
     },
+    // National Dex outbreaks — Johto/Kanto guests on Hoenn routes.
+    // Mass outbreaks override the encounter table, so it's fine that
+    // these species don't normally live on the route. Locations are
+    // limited to map group 0 (the Hoenn route maps); see line 1724
+    // where outbreak.locationMapGroup is hardcoded to 0.
     {
-        .species = SPECIES_SKITTY,
-        .moves = {MOVE_GROWL, MOVE_TACKLE, MOVE_TAIL_WHIP, MOVE_ATTRACT},
-        .level = 8,
+        .species = SPECIES_HOOTHOOT,
+        .moves = {MOVE_TACKLE, MOVE_GROWL, MOVE_FORESIGHT, MOVE_PECK},
+        .level = 6,
+        .location = MAP_NUM(ROUTE102),
+    },
+    {
+        .species = SPECIES_SENTRET,
+        .moves = {MOVE_SCRATCH, MOVE_DEFENSE_CURL, MOVE_QUICK_ATTACK, MOVE_FURY_SWIPES},
+        .level = 4,
+        .location = MAP_NUM(ROUTE101),
+    },
+    {
+        .species = SPECIES_PICHU,
+        .moves = {MOVE_THUNDER_SHOCK, MOVE_CHARM, MOVE_TAIL_WHIP, MOVE_THUNDER_WAVE},
+        .level = 7,
+        .location = MAP_NUM(ROUTE110),
+    },
+    {
+        .species = SPECIES_MAREEP,
+        .moves = {MOVE_TACKLE, MOVE_GROWL, MOVE_THUNDER_WAVE, MOVE_THUNDER_SHOCK},
+        .level = 12,
+        .location = MAP_NUM(ROUTE110),
+    },
+    {
+        .species = SPECIES_HERACROSS,
+        .moves = {MOVE_TACKLE, MOVE_LEER, MOVE_HORN_ATTACK, MOVE_BRICK_BREAK},
+        .level = 22,
+        .location = MAP_NUM(ROUTE119),
+    },
+    {
+        .species = SPECIES_STANTLER,
+        .moves = {MOVE_TACKLE, MOVE_LEER, MOVE_HYPNOSIS, MOVE_STOMP},
+        .level = 20,
+        .location = MAP_NUM(ROUTE119),
+    },
+    {
+        .species = SPECIES_LARVITAR,
+        .moves = {MOVE_BITE, MOVE_LEER, MOVE_SANDSTORM, MOVE_SCREECH},
+        .level = 18,
+        .location = MAP_NUM(ROUTE114),
+    },
+    {
+        .species = SPECIES_SNEASEL,
+        .moves = {MOVE_SCRATCH, MOVE_LEER, MOVE_QUICK_ATTACK, MOVE_FAINT_ATTACK},
+        .level = 19,
+        .location = MAP_NUM(ROUTE113),
+    },
+    {
+        .species = SPECIES_HOUNDOUR,
+        .moves = {MOVE_LEER, MOVE_EMBER, MOVE_HOWL, MOVE_BITE},
+        .level = 16,
         .location = MAP_NUM(ROUTE116),
+    },
+    {
+        .species = SPECIES_PHANPY,
+        .moves = {MOVE_TACKLE, MOVE_GROWL, MOVE_DEFENSE_CURL, MOVE_FLAIL},
+        .level = 18,
+        .location = MAP_NUM(ROUTE111),
+    },
+    {
+        .species = SPECIES_MURKROW,
+        .moves = {MOVE_PECK, MOVE_PURSUIT, MOVE_HAZE, MOVE_NIGHT_SHADE},
+        .level = 14,
+        .location = MAP_NUM(ROUTE116),
+    },
+    {
+        .species = SPECIES_SMEARGLE,
+        .moves = {MOVE_SKETCH, MOVE_NONE, MOVE_NONE, MOVE_NONE},
+        .level = 20,
+        .location = MAP_NUM(ROUTE119),
+    },
+    {
+        .species = SPECIES_PINSIR,
+        .moves = {MOVE_VICE_GRIP, MOVE_FOCUS_ENERGY, MOVE_BIND, MOVE_SEISMIC_TOSS},
+        .level = 24,
+        .location = MAP_NUM(ROUTE119),
+    },
+    {
+        .species = SPECIES_TAUROS,
+        .moves = {MOVE_TACKLE, MOVE_TAIL_WHIP, MOVE_RAGE, MOVE_HORN_ATTACK},
+        .level = 22,
+        .location = MAP_NUM(ROUTE110),
+    },
+    {
+        .species = SPECIES_EEVEE,
+        .moves = {MOVE_TACKLE, MOVE_TAIL_WHIP, MOVE_SAND_ATTACK, MOVE_QUICK_ATTACK},
+        .level = 12,
+        .location = MAP_NUM(ROUTE121),
+    },
+    {
+        .species = SPECIES_CHANSEY,
+        .moves = {MOVE_POUND, MOVE_GROWL, MOVE_TAIL_WHIP, MOVE_SOFT_BOILED},
+        .level = 28,
+        .location = MAP_NUM(ROUTE123),
+    },
+    {
+        .species = SPECIES_BAGON,
+        .moves = {MOVE_RAGE, MOVE_BITE, MOVE_LEER, MOVE_HEADBUTT},
+        .level = 25,
+        .location = MAP_NUM(ROUTE114),
+    },
+    {
+        .species = SPECIES_BELDUM,
+        .moves = {MOVE_TAKE_DOWN, MOVE_NONE, MOVE_NONE, MOVE_NONE},
+        .level = 30,
+        .location = MAP_NUM(ROUTE118),
+    },
+    {
+        .species = SPECIES_TRAPINCH,
+        .moves = {MOVE_BITE, MOVE_SAND_ATTACK, MOVE_FAINT_ATTACK, MOVE_SAND_TOMB},
+        .level = 18,
+        .location = MAP_NUM(ROUTE111),
+    },
+    {
+        .species = SPECIES_ABSOL,
+        .moves = {MOVE_LEER, MOVE_QUICK_ATTACK, MOVE_PURSUIT, MOVE_BITE},
+        .level = 28,
+        .location = MAP_NUM(ROUTE120),
+    },
+    {
+        .species = SPECIES_TROPIUS,
+        .moves = {MOVE_LEER, MOVE_GUST, MOVE_GROWTH, MOVE_RAZOR_LEAF},
+        .level = 26,
+        .location = MAP_NUM(ROUTE119),
     }
 };
 
@@ -1681,7 +1855,11 @@ static void TryStartRandomMassOutbreak(void)
                 show->massOutbreak.locationMapNum = sPokeOutbreakSpeciesList[outbreakIdx].location;
                 show->massOutbreak.locationMapGroup = 0;
                 show->massOutbreak.unused4 = 0;
-                show->massOutbreak.probability = 50;
+                // Honor per-entry probability override (sPokeOutbreakSpeciesList).
+                // Zero or unset means "use the vanilla default of 50%".
+                show->massOutbreak.probability = sPokeOutbreakSpeciesList[outbreakIdx].probability != 0
+                    ? sPokeOutbreakSpeciesList[outbreakIdx].probability
+                    : 50;
                 show->massOutbreak.unused5 = 0;
                 show->massOutbreak.daysLeft = 1;
                 StorePlayerIdInNormalShow(show);
@@ -2615,6 +2793,19 @@ static u8 FindAnyPokeNewsOnTheAir(void)
 {
     u8 i;
 
+    // Prefer the active daily event (state ACTIVE, countdown 0) so the
+    // "today's events" announcement is always the first news on a TV that
+    // day. Fall back to upcoming countdown news if none is active. AIRED
+    // entries are skipped here so the same daily event doesn't re-fire
+    // on every TV check — TryDoActivePokeNewsFallback re-broadcasts it
+    // as a last-resort filler instead.
+    for (i = 0; i < POKE_NEWS_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->pokeNews[i].kind != POKENEWS_NONE
+         && gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_ACTIVE
+         && gSaveBlock1Ptr->pokeNews[i].dayCountdown == 0)
+            return i;
+    }
     for (i = 0; i < POKE_NEWS_COUNT; i++)
     {
         if (gSaveBlock1Ptr->pokeNews[i].kind != POKENEWS_NONE
@@ -2636,8 +2827,11 @@ void DoPokeNews(void)
     {
         if (gSaveBlock1Ptr->pokeNews[i].dayCountdown == 0)
         {
-            // News event is occurring, make comment depending on how much time is left
-            gSaveBlock1Ptr->pokeNews[i].state = POKENEWS_STATE_ACTIVE;
+            // News event is occurring, make comment depending on how much time is left.
+            // Promote ACTIVE -> AIRED so the next TV check of the day doesn't pick
+            // this same slot as the first news again. Effects keep applying because
+            // IsPokeNewsActive treats AIRED as active.
+            gSaveBlock1Ptr->pokeNews[i].state = POKENEWS_STATE_AIRED;
             if (gLocalTime.hours < 20)
                 ShowFieldMessage(sPokeNewsTextGroup_Ongoing[gSaveBlock1Ptr->pokeNews[i].kind]);
             else
@@ -2673,7 +2867,8 @@ void TryDoActivePokeNewsFallback(void)
     for (i = 0; i < POKE_NEWS_COUNT; i++)
     {
         if (gSaveBlock1Ptr->pokeNews[i].kind != POKENEWS_NONE
-         && gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_ACTIVE
+         && (gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_ACTIVE
+             || gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_AIRED)
          && gSaveBlock1Ptr->pokeNews[i].dayCountdown == 0)
         {
             activeSlots[activeCount++] = i;
@@ -2708,7 +2903,9 @@ bool8 IsPokeNewsActive(u8 newsKind)
     {
         if (gSaveBlock1Ptr->pokeNews[i].kind == newsKind)
         {
-            if (gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_ACTIVE && ShouldApplyPokeNewsEffect(newsKind))
+            if ((gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_ACTIVE
+                 || gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_AIRED)
+                && ShouldApplyPokeNewsEffect(newsKind))
                 return TRUE;
 
             return FALSE;

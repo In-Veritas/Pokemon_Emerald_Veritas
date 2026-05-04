@@ -13,6 +13,12 @@
 #define POKENEWS_STATE_INACTIVE 0
 #define POKENEWS_STATE_UPCOMING 1
 #define POKENEWS_STATE_ACTIVE   2
+// AIRED means an active daily event has already been broadcast as the
+// first news of the day on a TV. Effects still apply (treated as ACTIVE
+// by IsPokeNewsActive); only used to gate the first-position TV slot
+// from re-firing every check of the same day. State fits in the existing
+// u8 — no save structure change.
+#define POKENEWS_STATE_AIRED    3
 
 // Number of days to count down until the news event occurs.
 // Nothing is aired on TV the first day
