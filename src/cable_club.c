@@ -3,9 +3,11 @@
 #include "battle.h"
 #include "battle_records.h"
 #include "battle_setup.h"
+#include "battle_transition.h"
 #include "cable_club.h"
 #include "data.h"
 #include "event_data.h"
+#include "link_battle_scene.h"
 #include "field_message_box.h"
 #include "field_specials.h"
 #include "field_weather.h"
@@ -374,6 +376,11 @@ static void Task_LinkupExchangeDataWithLeader(u8 taskId)
         TrainerCard_GenerateCardForLinkPlayer(card);
         card->monSpecies[0] = GetMonData(&gPlayerParty[gSelectedOrderFromParty[0] - 1], MON_DATA_SPECIES, NULL);
         card->monSpecies[1] = GetMonData(&gPlayerParty[gSelectedOrderFromParty[1] - 1], MON_DATA_SPECIES, NULL);
+        // Append per-player battle scene pick to the trainer-card block so
+        // every peer can read all picks via gBlockRecvBuffer after the
+        // exchange. Writes to byte SCENE_BLOCK_OFFSET (0xC0), well past
+        // the TrainerCard struct which ends at 0x64.
+        LinkBattleScene_FillSendBuffer();
         gTasks[taskId].func = Task_LinkupAwaitTrainerCardData;
     }
 }
@@ -422,6 +429,10 @@ static void Task_LinkupCheckStatusAfterConfirm(u8 taskId)
         TrainerCard_GenerateCardForLinkPlayer(card);
         card->monSpecies[0] = GetMonData(&gPlayerParty[gSelectedOrderFromParty[0] - 1], MON_DATA_SPECIES, NULL);
         card->monSpecies[1] = GetMonData(&gPlayerParty[gSelectedOrderFromParty[1] - 1], MON_DATA_SPECIES, NULL);
+        // Mirror the buffer fill in Task_LinkupAwaitConnection — see comment
+        // there. Same SCENE_BLOCK_OFFSET, both code paths must write so peers
+        // see the scene pick regardless of which task path runs.
+        LinkBattleScene_FillSendBuffer();
         gTasks[taskId].func = Task_LinkupAwaitTrainerCardData;
         SendBlockRequest(BLOCK_REQ_SIZE_100);
     }
@@ -519,6 +530,12 @@ static void Task_LinkupAwaitTrainerCardData(u8 taskId)
     {
         CopyTrainerCardData(&gTrainerCards[index], (struct TrainerCard *)gBlockRecvBuffer[index], gLinkPlayers[index].version);
     }
+    // Capture our scene/style/RTC broadcast bytes from gBlockRecvBuffer
+    // BEFORE later block exchanges (the wireless lobby's gLocalLinkPlayer
+    // broadcast at Task_StartWirelessCableClubBattle case 2) overwrite
+    // them. Without this stash the wireless cutscene would always see
+    // LINK_SCENE_NONE and pick the PLAIN-row default colors.
+    LinkBattleScene_StashPeerData();
 
     SetSuppressLinkErrorMessage(FALSE);
     ResetBlockReceivedFlags();
@@ -921,11 +938,22 @@ static void Task_StartWiredCableClubBattle(u8 taskId)
             || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
             ApplyLv50Cap();
         PlayMapChosenOrBattleBGM(0);
-        CleanupOverworldWindowsAndTilemaps();
-        gTrainerBattleOpponent_A = TRAINER_LINK_OPPONENT;
-        SetMainCallback2(CB2_InitBattle);
-        gMain.savedCallback = CB2_ReturnFromCableClubBattle;
-        DestroyTask(taskId);
+        // VS mugshot: opposite-side leader's portrait + random R/G/B bg.
+        // The transition reads the opponent pic from gLinkPlayers, so peers
+        // see each other's actual sprite (not a random Elite 4 portrait).
+        // See Task_LinkBattle in src/battle_transition.c.
+        BattleTransition_StartOnField(B_TRANSITION_LINK_BATTLE);
+        task->tState++;
+        break;
+    case 6:
+        if (IsBattleTransitionDone() == TRUE)
+        {
+            CleanupOverworldWindowsAndTilemaps();
+            gTrainerBattleOpponent_A = TRAINER_LINK_OPPONENT;
+            SetMainCallback2(CB2_InitBattle);
+            gMain.savedCallback = CB2_ReturnFromCableClubBattle;
+            DestroyTask(taskId);
+        }
         break;
     }
 }
@@ -987,11 +1015,19 @@ static void Task_StartWirelessCableClubBattle(u8 taskId)
             || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
             ApplyLv50Cap();
         PlayMapChosenOrBattleBGM(0);
-        CleanupOverworldWindowsAndTilemaps();
-        gTrainerBattleOpponent_A = TRAINER_LINK_OPPONENT;
-        SetMainCallback2(CB2_InitBattle);
-        gMain.savedCallback = CB2_ReturnFromCableClubBattle;
-        DestroyTask(taskId);
+        // Wireless mirror of the wired-side B_TRANSITION_LINK_BATTLE call.
+        BattleTransition_StartOnField(B_TRANSITION_LINK_BATTLE);
+        tState = 8;
+        break;
+    case 8:
+        if (IsBattleTransitionDone() == TRUE)
+        {
+            CleanupOverworldWindowsAndTilemaps();
+            gTrainerBattleOpponent_A = TRAINER_LINK_OPPONENT;
+            SetMainCallback2(CB2_InitBattle);
+            gMain.savedCallback = CB2_ReturnFromCableClubBattle;
+            DestroyTask(taskId);
+        }
         break;
     }
 }
@@ -1044,6 +1080,11 @@ static void CB2_ReturnFromUnionRoomBattle(void)
 
 void CB2_ReturnFromCableClubBattle(void)
 {
+    // Drop the cable-club scene/style/RTC stash so a non-cable-club link
+    // battle later in the session (e.g., Frontier link) doesn't pick up
+    // stale terrain/style data and override its own intended scene.
+    LinkBattleScene_Reset();
+
     gBattleTypeFlags &= ~BATTLE_TYPE_LINK_IN_BATTLE;
     Overworld_ResetMapMusic();
     LoadPlayerParty();

@@ -19,6 +19,7 @@ enum {
     MUGSHOT_CHAMPION_STEVEN,
     MUGSHOT_RED,
     MUGSHOT_SECRET_BASE,
+    MUGSHOT_LINK_OPPONENT, // Cable-club link battle: opponent pic resolved at runtime from gLinkPlayers
     MUGSHOTS_COUNT
 };
 
@@ -68,6 +69,7 @@ enum {
     B_TRANSITION_FRONTIER_CIRCLES_SYMMETRIC_SPIRAL_IN_SEQ,
     B_TRANSITION_RED,
     B_TRANSITION_SECRET_BASE,
+    B_TRANSITION_LINK_BATTLE, // Cable-club link battles — uses MUGSHOT_LINK_OPPONENT
     B_TRANSITION_COUNT
 };
 

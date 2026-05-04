@@ -354,6 +354,10 @@ CableClub_Text_SelectBattleMusic:
 	.string "Which battle music would you\n"
 	.string "like to use?$"
 
+CableClub_Text_SelectBattleScene:
+	.string "Pick your battle scene.\n"
+	.string "Each player picks; one wins at random.$"
+
 CableClub_Text_AccessRecordCorner:
 	.string "Would you like to access\n"
 	.string "the RECORD CORNER?$"

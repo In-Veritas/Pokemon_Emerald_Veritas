@@ -547,6 +547,8 @@ gSpecials::
 	def_special ScriptMenu_CreateLinkBattleMusicMultichoice
 	def_special GetLinkBattleMusicSelection
 	def_special SetRandomLinkBattleMusic
+	def_special ScriptMenu_OpenLinkBattleScenePicker
+	def_special ScriptMenu_GetLinkBattleSceneSelection
 	def_special Debug_MarkLastPartyMonTrueShiny
 	def_special CreateBossLugia
 	def_special BattleSetup_StartLugiaBossBattle

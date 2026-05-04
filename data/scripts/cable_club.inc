@@ -1338,6 +1338,7 @@ CableClub_EventScript_WirelessDodrioBerryPicking::
 	end
 
 CableClub_EventScript_SaveAndChooseLinkLeader::
+	call CableClub_EventScript_MaybePickBattleScene
 	call Common_EventScript_SaveGame
 	goto_if_eq VAR_RESULT, 0, CableClub_EventScript_AbortLink
 	switch VAR_0x8004
@@ -1345,12 +1346,36 @@ CableClub_EventScript_SaveAndChooseLinkLeader::
 	case LINK_GROUP_SINGLE_BATTLE, CableClub_EventScript_ChooseLinkLeaderFrom2
 	case LINK_GROUP_DOUBLE_BATTLE, CableClub_EventScript_ChooseLinkLeaderFrom2
 	case LINK_GROUP_LV50_SINGLE_BATTLE, CableClub_EventScript_ChooseLinkLeaderFrom2
+	case LINK_GROUP_LV50_DOUBLE_BATTLE, CableClub_EventScript_ChooseLinkLeaderFrom2
 	case LINK_GROUP_MULTI_BATTLE, CableClub_EventScript_ChooseLinkLeaderFrom4
+	case LINK_GROUP_LV50_MULTI_BATTLE, CableClub_EventScript_ChooseLinkLeaderFrom4
 	case LINK_GROUP_BERRY_CRUSH, CableClub_EventScript_ChooseLinkLeader
 	case LINK_GROUP_RECORD_CORNER, CableClub_EventScript_ChooseLinkLeader
 	case LINK_GROUP_POKEMON_JUMP, CableClub_EventScript_ChooseLinkLeader
 	case LINK_GROUP_BERRY_PICKING, CableClub_EventScript_ChooseLinkLeader
 	end
+
+@ Asks the player to pick a battle scene only for actual battle activities;
+@ no-op for trade, berry crush, record corner, or wireless minigames. Pick
+@ is stored locally and broadcast over the trainer-card link exchange (see
+@ src/link_battle_scene.c). Final terrain is resolved deterministically on
+@ every machine at battle setup time.
+CableClub_EventScript_MaybePickBattleScene::
+	goto_if_eq VAR_0x8004, LINK_GROUP_SINGLE_BATTLE, CableClub_EventScript_PickBattleScene
+	goto_if_eq VAR_0x8004, LINK_GROUP_DOUBLE_BATTLE, CableClub_EventScript_PickBattleScene
+	goto_if_eq VAR_0x8004, LINK_GROUP_MULTI_BATTLE, CableClub_EventScript_PickBattleScene
+	goto_if_eq VAR_0x8004, LINK_GROUP_LV50_SINGLE_BATTLE, CableClub_EventScript_PickBattleScene
+	goto_if_eq VAR_0x8004, LINK_GROUP_LV50_DOUBLE_BATTLE, CableClub_EventScript_PickBattleScene
+	goto_if_eq VAR_0x8004, LINK_GROUP_LV50_MULTI_BATTLE, CableClub_EventScript_PickBattleScene
+	return
+
+CableClub_EventScript_PickBattleScene::
+	message CableClub_Text_SelectBattleScene
+	waitmessage
+	special ScriptMenu_OpenLinkBattleScenePicker
+	waitstate
+	special ScriptMenu_GetLinkBattleSceneSelection
+	return
 
 CableClub_EventScript_ChooseLinkLeaderFrom2::
 	message CableClub_Text_ChooseGroupLeaderOfTwo

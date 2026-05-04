@@ -23,6 +23,10 @@
 #include "constants/field_effects.h"
 #include "constants/songs.h"
 #include "pokemon.h"
+#include "link.h"
+#include "link_battle_scene.h"
+#include "random.h"
+#include "constants/battle.h"
 #include "constants/trainers.h"
 #include "constants/rgb.h"
 
@@ -116,6 +120,7 @@ static void Task_Champion(u8);
 static void Task_Champion_Steven(u8);
 static void Task_Red(u8);
 static void Task_SecretBase(u8);
+static void Task_LinkBattle(u8);
 static void Task_Aqua(u8);
 static void Task_Magma(u8);
 static void Task_Regice(u8);
@@ -395,6 +400,7 @@ static const TaskFunc sTasks_Main[B_TRANSITION_COUNT] =
     [B_TRANSITION_FRONTIER_CIRCLES_SYMMETRIC_SPIRAL_IN_SEQ] = Task_FrontierCirclesSymmetricSpiralInSeq,
     [B_TRANSITION_RED] = Task_Red,
     [B_TRANSITION_SECRET_BASE] = Task_SecretBase,
+    [B_TRANSITION_LINK_BATTLE] = Task_LinkBattle,
 };
 
 static const TransitionStateFunc sTaskHandlers[] =
@@ -558,6 +564,7 @@ static const u8 sMugshotsTrainerPicIDsTable[MUGSHOTS_COUNT] =
     [MUGSHOT_CHAMPION_STEVEN] = TRAINER_PIC_STEVEN,
     [MUGSHOT_RED] = TRAINER_PIC_RED,
     [MUGSHOT_SECRET_BASE] = TRAINER_PIC_ELITE_FOUR_SIDNEY, // Placeholder, overridden at runtime
+    [MUGSHOT_LINK_OPPONENT] = TRAINER_PIC_BRENDAN,         // Placeholder, overridden at runtime from gLinkPlayers
 };
 static const s16 sMugshotsOpponentRotationScales[MUGSHOTS_COUNT][2] =
 {
@@ -569,6 +576,7 @@ static const s16 sMugshotsOpponentRotationScales[MUGSHOTS_COUNT][2] =
     [MUGSHOT_CHAMPION_STEVEN] = {0x188, 0x188},
     [MUGSHOT_RED] = {0x188, 0x188},
     [MUGSHOT_SECRET_BASE] = {0x200, 0x200},
+    [MUGSHOT_LINK_OPPONENT] = {0x200, 0x200},
 };
 static const s16 sMugshotsOpponentCoords[MUGSHOTS_COUNT][2] =
 {
@@ -580,6 +588,7 @@ static const s16 sMugshotsOpponentCoords[MUGSHOTS_COUNT][2] =
     [MUGSHOT_CHAMPION_STEVEN] = {-8,  7},
     [MUGSHOT_RED] = {-8,  7},
     [MUGSHOT_SECRET_BASE] = { 0,  0},
+    [MUGSHOT_LINK_OPPONENT] = { 0,  0},
 };
 
 static const TransitionSpriteCallback sMugshotTrainerPicFuncs[] =
@@ -919,8 +928,41 @@ static const u16 *const sOpponentMugshotsPals[MUGSHOTS_COUNT] =
     [MUGSHOT_CHAMPION] = sMugshotPal_Champion,
     [MUGSHOT_CHAMPION_STEVEN] = sMugshotPal_Champion,
     [MUGSHOT_RED] = sMugshotPal_Sidney,
-    [MUGSHOT_SECRET_BASE] = sMugshotPal_Sidney
+    [MUGSHOT_SECRET_BASE] = sMugshotPal_Sidney,
+    // Placeholder — Mugshot_SetGfx swaps this for the random R/G/B pick
+    // chosen by Task_LinkBattle. The reused Sidney palette is harmless if
+    // the override path never runs (defensive default).
+    [MUGSHOT_LINK_OPPONENT] = sMugshotPal_Sidney
 };
+
+// Per-battle-scene cutscene background palettes for B_TRANSITION_LINK_BATTLE.
+// Two palettes per pickable terrain — colors that fit the scene AND clash
+// with each other for visual drama. We reuse existing Elite-4 palettes
+// (no new .gbapal binaries) since their dominant hues already cover the
+// red / blue / green / orange / purple / teal range we need.
+//
+// Row order matches the index order of sPickableTerrains[] in
+// src/link_battle_scene.c (PLAIN, GRASS, SAND, WATER, CAVE, MOUNTAIN,
+// BUILDING). Task_LinkBattle picks one of the two columns deterministically
+// via the same XOR-of-trainer-IDs seed used by the scene picker, so every
+// peer renders the same color.
+//
+// Palette → dominant hue:
+//   sMugshotPal_Sidney   = red    sMugshotPal_Drake   = orange
+//   sMugshotPal_Glacia   = blue   sMugshotPal_Phoebe  = purple
+//   sMugshotPal_Brendan  = green  sMugshotPal_Champion= teal
+#define LINK_BATTLE_SCENE_PAIR_COUNT 7
+static const u16 *const sLinkBattleSceneBgPals[LINK_BATTLE_SCENE_PAIR_COUNT][2] =
+{
+    /* PLAIN    */ { sMugshotPal_Sidney,   sMugshotPal_Glacia  }, // red vs blue
+    /* GRASS    */ { sMugshotPal_Brendan,  sMugshotPal_Sidney  }, // green vs red
+    /* SAND     */ { sMugshotPal_Drake,    sMugshotPal_Glacia  }, // orange vs blue
+    /* WATER    */ { sMugshotPal_Glacia,   sMugshotPal_Drake   }, // blue vs orange
+    /* CAVE     */ { sMugshotPal_Phoebe,   sMugshotPal_Brendan }, // purple vs green
+    /* MOUNTAIN */ { sMugshotPal_Champion, sMugshotPal_Drake   }, // teal vs sunset
+    /* BUILDING */ { sMugshotPal_Brendan,  sMugshotPal_Phoebe  }, // green vs purple
+};
+EWRAM_DATA static const u16 *sLinkBattleBgPal = NULL;
 
 static const u16 *const sPlayerMugshotsPals[GENDER_COUNT] =
 {
@@ -2326,6 +2368,62 @@ static void Task_SecretBase(u8 taskId)
     DoMugshotTransition(taskId);
 }
 
+// Map a resolved BATTLE_TERRAIN_* to the row index of sLinkBattleSceneBgPals.
+// Same order as sPickableTerrains[] in src/link_battle_scene.c. Returns 0
+// (PLAIN row) for any terrain that isn't a player-pickable scene — covers
+// non-cable-club link battles and unexpected terrains.
+static u8 LinkBattleSceneToBgPairIdx(u8 terrain)
+{
+    switch (terrain)
+    {
+    case BATTLE_TERRAIN_PLAIN:    return 0;
+    case BATTLE_TERRAIN_GRASS:    return 1;
+    case BATTLE_TERRAIN_SAND:     return 2;
+    case BATTLE_TERRAIN_WATER:    return 3;
+    case BATTLE_TERRAIN_CAVE:     return 4;
+    case BATTLE_TERRAIN_MOUNTAIN: return 5;
+    case BATTLE_TERRAIN_BUILDING: return 6;
+    default:                      return 0;
+    }
+}
+
+// Cable-club link battle mugshot. The bg color is driven by the resolved
+// battle scene (each scene has a clashing pair of palettes — see
+// sLinkBattleSceneBgPals) and selected with the shared sync seed which
+// mixes trainer IDs + scene picks + every peer's broadcast RTC snapshot.
+// The RTC bytes mean repeat battles between the same player pair pick
+// different colors as time advances; every peer reads the same broadcast
+// data so the choice still matches across screens. The opponent trainer
+// pic is resolved at sprite-creation time from gLinkPlayers — see
+// Mugshots_CreateTrainerPics.
+static void Task_LinkBattle(u8 taskId)
+{
+    u32 seed;
+    u8 terrain;
+    u8 pairIdx;
+    u8 colorIdx;
+
+    seed = LinkBattleScene_GetSyncSeed();
+    // Solo / no-link fallback: derive something deterministic from the
+    // local player so we don't crash on a 0-player edge case.
+    if (seed == 0)
+        seed = gSaveBlock2Ptr->playerTrainerId[0] ^ ((u32)gSaveBlock2Ptr->playerTrainerId[1] << 8);
+
+    // Resolve the scene the players picked (idempotent + cached). Falls
+    // back to PLAIN-row pair if no scene was broadcast (e.g., older peer).
+    terrain = LinkBattleScene_ResolveAndGetTerrain();
+    pairIdx = LinkBattleSceneToBgPairIdx(terrain);
+    // Two clashing colors per scene; flip between them per battle so the
+    // same scene doesn't always look identical. seed >> 4 picks a
+    // different bit-region than ResolveAndGetTerrain's modulo-by-numPlayers
+    // uses, so the two consumers don't accidentally rhyme.
+    colorIdx = (seed >> 4) & 1;
+    sLinkBattleBgPal = sLinkBattleSceneBgPals[pairIdx][colorIdx];
+
+    gTasks[taskId].tMugshotId = MUGSHOT_LINK_OPPONENT;
+    DoMugshotTransition(taskId);
+}
+
 static void DoMugshotTransition(u8 taskId)
 {
     while (sMugshot_Funcs[gTasks[taskId].tState](&gTasks[taskId]));
@@ -2360,11 +2458,19 @@ static bool8 Mugshot_SetGfx(struct Task *task)
     s16 i, j;
     u16 *tilemap, *tileset;
     const u16 *mugshotsMap;
+    const u16 *opponentPal;
 
     mugshotsMap = sMugshotsTilemap;
     GetBg0TilesDst(&tilemap, &tileset);
     CpuSet(sEliteFour_Tileset, tileset, 0xF0);
-    LoadPalette(sOpponentMugshotsPals[task->tMugshotId], BG_PLTT_ID(15), PLTT_SIZE_4BPP);
+    // Link battle: use the random R/G/B palette picked by Task_LinkBattle.
+    // Defensive fall-back keeps the table lookup if Task_LinkBattle didn't
+    // run (e.g., another caller forced MUGSHOT_LINK_OPPONENT directly).
+    if (task->tMugshotId == MUGSHOT_LINK_OPPONENT && sLinkBattleBgPal != NULL)
+        opponentPal = sLinkBattleBgPal;
+    else
+        opponentPal = sOpponentMugshotsPals[task->tMugshotId];
+    LoadPalette(opponentPal, BG_PLTT_ID(15), PLTT_SIZE_4BPP);
     LoadPalette(sPlayerMugshotsPals[gSaveBlock2Ptr->playerGender], BG_PLTT_ID(15) + 10, PLTT_SIZEOF(6));
 
     for (i = 0; i < 20; i++)
@@ -2615,12 +2721,30 @@ static void Mugshots_CreateTrainerPics(struct Task *task)
 {
     struct Sprite *opponentSprite, *playerSprite;
     u8 trainerPicId;
+    u8 linkOppIdx;
 
     s16 mugshotId = task->tMugshotId;
     if (mugshotId == MUGSHOT_SECRET_BASE)
+    {
         trainerPicId = GetCurrentSecretBaseTrainerPicIndex();
+    }
+    else if (mugshotId == MUGSHOT_LINK_OPPONENT)
+    {
+        // Pick the OPPOSITE-side LEADER (lowest multiplayerId on the
+        // enemy side). For 2-player battles that's just `myId ^ 1`. For
+        // 4-player multi: side bit = id & 1, opp leader id = !sideBit
+        // = (myId & 1) ^ 1. Both reduce to the same expression. Honors
+        // each linked player's broadcast RS-style toggle via
+        // LinkBattleScene_GetTrainerPicId.
+        linkOppIdx = (GetMultiplayerId() & 1) ^ 1;
+        if (linkOppIdx >= MAX_LINK_PLAYERS)
+            linkOppIdx = 0; // defensive
+        trainerPicId = LinkBattleScene_GetTrainerPicId(linkOppIdx, gLinkPlayers[linkOppIdx].gender);
+    }
     else
+    {
         trainerPicId = sMugshotsTrainerPicIDsTable[mugshotId];
+    }
     task->tOpponentSpriteId = CreateTrainerSprite(trainerPicId,
                                                   sMugshotsOpponentCoords[mugshotId][0] - 32,
                                                   sMugshotsOpponentCoords[mugshotId][1] + 42,

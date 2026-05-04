@@ -8,6 +8,7 @@
 #include "battle_setup.h"
 #include "battle_tower.h"
 #include "battle_tv.h"
+#include "link_battle_scene.h"
 #include "bg.h"
 #include "data.h"
 #include "link.h"
@@ -1217,6 +1218,7 @@ static void LinkOpponentHandleDrawTrainerPic(void)
 {
     s16 xPos;
     u32 trainerPicId;
+    u8 idx;
 
     if (gBattleTypeFlags & BATTLE_TYPE_MULTI)
     {
@@ -1252,7 +1254,11 @@ static void LinkOpponentHandleDrawTrainerPic(void)
             }
             else
             {
-                trainerPicId = PlayerGenderToFrontTrainerPicId(gLinkPlayers[GetBattlerMultiplayerId(gActiveBattler)].gender);
+                // Veritas: each linked Emerald player can independently
+                // toggle RS style — read THEIR broadcast flag instead of
+                // the local player's. See src/link_battle_scene.c.
+                idx = GetBattlerMultiplayerId(gActiveBattler);
+                trainerPicId = LinkBattleScene_GetTrainerPicId(idx, gLinkPlayers[idx].gender);
             }
         }
     }
