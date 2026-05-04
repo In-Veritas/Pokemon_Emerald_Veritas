@@ -258,7 +258,7 @@ struct // MENU_MAIN - General
 {
     [MENUITEM_MAIN_TEXTSPEED]    = {DrawChoices_TextSpeed,   ProcessInput_Options_Three},
     [MENUITEM_MAIN_SOUND]        = {DrawChoices_Sound,       ProcessInput_Options_Two},
-    [MENUITEM_MAIN_BUTTONMODE]   = {DrawChoices_ButtonMode,  ProcessInput_Options_Two},
+    [MENUITEM_MAIN_BUTTONMODE]   = {DrawChoices_ButtonMode,  ProcessInput_Options_Three},
     [MENUITEM_MAIN_FRAMETYPE]    = {DrawChoices_FrameType,   ProcessInput_FrameType},
     [MENUITEM_CUSTOM_FONT]       = {DrawChoices_Font,        ProcessInput_Options_Two}, 
     [MENUITEM_MAIN_NICKNAME]     = {DrawChoices_Nickname,    ProcessInput_Options_Two},
@@ -496,6 +496,7 @@ static const u8 sText_Desc_FontType_Hoenn[]         = _("Original Experience.\nS
 static const u8 sText_Desc_FontType_Kanto[]         = _("POKéMON FIRERED/LEAFGREEN Font.\nMay not show correctly for all text.");
 static const u8 sText_Desc_ButtonMode[]             = _("All buttons work as normal.\nLR Mode inactive.");
 static const u8 sText_Desc_ButtonMode_LA[]          = _("The {L_BUTTON} button acts as another\n{A_BUTTON} button for one-handed play.");
+static const u8 sText_Desc_ButtonMode_SelectR[]     = _("SELECT also fires {R_BUTTON} so menus that\npage via {R_BUTTON} work without an R button.");
 static const u8 sText_Desc_SEVolume_Quiet[]      = _("Mute the select ding sound\neffect completely.");
 static const u8 sText_Desc_SEVolume_Low[]        = _("Play the select ding at low\nvolume.");
 static const u8 sText_Desc_SEVolume_Medium[]     = _("Play the select ding at half\nvolume. Recommended setting.");
@@ -510,7 +511,7 @@ static const u8 *const sOptionMenuItemDescriptionsMain[MENUITEM_MAIN_COUNT][5] =
     [MENUITEM_MAIN_NICKNAME]        = {sText_Desc_Nickname_Hide,        sText_Desc_Nickname_Show,       sText_Empty,                sText_Empty,                sText_Empty},
     [MENUITEM_MAIN_SEVOLUME]        = {sText_Desc_SEVolume_Quiet,       sText_Desc_SEVolume_Low,        sText_Desc_SEVolume_Medium, sText_Desc_SEVolume_High,   sText_Desc_SEVolume_Loud},
     [MENUITEM_MAIN_CANCEL]          = {sText_Desc_Save,                 sText_Empty,                    sText_Empty,                sText_Empty,                sText_Empty},
-    [MENUITEM_MAIN_BUTTONMODE]      = {sText_Desc_ButtonMode,           sText_Desc_ButtonMode_LA,       sText_Empty,                sText_Empty,                sText_Empty},
+    [MENUITEM_MAIN_BUTTONMODE]      = {sText_Desc_ButtonMode,           sText_Desc_ButtonMode_LA,       sText_Desc_ButtonMode_SelectR, sText_Empty,                sText_Empty},
 };
 
 // Battle
@@ -905,7 +906,15 @@ void CB2_InitOptionPlusMenu(void)
         //Main Menu/General
         sOptions->sel[MENUITEM_MAIN_TEXTSPEED]   = gSaveBlock2Ptr->optionsTextSpeed;
         sOptions->sel[MENUITEM_MAIN_SOUND]       = gSaveBlock2Ptr->optionsSound;
-        sOptions->sel[MENUITEM_MAIN_BUTTONMODE]  = gSaveBlock2Ptr->optionsButtonMode;
+        // Button mode picker exposes 3 indexes (NORMAL=0, L=A=1, SEL=R=2),
+        // but the storage constant for SEL=R is 10 (constants/global.h).
+        // Translate 10 -> 2 here; raw values 0/1 pass through; any other
+        // mode (3-9, set via debug or older menu paths) passes through
+        // raw and the picker will display its index unchanged.
+        if (gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_SELECT_EQUALS_R)
+            sOptions->sel[MENUITEM_MAIN_BUTTONMODE] = 2;
+        else
+            sOptions->sel[MENUITEM_MAIN_BUTTONMODE] = gSaveBlock2Ptr->optionsButtonMode;
         sOptions->sel[MENUITEM_MAIN_FRAMETYPE]   = gSaveBlock2Ptr->optionsWindowFrameType;
         sOptions->sel[MENUITEM_CUSTOM_FONT]      = FlagGet(FLAG_SWAP_FONT);
         sOptions->sel[MENUITEM_MAIN_NICKNAME]    = FlagGet(FLAG_ENABLE_NICKNAME);
@@ -1198,7 +1207,11 @@ static void Task_OptionMenuSave(u8 taskId)
     //Main Menu/General
     gSaveBlock2Ptr->optionsTextSpeed                        = sOptions->sel[MENUITEM_MAIN_TEXTSPEED];
     gSaveBlock2Ptr->optionsSound                            = sOptions->sel[MENUITEM_MAIN_SOUND];
-    gSaveBlock2Ptr->optionsButtonMode                       = sOptions->sel[MENUITEM_MAIN_BUTTONMODE];
+    // Reverse of the load translation: picker index 2 -> SEL=R constant 10.
+    if (sOptions->sel[MENUITEM_MAIN_BUTTONMODE] == 2)
+        gSaveBlock2Ptr->optionsButtonMode = OPTIONS_BUTTON_MODE_SELECT_EQUALS_R;
+    else
+        gSaveBlock2Ptr->optionsButtonMode = sOptions->sel[MENUITEM_MAIN_BUTTONMODE];
     gSaveBlock2Ptr->optionsWindowFrameType                  = sOptions->sel[MENUITEM_MAIN_FRAMETYPE];
     sOptions->sel[MENUITEM_CUSTOM_FONT]         == 0        ? FlagClear(FLAG_SWAP_FONT)                 : FlagSet(FLAG_SWAP_FONT);
     sOptions->sel[MENUITEM_MAIN_NICKNAME]       == 0        ? FlagClear(FLAG_ENABLE_NICKNAME)           : FlagSet(FLAG_ENABLE_NICKNAME);
@@ -1586,15 +1599,17 @@ static void DrawChoices_SEVolume(int selection, int y)
 
 static const u8 sText_ButtonType_Settings[]         = _("L=SETTINGS");
 static const u8 sText_ButtonType_FastMode[]         = _("L=FAST MODE");
+static const u8 sText_ButtonType_SelectEqualsR[]    = _("SEL=R");
 static const u8 *const sButtonModeStrings[] =
     {
     gText_ButtonTypeNormal,
     gText_ButtonTypeLEqualsA,
+    sText_ButtonType_SelectEqualsR,
     };
 static void DrawChoices_ButtonMode(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_MAIN_BUTTONMODE);
-    DrawOptionMenuChoiceStrings(selection, y, active, sButtonModeStrings, 2);
+    DrawOptionMenuChoiceStrings(selection, y, active, sButtonModeStrings, 3);
 }
 
 static const u8 sText_Normal[]  = _("NORMAL");

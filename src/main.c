@@ -294,6 +294,21 @@ static void ReadKeys(void)
             gMain.heldKeys |= A_BUTTON;
     }
 
+    // Accessibility: SELECT also fires R when SELECT=R mode is enabled.
+    // Additive remap (SELECT keeps its existing role; R is added on top)
+    // so the player doesn't lose overworld SELECT functions like the
+    // registered-item shortcut. Useful when the cartridge has no working
+    // R button and the player still needs R to page through party/bag/
+    // pokedex menus.
+    if (gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_SELECT_EQUALS_R)
+    {
+        if (JOY_NEW(SELECT_BUTTON))
+            gMain.newKeys |= R_BUTTON;
+
+        if (JOY_HELD(SELECT_BUTTON))
+            gMain.heldKeys |= R_BUTTON;
+    }
+
     if (JOY_NEW(gMain.watchedKeysMask))
         gMain.watchedKeysPressed = TRUE;
 }
