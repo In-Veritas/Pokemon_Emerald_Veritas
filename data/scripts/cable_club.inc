@@ -443,6 +443,7 @@ CableClub_EventScript_MusicCancel::
 	return
 
 CableClub_EventScript_TryEnterColosseum::
+	call CableClub_EventScript_MaybePickBattleScene
 	call Common_EventScript_SaveGame
 	goto_if_eq VAR_RESULT, 0, CableClub_EventScript_AbortLink
 	message gText_PleaseWaitForLink
@@ -1339,6 +1340,11 @@ CableClub_EventScript_SaveAndChooseLinkLeader::
 @ is stored locally and broadcast over the trainer-card link exchange (see
 @ src/link_battle_scene.c). Final terrain is resolved deterministically on
 @ every machine at battle setup time.
+@
+@ Wired battles set VAR_0x8004 to USING_* constants and route through
+@ TryEnterColosseum; wireless battles set VAR_0x8004 to LINK_GROUP_*
+@ constants and route through SaveAndChooseLinkLeader. Both call this
+@ helper, so we accept either constant family.
 CableClub_EventScript_MaybePickBattleScene::
 	goto_if_eq VAR_0x8004, LINK_GROUP_SINGLE_BATTLE, CableClub_EventScript_PickBattleScene
 	goto_if_eq VAR_0x8004, LINK_GROUP_DOUBLE_BATTLE, CableClub_EventScript_PickBattleScene
@@ -1346,6 +1352,12 @@ CableClub_EventScript_MaybePickBattleScene::
 	goto_if_eq VAR_0x8004, LINK_GROUP_LV50_SINGLE_BATTLE, CableClub_EventScript_PickBattleScene
 	goto_if_eq VAR_0x8004, LINK_GROUP_LV50_DOUBLE_BATTLE, CableClub_EventScript_PickBattleScene
 	goto_if_eq VAR_0x8004, LINK_GROUP_LV50_MULTI_BATTLE, CableClub_EventScript_PickBattleScene
+	goto_if_eq VAR_0x8004, USING_SINGLE_BATTLE, CableClub_EventScript_PickBattleScene
+	goto_if_eq VAR_0x8004, USING_DOUBLE_BATTLE, CableClub_EventScript_PickBattleScene
+	goto_if_eq VAR_0x8004, USING_MULTI_BATTLE, CableClub_EventScript_PickBattleScene
+	goto_if_eq VAR_0x8004, USING_LV50_SINGLE_BATTLE, CableClub_EventScript_PickBattleScene
+	goto_if_eq VAR_0x8004, USING_LV50_DOUBLE_BATTLE, CableClub_EventScript_PickBattleScene
+	goto_if_eq VAR_0x8004, USING_LV50_MULTI_BATTLE, CableClub_EventScript_PickBattleScene
 	return
 
 CableClub_EventScript_PickBattleScene::
