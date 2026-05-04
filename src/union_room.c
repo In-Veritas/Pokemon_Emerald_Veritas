@@ -1743,16 +1743,19 @@ static void Task_StartActivity(u8 taskId)
         SetMainCallback2(CB2_ShowCard);
         break;
     case ACTIVITY_POKEMON_JUMP:
-        // Coords (3,3) instead of vanilla (5,1)/(9,1): the vanilla coords
-        // landed the player on the Union Room / Trade Center door warp
-        // tile in Pokemon Center 2F (vanilla minigames entered the Union
-        // Room map; Veritas runs them solo from the Direct Corner so the
-        // door tile was wrong). (3,3) is a clean floor tile.
-        // Callback stays CB2_LoadMap (vanilla): the minigame teardown
-        // closes the link before returning, so CB2_ReturnToFieldCableClub
-        // (which waits on a live link via LoadMapInStepsLink) never
-        // completes and locks every player on a black screen.
-        WarpForWirelessMinigame(USING_MINIGAME, 3, 3);
+        // Use USING_WIRELESS_MINIGAME (not USING_MINIGAME) so cable_club.inc's
+        // global OnLoad/OnFrame routes the post-game scripts through the
+        // Direct Corner barrier (the same flow that USING_BERRY_CRUSH already
+        // uses). USING_MINIGAME would route through the Mossdeep barrier
+        // which doesn't exist on PC 2F and would corrupt tiles.
+        // (3,3) is the clean floor tile inside the Direct Corner that
+        // existing wireless activities (Berry Crush) also use; the script
+        // walks the player out through the barrier from there.
+        // Callback stays CB2_LoadMap because the minigame teardown calls
+        // SetCloseLinkCallback before returning — link is dead by the time
+        // the callback fires, so CB2_ReturnToFieldCableClub (which waits
+        // on a live link) would lock the player on black.
+        WarpForWirelessMinigame(USING_WIRELESS_MINIGAME, 3, 3);
         StartPokemonJump(GetCursorSelectionMonId(), CB2_LoadMap);
         break;
     case ACTIVITY_BERRY_CRUSH:
@@ -1760,7 +1763,7 @@ static void Task_StartActivity(u8 taskId)
         StartBerryCrush(CB2_LoadMap);
         break;
     case ACTIVITY_BERRY_PICK:
-        WarpForWirelessMinigame(USING_MINIGAME, 3, 3);
+        WarpForWirelessMinigame(USING_WIRELESS_MINIGAME, 3, 3);
         StartDodrioBerryPicking(GetCursorSelectionMonId(), CB2_LoadMap);
         break;
     }

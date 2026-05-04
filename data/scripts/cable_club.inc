@@ -60,6 +60,7 @@ CableClub_OnWarp:
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_UNION_ROOM, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_BERRY_CRUSH, CableClub_EventScript_CheckTurnAttendant
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_MINIGAME, CableClub_EventScript_CheckTurnAttendant
+	map_script_2 VAR_CABLE_CLUB_STATE, USING_WIRELESS_MINIGAME, CableClub_EventScript_CheckTurnAttendant
 	.2byte 0
 
 CableClub_EventScript_CheckTurnAttendant::
@@ -80,6 +81,7 @@ CableClub_OnLoad:
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_UNION_ROOM, CableClub_EventScript_OnLoadFromUnionRoom
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_BERRY_CRUSH, CableClub_EventScript_OnLoadFromBerryCrush
 	goto_if_eq VAR_CABLE_CLUB_STATE, USING_MINIGAME, CableClub_EventScript_OnLoadFromGameCorner
+	goto_if_eq VAR_CABLE_CLUB_STATE, USING_WIRELESS_MINIGAME, CableClub_EventScript_OnLoadFromBerryCrush
 	end
 
 CableClub_EventScript_OnLoadFromColosseum::
@@ -119,6 +121,7 @@ CableClub_OnFrame:
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_UNION_ROOM, CableClub_EventScript_ExitUnionRoom
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_BERRY_CRUSH, CableClub_EventScript_ExitLinkRoom
 	map_script_2 VAR_CABLE_CLUB_STATE, USING_MINIGAME, CableClub_EventScript_ExitMinigameRoom
+	map_script_2 VAR_CABLE_CLUB_STATE, USING_WIRELESS_MINIGAME, CableClub_EventScript_ExitLinkRoom
 	.2byte 0
 
 CableClub_EventScript_ExitLinkRoom::

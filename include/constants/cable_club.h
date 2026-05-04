@@ -14,6 +14,14 @@
 #define USING_LV50_SINGLE_BATTLE 10
 #define USING_LV50_DOUBLE_BATTLE 11
 #define USING_LV50_MULTI_BATTLE  12
+// Veritas: Pokemon Jump and Dodrio Berry Picking, when launched from the
+// wireless Direct Corner (PC 2F), set this state instead of USING_MINIGAME.
+// USING_MINIGAME stays reserved for the cable Mossdeep Game Corner — its
+// map-local OnFrame matches that constant and uses Mossdeep barrier
+// metatiles, which don't exist on PC 2F. Routing the wireless flow
+// through this new state lets cable_club.inc's global OnLoad/OnFrame
+// use the Direct Corner barrier instead.
+#define USING_WIRELESS_MINIGAME  13
 
 // Return states for the group of specials that use CreateLinkupTask
 // A few also used by TryBecomeLinkLeader and TryJoinLinkGroup
