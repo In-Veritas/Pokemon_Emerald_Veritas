@@ -1743,24 +1743,25 @@ static void Task_StartActivity(u8 taskId)
         SetMainCallback2(CB2_ShowCard);
         break;
     case ACTIVITY_POKEMON_JUMP:
-        // CB2_ReturnToFieldCableClub is the same exit callback used by the
-        // record-mixing corner — it routes through
-        // CB2_LoadMapOnReturnToFieldCableClub which calls
-        // ResetAllMultiplayerState() and uses the FieldCB_ReturnToFieldWirelessLink
-        // field callback to redraw tiles cleanly. The previous CB2_LoadMap
-        // path skipped that, leaving Union-Room/Trade-Center door tiles in
-        // a half-loaded state on the way out. (3,3) was a workaround for
-        // landing-on-warp-tile, but the real fix is to use the proper exit.
+        // Coords (3,3) instead of vanilla (5,1)/(9,1): the vanilla coords
+        // landed the player on the Union Room / Trade Center door warp
+        // tile in Pokemon Center 2F (vanilla minigames entered the Union
+        // Room map; Veritas runs them solo from the Direct Corner so the
+        // door tile was wrong). (3,3) is a clean floor tile.
+        // Callback stays CB2_LoadMap (vanilla): the minigame teardown
+        // closes the link before returning, so CB2_ReturnToFieldCableClub
+        // (which waits on a live link via LoadMapInStepsLink) never
+        // completes and locks every player on a black screen.
         WarpForWirelessMinigame(USING_MINIGAME, 3, 3);
-        StartPokemonJump(GetCursorSelectionMonId(), CB2_ReturnToFieldCableClub);
+        StartPokemonJump(GetCursorSelectionMonId(), CB2_LoadMap);
         break;
     case ACTIVITY_BERRY_CRUSH:
         WarpForWirelessMinigame(USING_BERRY_CRUSH, 3, 3);
-        StartBerryCrush(CB2_ReturnToFieldCableClub);
+        StartBerryCrush(CB2_LoadMap);
         break;
     case ACTIVITY_BERRY_PICK:
         WarpForWirelessMinigame(USING_MINIGAME, 3, 3);
-        StartDodrioBerryPicking(GetCursorSelectionMonId(), CB2_ReturnToFieldCableClub);
+        StartDodrioBerryPicking(GetCursorSelectionMonId(), CB2_LoadMap);
         break;
     }
 
