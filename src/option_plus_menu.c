@@ -70,6 +70,7 @@ enum
     MENUITEM_WORLD_PLAYERSTYLE,
     MENUITEM_WORLD_SHORTPOKECENTER,
     MENUITEM_WORLD_DEVONSCOPE,
+    MENUITEM_WORLD_DAYNIGHT,
     MENUITEM_WORLD_CANCEL,
     MENUITEM_WORLD_COUNT,
 };
@@ -215,6 +216,7 @@ static void DrawChoices_MonOverworld(int selection, int y);
 static void DrawChoices_PlayerStyle(int selection, int y);
 static void DrawChoices_ShortPokecenter(int selection, int y);
 static void DrawChoices_DevonScope(int selection, int y);
+static void DrawChoices_DayNight(int selection, int y);
 static void DrawChoices_SurfOverworld(int selection, int y);
 static void DrawChoices_ItemAnimate(int selection, int y);
 static void DrawChoices_TypeEffect(int selection, int y);
@@ -294,6 +296,7 @@ struct // MENU_WORLD
     [MENUITEM_WORLD_PLAYERSTYLE]        = {DrawChoices_PlayerStyle,     ProcessInput_Options_Two},
     [MENUITEM_WORLD_SHORTPOKECENTER]    = {DrawChoices_ShortPokecenter, ProcessInput_Options_Two},
     [MENUITEM_WORLD_DEVONSCOPE]         = {DrawChoices_DevonScope,      ProcessInput_Options_Two},
+    [MENUITEM_WORLD_DAYNIGHT]           = {DrawChoices_DayNight,         ProcessInput_Options_Two},
     [MENUITEM_WORLD_CANCEL]             = {NULL, NULL},
 };
 
@@ -355,6 +358,7 @@ static const u8 sText_ImprovedFishing[]     = _("IMPROVED FISHING");
 static const u8 sText_PlayerStyle[]         = _("PLAYER STYLE");
 static const u8 sText_ShortPokecenter[]     = _("SHORT POKéCENTER");
 static const u8 sText_DevonScope[]          = _("DEVON SCOPE");
+static const u8 sText_DayNight[]            = _("DAY/NIGHT CYCLE");
 static const u8 *const sOptionMenuItemsNamesWorld[MENUITEM_WORLD_COUNT] =
 {
     [MENUITEM_WORLD_MONOVERWORLD]       = sText_MonOverworld,
@@ -364,6 +368,7 @@ static const u8 *const sOptionMenuItemsNamesWorld[MENUITEM_WORLD_COUNT] =
     [MENUITEM_WORLD_PLAYERSTYLE]        = sText_PlayerStyle,
     [MENUITEM_WORLD_SHORTPOKECENTER]    = sText_ShortPokecenter,
     [MENUITEM_WORLD_DEVONSCOPE]         = sText_DevonScope,
+    [MENUITEM_WORLD_DAYNIGHT]           = sText_DayNight,
     [MENUITEM_WORLD_CANCEL]             = gText_OptionMenuSave,
 };
 
@@ -461,6 +466,7 @@ static bool8 CheckConditions(int selection)
 #endif
         case MENUITEM_WORLD_SHORTPOKECENTER: return TRUE;
         case MENUITEM_WORLD_DEVONSCOPE:      return FlagGet(FLAG_RECEIVED_DEVON_SCOPE);
+        case MENUITEM_WORLD_DAYNIGHT:        return TRUE;
         case MENUITEM_WORLD_CANCEL:          return TRUE;
         case MENUITEM_WORLD_COUNT:           return TRUE;
         }
@@ -553,6 +559,8 @@ static const u8 sText_Desc_ShortPokecenter_On[]         = _("Skip the yes/no que
 static const u8 sText_Desc_ShortPokecenter_Off[]        = _("Original experience.\nAlways ask the yes/no question.");
 static const u8 sText_Desc_DevonScope_On[]              = _("Show FEEBAS tiles on ROUTE 119.\nLower encounter rate (5%).");
 static const u8 sText_Desc_DevonScope_Off[]             = _("Hide FEEBAS tiles. Vanilla mechanics.\nHigher encounter rate (50%).");
+static const u8 sText_Desc_DayNight_On[]                = _("Tint world by hour: orange at sunset\n(17-19h), blue at night (19-6h).");
+static const u8 sText_Desc_DayNight_Off[]               = _("Original experience.\nNo time-of-day color tint.");
 static const u8 *const sOptionMenuItemDescriptionsWorld[MENUITEM_WORLD_COUNT][4] =
 {
     [MENUITEM_WORLD_AUTORUN]            = {sText_Desc_AutoRun_On,           sText_Desc_AutoRun_Off},
@@ -562,6 +570,7 @@ static const u8 *const sOptionMenuItemDescriptionsWorld[MENUITEM_WORLD_COUNT][4]
     [MENUITEM_WORLD_PLAYERSTYLE]        = {sText_Desc_PlayerStyle_Emerald,  sText_Desc_PlayerStyle_RS},
     [MENUITEM_WORLD_SHORTPOKECENTER]    = {sText_Desc_ShortPokecenter_On,   sText_Desc_ShortPokecenter_Off},
     [MENUITEM_WORLD_DEVONSCOPE]         = {sText_Desc_DevonScope_On,        sText_Desc_DevonScope_Off},
+    [MENUITEM_WORLD_DAYNIGHT]           = {sText_Desc_DayNight_On,          sText_Desc_DayNight_Off},
     [MENUITEM_WORLD_CANCEL]             = {sText_Desc_Save,                 sText_Empty},
 };
 
@@ -620,6 +629,7 @@ static const u8 *const sOptionMenuItemDescriptionsDisabledWorld[MENUITEM_WORLD_C
     [MENUITEM_WORLD_PLAYERSTYLE]        = sText_Desc_PlayerStyle_Disabled,
     [MENUITEM_WORLD_SHORTPOKECENTER]    = sText_Empty,
     [MENUITEM_WORLD_DEVONSCOPE]         = sText_Empty,
+    [MENUITEM_WORLD_DAYNIGHT]           = sText_Empty,
     [MENUITEM_WORLD_CANCEL]             = sText_Empty,
 };
 
@@ -933,6 +943,7 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel_world[MENUITEM_WORLD_PLAYERSTYLE]         = FlagGet(FLAG_PLAYER_STYLE_RS);
         sOptions->sel_world[MENUITEM_WORLD_SHORTPOKECENTER]     = !FlagGet(FLAG_ENABLE_SHORT_POKECENTER);   // Used the inverse to align with ON/OFF Buttons
         sOptions->sel_world[MENUITEM_WORLD_DEVONSCOPE]          = !FlagGet(FLAG_RECEIVED_DEVON_SCOPE);      // ON = tiles visible, OFF = vanilla
+        sOptions->sel_world[MENUITEM_WORLD_DAYNIGHT]            = !FlagGet(FLAG_OPTION_DAYNIGHT_CYCLE);    // 0 = ON (cycle enabled), 1 = OFF
 
         //Surf
         sOptions->sel_surf[MENUITEM_SURF_FASTSURF]            = !FlagGet(FLAG_ENABLE_FASTSURF);           // Used the inverse to align with ON/OFF Buttons
@@ -1231,6 +1242,7 @@ static void Task_OptionMenuSave(u8 taskId)
     else
         FlagClear(FLAG_RECEIVED_DEVON_SCOPE);
     GetFeebasTiles(); // Remix Feebas tile locations when Devon Scope is toggled
+    sOptions->sel_world[MENUITEM_WORLD_DAYNIGHT]            == 0 ? FlagSet(FLAG_OPTION_DAYNIGHT_CYCLE)  : FlagClear(FLAG_OPTION_DAYNIGHT_CYCLE);
 
     //Surf
     sOptions->sel_surf[MENUITEM_SURF_FASTSURF]              == 0 ? FlagSet(FLAG_ENABLE_FASTSURF)        : FlagClear(FLAG_ENABLE_FASTSURF);          // Used the inverse to align with other similar options.
@@ -1701,6 +1713,15 @@ static void DrawChoices_AutoRun(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_WORLD_AUTORUN);
     DrawOptionMenuChoiceStrings(selection, y, active, sAutoRunStrings, 2);
+}
+
+static const u8 sText_DayNight_On[]  = _("ON");
+static const u8 sText_DayNight_Off[] = _("OFF");
+static const u8 *const sDayNightStrings[] = {sText_DayNight_On, sText_DayNight_Off};
+static void DrawChoices_DayNight(int selection, int y)
+{
+    bool8 active = CheckConditions(MENUITEM_WORLD_DAYNIGHT);
+    DrawOptionMenuChoiceStrings(selection, y, active, sDayNightStrings, 2);
 }
 
 static const u8 sText_ImprovedFishing_On[]   = _("ON");

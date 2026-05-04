@@ -13,6 +13,7 @@
 #include "battle_tower.h"
 #include "battle_util.h"
 #include "berry.h"
+#include "day_night.h"
 #include "bg.h"
 #include "data.h"
 #include "debug.h"
@@ -1903,6 +1904,9 @@ void BattleMainCB2(void)
     RunTextPrinters();
     UpdatePaletteFade();
     RunTasks();
+    // Day/Night tint runs AFTER the palette fade so the blend composes on
+    // top of the latest palette state. No-op when the option is disabled.
+    DayNight_ApplyBattleTint();
 
     if (JOY_HELD(B_BUTTON) && gBattleTypeFlags & BATTLE_TYPE_RECORDED && RecordedBattle_CanStopPlayback())
     {
