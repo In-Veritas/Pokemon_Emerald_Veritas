@@ -89,7 +89,6 @@ enum {
     PACKET_GAME_STATE,
     PACKET_PICK_STATE,
     PACKET_READY_END,
-    PACKET_GAME_STARTED,
 };
 
 enum {
@@ -418,8 +417,6 @@ static void SetDodrioAnim(u8, u8);
 static u8 GetNewBerryIdByDifficulty(u8, u8);
 static void UpdateStatusBarAnim(u8);
 static u32 RecvPacket_ReadyToStart(u32);
-static void SendPacket_GameStarted(void);
-static u32 RecvPacket_GameStarted(void);
 static u32 IncrementWithLimit(u32, u32);
 static u32 Min(u32, u32);
 static u32 GetScore(u8);
@@ -930,16 +927,6 @@ static void WaitGameStart(void)
     {
     case 0:
         if (sGame->startGame)
-        {
-            sGame->state++;
-            sGame->countdownEndDelay = 0;
-        }
-        break;
-    case 1:
-        // Hold here briefly so the leader keeps broadcasting PACKET_GAME_STARTED
-        // and any straggling member receives it before the leader advances out
-        // of FUNC_WAIT_START (which would stop the broadcast).
-        if (++sGame->countdownEndDelay > 30)
             SetGameFunc(FUNC_PLAY_GAME);
         break;
     }
@@ -1644,10 +1631,6 @@ static void SendLinkData_Leader(void)
 {
     switch (sGame->funcId)
     {
-    case FUNC_WAIT_START:
-        if (sGame->startGame)
-            SendPacket_GameStarted();
-        break;
     case FUNC_PLAY_GAME:
         SendPacket_GameState(&sGame->player,
                              &sGame->players[0].comm,
@@ -1677,10 +1660,6 @@ static void RecvLinkData_Member(void)
 {
     switch (sGame->funcId)
     {
-    case FUNC_WAIT_START:
-        if (RecvPacket_GameStarted())
-            sGame->startGame = TRUE;
-        break;
     case FUNC_PLAY_GAME:
         RecvPacket_GameState(sGame->multiplayerId,
                             &sGame->players[sGame->multiplayerId],
@@ -1713,11 +1692,8 @@ static void SendLinkData_Member(void)
     switch (sGame->funcId)
     {
     case FUNC_WAIT_START:
-        // Keep sending ready every frame until the leader broadcasts the
-        // PACKET_GAME_STARTED ack. startGame is now set by RecvLinkData_Member
-        // when the ack arrives — never locally — so the leader is guaranteed
-        // to have received this player's ready before either side advances.
         SendPacket_ReadyToStart(TRUE);
+        sGame->startGame = TRUE;
         break;
     case FUNC_PLAY_GAME:
         if (sGame->player.comm.pickState != PICK_NONE)
@@ -3636,29 +3612,6 @@ static bool32 RecvPacket_ReadyToEnd(u32 playerId)
         return packet->ready;
 
     return FALSE;
-}
-
-struct GameStartedPacket
-{
-    u8 id;
-};
-
-static void SendPacket_GameStarted(void)
-{
-    struct GameStartedPacket packet;
-    packet.id = PACKET_GAME_STARTED;
-    Rfu_SendPacket(&packet);
-}
-
-static u32 RecvPacket_GameStarted(void)
-{
-    struct GameStartedPacket *packet;
-
-    if ((gRecvCmds[0][0] & RFUCMD_MASK) != RFUCMD_SEND_PACKET)
-        return FALSE;
-
-    packet = (void *)&gRecvCmds[0][1];
-    return packet->id == PACKET_GAME_STARTED;
 }
 
 static const struct BgTemplate sBgTemplates[] =
