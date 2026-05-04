@@ -441,6 +441,12 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 
 * **Thief** added to Umbreon's learnset at **Lv 60**
 * Umbreon can also now learn Thief via TM
+
+#### Yanma Learns Baton Pass (Egg Move)
+
+* **Baton Pass** added to Yanma's egg-move list
+* Inherited by breeding a female Yanma with a male **Ninjask** that knows Baton Pass (Ninjask learns it at Lv 50)
+* Gives Yanma a way to scout safely with Detect / Double Team and pass speed boosts to a teammate
 * Gives the Dark-type eeveelution a reliable offensive option that matches its typing
 
 #### Default Options for New Games

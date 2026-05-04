@@ -713,7 +713,8 @@ const u16 gEggMoves[] = {
               MOVE_LEECH_LIFE,
               MOVE_SIGNAL_BEAM,
               MOVE_SILVER_WIND,
-              MOVE_HYPNOSIS),
+              MOVE_HYPNOSIS,
+              MOVE_BATON_PASS),
 
     egg_moves(WOOPER,
               MOVE_BODY_SLAM,
