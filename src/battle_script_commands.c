@@ -6891,25 +6891,52 @@ static void Cmd_trymirrormove(void)
     }
 }
 
+// Common helper: if Air Lock or Cloud Nine is on the field, fail the
+// weather-set move and arrange the printfromtable in MoveWeatherChange
+// to show "<Pokemon>'s <ability> eliminated the weather's effects!"
+// instead of "But it failed!". Returns TRUE if the move should fail
+// here (caller skips its set-weather branch), FALSE otherwise.
+static bool32 TryFailWeatherFromAirLock(void)
+{
+    u8 suppressor;
+    u16 abilityId;
+    u8 battlerId;
+
+    suppressor = ABILITY_ON_FIELD(ABILITY_AIR_LOCK);
+    abilityId = ABILITY_AIR_LOCK;
+    if (!suppressor)
+    {
+        suppressor = ABILITY_ON_FIELD(ABILITY_CLOUD_NINE);
+        abilityId = ABILITY_CLOUD_NINE;
+    }
+    if (!suppressor)
+        return FALSE;
+
+    // ABILITY_ON_FIELD returns 1-indexed (battler + 1, or 0 if not present).
+    battlerId = suppressor - 1;
+    PREPARE_MON_NICK_BUFFER(gBattleTextBuff1, battlerId, gBattlerPartyIndexes[battlerId]);
+    PREPARE_ABILITY_BUFFER(gBattleTextBuff2, abilityId);
+    gMoveResultFlags |= MOVE_RESULT_MISSED;
+    gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_AIRLOCK_BLOCKED_WEATHER;
+    return TRUE;
+}
+
 static void Cmd_setrain(void)
 {
+    gBattlescriptCurrInstr++;
+
     if (gBattleWeather & B_WEATHER_RAIN)
     {
         gMoveResultFlags |= MOVE_RESULT_MISSED;
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_WEATHER_FAILED;
+        return;
     }
-    else
-    {
-        gBattleWeather = B_WEATHER_RAIN_TEMPORARY;
-        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_RAIN;
-        gWishFutureKnock.weatherDuration = 5;
-        if (!WEATHER_HAS_EFFECT && !gBattleStruct->weatherSuppressed)
-        {
-            gBattleStruct->weatherSuppressed = TRUE;
-            BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
-        }
-    }
-    gBattlescriptCurrInstr++;
+    if (TryFailWeatherFromAirLock())
+        return;
+
+    gBattleWeather = B_WEATHER_RAIN_TEMPORARY;
+    gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_RAIN;
+    gWishFutureKnock.weatherDuration = 5;
 }
 
 static void Cmd_setreflect(void)
@@ -7758,23 +7785,20 @@ static void Cmd_damagetohalftargethp(void)
 
 static void Cmd_setsandstorm(void)
 {
+    gBattlescriptCurrInstr++;
+
     if (gBattleWeather & B_WEATHER_SANDSTORM)
     {
         gMoveResultFlags |= MOVE_RESULT_MISSED;
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_WEATHER_FAILED;
+        return;
     }
-    else
-    {
-        gBattleWeather = B_WEATHER_SANDSTORM_TEMPORARY;
-        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_SANDSTORM;
-        gWishFutureKnock.weatherDuration = 5;
-        if (!WEATHER_HAS_EFFECT && !gBattleStruct->weatherSuppressed)
-        {
-            gBattleStruct->weatherSuppressed = TRUE;
-            BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
-        }
-    }
-    gBattlescriptCurrInstr++;
+    if (TryFailWeatherFromAirLock())
+        return;
+
+    gBattleWeather = B_WEATHER_SANDSTORM_TEMPORARY;
+    gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_SANDSTORM;
+    gWishFutureKnock.weatherDuration = 5;
 }
 
 static void Cmd_weatherdamage(void)
@@ -8944,24 +8968,20 @@ static void Cmd_jumpifnopursuitswitchdmg(void)
 
 static void Cmd_setsunny(void)
 {
+    gBattlescriptCurrInstr++;
+
     if (gBattleWeather & B_WEATHER_SUN)
     {
         gMoveResultFlags |= MOVE_RESULT_MISSED;
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_WEATHER_FAILED;
+        return;
     }
-    else
-    {
-        gBattleWeather = B_WEATHER_SUN_TEMPORARY;
-        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_SUNLIGHT;
-        gWishFutureKnock.weatherDuration = 5;
-        if (!WEATHER_HAS_EFFECT && !gBattleStruct->weatherSuppressed)
-        {
-            gBattleStruct->weatherSuppressed = TRUE;
-            BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
-        }
-    }
+    if (TryFailWeatherFromAirLock())
+        return;
 
-    gBattlescriptCurrInstr++;
+    gBattleWeather = B_WEATHER_SUN_TEMPORARY;
+    gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_SUNLIGHT;
+    gWishFutureKnock.weatherDuration = 5;
 }
 
 // Belly Drum
@@ -9232,24 +9252,20 @@ static void Cmd_setminimize(void)
 
 static void Cmd_sethail(void)
 {
+    gBattlescriptCurrInstr++;
+
     if (gBattleWeather & B_WEATHER_HAIL)
     {
         gMoveResultFlags |= MOVE_RESULT_MISSED;
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_WEATHER_FAILED;
+        return;
     }
-    else
-    {
-        gBattleWeather = B_WEATHER_HAIL_TEMPORARY;
-        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_HAIL;
-        gWishFutureKnock.weatherDuration = 5;
-        if (!WEATHER_HAS_EFFECT && !gBattleStruct->weatherSuppressed)
-        {
-            gBattleStruct->weatherSuppressed = TRUE;
-            BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
-        }
-    }
+    if (TryFailWeatherFromAirLock())
+        return;
 
-    gBattlescriptCurrInstr++;
+    gBattleWeather = B_WEATHER_HAIL_TEMPORARY;
+    gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_STARTED_HAIL;
+    gWishFutureKnock.weatherDuration = 5;
 }
 
 static void Cmd_trymemento(void)

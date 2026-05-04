@@ -6,6 +6,7 @@
 #include "battle_setup.h"
 #include "battle_tower.h"
 #include "data.h"
+#include "day_night.h"
 #include "event_data.h"
 #include "frontier_util.h"
 #include "graphics.h"
@@ -349,6 +350,11 @@ static const u8 sText_SandstormSubsided[] = _("The sandstorm subsided.");
 static const u8 sText_SunlightGotBright[] = _("The sunlight got bright!");
 static const u8 sText_SunlightStrong[] = _("The sunlight is strong.");
 static const u8 sText_SunlightFaded[] = _("The sunlight faded.");
+// Day/night cycle: at night, "sunlight" is overridden with "moonlight"
+// flavor text via BufferStringBattle. Same weather mechanic, different text.
+static const u8 sText_MoonlightGotBright[] = _("The moonlight grew bright!");
+static const u8 sText_MoonlightStrong[] = _("The moonlight is bright.");
+static const u8 sText_MoonlightFaded[] = _("The moonlight faded.");
 static const u8 sText_StartedHail[] = _("It started to hail!");
 static const u8 sText_HailContinues[] = _("Hail continues to fall.");
 static const u8 sText_HailStopped[] = _("The hail stopped.");
@@ -440,6 +446,7 @@ static const u8 sText_BabyCharmInfatuated[] = _("{B_SCR_ACTIVE_NAME_WITH_PREFIX}
 static const u8 sText_QuickLearnerActivated[] = _("{B_DEF_NAME_WITH_PREFIX}'s {B_DEF_ABILITY}\nboosted its stats!");
 static const u8 sText_MysticTempoActivated[] = _("{B_ATK_NAME_WITH_PREFIX}'s {B_ATK_ABILITY}\nsharply boosted its {B_BUFF1}!");
 static const u8 sText_AirLockActivates[] = _("The effects of the weather\ndisappeared.");
+static const u8 sText_AirLockBlockedWeather[] = _("{B_BUFF1}'s {B_BUFF2} eliminated\nthe weather's effects!");
 
 const u8 * const gStatNamesTable[NUM_BATTLE_STATS] =
 {
@@ -904,7 +911,8 @@ const u8 * const gBattleStringsTable[BATTLESTRINGS_COUNT - BATTLESTRINGS_TABLE_S
     [STRINGID_BABYCHARMINFATUATED - BATTLESTRINGS_TABLE_START] = sText_BabyCharmInfatuated,
     [STRINGID_QUICKLEARNERACTIVATED - BATTLESTRINGS_TABLE_START] = sText_QuickLearnerActivated,
     [STRINGID_MYSTICTEMPOACTIVATED - BATTLESTRINGS_TABLE_START] = sText_MysticTempoActivated,
-    [STRINGID_AIRLOCKACTIVATES - BATTLESTRINGS_TABLE_START] = sText_AirLockActivates
+    [STRINGID_AIRLOCKACTIVATES - BATTLESTRINGS_TABLE_START] = sText_AirLockActivates,
+    [STRINGID_AIRLOCKBLOCKEDWEATHER - BATTLESTRINGS_TABLE_START] = sText_AirLockBlockedWeather
 };
 
 const u16 gMissStringIds[] =
@@ -927,12 +935,13 @@ const u16 gNoEscapeStringIds[] =
 
 const u16 gMoveWeatherChangeStringIds[] =
 {
-    [B_MSG_STARTED_RAIN]      = STRINGID_STARTEDTORAIN,
-    [B_MSG_STARTED_DOWNPOUR]  = STRINGID_DOWNPOURSTARTED, // Unused
-    [B_MSG_WEATHER_FAILED]    = STRINGID_BUTITFAILED,
-    [B_MSG_STARTED_SANDSTORM] = STRINGID_SANDSTORMBREWED,
-    [B_MSG_STARTED_SUNLIGHT]  = STRINGID_SUNLIGHTGOTBRIGHT,
-    [B_MSG_STARTED_HAIL]      = STRINGID_STARTEDHAIL,
+    [B_MSG_STARTED_RAIN]              = STRINGID_STARTEDTORAIN,
+    [B_MSG_STARTED_DOWNPOUR]          = STRINGID_DOWNPOURSTARTED, // Unused
+    [B_MSG_WEATHER_FAILED]            = STRINGID_BUTITFAILED,
+    [B_MSG_STARTED_SANDSTORM]         = STRINGID_SANDSTORMBREWED,
+    [B_MSG_STARTED_SUNLIGHT]          = STRINGID_SUNLIGHTGOTBRIGHT,
+    [B_MSG_STARTED_HAIL]              = STRINGID_STARTEDHAIL,
+    [B_MSG_AIRLOCK_BLOCKED_WEATHER]   = STRINGID_AIRLOCKBLOCKEDWEATHER,
 };
 
 const u16 gSandStormHailContinuesStringIds[] =
@@ -2364,6 +2373,27 @@ void BufferStringBattle(u16 stringID)
         {
             stringPtr = gBattleStringsTable[stringID - BATTLESTRINGS_TABLE_START];
         }
+        break;
+    }
+
+    // Day/night flavor: at night with the cycle option enabled, swap
+    // Sunny Day's "sunlight" lines for "moonlight" equivalents. The weather
+    // mechanic itself (Drought) is unchanged — only the announcement text.
+    // Check the stringId BEFORE IsTimeOfDayNight() so we don't pay an RTC
+    // read on every single battle message — only on the three sun strings.
+    switch (stringID)
+    {
+    case STRINGID_SUNLIGHTGOTBRIGHT:
+        if (IsTimeOfDayNight())
+            stringPtr = sText_MoonlightGotBright;
+        break;
+    case STRINGID_SUNLIGHTSTRONG:
+        if (IsTimeOfDayNight())
+            stringPtr = sText_MoonlightStrong;
+        break;
+    case STRINGID_SUNLIGHTFADED:
+        if (IsTimeOfDayNight())
+            stringPtr = sText_MoonlightFaded;
         break;
     }
 

@@ -388,8 +388,9 @@
 #define STRINGID_QUICKLEARNERACTIVATED      388
 #define STRINGID_MYSTICTEMPOACTIVATED       389
 #define STRINGID_AIRLOCKACTIVATES           390
+#define STRINGID_AIRLOCKBLOCKEDWEATHER      391 // Veritas: weather move (Sunny Day etc.) failed because Air Lock/Cloud Nine is on the field
 
-#define BATTLESTRINGS_COUNT                 391
+#define BATTLESTRINGS_COUNT                 392
 
 // This is the string id that gBattleStringsTable starts with.
 // String ids before this (e.g. STRINGID_INTROMSG) are not in the table,
@@ -444,12 +445,13 @@
 #define B_MSG_TURN1_BOUNCE      7
 
 // gMoveWeatherChangeStringIds
-#define B_MSG_STARTED_RAIN      0
-#define B_MSG_STARTED_DOWNPOUR  1
-#define B_MSG_WEATHER_FAILED    2
-#define B_MSG_STARTED_SANDSTORM 3
-#define B_MSG_STARTED_SUNLIGHT  4
-#define B_MSG_STARTED_HAIL      5
+#define B_MSG_STARTED_RAIN              0
+#define B_MSG_STARTED_DOWNPOUR          1
+#define B_MSG_WEATHER_FAILED            2
+#define B_MSG_STARTED_SANDSTORM         3
+#define B_MSG_STARTED_SUNLIGHT          4
+#define B_MSG_STARTED_HAIL              5
+#define B_MSG_AIRLOCK_BLOCKED_WEATHER   6 // Veritas: weather move blocked by Air Lock / Cloud Nine
 
 // gRainContinuesStringIds
 #define B_MSG_RAIN_CONTINUES     0
