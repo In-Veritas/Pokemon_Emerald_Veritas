@@ -909,54 +909,55 @@ static void Task_StartWiredCableClubBattle(u8 taskId)
     switch (task->tState)
     {
     case 0:
-        // VS mugshot must run on the still-visible field (BattleTransition
-        // is a fade-FROM-visible animation — calling it after a black-fade
-        // never completes and locks the player on a black screen). So we
-        // start the transition first, fade-to-black AFTER it finishes.
-        // gLinkType / ClearLinkCallback_2 stay before the transition so
-        // the link state is consistent while the cutscene plays.
+        // Link teardown happens with the field still visible — link
+        // state changes are internal and don't affect rendering. We
+        // skip the vanilla FadeScreen so the mugshot at the end runs
+        // on the visible colosseum, then InitBattle takes over with
+        // no intermediate post-mugshot frame visible to the player.
+        // Modeled on Task_BattleStart in src/battle_setup.c which goes
+        // straight from IsBattleTransitionDone to SetMainCallback2.
         gLinkType = LINKTYPE_BATTLE;
         ClearLinkCallback_2();
-        BattleTransition_StartOnField(B_TRANSITION_LINK_BATTLE);
         task->tState++;
         break;
     case 1:
-        if (IsBattleTransitionDone() == TRUE)
-            task->tState++;
-        break;
-    case 2:
-        FadeScreen(FADE_TO_BLACK, 0);
-        task->tState++;
-        break;
-    case 3:
-        if (!gPaletteFade.active)
-            task->tState++;
-        break;
-    case 4:
         task->tTimer++;
         if (task->tTimer > 20)
             task->tState++;
         break;
-    case 5:
+    case 2:
         SetCloseLinkCallback();
         task->tState++;
         break;
-    case 6:
+    case 3:
         if (!gReceivedRemoteLinkPlayers)
             task->tState++;
         break;
-    case 7:
-        SetLinkBattleTypeFlags(gSpecialVar_0x8004);
-        if (gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE
-            || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE
-            || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
-            ApplyLv50Cap();
-        PlayMapChosenOrBattleBGM(0);
-        CleanupOverworldWindowsAndTilemaps();
-        gTrainerBattleOpponent_A = TRAINER_LINK_OPPONENT;
-        SetMainCallback2(CB2_InitBattle);
-        gMain.savedCallback = CB2_ReturnFromCableClubBattle;
-        DestroyTask(taskId);
+    case 4:
+        // Mugshot is the LAST thing before battle init so the
+        // transition's terminal state is what's on screen the moment
+        // CB2_InitBattle takes over. Putting the mugshot earlier
+        // leaves the post-mugshot field visible during the remaining
+        // task steps (BG0 has the mugshot tilemap, OAM still has
+        // colosseum NPCs, BG layers windowed off — looks broken).
+        BattleTransition_StartOnField(B_TRANSITION_LINK_BATTLE);
+        task->tState++;
+        break;
+    case 5:
+        if (IsBattleTransitionDone() == TRUE)
+        {
+            SetLinkBattleTypeFlags(gSpecialVar_0x8004);
+            if (gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE
+                || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE
+                || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
+                ApplyLv50Cap();
+            PlayMapChosenOrBattleBGM(0);
+            CleanupOverworldWindowsAndTilemaps();
+            gTrainerBattleOpponent_A = TRAINER_LINK_OPPONENT;
+            SetMainCallback2(CB2_InitBattle);
+            gMain.savedCallback = CB2_ReturnFromCableClubBattle;
+            DestroyTask(taskId);
+        }
         break;
     }
 }
@@ -969,31 +970,20 @@ static void Task_StartWirelessCableClubBattle(u8 taskId)
     switch (tState)
     {
     case 0:
-        // Mirror of the wired flow: run the mugshot BEFORE FadeScreen so
-        // the cutscene plays on the still-visible field. See the comment
-        // in Task_StartWiredCableClubBattle for why the order matters.
+        // Mirror of the wired flow: link teardown + LinkPlayer block
+        // exchange happen with the field visible (link state is internal,
+        // doesn't affect rendering). The mugshot is queued LAST so its
+        // terminal state is what CB2_InitBattle takes over from with no
+        // visible intermediate post-mugshot frame.
         gLinkType = LINKTYPE_BATTLE;
         ClearLinkCallback_2();
-        BattleTransition_StartOnField(B_TRANSITION_LINK_BATTLE);
         tState = 1;
         break;
     case 1:
-        if (IsBattleTransitionDone() == TRUE)
-            tState = 2;
+        SendBlock(0, &gLocalLinkPlayer, sizeof(gLocalLinkPlayer));
+        tState = 2;
         break;
     case 2:
-        FadeScreen(FADE_TO_BLACK, 0);
-        tState = 3;
-        break;
-    case 3:
-        if (!gPaletteFade.active)
-            tState = 4;
-        break;
-    case 4:
-        SendBlock(0, &gLocalLinkPlayer, sizeof(gLocalLinkPlayer));
-        tState = 5;
-        break;
-    case 5:
         if (GetBlockReceivedStatus() == GetLinkPlayerCountAsBitFlags())
         {
             for (i = 0; i < GetLinkPlayerCount(); i++)
@@ -1003,37 +993,44 @@ static void Task_StartWirelessCableClubBattle(u8 taskId)
                 ConvertLinkPlayerName(&gLinkPlayers[i]);
                 ResetBlockReceivedFlag(i);
             }
+            tState = 3;
+        }
+        break;
+    case 3:
+        tTimer++;
+        if (tTimer > 20)
+            tState = 4;
+        break;
+    case 4:
+        SetLinkStandbyCallback();
+        tState = 5;
+        break;
+    case 5:
+        if (IsLinkTaskFinished())
+        {
             tState = 6;
         }
         break;
     case 6:
-        tTimer++;
-        if (tTimer > 20)
-            tState = 7;
+        BattleTransition_StartOnField(B_TRANSITION_LINK_BATTLE);
+        tState = 7;
         break;
     case 7:
-        SetLinkStandbyCallback();
-        tState = 8;
-        break;
-    case 8:
-        if (IsLinkTaskFinished())
+        if (IsBattleTransitionDone() == TRUE)
         {
-            tState = 9;
+            gLinkPlayers[0].linkType = LINKTYPE_BATTLE;
+            SetLinkBattleTypeFlags(gSpecialVar_0x8004);
+            if (gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE
+                || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE
+                || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
+                ApplyLv50Cap();
+            PlayMapChosenOrBattleBGM(0);
+            CleanupOverworldWindowsAndTilemaps();
+            gTrainerBattleOpponent_A = TRAINER_LINK_OPPONENT;
+            SetMainCallback2(CB2_InitBattle);
+            gMain.savedCallback = CB2_ReturnFromCableClubBattle;
+            DestroyTask(taskId);
         }
-        break;
-    case 9:
-        gLinkPlayers[0].linkType = LINKTYPE_BATTLE;
-        SetLinkBattleTypeFlags(gSpecialVar_0x8004);
-        if (gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE
-            || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE
-            || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
-            ApplyLv50Cap();
-        PlayMapChosenOrBattleBGM(0);
-        CleanupOverworldWindowsAndTilemaps();
-        gTrainerBattleOpponent_A = TRAINER_LINK_OPPONENT;
-        SetMainCallback2(CB2_InitBattle);
-        gMain.savedCallback = CB2_ReturnFromCableClubBattle;
-        DestroyTask(taskId);
         break;
     }
 }
