@@ -71,6 +71,8 @@ struct TrainerCardData
     u8 textLinkBattleLosses[140];
     u8 textNumTrades[140];
     u8 textBerryCrushPts[140];
+    u8 textPokemonJumpScore[20];     // Veritas: best Pokemon Jump run (gSaveBlock2Ptr->pokeJump.bestJumpScore)
+    u8 textDodrioBerryPickScore[20]; // Veritas: best Dodrio Berry Picking run (gSaveBlock2Ptr->berryPick.bestScore)
     u8 textUnionRoomStats[70];
     u8 textNumLinkPokeblocks[70];
     u8 textNumLinkContests[70];
@@ -143,6 +145,8 @@ static void PrintHofDebutTimeOnCard(void);
 static void PrintLinkBattleResultsOnCard(void);
 static void PrintTradesStringOnCard(void);
 static void PrintBerryCrushStringOnCard(void);
+static void PrintPokemonJumpStringOnCard(void);
+static void PrintDodrioBerryPickStringOnCard(void);
 static void PrintPokeblockStringOnCard(void);
 static void PrintUnionStringOnCard(void);
 static void PrintContestStringOnCard(void);
@@ -155,6 +159,8 @@ static void BufferHofDebutTime(void);
 static void BufferLinkBattleResults(void);
 static void BufferNumTrades(void);
 static void BufferBerryCrushPoints(void);
+static void BufferPokemonJumpScore(void);
+static void BufferDodrioBerryPickScore(void);
 static void BufferUnionRoomStats(void);
 static void BufferLinkPokeblocksNum(void);
 static void BufferLinkContestNum(void);
@@ -1012,10 +1018,18 @@ static bool8 PrintAllOnCardBack(void)
         PrintContestStringOnCard();
         break;
     case 6:
+        // Veritas: minigame high scores. These are gated on !isLink so
+        // the rows only appear on the local player's own card; link
+        // cards skip them since trainerCard payload doesn't include
+        // these stats.
+        PrintPokemonJumpStringOnCard();
+        PrintDodrioBerryPickStringOnCard();
+        break;
+    case 7:
         PrintPokemonIconsOnCard();
         PrintBattleFacilityStringOnCard();
         break;
-    case 7:
+    case 8:
         PrintStickersOnCard();
         break;
     default:
@@ -1033,6 +1047,8 @@ static void BufferTextsVarsForCardPage2(void)
     BufferLinkBattleResults();
     BufferNumTrades();
     BufferBerryCrushPoints();
+    BufferPokemonJumpScore();
+    BufferDodrioBerryPickScore();
     BufferUnionRoomStats();
     BufferLinkPokeblocksNum();
     BufferLinkContestNum();
@@ -1319,16 +1335,50 @@ static void PrintTradesStringOnCard(void)
         PrintStatOnBackOfCard(sData->nextStatRow++, gText_PokemonTrades, sData->textNumTrades, sTrainerCardStatColors);
 }
 
+// Veritas note: minigame stats (Berry Crush powder, Pokemon Jump best
+// score, Dodrio Berry Pick best score) are not transmitted in the
+// trainer-card link payload — only the local player's own card shows
+// them. Gating on !sData->isLink hides them on link cards instead of
+// printing zeroes. Gating on a non-zero score keeps the row hidden
+// for players who haven't played the minigame yet.
 static void BufferBerryCrushPoints(void)
 {
     if (sData->cardType == CARD_TYPE_FRLG && sData->trainerCard.linkPoints.berryCrush)
         ConvertIntToDecimalStringN(sData->textBerryCrushPts, sData->trainerCard.linkPoints.berryCrush, STR_CONV_MODE_RIGHT_ALIGN, 5);
+    else if (sData->cardType != CARD_TYPE_FRLG && !sData->isLink && gSaveBlock2Ptr->berryCrush.berryPowderAmount)
+        ConvertIntToDecimalStringN(sData->textBerryCrushPts, gSaveBlock2Ptr->berryCrush.berryPowderAmount, STR_CONV_MODE_RIGHT_ALIGN, 5);
 }
 
 static void PrintBerryCrushStringOnCard(void)
 {
     if (sData->cardType == CARD_TYPE_FRLG && sData->trainerCard.linkPoints.berryCrush)
         PrintStatOnBackOfCard(sData->nextStatRow++, gText_BerryCrush, sData->textBerryCrushPts, sTrainerCardStatColors);
+    else if (sData->cardType != CARD_TYPE_FRLG && !sData->isLink && gSaveBlock2Ptr->berryCrush.berryPowderAmount)
+        PrintStatOnBackOfCard(sData->nextStatRow++, gText_BerryCrush, sData->textBerryCrushPts, sTrainerCardStatColors);
+}
+
+static void BufferPokemonJumpScore(void)
+{
+    if (!sData->isLink && gSaveBlock2Ptr->pokeJump.bestJumpScore)
+        ConvertIntToDecimalStringN(sData->textPokemonJumpScore, gSaveBlock2Ptr->pokeJump.bestJumpScore, STR_CONV_MODE_RIGHT_ALIGN, 5);
+}
+
+static void PrintPokemonJumpStringOnCard(void)
+{
+    if (!sData->isLink && gSaveBlock2Ptr->pokeJump.bestJumpScore)
+        PrintStatOnBackOfCard(sData->nextStatRow++, gText_PokemonJump, sData->textPokemonJumpScore, sTrainerCardStatColors);
+}
+
+static void BufferDodrioBerryPickScore(void)
+{
+    if (!sData->isLink && gSaveBlock2Ptr->berryPick.bestScore)
+        ConvertIntToDecimalStringN(sData->textDodrioBerryPickScore, gSaveBlock2Ptr->berryPick.bestScore, STR_CONV_MODE_RIGHT_ALIGN, 5);
+}
+
+static void PrintDodrioBerryPickStringOnCard(void)
+{
+    if (!sData->isLink && gSaveBlock2Ptr->berryPick.bestScore)
+        PrintStatOnBackOfCard(sData->nextStatRow++, gText_DodrioBerryPicking, sData->textDodrioBerryPickScore, sTrainerCardStatColors);
 }
 
 static void BufferUnionRoomStats(void)

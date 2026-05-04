@@ -603,14 +603,18 @@ CableClub_EventScript_CantTradeEnigmaBerry::
 	setvar VAR_RESULT, 0
 	return
 
+@ Veritas note: per-game minigame high scores moved to the back of
+@ the trainer card (see PrintPokemonJumpStringOnCard /
+@ PrintDodrioBerryPickStringOnCard / PrintBerryCrushStringOnCard in
+@ src/trainer_card.c). The Record Corner attendant now only handles
+@ the wireless record-mixing flow, with a yes/no prompt instead of
+@ the previous multichoice submenu.
 CableClub_EventScript_RecordCorner::
 	copyvar VAR_0x8007, VAR_LAST_TALKED
-	multichoice 0, 0, MULTI_RECORD_CORNER_OPTIONS, FALSE
+	msgbox CableClub_Text_AccessRecordCorner, MSGBOX_YESNO
 	switch VAR_RESULT
-	case 0, CableClub_EventScript_RecordCornerLinkup
-	case 1, CableClub_EventScript_MinigameRecords
-	case 2, CableClub_EventScript_RecordCornerExit
-	case MULTI_B_PRESSED, CableClub_EventScript_RecordCornerExit
+	case YES, CableClub_EventScript_RecordCornerLinkup
+	case NO, CableClub_EventScript_RecordCornerExit
 	end
 
 CableClub_EventScript_RecordCornerExit::
@@ -634,31 +638,6 @@ CableClub_EventScript_RecordCornerLinkup::
 	goto_if_eq VAR_RESULT, LINKUP_FAILED, CableClub_EventScript_AbortLink
 	goto_if_eq VAR_RESULT, LINKUP_CONNECTION_ERROR, CableClub_EventScript_AbortLinkConnectionError
 	end
-
-CableClub_EventScript_MinigameRecords::
-	multichoice 0, 0, MULTI_MINIGAME_RECORDS, FALSE
-	switch VAR_RESULT
-	case 0, CableClub_EventScript_ShowPokemonJumpRecords
-	case 1, CableClub_EventScript_ShowBerryCrushRecords
-	case 2, CableClub_EventScript_ShowDodrioBerryPickingRecords
-	case 3, CableClub_EventScript_RecordCornerExit
-	case MULTI_B_PRESSED, CableClub_EventScript_RecordCornerExit
-	end
-
-CableClub_EventScript_ShowPokemonJumpRecords::
-	special ShowPokemonJumpRecords
-	waitstate
-	goto CableClub_EventScript_MinigameRecords
-
-CableClub_EventScript_ShowBerryCrushRecords::
-	special ShowBerryCrushRankings
-	waitstate
-	goto CableClub_EventScript_MinigameRecords
-
-CableClub_EventScript_ShowDodrioBerryPickingRecords::
-	special ShowDodrioBerryPickingRecords
-	waitstate
-	goto CableClub_EventScript_MinigameRecords
 
 CableClub_EventScript_EnterRecordCorner::
 	setvar VAR_0x8004, USING_RECORD_CORNER
