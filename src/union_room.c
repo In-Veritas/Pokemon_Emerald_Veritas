@@ -1743,16 +1743,24 @@ static void Task_StartActivity(u8 taskId)
         SetMainCallback2(CB2_ShowCard);
         break;
     case ACTIVITY_POKEMON_JUMP:
-        WarpForWirelessMinigame(USING_MINIGAME, 5, 1);
-        StartPokemonJump(GetCursorSelectionMonId(), CB2_LoadMap);
+        // CB2_ReturnToFieldCableClub is the same exit callback used by the
+        // record-mixing corner — it routes through
+        // CB2_LoadMapOnReturnToFieldCableClub which calls
+        // ResetAllMultiplayerState() and uses the FieldCB_ReturnToFieldWirelessLink
+        // field callback to redraw tiles cleanly. The previous CB2_LoadMap
+        // path skipped that, leaving Union-Room/Trade-Center door tiles in
+        // a half-loaded state on the way out. (3,3) was a workaround for
+        // landing-on-warp-tile, but the real fix is to use the proper exit.
+        WarpForWirelessMinigame(USING_MINIGAME, 3, 3);
+        StartPokemonJump(GetCursorSelectionMonId(), CB2_ReturnToFieldCableClub);
         break;
     case ACTIVITY_BERRY_CRUSH:
-        WarpForWirelessMinigame(USING_BERRY_CRUSH, 9, 1);
-        StartBerryCrush(CB2_LoadMap);
+        WarpForWirelessMinigame(USING_BERRY_CRUSH, 3, 3);
+        StartBerryCrush(CB2_ReturnToFieldCableClub);
         break;
     case ACTIVITY_BERRY_PICK:
-        WarpForWirelessMinigame(USING_MINIGAME, 5, 1);
-        StartDodrioBerryPicking(GetCursorSelectionMonId(), CB2_LoadMap);
+        WarpForWirelessMinigame(USING_MINIGAME, 3, 3);
+        StartDodrioBerryPicking(GetCursorSelectionMonId(), CB2_ReturnToFieldCableClub);
         break;
     }
 
