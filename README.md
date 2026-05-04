@@ -70,6 +70,15 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 * **Dodrio Berry Picking**: No longer requires a Dodrio in your party. **All players** receive prizes (not just the winner), and rarity odds improve with more players. Prize pool includes rare berries, Nugget, Rare Candy, PP Up/Max, and Master Ball.
 * See [`docs/MINIGAMES_REWARDS.md`](docs/MINIGAMES_REWARDS.md) for the full reward tables.
 
+#### Link Battle VS Cutscene with Multiplayer Mugshots
+
+* Link battles now open with the same dramatic **VS mugshot transition** the Elite Four/Champion fights use, replacing the default cable-club spiral wipe.
+* The mugshot dynamically pulls each peer's trainer pic from `gLinkPlayers`, so you actually see your opponent's face (Brendan / May / RS variants depending on their unlocked style).
+* In **multi battles** (4-player Lv50 Multi), the transition shows both opposing trainers side-by-side and labels them clearly.
+* The cutscene background colors are picked per-battle-scene (red/blue/green clashing pairs), so each battle scene has its own visual identity even when the same trainers are matched up.
+* **Battle scene resolution between peers**: when players pick different scenes for the same match, the engine deterministically resolves whose pick wins by hashing each peer's pick with the shared RTC seed. So picking the "same" scene with the same friends across multiple sessions does NOT always pick the same player's choice — it's truly random across runs.
+* The cutscene runs in sync with the battle music — the song starts the moment all players are in place, mugshots fire on-beat.
+
 #### Lv 50 Cable Club Battle Modes
 
 * The Cable Club now offers **Lv50 Singles**, **Lv50 Doubles**, and **Lv50 Multi** in addition to the standard battle modes.
@@ -437,6 +446,32 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 * **6+** Lucky Eggs → effectively 2.00× battle EXP
 * Eggs (the unhatched kind) still don't gain EXP — only living party members holding Lucky Eggs are counted
 
+#### Day/Night Cycle (optional)
+
+* Optional day/night palette tinting on the overworld, driven by the GBA's Real-Time Clock.
+* When enabled, the overworld and the player/follower/NPC sprites tint dusk-orange in the evening and dark-blue at night; bright daylight returns in the morning.
+* **Menus, dialog boxes, and UI elements are unaffected** — only the world layer and sprite layer are tinted, so battle screens, the bag, the Pokénav, and HP bars stay readable.
+* Indoor maps (houses, caves, secret bases) are NOT tinted — the world stays at "indoor lighting" regardless of clock.
+* Disabled by default; toggle in the Options Plus menu under World submenu.
+* Friendship-based evolutions that depend on time of day (e.g., Espeon by day, Umbreon by night) become actually time-of-day gated when the cycle is enabled.
+
+#### Mystery Egg from Pokémon Jump
+
+* The 16,000-point **Mythical** prize tier in Pokémon Jump now grants a **Mystery Egg** that always hatches into a **first-stage species** (no Pichu evolutions, no rare-baby surprises — just a clean roll across all 386 first-stage Pokémon).
+* The egg is wrapped in a sealed-egg sprite and placed at the daycare like any other; species is decided at hatch time.
+* Reusing existing daycare infrastructure means no save changes.
+
+#### Pokémon Outbreak Expansion
+
+* The TV outbreak rotation now includes the **full National Dex** instead of only Hoenn natives (~40 species → ~140+ species).
+* Cross-region species can now appear as outbreaks in their thematically-appropriate routes (e.g., Pikachu line on grassy routes, Magikarp on water routes).
+* Outbreaks still respect catchability (no Mythicals/legendaries from outbreaks) and route encounter restrictions.
+
+#### Pokémon Jump Shiny Visual
+
+* When a shiny Pokémon participates in Pokémon Jump, it now also displays a **gold sparkle visual** the moment it bounces in, alongside the existing shiny SE.
+* Sparkle uses the same `ANIM_TAG_GOLD_STARS` palette as the in-battle shiny intro, so the visual effect is consistent across the game.
+
 #### Umbreon Learns Thief
 
 * **Thief** added to Umbreon's learnset at **Lv 60**
@@ -527,6 +562,13 @@ Baby Pokémon have been reworked to be viable in battle with new abilities and c
 * **Berry Rain Sprite Fix**: Fixed berry tree sprites appearing bright/illuminated during heavy rain until lightning strikes. Now applies weather palette darkening when berry sprites are loaded.
 * **PokeNews TV Priority**: PokeNews events (Shiny Day, Training Day) now display first when watching TV, before other shows.
 * **Shiny Palette Redesigns**: Hand-tuned shiny palettes for legendaries, starters, and common route encounters, each paired with a matching overworld follower sprite.
+* **Heart Scale Buy Price**: Heart Scale buy price increased from **1000 → 5000** to keep the Move Relearner non-trivial in the late game.
+* **Latios + Latias Breeding Nerf**: With both Latios and Latias caught, the Daycare egg odds are now **1%** per cycle (down from 5%) — egg-spamming the Lati twins is no longer the dominant breeding strategy.
+* **Chansey Wild Grass Tweak**: Chansey on Route 115 now appears as a **1% slot encounter** (slot 10) instead of slot 7, making her a true rare wild encounter without changing her outbreak frequency.
+* **Pokémon Jump Score Doubling Fix**: Fixed a regression where shared score totals occasionally double-credited points to one peer. Each peer's score is now committed exactly once per round.
+* **Pokémon Jump Exit Fix**: Fixed an issue where exiting Pokémon Jump could place the player on a door warp tile (causing visual glitches and wrong-door exits). Now exits to a clean floor tile via the proper cable-club return callback.
+* **Dodrio Berry Picking Fix**: Reverted to the vanilla multiplayer flow, fixing a hang on certain combinations of player counts where the modified ack-handshake could deadlock. Multiplayer Dodrio is functional again.
+* **SELECT = R Button Mode**: Added a new accessibility-focused button mode (selectable in Options Plus) that maps the SELECT button to function as R inside menus and field interactions. Useful for players whose right-shoulder button has degraded on aging hardware.
 
 #### Hoenn Legendary Trio
 
