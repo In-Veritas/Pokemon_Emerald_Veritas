@@ -1093,7 +1093,9 @@ static void Task_TryJoinLinkGroup(u8 taskId)
             case ACTIVITY_BATTLE_SINGLE:
             case ACTIVITY_BATTLE_SINGLE_LV50:
             case ACTIVITY_BATTLE_DOUBLE:
+            case ACTIVITY_BATTLE_DOUBLE_LV50:  // Veritas
             case ACTIVITY_BATTLE_MULTI:
+            case ACTIVITY_BATTLE_MULTI_LV50:   // Veritas
             case ACTIVITY_TRADE:
             case ACTIVITY_CHAT:
             case ACTIVITY_POKEMON_JUMP:
@@ -1697,6 +1699,31 @@ static void Task_StartActivity(u8 taskId)
         LoadPlayerBag();
         CreateTrainerCardInBuffer(gBlockSendBuffer, TRUE);
         WarpForCableClubActivity(MAP_GROUP(BATTLE_COLOSSEUM_2P), MAP_NUM(BATTLE_COLOSSEUM_2P), 6, 8, USING_LV50_SINGLE_BATTLE);
+        SetMainCallback2(CB2_TransitionToCableClub);
+        break;
+    // Veritas: ACTIVITY_BATTLE_DOUBLE_LV50 / _MULTI_LV50 were missing
+    // entirely from Task_StartActivity, so wireless lv50 doubles and lv50
+    // multis silently fell through this dispatch — leader never warped to
+    // the colosseum and joiner stayed stuck at LG_STATE_MAIN waiting for
+    // an activity transition that never came. Mirror BATTLE_DOUBLE and
+    // BATTLE_MULTI but with the LV50 USING_* tag so Task_StartWirelessCableClubBattle
+    // applies the level cap.
+    case ACTIVITY_BATTLE_DOUBLE_LV50:
+        CleanupOverworldWindowsAndTilemaps();
+        HealPlayerParty();
+        SavePlayerParty();
+        LoadPlayerBag();
+        CreateTrainerCardInBuffer(gBlockSendBuffer, TRUE);
+        WarpForCableClubActivity(MAP_GROUP(BATTLE_COLOSSEUM_2P), MAP_NUM(BATTLE_COLOSSEUM_2P), 6, 8, USING_LV50_DOUBLE_BATTLE);
+        SetMainCallback2(CB2_TransitionToCableClub);
+        break;
+    case ACTIVITY_BATTLE_MULTI_LV50:
+        CleanupOverworldWindowsAndTilemaps();
+        HealPlayerParty();
+        SavePlayerParty();
+        LoadPlayerBag();
+        CreateTrainerCardInBuffer(gBlockSendBuffer, TRUE);
+        WarpForCableClubActivity(MAP_GROUP(BATTLE_COLOSSEUM_4P), MAP_NUM(BATTLE_COLOSSEUM_4P), 5, 8, USING_LV50_MULTI_BATTLE);
         SetMainCallback2(CB2_TransitionToCableClub);
         break;
     case ACTIVITY_BATTLE_MULTI:
