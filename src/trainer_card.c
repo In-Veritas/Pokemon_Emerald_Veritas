@@ -1335,28 +1335,28 @@ static void PrintTradesStringOnCard(void)
         PrintStatOnBackOfCard(sData->nextStatRow++, gText_PokemonTrades, sData->textNumTrades, sTrainerCardStatColors);
 }
 
-// Veritas note: minigame stats (Berry Crush powder, Pokemon Jump best
-// score, Dodrio Berry Pick best score) are not transmitted in the
-// trainer-card link payload — only the local player's own card shows
-// them. Gating on !sData->isLink hides them on link cards instead of
-// printing zeroes. Gating on a non-zero score keeps the row hidden
-// for players who haven't played the minigame yet.
 static void BufferBerryCrushPoints(void)
 {
     if (sData->cardType == CARD_TYPE_FRLG && sData->trainerCard.linkPoints.berryCrush)
         ConvertIntToDecimalStringN(sData->textBerryCrushPts, sData->trainerCard.linkPoints.berryCrush, STR_CONV_MODE_RIGHT_ALIGN, 5);
-    else if (sData->cardType != CARD_TYPE_FRLG && !sData->isLink && gSaveBlock2Ptr->berryCrush.berryPowderAmount)
-        ConvertIntToDecimalStringN(sData->textBerryCrushPts, gSaveBlock2Ptr->berryCrush.berryPowderAmount, STR_CONV_MODE_RIGHT_ALIGN, 5);
 }
 
 static void PrintBerryCrushStringOnCard(void)
 {
     if (sData->cardType == CARD_TYPE_FRLG && sData->trainerCard.linkPoints.berryCrush)
         PrintStatOnBackOfCard(sData->nextStatRow++, gText_BerryCrush, sData->textBerryCrushPts, sTrainerCardStatColors);
-    else if (sData->cardType != CARD_TYPE_FRLG && !sData->isLink && gSaveBlock2Ptr->berryCrush.berryPowderAmount)
-        PrintStatOnBackOfCard(sData->nextStatRow++, gText_BerryCrush, sData->textBerryCrushPts, sTrainerCardStatColors);
 }
 
+// Veritas note: Pokemon Jump and Dodrio Berry Picking high scores are
+// not transmitted in the trainer-card link payload — only the local
+// player's own card shows them. Gating on !sData->isLink hides them on
+// link cards instead of printing zeroes. Gating on a non-zero score
+// keeps the row hidden for players who haven't played the minigame yet.
+// Berry Crush is intentionally NOT in this set: gSaveBlock2Ptr->berryCrush.berryPowderAmount
+// proved unreliable as a 'high score' display (powder is consumable
+// currency, not a per-run record), so the trainer card sticks to the
+// vanilla FRLG-only path which uses the trainerCard.linkPoints.berryCrush
+// field that gets sent over link.
 static void BufferPokemonJumpScore(void)
 {
     if (!sData->isLink && gSaveBlock2Ptr->pokeJump.bestJumpScore)
