@@ -446,7 +446,7 @@ CableClub_EventScript_MusicCancel::
 	return
 
 CableClub_EventScript_TryEnterColosseum::
-	call CableClub_EventScript_MaybePickBattleScene
+	call CableClub_EventScript_MaybePickBattleSceneWired
 	call Common_EventScript_SaveGame
 	goto_if_eq VAR_RESULT, 0, CableClub_EventScript_AbortLink
 	message gText_PleaseWaitForLink
@@ -1321,7 +1321,7 @@ CableClub_EventScript_WirelessDodrioBerryPicking::
 	end
 
 CableClub_EventScript_SaveAndChooseLinkLeader::
-	call CableClub_EventScript_MaybePickBattleScene
+	call CableClub_EventScript_MaybePickBattleSceneWireless
 	call Common_EventScript_SaveGame
 	goto_if_eq VAR_RESULT, 0, CableClub_EventScript_AbortLink
 	switch VAR_0x8004
@@ -1344,17 +1344,27 @@ CableClub_EventScript_SaveAndChooseLinkLeader::
 @ src/link_battle_scene.c). Final terrain is resolved deterministically on
 @ every machine at battle setup time.
 @
-@ Wired battles set VAR_0x8004 to USING_* constants and route through
-@ TryEnterColosseum; wireless battles set VAR_0x8004 to LINK_GROUP_*
-@ constants and route through SaveAndChooseLinkLeader. Both call this
-@ helper, so we accept either constant family.
-CableClub_EventScript_MaybePickBattleScene::
+@ Two separate helpers because LINK_GROUP_* and USING_* share numeric
+@ values that aren't aligned (e.g., LINK_GROUP_RECORD_CORNER = 12 ==
+@ USING_LV50_MULTI_BATTLE = 12, LINK_GROUP_BERRY_CRUSH = 5 ==
+@ USING_MULTI_BATTLE = 5). A unified helper would fire the picker for
+@ wireless record-mix or berry crush by mistake. Each call site uses the
+@ helper that matches its own constant family.
+@
+@ Wireless: SaveAndChooseLinkLeader -> MaybePickBattleSceneWireless
+@   (VAR_0x8004 holds a LINK_GROUP_* value)
+@ Wired:    TryEnterColosseum       -> MaybePickBattleSceneWired
+@   (VAR_0x8004 holds a USING_* value)
+CableClub_EventScript_MaybePickBattleSceneWireless::
 	goto_if_eq VAR_0x8004, LINK_GROUP_SINGLE_BATTLE, CableClub_EventScript_PickBattleScene
 	goto_if_eq VAR_0x8004, LINK_GROUP_DOUBLE_BATTLE, CableClub_EventScript_PickBattleScene
 	goto_if_eq VAR_0x8004, LINK_GROUP_MULTI_BATTLE, CableClub_EventScript_PickBattleScene
 	goto_if_eq VAR_0x8004, LINK_GROUP_LV50_SINGLE_BATTLE, CableClub_EventScript_PickBattleScene
 	goto_if_eq VAR_0x8004, LINK_GROUP_LV50_DOUBLE_BATTLE, CableClub_EventScript_PickBattleScene
 	goto_if_eq VAR_0x8004, LINK_GROUP_LV50_MULTI_BATTLE, CableClub_EventScript_PickBattleScene
+	return
+
+CableClub_EventScript_MaybePickBattleSceneWired::
 	goto_if_eq VAR_0x8004, USING_SINGLE_BATTLE, CableClub_EventScript_PickBattleScene
 	goto_if_eq VAR_0x8004, USING_DOUBLE_BATTLE, CableClub_EventScript_PickBattleScene
 	goto_if_eq VAR_0x8004, USING_MULTI_BATTLE, CableClub_EventScript_PickBattleScene
