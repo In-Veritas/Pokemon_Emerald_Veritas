@@ -940,6 +940,10 @@ static void Task_StartWiredCableClubBattle(u8 taskId)
         // leaves the post-mugshot field visible during the remaining
         // task steps (BG0 has the mugshot tilemap, OAM still has
         // colosseum NPCs, BG layers windowed off — looks broken).
+        // Music starts here, the same frame the transition kicks off,
+        // so the song's intro plays under the mugshot rather than
+        // popping in only after the transition completes.
+        PlayMapChosenOrBattleBGM(0);
         BattleTransition_StartOnField(B_TRANSITION_LINK_BATTLE);
         task->tState++;
         break;
@@ -951,7 +955,6 @@ static void Task_StartWiredCableClubBattle(u8 taskId)
                 || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE
                 || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
                 ApplyLv50Cap();
-            PlayMapChosenOrBattleBGM(0);
             CleanupOverworldWindowsAndTilemaps();
             gTrainerBattleOpponent_A = TRAINER_LINK_OPPONENT;
             SetMainCallback2(CB2_InitBattle);
@@ -1012,6 +1015,9 @@ static void Task_StartWirelessCableClubBattle(u8 taskId)
         }
         break;
     case 6:
+        // Music starts together with the mugshot transition (see the
+        // matching comment in Task_StartWiredCableClubBattle).
+        PlayMapChosenOrBattleBGM(0);
         BattleTransition_StartOnField(B_TRANSITION_LINK_BATTLE);
         tState = 7;
         break;
@@ -1024,7 +1030,6 @@ static void Task_StartWirelessCableClubBattle(u8 taskId)
                 || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE
                 || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
                 ApplyLv50Cap();
-            PlayMapChosenOrBattleBGM(0);
             CleanupOverworldWindowsAndTilemaps();
             gTrainerBattleOpponent_A = TRAINER_LINK_OPPONENT;
             SetMainCallback2(CB2_InitBattle);
