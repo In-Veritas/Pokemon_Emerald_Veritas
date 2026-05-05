@@ -1310,12 +1310,28 @@ CableClub_EventScript_WirelessMinigameNeedMon::
 	msgbox MossdeepCity_GameCorner_1F_Text_ExplainRequiredMon, MSGBOX_YESNO
 	goto_if_eq VAR_RESULT, NO, CableClub_EventScript_WirelessMinigames
 	call_if_eq VAR_0x8005, 0, MossdeepCity_GameCorner_1F_EventScript_ExplainPokemonJumpRequirements
+	call_if_eq VAR_0x8005, 1, MossdeepCity_GameCorner_1F_EventScript_ExplainDodrioBerryPickingRequirements
 	goto CableClub_EventScript_WirelessMinigames
 	end
 
+@ Veritas: matches the vanilla cable Mossdeep Game Corner Dodrio flow
+@ (MossdeepCity_GameCorner_1F_EventScript_PlayDodrioBerryPicking) — checks
+@ that the player has a Dodrio in their party, opens the party menu so
+@ they can pick which one (sets VAR_0x8004 to the chosen party slot),
+@ aborts cleanly if they cancel. Without these steps, StartDodrioBerryPicking
+@ in src/union_room.c gets called with whatever stale party slot
+@ GetCursorSelectionMonId returns and the minigame can't bind to a
+@ Dodrio sprite, hanging the game after the countdown.
 CableClub_EventScript_WirelessDodrioBerryPicking::
 	setvar VAR_0x8005, 1
-	setvar VAR_0x8004, 0
+	special IsDodrioInParty
+	goto_if_eq VAR_RESULT, FALSE, CableClub_EventScript_WirelessMinigameNeedMon
+	msgbox MossdeepCity_GameCorner_1F_Text_EnterWhichPokemon, MSGBOX_DEFAULT
+	fadescreen FADE_TO_BLACK
+	setvar VAR_0x8005, 1
+	special ChooseMonForWirelessMinigame
+	waitstate
+	goto_if_ge VAR_0x8004, PARTY_SIZE, CableClub_EventScript_DirectCornerSelectService
 	setvar VAR_0x8004, LINK_GROUP_BERRY_PICKING
 	goto CableClub_EventScript_SaveAndChooseLinkLeader
 	end
