@@ -233,23 +233,23 @@ static u8 ResolveOnePick(u8 pick, u32 seed)
 // LinkBattleScene_StashPeerData (NOT from gBlockRecvBuffer, which gets
 // overwritten by later block exchanges in the wireless path). Every
 // peer's stash holds the same bytes, so they all derive the same seed.
-// Returns 0 outside a link session — callers should check that case.
+//
+// Iterates over the stash directly (sCachedDataValid) instead of asking
+// GetLinkPlayerCount, because by the time this runs at battle init the
+// cable lobby link has already been torn down (Task_StartWiredCableClubBattle
+// case 2 fires SetCloseLinkCallback long before CB2_InitBattle), so
+// GetLinkPlayerCount returns 0 and would zero the seed. The stash was
+// populated during the lobby while the count was still valid.
 u32 LinkBattleScene_GetSyncSeed(void)
 {
-    u8 numPlayers;
     u8 i;
-    u32 seed;
+    u32 seed = 0;
 
-    seed = 0;
-    numPlayers = GetLinkPlayerCount();
-    if (numPlayers > MAX_RFU_PLAYERS)
-        numPlayers = MAX_RFU_PLAYERS;
-
-    for (i = 0; i < numPlayers; i++)
+    for (i = 0; i < MAX_RFU_PLAYERS; i++)
     {
-        seed ^= (u32)gLinkPlayers[i].trainerId << ((i & 1) ? 0 : 16);
         if (sCachedDataValid[i])
         {
+            seed ^= (u32)gLinkPlayers[i].trainerId << ((i & 1) ? 0 : 16);
             seed ^= (u32)sCachedScenePicks[i] << ((i * 7) & 0x1F);
             seed ^= (u32)sCachedRtcSnapshots[i] << ((i * 11) & 0x1F);
         }
@@ -257,15 +257,15 @@ u32 LinkBattleScene_GetSyncSeed(void)
     return seed;
 }
 
-// Reads every player's pick from gBlockRecvBuffer, randomly chooses one
-// player's pick, expands "random" to a concrete terrain, and caches the
-// answer so every machine resolves to the same value. The seed combines
-// trainer IDs + picks + each peer's broadcast RTC snapshot, so different
-// battles produce different winners even when the same two players play
-// repeatedly. Returns LINK_SCENE_NONE if no valid picks were exchanged.
+// Iterates over the stash directly (sCachedDataValid) and picks one
+// peer's broadcast at random via the shared seed. Doesn't ask
+// GetLinkPlayerCount — by the time this runs at battle init the cable
+// lobby link is gone (SetCloseLinkCallback fires before CB2_InitBattle),
+// so the count would be 0 and we'd bail on a perfectly-good stash.
+// The stash was populated during the lobby with the right entries; here
+// we just trust it.
 u8 LinkBattleScene_ResolveAndGetTerrain(void)
 {
-    u8 numPlayers;
     u8 picks[MAX_RFU_PLAYERS];
     u8 numValidPicks = 0;
     u8 i;
@@ -276,13 +276,11 @@ u8 LinkBattleScene_ResolveAndGetTerrain(void)
     if (sFinalSceneResolved)
         return sFinalLinkScene;
 
-    numPlayers = GetLinkPlayerCount();
-    if (numPlayers == 0 || numPlayers > MAX_RFU_PLAYERS)
-        return LINK_SCENE_NONE;
-
-    for (i = 0; i < numPlayers; i++)
+    for (i = 0; i < MAX_RFU_PLAYERS; i++)
     {
-        pick = ReadPlayerPick(i);
+        if (!sCachedDataValid[i])
+            continue;
+        pick = sCachedScenePicks[i];
         if (pick != LINK_SCENE_NONE)
             picks[numValidPicks++] = pick;
     }
@@ -291,6 +289,12 @@ u8 LinkBattleScene_ResolveAndGetTerrain(void)
         return LINK_SCENE_NONE;
 
     seed = LinkBattleScene_GetSyncSeed();
+    // Defensive: GetSyncSeed could theoretically return 0 if every
+    // valid peer's trainer id and RTC bytes XOR to zero. Fall back to
+    // local trainer id so chosenIdx isn't always 0 % N = 0.
+    if (seed == 0)
+        seed = gSaveBlock2Ptr->playerTrainerId[0]
+             | ((u32)gSaveBlock2Ptr->playerTrainerId[1] << 8);
     chosenIdx = seed % numValidPicks;
     sFinalLinkScene = ResolveOnePick(picks[chosenIdx], seed >> 4);
     sFinalSceneResolved = TRUE;
