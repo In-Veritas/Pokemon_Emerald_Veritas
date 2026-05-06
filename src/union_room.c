@@ -326,7 +326,9 @@ static void GetAwaitingCommunicationText(u8 *dst, u8 activity)
     case ACTIVITY_BATTLE_SINGLE:
     case ACTIVITY_BATTLE_SINGLE_LV50:
     case ACTIVITY_BATTLE_DOUBLE:
+    case ACTIVITY_BATTLE_DOUBLE_LV50: // Veritas
     case ACTIVITY_BATTLE_MULTI:
+    case ACTIVITY_BATTLE_MULTI_LV50:  // Veritas
     case ACTIVITY_TRADE:
     case ACTIVITY_POKEMON_JUMP:
     case ACTIVITY_BERRY_CRUSH:
@@ -737,6 +739,7 @@ static void Leader_GetAcceptNewMemberPrompt(u8 *dst, u8 activity)
     case ACTIVITY_BATTLE_SINGLE:
     case ACTIVITY_BATTLE_SINGLE_LV50:
     case ACTIVITY_BATTLE_DOUBLE:
+    case ACTIVITY_BATTLE_DOUBLE_LV50: // Veritas
     case ACTIVITY_TRADE:
     case ACTIVITY_BATTLE_TOWER_OPEN:
     case ACTIVITY_BATTLE_TOWER:
@@ -747,6 +750,7 @@ static void Leader_GetAcceptNewMemberPrompt(u8 *dst, u8 activity)
         StringExpandPlaceholders(dst, sText_PlayerContactedYouShareX);
         break;
     case ACTIVITY_BATTLE_MULTI:
+    case ACTIVITY_BATTLE_MULTI_LV50: // Veritas
     case ACTIVITY_POKEMON_JUMP:
     case ACTIVITY_BERRY_CRUSH:
     case ACTIVITY_BERRY_PICK:
@@ -784,6 +788,7 @@ static void GetYouAskedToJoinGroupPleaseWaitMessage(u8 *dst, u8 activity)
     case ACTIVITY_BATTLE_SINGLE:
     case ACTIVITY_BATTLE_SINGLE_LV50:
     case ACTIVITY_BATTLE_DOUBLE:
+    case ACTIVITY_BATTLE_DOUBLE_LV50: // Veritas
     case ACTIVITY_TRADE:
     case ACTIVITY_BATTLE_TOWER:
     case ACTIVITY_BATTLE_TOWER_OPEN:
@@ -792,6 +797,7 @@ static void GetYouAskedToJoinGroupPleaseWaitMessage(u8 *dst, u8 activity)
         StringExpandPlaceholders(dst, sText_AwaitingPlayersResponse);
         break;
     case ACTIVITY_BATTLE_MULTI:
+    case ACTIVITY_BATTLE_MULTI_LV50: // Veritas
     case ACTIVITY_POKEMON_JUMP:
     case ACTIVITY_BERRY_CRUSH:
     case ACTIVITY_BERRY_PICK:
@@ -814,6 +820,7 @@ static void GetGroupLeaderSentAnOKMessage(u8 *dst, u8 activity)
     case ACTIVITY_BATTLE_SINGLE:
     case ACTIVITY_BATTLE_SINGLE_LV50:
     case ACTIVITY_BATTLE_DOUBLE:
+    case ACTIVITY_BATTLE_DOUBLE_LV50: // Veritas
     case ACTIVITY_TRADE:
     case ACTIVITY_BATTLE_TOWER:
     case ACTIVITY_BATTLE_TOWER_OPEN:
@@ -822,6 +829,7 @@ static void GetGroupLeaderSentAnOKMessage(u8 *dst, u8 activity)
         StringExpandPlaceholders(dst, sText_PlayerSentBackOK);
         break;
     case ACTIVITY_BATTLE_MULTI:
+    case ACTIVITY_BATTLE_MULTI_LV50: // Veritas
     case ACTIVITY_POKEMON_JUMP:
     case ACTIVITY_BERRY_CRUSH:
     case ACTIVITY_BERRY_PICK:
@@ -1160,6 +1168,7 @@ static void Task_TryJoinLinkGroup(u8 taskId)
                 case ACTIVITY_BATTLE_SINGLE:
                 case ACTIVITY_BATTLE_SINGLE_LV50:
                 case ACTIVITY_BATTLE_DOUBLE:
+                case ACTIVITY_BATTLE_DOUBLE_LV50: // Veritas (mirrors DOUBLE)
                 case ACTIVITY_TRADE:
                 case ACTIVITY_BATTLE_TOWER:
                 case ACTIVITY_BATTLE_TOWER_OPEN:

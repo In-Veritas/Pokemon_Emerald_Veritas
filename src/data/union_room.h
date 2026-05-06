@@ -624,7 +624,9 @@ static const u8 *const sLinkGroupActivityNameTexts[] = {
     [ACTIVITY_CONTEST_TOUGH]     = sText_ToughContest,
     [ACTIVITY_BATTLE_TOWER]      = sText_BattleTowerLv50,
     [ACTIVITY_29]                = sText_EmptyString,
-    [ACTIVITY_BATTLE_SINGLE_LV50] = sText_Lv50Battle
+    [ACTIVITY_BATTLE_SINGLE_LV50] = sText_Lv50Battle,
+    [ACTIVITY_BATTLE_DOUBLE_LV50] = sText_DoubleBattle, // Veritas
+    [ACTIVITY_BATTLE_MULTI_LV50]  = sText_MultiBattle,  // Veritas
 };
 
 static const struct WindowTemplate sWindowTemplate_BButtonCancel = {
