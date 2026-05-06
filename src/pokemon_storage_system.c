@@ -95,6 +95,7 @@ enum {
     MSG_ITEM_IS_HELD,
     MSG_CHANGED_TO_ITEM,
     MSG_CANT_STORE_MAIL,
+    MSG_RELEASE_ALL_POKE, // "Release all party Pokemon except the lead?" YES/NO prompt
 };
 
 // IDs for how to resolve variables in the above messages
@@ -130,6 +131,7 @@ enum {
     MENU_BAG,
     MENU_INFO,
     MENU_TAKE_ITEM, // "TAKE" entry for the Move-Pokemon action menu (puts held item directly into bag)
+    MENU_RELEASE_ALL, // "RELEASE ALL" entry for the Move-Pokemon action menu (releases every non-lead party slot)
     MENU_SCENERY_1,
     MENU_SCENERY_2,
     MENU_SCENERY_3,
@@ -628,6 +630,15 @@ EWRAM_DATA static bool8 sIsMonBeingMoved = 0;
 EWRAM_DATA static u8 sMovingMonOrigBoxId = 0;
 EWRAM_DATA static u8 sMovingMonOrigBoxPos = 0;
 EWRAM_DATA static bool8 sAutoActionOn = 0;
+// Veritas: party slot currently being processed by Task_ReleaseAllMons.
+// Starts at 1 (skipping the lead). Stays at the same index after a successful
+// release (compaction shifts the next mon down to that slot) and increments
+// after a "came-back" failure so we skip un-releasable mons.
+EWRAM_DATA static u8 sReleaseAllSlot = 0;
+// Saved cursor position so we can restore the player's selection after the
+// release loop finishes (the loop temporarily points sCursorPosition at the
+// slot currently being released so the existing helpers do the right thing).
+EWRAM_DATA static s8 sReleaseAllSavedCursorPos = 0;
 
 // Main tasks
 static void Task_InitPokeStorage(u8);
@@ -655,6 +666,7 @@ static void Task_TakeItemToBag(u8);
 static void Task_ShowMarkMenu(u8);
 static void Task_ShowMonSummary(u8);
 static void Task_ReleaseMon(u8);
+static void Task_ReleaseAllMons(u8);
 static void Task_ReshowPokeStorage(u8);
 static void Task_PokeStorageMain(u8);
 static void Task_JumpBox(u8);
@@ -1149,6 +1161,7 @@ static const struct StorageMessage sMessages[] =
     [MSG_ITEM_IS_HELD]         = {gText_ItemIsNowHeld,           MSG_VAR_ITEM_NAME},
     [MSG_CHANGED_TO_ITEM]      = {gText_ChangedToNewItem,        MSG_VAR_ITEM_NAME},
     [MSG_CANT_STORE_MAIL]      = {gText_MailCantBeStored,        MSG_VAR_NONE},
+    [MSG_RELEASE_ALL_POKE]     = {gText_ReleaseAllPartyPokemon,  MSG_VAR_NONE},
 };
 
 static const struct WindowTemplate sYesNoWindowTemplate =
@@ -2759,6 +2772,10 @@ static void Task_OnSelectedMon(u8 taskId)
             PlaySE(SE_SELECT);
             SetPokeStorageTask(Task_TakeItemToBag);
             break;
+        case MENU_RELEASE_ALL:
+            PlaySE(SE_SELECT);
+            SetPokeStorageTask(Task_ReleaseAllMons);
+            break;
         case MENU_SWITCH:
             PlaySE(SE_SELECT);
             SetPokeStorageTask(Task_SwitchSelectedItem);
@@ -3094,6 +3111,200 @@ static void Task_ReleaseMon(u8 taskId)
         }
         break;
     case 13:
+        if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
+        {
+            ClearBottomWindow();
+            SetPokeStorageTask(Task_PokeStorageMain);
+        }
+        break;
+    }
+}
+
+// Veritas: RELEASE ALL — releases every party slot 1..5, preserving the lead.
+// Mirrors Task_ReleaseMon but loops, driving each iteration off party slot
+// sReleaseAllSlot. Successful releases compact the party (so we re-process
+// the same slot index on the next iteration); restricted-move "came back"
+// mons are skipped by advancing sReleaseAllSlot. Eggs are released as in
+// vanilla single-release. Mail-holders abort the whole operation up front
+// with the same MSG_PLEASE_REMOVE_MAIL prompt as single-release.
+static void Task_ReleaseAllMons(u8 taskId)
+{
+    u16 i;
+    u16 heldItem;
+    s8 canRelease;
+
+    switch (sStorage->state)
+    {
+    case 0:
+        // Confirm prompt
+        PrintMessage(MSG_RELEASE_ALL_POKE);
+        ShowYesNoWindow(1);
+        sStorage->state = 1;
+        // fallthrough
+    case 1:
+        switch (Menu_ProcessInputNoWrapClearOnChoose())
+        {
+        case MENU_B_PRESSED:
+        case 1: // No
+            ClearBottomWindow();
+            SetPokeStorageTask(Task_PokeStorageMain);
+            return;
+        case 0: // Yes
+            ClearBottomWindow();
+            // Upfront mail check across non-lead party slots — abort if any
+            // non-lead mon holds mail, matching single-release semantics.
+            for (i = 1; i < PARTY_SIZE; i++)
+            {
+                if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) != SPECIES_NONE)
+                {
+                    heldItem = GetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM);
+                    if (heldItem != ITEM_NONE && ItemIsMail(heldItem))
+                    {
+                        PlaySE(SE_FAILURE);
+                        PrintMessage(MSG_PLEASE_REMOVE_MAIL);
+                        sStorage->state = 50;
+                        return;
+                    }
+                }
+            }
+            sReleaseAllSavedCursorPos = sCursorPosition;
+            sReleaseAllSlot = 1;
+            sStorage->state = 2;
+        }
+        break;
+    case 2:
+        // Set up next iteration. Stop if past end or current slot empty.
+        if (sReleaseAllSlot >= PARTY_SIZE
+         || GetMonData(&gPlayerParty[sReleaseAllSlot], MON_DATA_SPECIES) == SPECIES_NONE)
+        {
+            sStorage->state = 30;
+            break;
+        }
+        // Point cursor logic at the slot we're releasing so InitReleaseMon
+        // and friends pick the correct party sprite. The cursor sprite stays
+        // visually where the player left it; this is just the data index.
+        sCursorPosition = sReleaseAllSlot;
+        sCursorArea = CURSOR_AREA_IN_PARTY;
+        // Refresh display so displayMonName feeds releaseMonName for messages.
+        SetDisplayMonData(&gPlayerParty[sReleaseAllSlot], MODE_PARTY);
+        // Reuse the standard init helpers: InitCanReleaseMonVars reads
+        // sCursorArea/sCursorPosition (which we just pointed at the target
+        // slot) and InitReleaseMon picks partySprites[sCursorPosition].
+        InitCanReleaseMonVars();
+        InitReleaseMon();
+        sStorage->state = 3;
+        break;
+    case 3:
+        // Wait for the release sprite's affine animation to finish, then
+        // spin RunCanReleaseMon (which pages through party + PC scans) until
+        // it resolves. Mirrors Task_ReleaseMon case 2.
+        RunCanReleaseMon();
+        if (!TryHideReleaseMon())
+        {
+            while (1)
+            {
+                canRelease = RunCanReleaseMon();
+                if (canRelease == TRUE)
+                {
+                    sStorage->state = 4;
+                    break;
+                }
+                else if (!canRelease)
+                {
+                    sStorage->state = 8;
+                    break;
+                }
+            }
+        }
+        break;
+    case 4:
+        ReleaseMon();
+        RefreshDisplayMonData();
+        PrintMessage(MSG_WAS_RELEASED);
+        sStorage->state = 5;
+        break;
+    case 5:
+        if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
+        {
+            PrintMessage(MSG_BYE_BYE);
+            sStorage->state = 6;
+        }
+        break;
+    case 6:
+        if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
+        {
+            ClearBottomWindow();
+            CompactPartySlots();
+            CompactPartySprites();
+            sStorage->state = 7;
+        }
+        break;
+    case 7:
+        if (GetNumPartySpritesCompacting() == 0)
+        {
+            // After compact, the next mon (if any) is at the same slot index.
+            // Don't increment sReleaseAllSlot — fall back to state 2 to retry.
+            sStorage->state = 2;
+        }
+        break;
+    case 8:
+        // Can't-release sequence (came back) — mirrors Task_ReleaseMon.
+        PrintMessage(MSG_WAS_RELEASED);
+        sStorage->state = 9;
+        break;
+    case 9:
+        if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
+        {
+            PrintMessage(MSG_SURPRISE);
+            sStorage->state = 10;
+        }
+        break;
+    case 10:
+        if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
+        {
+            ClearBottomWindow();
+            ReshowReleaseMon();
+            sStorage->state = 11;
+        }
+        break;
+    case 11:
+        if (!ResetReleaseMonSpritePtr())
+        {
+            PrintMessage(MSG_CAME_BACK);
+            sStorage->state = 12;
+        }
+        break;
+    case 12:
+        if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
+        {
+            PrintMessage(MSG_WORRIED);
+            sStorage->state = 13;
+        }
+        break;
+    case 13:
+        if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
+        {
+            ClearBottomWindow();
+            // Mon stayed in party — advance past it for the next iteration.
+            sReleaseAllSlot++;
+            sStorage->state = 2;
+        }
+        break;
+    case 30:
+        // Done — restore cursor data position. If the player's original slot
+        // is now empty (its mon was released), fall back to the lead.
+        if (sReleaseAllSavedCursorPos < PARTY_SIZE
+         && GetMonData(&gPlayerParty[sReleaseAllSavedCursorPos], MON_DATA_SPECIES) != SPECIES_NONE)
+            sCursorPosition = sReleaseAllSavedCursorPos;
+        else
+            sCursorPosition = 0;
+        RefreshDisplayMon();
+        StartDisplayMonMosaicEffect();
+        UpdatePartySlotColors();
+        SetPokeStorageTask(Task_PokeStorageMain);
+        break;
+    case 50:
+        // Mail-holder abort — wait for input then exit.
         if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
         {
             ClearBottomWindow();
@@ -7964,6 +8175,15 @@ static bool8 SetMenuTexts_Mon(void)
      && !ItemIsMail(sStorage->displayMonItemId))
         SetMenuText(MENU_TAKE_ITEM);
     SetMenuText(MENU_RELEASE);
+    // Veritas: in Move-Pokemon mode, expose a top-level RELEASE ALL entry when
+    // the cursor is in the party menu on a non-lead slot and there are at
+    // least 2 party members (lead + one to release).
+    if (sStorage->boxOption == OPTION_MOVE_MONS
+     && !sIsMonBeingMoved
+     && sInPartyMenu
+     && sCursorPosition != 0
+     && CountPartyMons() >= 2)
+        SetMenuText(MENU_RELEASE_ALL);
     SetMenuText(MENU_CANCEL);
     return TRUE;
 }
@@ -8247,6 +8467,7 @@ static const u8 *const sMenuTexts[] =
     [MENU_BAG]        = gPCText_Bag,
     [MENU_INFO]       = gPCText_Info,
     [MENU_TAKE_ITEM]  = gPCText_Take,
+    [MENU_RELEASE_ALL] = gPCText_ReleaseAll,
     [MENU_SCENERY_1]  = gPCText_Scenery1,
     [MENU_SCENERY_2]  = gPCText_Scenery2,
     [MENU_SCENERY_3]  = gPCText_Scenery3,

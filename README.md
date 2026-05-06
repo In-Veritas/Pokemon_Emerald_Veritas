@@ -243,6 +243,15 @@ The full unlockable list (27 outfits): Aqua, Brazil, Chikorita, Cyndaquil, Dark,
 * If the bag is full, the item stays on the Pokémon
 * Mail items remain protected — they cannot be taken this way
 
+#### Release All in PC
+
+* When using **Move Pokémon** in the PC, selecting any **non-lead** party Pokémon (party slots 2–6) now shows a **RELEASE ALL** option in its action menu
+* Asks for confirmation, then releases every party member except the lead, one at a time, with the standard release animation and "Bye-bye, X!" message for each
+* The lead at slot 1 is always preserved
+* Skips and aborts cleanly: if any non-lead party member is holding mail, the whole operation is blocked with the standard "PLEASE remove the MAIL" prompt (matches single-release behavior)
+* Pokémon that know a required field move (e.g. SURF) and are the only such owner stay in the party via the same "came back!" sequence as single-release
+* Eggs are released along with everything else (vanilla single-release behavior)
+
 #### Unlockable PC Box Wallpapers
 
 * Added 29 new custom wallpapers organized into 7 themed categories
