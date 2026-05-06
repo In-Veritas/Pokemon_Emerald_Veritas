@@ -3388,6 +3388,13 @@ s32 CalculateBaseDamage(struct BattlePokemon *attacker, struct BattlePokemon *de
         spDefense *= 2;
     if (attackerHoldEffect == HOLD_EFFECT_LIGHT_BALL && (attacker->species == SPECIES_PIKACHU || attacker->species == SPECIES_PICHU || attacker->species == SPECIES_PLUSLE || attacker->species == SPECIES_MINUN))
         spAttack *= 2;
+    // Veritas: Light Ball gives Mareep +150% Defense and Special Defense
+    // (Speed x2 for Flaaffy/Ampharos handled in GetWhoStrikesFirst).
+    if (defenderHoldEffect == HOLD_EFFECT_LIGHT_BALL && defender->species == SPECIES_MAREEP)
+    {
+        defense = (defense * 5) / 2;
+        spDefense = (spDefense * 5) / 2;
+    }
     // Veritas: METAL POWDER also doubles Speed for Ditto (Speed boost
     // applied separately in GetWhoStrikesFirst since it's not in scope here).
     if (defenderHoldEffect == HOLD_EFFECT_METAL_POWDER && defender->species == SPECIES_DITTO)

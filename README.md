@@ -450,6 +450,9 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 #### Light Ball Enhancement
 
 * Light Ball now boosts Special Attack for Pikachu, Pichu, Minun, and Plusle (not just Pikachu)
+* Mareep gains **+150%** Defense and Special Defense while holding Light Ball
+* Flaaffy and Ampharos gain **x2** Speed while holding Light Ball
+* Description rewritten to read "Has special effects on some ELECTRIC POKéMON."
 
 #### Pinch Berry Buffs
 

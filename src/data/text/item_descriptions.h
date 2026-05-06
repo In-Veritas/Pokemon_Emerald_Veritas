@@ -834,9 +834,9 @@ static const u8 sDragonScaleDesc[] = _(
     "15% when held.");
 
 static const u8 sLightBallDesc[] = _(
-    "Raises the SP. ATK\n"
-    "of PIKACHU, PICHU,\n"
-    "PLUSLE, or MINUN.");
+    "Has special effects\n"
+    "on some ELECTRIC\n"
+    "POKéMON.");
 
 static const u8 sSoftSandDesc[] = _(
     "A hold item that\n"
