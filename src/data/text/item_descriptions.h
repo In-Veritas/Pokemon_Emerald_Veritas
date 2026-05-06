@@ -678,9 +678,9 @@ static const u8 sLiechiBerryDesc[] = _(
     "a pinch.");
 
 static const u8 sGanlonBerryDesc[] = _(
-    "A hold item that\n"
-    "raises DEFENSE in\n"
-    "a pinch.");
+    "Raises DEFENSE\n"
+    "and heals at\n"
+    "1/3 HP.");
 
 static const u8 sSalacBerryDesc[] = _(
     "A hold item that\n"
@@ -698,14 +698,14 @@ static const u8 sApicotBerryDesc[] = _(
     "a pinch.");
 
 static const u8 sLansatBerryDesc[] = _(
-    "A hold item that\n"
-    "ups the critical-\n"
-    "hit rate in a pinch.");
+    "Boosts critical-\n"
+    "hit rate at\n"
+    "1/3 HP.");
 
 static const u8 sStarfBerryDesc[] = _(
-    "A hold item that\n"
-    "sharply boosts a\n"
-    "stat in a pinch.");
+    "Sharply boosts a\n"
+    "random stat at\n"
+    "1/3 HP.");
 
 static const u8 sEnigmaBerryDesc[] = _(
     "{POKEBLOCK} ingredient.\n"

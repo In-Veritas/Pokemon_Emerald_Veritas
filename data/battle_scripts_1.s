@@ -4531,6 +4531,21 @@ BattleScript_BerryStatRaiseDoStatUp::
 	removeitem BS_ATTACKER
 	end2
 
+@ Veritas: GANLON BERRY heals 1/8 max HP and raises DEFENSE in one trigger.
+BattleScript_BerryHealAndStatRaiseEnd2::
+	call BattleScript_HeldItemAnimation_Attacker
+	printstring STRINGID_PKMNSITEMRESTOREDHPALITTLE
+	waitmessage B_WAIT_TIME_LONG
+	orword gHitMarker, HITMARKER_IGNORE_SUBSTITUTE
+	healthbarupdate BS_ATTACKER
+	datahpupdate BS_ATTACKER
+	statbuffchange MOVE_EFFECT_AFFECTS_USER | STAT_CHANGE_ALLOW_PTR, BattleScript_BerryHealAndStatRaiseDoStatUp
+BattleScript_BerryHealAndStatRaiseDoStatUp::
+	setbyte cMULTISTRING_CHOOSER, B_MSG_STAT_ROSE_ITEM
+	call BattleScript_StatUp
+	removeitem BS_ATTACKER
+	end2
+
 BattleScript_BerryFocusEnergyEnd2::
 	call BattleScript_HeldItemAnimation_Attacker
 	printstring STRINGID_PKMNUSEDXTOGETPUMPED

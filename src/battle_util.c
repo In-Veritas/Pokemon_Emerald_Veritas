@@ -3535,7 +3535,24 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                 }
                 break;
             case HOLD_EFFECT_DEFENSE_UP:
-                TRY_EAT_STAT_UP_BERRY(STAT_DEF);
+                // Veritas: GANLON BERRY also heals 1/8 max HP on trigger.
+                if (gBattleMons[battlerId].hp <= gBattleMons[battlerId].maxHP / battlerHoldEffectParam
+                && !moveTurn && gBattleMons[battlerId].statStages[STAT_DEF] < MAX_STAT_STAGE)
+                {
+                    gBattleMoveDamage = gBattleMons[battlerId].maxHP / 8;
+                    if (gBattleMoveDamage == 0)
+                        gBattleMoveDamage = 1;
+                    if (gBattleMons[battlerId].hp + gBattleMoveDamage > gBattleMons[battlerId].maxHP)
+                        gBattleMoveDamage = gBattleMons[battlerId].maxHP - gBattleMons[battlerId].hp;
+                    gBattleMoveDamage *= -1;
+                    PREPARE_STAT_BUFFER(gBattleTextBuff1, STAT_DEF);
+                    gEffectBattler = battlerId;
+                    SET_STATCHANGER(STAT_DEF, 1, FALSE);
+                    gBattleScripting.animArg1 = STAT_ANIM_PLUS1 + STAT_DEF;
+                    gBattleScripting.animArg2 = 0;
+                    BattleScriptExecute(BattleScript_BerryHealAndStatRaiseEnd2);
+                    effect = ITEM_STATS_CHANGE;
+                }
                 break;
             case HOLD_EFFECT_SPEED_UP:
                 TRY_EAT_STAT_UP_BERRY(STAT_SPEED);
