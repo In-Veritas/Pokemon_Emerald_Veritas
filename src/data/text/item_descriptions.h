@@ -708,9 +708,9 @@ static const u8 sStarfBerryDesc[] = _(
     "1/3 HP.");
 
 static const u8 sEnigmaBerryDesc[] = _(
-    "{POKEBLOCK} ingredient.\n"
-    "Plant in loamy soil\n"
-    "to grow a mystery.");
+    "Counters foes' stat\n"
+    "drops or confusion\n"
+    "with a stat boost.");
 
 // Hold items
 static const u8 sBrightPowderDesc[] = _(

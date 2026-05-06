@@ -31,6 +31,9 @@
 #define sSPECIAL_TRAINER_BATTLE_TYPE (gBattleScripting + 0x26) // specialTrainerBattleType
 #define sBATTLE_ITEM_ANIMATION       (gBattleScripting + 0x27) // heldItemReducedEffect
 
+// Veritas: see gVeritasEnigmaSavedAttacker declaration in battle.h.
+#define sVERITAS_ENIGMA_SAVED_ATK    gVeritasEnigmaSavedAttacker
+
 // Array entries for battle communication
 #define MULTIUSE_STATE          0
 #define CURSOR_POSITION         1

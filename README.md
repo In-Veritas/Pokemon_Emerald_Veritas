@@ -449,6 +449,15 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 * **Ganlon**, **Apicot**, and **Starf** also **heal 1/8 max HP** when they trigger, in addition to their stat-up effect
 * Liechi/Salac/Petaya keep the vanilla 1/4 threshold and stat-only effect
 
+#### Enigma Berry Effect
+
+The vanilla Enigma Berry was an inert e-Reader item with no effect on a fresh save. In Veritas it has a fixed counter-effect against opposing pressure:
+
+* **Trigger A — opponent lowers a stat**: when an opposing move (Growl, Leer, Crunch's Def-down secondary, Tickle, etc.) or ability (Intimidate switch-in) successfully reduces one of the holder's stats, the holder eats the berry and **sharply boosts (+2) the same stat that was just lowered**. Failed drops (Mist / Clear Body / White Smoke / Hyper Cutter / Keen Eye / stat already at -6) don't trigger. If multiple stats drop in one move (e.g. Tickle), the **last** one lowered is boosted.
+* **Trigger B — opponent inflicts confusion**: when an opposing move (Confuse Ray, Supersonic, Swagger, Flatter, Sweet Kiss, or a secondary-effect confusion from Dynamic Punch / Confusion / Hyper Voice / Signal Beam / etc.) makes the holder confused, the holder eats the berry, **cures the confusion, and boosts one random stat by +1**.
+* Self-inflicted effects don't trigger: Outrage / Petal Dance / Thrash / Chatter end-of-streak self-confusion, Overheat / Draco Meteor / Close Combat / Superpower self-stat-drops, and non-Ghost Curse's self-Speed-drop are all excluded.
+* Single-use, like the other gen-3 berries — consumed on trigger.
+
 #### Metal Powder Enhancement
 
 * Metal Powder now also doubles **Speed** for Ditto (in addition to Defense)

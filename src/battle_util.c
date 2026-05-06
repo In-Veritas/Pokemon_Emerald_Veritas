@@ -3342,6 +3342,144 @@ enum
         effect = ITEM_STATS_CHANGE;                                                         \
     }
 
+// Veritas: see comment on extern declaration in battle.h.
+EWRAM_DATA u8 gVeritasEnigmaSavedAttacker = 0;
+
+// Veritas: fire the deferred Enigma Berry trigger for a single battler.
+// Caller must guarantee:
+//   - gBattleMons[battlerId].item == ITEM_ENIGMA_BERRY
+//   - gBattleMons[battlerId].hp != 0
+//   - gBattleStruct->veritasEnigmaTrigger[battlerId] != 0
+// `topLevel` selects script flavor: TRUE for non-script contexts (switch-in
+// pre-turn-1, where BattleScriptExecute installs a fresh callback), FALSE
+// for mid-script contexts (MOVEEND_ITEM_EFFECTS_ALL or Cmd_switchineffects,
+// where BattleScriptPushCursor preserves the surrounding script).
+// Returns ITEM_STATS_CHANGE / ITEM_EFFECT_OTHER on success.
+static u8 TryFireVeritasEnigmaBerry(u8 battlerId, bool8 topLevel)
+{
+    u8 marker = gBattleStruct->veritasEnigmaTrigger[battlerId];
+    u8 stat;
+    u32 i;
+
+    // Always clear the marker — single-shot per inflicted effect, regardless
+    // of whether the boost itself does anything (e.g. stats already maxed).
+    gBattleStruct->veritasEnigmaTrigger[battlerId] = 0;
+
+    // The "snapped out" / "stat rose due to its item" text uses {B_LAST_ITEM}
+    // which resolves to gLastUsedItem — make sure it points at OUR holder's
+    // berry, not whatever battler was passed into ItemBattleEffects().
+    gLastUsedItem = gBattleMons[battlerId].item;
+
+    if (marker & 0x80)
+    {
+        // Trigger B: cure confusion + raise random non-maxed stat by +1.
+        // Defensive: if confusion was cleared between arming and firing
+        // (e.g. by a partner's Persim Berry effect), still boost a stat
+        // and consume the berry — the marker was set, so the player saw
+        // the confusion happen.
+        gBattleMons[battlerId].status2 &= ~STATUS2_CONFUSION;
+
+        for (i = 0; i < NUM_STATS - 1; i++)
+        {
+            if (gBattleMons[battlerId].statStages[STAT_ATK + i] < MAX_STAT_STAGE)
+                break;
+        }
+        if (i == NUM_STATS - 1)
+        {
+            // All stats maxed — cure confusion only. Mirror vanilla
+            // BattleScript_BerryCureConfusion (anim + "snapped out" + remove).
+            // No stat-buff happens, so we can leave gBattlerAttacker alone.
+            gBattleScripting.battler = battlerId;
+            gPotentialItemEffectBattler = battlerId;
+            gActiveBattler = battlerId;
+            if (topLevel)
+            {
+                BattleScriptExecute(BattleScript_BerryCureConfusionEnd2);
+            }
+            else
+            {
+                BattleScriptPushCursor();
+                gBattlescriptCurrInstr = BattleScript_BerryCureConfusionRet;
+            }
+            return ITEM_EFFECT_OTHER;
+        }
+        do
+        {
+            i = Random() % (NUM_STATS - 1);
+        } while (gBattleMons[battlerId].statStages[STAT_ATK + i] == MAX_STAT_STAGE);
+        stat = STAT_ATK + i;
+
+        PREPARE_STAT_BUFFER(gBattleTextBuff1, stat);
+        gBattleTextBuff2[0] = B_BUFF_PLACEHOLDER_BEGIN;
+        gBattleTextBuff2[1] = B_BUFF_STRING;
+        gBattleTextBuff2[2] = STRINGID_STATROSE;
+        gBattleTextBuff2[3] = STRINGID_STATROSE >> 8;
+        gBattleTextBuff2[4] = EOS;
+
+        // Don't repoint gBattlerAttacker here — the script saves/swaps/
+        // restores it itself via copybyte so MOVEEND can resume cleanly.
+        gBattleScripting.battler = battlerId;
+        gPotentialItemEffectBattler = battlerId;
+        gActiveBattler = battlerId;
+        gEffectBattler = battlerId;
+        SET_STATCHANGER(stat, 1, FALSE);
+        gBattleScripting.animArg1 = STAT_ANIM_PLUS1 + stat;
+        gBattleScripting.animArg2 = 0;
+        if (topLevel)
+        {
+            BattleScriptExecute(BattleScript_EnigmaBerryCureConfuseEnd2);
+        }
+        else
+        {
+            BattleScriptPushCursor();
+            gBattlescriptCurrInstr = BattleScript_EnigmaBerryCureConfuseRet;
+        }
+        return ITEM_EFFECT_OTHER;
+    }
+    else
+    {
+        // Trigger A: sharply boost (+2) the stat that was just lowered.
+        stat = marker; // 1..7
+        if (stat == 0 || stat > STAT_EVASION)
+            return 0;
+
+        // Defensive: if the stat is already at +6 (e.g. a +5 Pokemon was
+        // dropped to +4 by Intimidate), the +2 still works (caps at +6)
+        // and still consumes the berry — that's normal Gen-3 berry
+        // behavior for stat-up berries, see HOLD_EFFECT_ATTACK_UP.
+
+        PREPARE_STAT_BUFFER(gBattleTextBuff1, stat);
+        gBattleTextBuff2[0] = B_BUFF_PLACEHOLDER_BEGIN;
+        gBattleTextBuff2[1] = B_BUFF_STRING;
+        gBattleTextBuff2[2] = STRINGID_STATSHARPLY;
+        gBattleTextBuff2[3] = STRINGID_STATSHARPLY >> 8;
+        gBattleTextBuff2[4] = B_BUFF_STRING;
+        gBattleTextBuff2[5] = STRINGID_STATROSE;
+        gBattleTextBuff2[6] = STRINGID_STATROSE >> 8;
+        gBattleTextBuff2[7] = EOS;
+
+        // Don't repoint gBattlerAttacker here — the script saves/swaps/
+        // restores it itself via copybyte so MOVEEND can resume cleanly.
+        gBattleScripting.battler = battlerId;
+        gPotentialItemEffectBattler = battlerId;
+        gActiveBattler = battlerId;
+        gEffectBattler = battlerId;
+        SET_STATCHANGER(stat, 2, FALSE);
+        gBattleScripting.animArg1 = STAT_ANIM_PLUS2 + stat;
+        gBattleScripting.animArg2 = 0;
+        if (topLevel)
+        {
+            BattleScriptExecute(BattleScript_EnigmaBerryStatBoostEnd2);
+        }
+        else
+        {
+            BattleScriptPushCursor();
+            gBattlescriptCurrInstr = BattleScript_EnigmaBerryStatBoostRet;
+        }
+        return ITEM_STATS_CHANGE;
+    }
+}
+
 u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
 {
     int i = 0;
@@ -3420,6 +3558,33 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                 BattleScriptExecute(BattleScript_WhiteHerbEnd2);
             }
             break;
+        }
+        // Veritas: opportunistically fire any pending Enigma Berry trigger.
+        // The mid-battle ABILITYEFFECT_ON_SWITCHIN path only invokes
+        // ITEMEFFECT_ON_SWITCH_IN on the switching battler, but Intimidate's
+        // victims are the OPPONENTS — so we scan all battlers here. The
+        // turn-1 Intimidate path also funnels through this case via
+        // gBattleStruct->switchInItemsCounter so the same scan covers both.
+        // The pre-turn-1 path (TryDoEventsBeforeFirstTurn) calls us from a
+        // top-level callback, but the mid-battle path (Cmd_switchineffects)
+        // calls us from inside a script. We can't tell them apart from
+        // here, so always go top-level — BattleScriptExecute is safe in both
+        // cases (mid-script: it stacks our callback over the script's
+        // Cmd_switchineffects callback, runs end2, pops back).
+        if (effect == 0)
+        {
+            u8 b;
+            for (b = 0; b < gBattlersCount; b++)
+            {
+                if (gBattleMons[b].item == ITEM_ENIGMA_BERRY
+                 && gBattleMons[b].hp != 0
+                 && gBattleStruct->veritasEnigmaTrigger[b] != 0)
+                {
+                    effect = TryFireVeritasEnigmaBerry(b, TRUE);
+                    if (effect != 0)
+                        break;
+                }
+            }
         }
         break;
     case ITEMEFFECT_NORMAL:
@@ -3978,6 +4143,19 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                 BtlController_EmitSetMonData(BUFFER_A, REQUEST_STATUS_BATTLE, 0, 4, &gBattleMons[gActiveBattler].status1);
                 MarkBattlerForControllerExec(gActiveBattler);
                 break;
+            }
+            // Veritas: fire pending Enigma Berry trigger for this battler.
+            // We check `effect == 0` so a status-cure berry handler above
+            // (which sets effect != 0 and queues its own script) gets to run
+            // first; the marker survives and re-fires on the next MOVEEND
+            // pass once that script returns and the loop restarts.
+            if (gBattleMons[battlerId].item == ITEM_ENIGMA_BERRY
+             && gBattleMons[battlerId].hp != 0
+             && gBattleStruct->veritasEnigmaTrigger[battlerId] != 0)
+            {
+                effect = TryFireVeritasEnigmaBerry(battlerId, FALSE);
+                if (effect != 0)
+                    break;
             }
         }
         break;

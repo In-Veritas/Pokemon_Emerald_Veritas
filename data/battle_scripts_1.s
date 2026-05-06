@@ -4553,6 +4553,52 @@ BattleScript_BerryFocusEnergyEnd2::
 	removeitem BS_ATTACKER
 	end2
 
+@ Veritas: Enigma Berry — sharply boost (+2) the stat just lowered by an
+@ opposing move/ability. C side configures gBattleScripting.battler to the
+@ holder, sets STATCHANGER (stat, +2, FALSE), animArg1 to the +2 anim. The
+@ script stashes the live gBattlerAttacker, swaps the holder in, runs the
+@ stat buff via MOVE_EFFECT_AFFECTS_USER (which uses gBattlerAttacker as the
+@ active battler), then restores the original attacker so subsequent
+@ MOVEEND stages (King's Rock, Shell Bell, last-move tracking) still see
+@ the correct mon. Berry is consumed.
+BattleScript_EnigmaBerryStatBoostEnd2::
+	call BattleScript_EnigmaBerryStatBoostRet
+	end2
+
+BattleScript_EnigmaBerryStatBoostRet::
+	call BattleScript_HeldItemAnimation_Scripting
+	copybyte sVERITAS_ENIGMA_SAVED_ATK, gBattlerAttacker
+	copybyte gBattlerAttacker, sBATTLER
+	statbuffchange MOVE_EFFECT_AFFECTS_USER | STAT_CHANGE_ALLOW_PTR, BattleScript_EnigmaBerryStatBoostDone
+	setbyte cMULTISTRING_CHOOSER, B_MSG_STAT_ROSE_ITEM
+	call BattleScript_StatUp
+BattleScript_EnigmaBerryStatBoostDone::
+	copybyte gBattlerAttacker, sVERITAS_ENIGMA_SAVED_ATK
+	removeitem BS_SCRIPTING
+	return
+
+@ Veritas: Enigma Berry — cure confusion inflicted by an opposing move and
+@ raise one random un-maxed stat by +1. C side clears STATUS2_CONFUSION,
+@ chooses the random stat, sets STATCHANGER (stat, +1, FALSE) and animArg1.
+@ Same gBattlerAttacker save/restore dance as the stat-boost path.
+BattleScript_EnigmaBerryCureConfuseEnd2::
+	call BattleScript_EnigmaBerryCureConfuseRet
+	end2
+
+BattleScript_EnigmaBerryCureConfuseRet::
+	call BattleScript_HeldItemAnimation_Scripting
+	printstring STRINGID_PKMNSITEMSNAPPEDOUT
+	waitmessage B_WAIT_TIME_LONG
+	copybyte sVERITAS_ENIGMA_SAVED_ATK, gBattlerAttacker
+	copybyte gBattlerAttacker, sBATTLER
+	statbuffchange MOVE_EFFECT_AFFECTS_USER | STAT_CHANGE_ALLOW_PTR, BattleScript_EnigmaBerryCureConfuseDone
+	setbyte cMULTISTRING_CHOOSER, B_MSG_STAT_ROSE_ITEM
+	call BattleScript_StatUp
+BattleScript_EnigmaBerryCureConfuseDone::
+	copybyte gBattlerAttacker, sVERITAS_ENIGMA_SAVED_ATK
+	removeitem BS_SCRIPTING
+	return
+
 BattleScript_ActionSelectionItemsCantBeUsed::
 	printselectionstring STRINGID_ITEMSCANTBEUSEDNOW
 	endselectionscript

@@ -444,7 +444,20 @@ struct BattleStruct
     bool8 checkedMoveBoostedByAbility:1;
     bool8 checkedMagmaArmor:1;
     bool8 weatherSuppressed:1;
+    // Veritas: Enigma Berry deferred-trigger marker per battler.
+    // 0           = no trigger pending
+    // STAT_ATK..STAT_EVASION (1..7) = stat that was just lowered by an opponent (Trigger A)
+    // 0x80        = confusion was just inflicted by an opponent (Trigger B)
+    u8 veritasEnigmaTrigger[MAX_BATTLERS_COUNT];
 };
+
+// Veritas: save slot used by the Enigma Berry battle script to stash the
+// original gBattlerAttacker before swapping the holder in for the stat
+// buff, so subsequent MOVEEND stages (King's Rock, Shell Bell, last-move
+// tracking) still see the right attacker. Lives at file scope (not in
+// gBattleStruct) so battle scripts can reference its address as a
+// compile-time constant via sVERITAS_ENIGMA_SAVED_ATK.
+extern u8 gVeritasEnigmaSavedAttacker;
 
 // The palaceFlags member of struct BattleStruct contains 1 flag per move to indicate which moves the AI should consider,
 // and 1 flag per battler to indicate whether the battler is awake and at <= 50% HP (which affects move choice).

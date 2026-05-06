@@ -2666,6 +2666,21 @@ void SetMoveEffect(bool8 primary, u8 certain)
                 {
                     gBattleMons[gEffectBattler].status2 |= STATUS2_CONFUSION_TURN(((Random()) % 4) + 2); // 2-5 turns
 
+                    // Veritas: arm Enigma Berry's Trigger B for opponent-induced
+                    // confusion only. affectsUser != MOVE_EFFECT_AFFECTS_USER
+                    // excludes Outrage / Petal Dance / Thrash / Chatter end-of-
+                    // streak self-confuse (those route through this same case
+                    // with MOVE_EFFECT_AFFECTS_USER set, making gEffectBattler =
+                    // gBattlerAttacker). The side check guards against any
+                    // hypothetical ally-side case.
+                    if (affectsUser != MOVE_EFFECT_AFFECTS_USER
+                     && GetBattlerSide(gEffectBattler) != GetBattlerSide(gBattlerAttacker)
+                     && gBattleMons[gEffectBattler].item == ITEM_ENIGMA_BERRY
+                     && gBattleMons[gEffectBattler].hp != 0)
+                    {
+                        gBattleStruct->veritasEnigmaTrigger[gEffectBattler] = 0x80;
+                    }
+
                     BattleScriptPush(gBattlescriptCurrInstr + 1);
                     gBattlescriptCurrInstr = sMoveEffectBS_Ptrs[gBattleCommunication[MOVE_EFFECT_BYTE]];
                 }
@@ -7197,12 +7212,18 @@ static u8 ChangeStatBuffs(s8 statValue, u8 statId, u8 flags, const u8 *BS_ptr)
 {
     bool8 certain = FALSE;
     bool8 notProtectAffected = FALSE;
+    bool8 selfInflicted = FALSE; // Veritas: track for Enigma Berry trigger.
     u32 index;
 
     if (flags & MOVE_EFFECT_AFFECTS_USER)
+    {
         gActiveBattler = gBattlerAttacker;
+        selfInflicted = TRUE;
+    }
     else
+    {
         gActiveBattler = gBattlerTarget;
+    }
 
     flags &= ~MOVE_EFFECT_AFFECTS_USER;
 
@@ -7353,6 +7374,28 @@ static u8 ChangeStatBuffs(s8 statValue, u8 statId, u8 flags, const u8 *BS_ptr)
 
     if (gBattleCommunication[MULTISTRING_CHOOSER] == B_MSG_STAT_WONT_INCREASE && !(flags & STAT_CHANGE_ALLOW_PTR))
         return STAT_CHANGE_DIDNT_WORK;
+
+    // Veritas: arm Enigma Berry's deferred Trigger A. Conditions:
+    //  - this was a stat decrease (statValue is now negative after the
+    //    GET_STAT_BUFF_VALUE+negate above),
+    //  - the decrease was NOT self-inflicted (selfInflicted captures the
+    //    original MOVE_EFFECT_AFFECTS_USER flag, so Overheat / Close Combat /
+    //    Superpower / Draco Meteor / non-Ghost Curse won't qualify),
+    //  - the stat actually went down (B_MSG_STAT_WONT_DECREASE wasn't picked,
+    //    which covers both "stat already at -6" and Mist / Clear Body /
+    //    White Smoke / Hyper Cutter / Keen Eye blockers — those return
+    //    STAT_CHANGE_DIDNT_WORK above and never reach this line),
+    //  - the holder is carrying an Enigma Berry.
+    // The actual berry effect runs at MOVEEND_ITEM_EFFECTS_ALL or the
+    // matching switch-in pass. statId here is 1..7 (STAT_ATK..STAT_EVASION).
+    if (statValue < 0 && !selfInflicted
+     && gBattleCommunication[MULTISTRING_CHOOSER] != B_MSG_STAT_WONT_DECREASE
+     && GetBattlerSide(gActiveBattler) != GetBattlerSide(gBattlerAttacker)
+     && gBattleMons[gActiveBattler].item == ITEM_ENIGMA_BERRY
+     && gBattleMons[gActiveBattler].hp != 0)
+    {
+        gBattleStruct->veritasEnigmaTrigger[gActiveBattler] = statId;
+    }
 
     return STAT_CHANGE_WORKED;
 }
