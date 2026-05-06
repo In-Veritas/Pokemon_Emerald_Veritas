@@ -5031,6 +5031,10 @@ u8 GetWhoStrikesFirst(u8 battler1, u8 battler2, bool8 ignoreChosenMoves)
     if (holdEffect == HOLD_EFFECT_MACHO_BRACE)
         speedBattler1 /= 2;
 
+    // Veritas: METAL POWDER also doubles Ditto's Speed.
+    if (holdEffect == HOLD_EFFECT_METAL_POWDER && gBattleMons[battler1].species == SPECIES_DITTO)
+        speedBattler1 *= 2;
+
     if (gBattleMons[battler1].status1 & STATUS1_PARALYSIS)
         speedBattler1 /= 4;
 
@@ -5064,6 +5068,10 @@ u8 GetWhoStrikesFirst(u8 battler1, u8 battler2, bool8 ignoreChosenMoves)
 
     if (holdEffect == HOLD_EFFECT_MACHO_BRACE)
         speedBattler2 /= 2;
+
+    // Veritas: METAL POWDER also doubles Ditto's Speed.
+    if (holdEffect == HOLD_EFFECT_METAL_POWDER && gBattleMons[battler2].species == SPECIES_DITTO)
+        speedBattler2 *= 2;
 
     if (gBattleMons[battler2].status1 & STATUS1_PARALYSIS)
         speedBattler2 /= 4;

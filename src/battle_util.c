@@ -3561,7 +3561,24 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                 TRY_EAT_STAT_UP_BERRY(STAT_SPATK);
                 break;
             case HOLD_EFFECT_SP_DEFENSE_UP:
-                TRY_EAT_STAT_UP_BERRY(STAT_SPDEF);
+                // Veritas: APICOT BERRY also heals 1/8 max HP on trigger.
+                if (gBattleMons[battlerId].hp <= gBattleMons[battlerId].maxHP / battlerHoldEffectParam
+                && !moveTurn && gBattleMons[battlerId].statStages[STAT_SPDEF] < MAX_STAT_STAGE)
+                {
+                    gBattleMoveDamage = gBattleMons[battlerId].maxHP / 8;
+                    if (gBattleMoveDamage == 0)
+                        gBattleMoveDamage = 1;
+                    if (gBattleMons[battlerId].hp + gBattleMoveDamage > gBattleMons[battlerId].maxHP)
+                        gBattleMoveDamage = gBattleMons[battlerId].maxHP - gBattleMons[battlerId].hp;
+                    gBattleMoveDamage *= -1;
+                    PREPARE_STAT_BUFFER(gBattleTextBuff1, STAT_SPDEF);
+                    gEffectBattler = battlerId;
+                    SET_STATCHANGER(STAT_SPDEF, 1, FALSE);
+                    gBattleScripting.animArg1 = STAT_ANIM_PLUS1 + STAT_SPDEF;
+                    gBattleScripting.animArg2 = 0;
+                    BattleScriptExecute(BattleScript_BerryHealAndStatRaiseEnd2);
+                    effect = ITEM_STATS_CHANGE;
+                }
                 break;
             case HOLD_EFFECT_CRITICAL_UP:
                 if (gBattleMons[battlerId].hp <= gBattleMons[battlerId].maxHP / battlerHoldEffectParam && !moveTurn
@@ -3573,6 +3590,7 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                 }
                 break;
             case HOLD_EFFECT_RANDOM_STAT_UP:
+                // Veritas: STARF BERRY also heals 1/8 max HP on trigger.
                 if (!moveTurn && gBattleMons[battlerId].hp <= gBattleMons[battlerId].maxHP / battlerHoldEffectParam)
                 {
                     for (i = 0; i < NUM_STATS - 1; i++)
@@ -3598,11 +3616,18 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                         gBattleTextBuff2[6] = STRINGID_STATROSE >> 8;
                         gBattleTextBuff2[7] = EOS;
 
+                        gBattleMoveDamage = gBattleMons[battlerId].maxHP / 8;
+                        if (gBattleMoveDamage == 0)
+                            gBattleMoveDamage = 1;
+                        if (gBattleMons[battlerId].hp + gBattleMoveDamage > gBattleMons[battlerId].maxHP)
+                            gBattleMoveDamage = gBattleMons[battlerId].maxHP - gBattleMons[battlerId].hp;
+                        gBattleMoveDamage *= -1;
+
                         gEffectBattler = battlerId;
                         SET_STATCHANGER(i + 1, 2, FALSE);
                         gBattleScripting.animArg1 = STAT_ANIM_PLUS2 + (i + 1);
                         gBattleScripting.animArg2 = 0;
-                        BattleScriptExecute(BattleScript_BerryStatRaiseEnd2);
+                        BattleScriptExecute(BattleScript_BerryHealAndStatRaiseEnd2);
                         effect = ITEM_STATS_CHANGE;
                     }
                 }

@@ -693,9 +693,9 @@ static const u8 sPetayaBerryDesc[] = _(
     "a pinch.");
 
 static const u8 sApicotBerryDesc[] = _(
-    "A hold item that\n"
-    "raises SP. DEF in\n"
-    "a pinch.");
+    "Raises SP. DEF\n"
+    "and heals at\n"
+    "1/3 HP.");
 
 static const u8 sLansatBerryDesc[] = _(
     "Boosts critical-\n"
@@ -703,8 +703,8 @@ static const u8 sLansatBerryDesc[] = _(
     "1/3 HP.");
 
 static const u8 sStarfBerryDesc[] = _(
-    "Sharply boosts a\n"
-    "random stat at\n"
+    "Random +2 stat\n"
+    "and heal at\n"
     "1/3 HP.");
 
 static const u8 sEnigmaBerryDesc[] = _(
@@ -939,9 +939,9 @@ static const u8 sLuckyPunchDesc[] = _(
     "ratio when held.");
 
 static const u8 sMetalPowderDesc[] = _(
-    "A hold item that\n"
-    "raises DITTO's\n"
-    "DEFENSE.");
+    "Doubles DITTO's\n"
+    "DEFENSE and\n"
+    "SPEED.");
 
 static const u8 sThickClubDesc[] = _(
     "A hold item that \n"

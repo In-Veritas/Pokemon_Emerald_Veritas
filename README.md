@@ -442,6 +442,17 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 
 * Light Ball now boosts Special Attack for Pikachu, Pichu, Minun, and Plusle (not just Pikachu)
 
+#### Pinch Berry Buffs
+
+* **Ganlon**, **Lansat**, and **Starf** Berries trigger at HP ≤ **1/3** (vanilla 1/4)
+* **Apicot Berry** trigger threshold also raised to **1/3** HP
+* **Ganlon**, **Apicot**, and **Starf** also **heal 1/8 max HP** when they trigger, in addition to their stat-up effect
+* Liechi/Salac/Petaya keep the vanilla 1/4 threshold and stat-only effect
+
+#### Metal Powder Enhancement
+
+* Metal Powder now also doubles **Speed** for Ditto (in addition to Defense)
+
 #### Lucky Egg Stacks (with diminishing returns)
 
 * Holding multiple Lucky Eggs across the party now stacks the EXP bonus, but each successive egg contributes only **half** the bonus of the previous one — so the total payout asymptotes at 2× rather than running away
