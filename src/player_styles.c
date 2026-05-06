@@ -233,9 +233,13 @@ void RefreshPlayerOWPalette(void)
 {
     struct ObjectEvent *obj;
     u16 palTag;
-    if (gPlayerAvatar.objectEventId == 0 && gObjectEvents[0].active == 0) return;
+    if (gPlayerAvatar.objectEventId >= OBJECT_EVENTS_COUNT) return;
     obj = &gObjectEvents[gPlayerAvatar.objectEventId];
-    if (!obj->active) return;
+    // Bug 2: in cable-club rooms (BATTLE_COLOSSEUM, TRADE_CENTER, RECORD_CORNER)
+    // the local player isn't a regular ObjectEvent — it's a LinkPlayerObjectEvent
+    // with no isPlayer flag. Without this guard, gObjectEvents[0] (the link
+    // receptionist NPC) would inherit the player's outfit palette here.
+    if (!obj->active || !obj->isPlayer) return;
     if (FlagGet(FLAG_PLAYER_STYLE_RS))
         palTag = (gSaveBlock2Ptr->playerGender != MALE) ? PAL_TAG_RS_MAY : PAL_TAG_RS_BRENDAN;
     else
@@ -251,9 +255,14 @@ void PlayerStyleOverworldUpdate(void)
     u16 si = GetPlayerStyle();
 
     if (si == 0 || si > PLAYER_STYLE_COUNT) return;
-    if (gPlayerAvatar.objectEventId == 0 && gObjectEvents[0].active == 0) return;
+    if (gPlayerAvatar.objectEventId >= OBJECT_EVENTS_COUNT) return;
     obj = &gObjectEvents[gPlayerAvatar.objectEventId];
-    if (!obj->active) return;
+    // Bug 2: the slot-0-active fallback that used to live here would treat
+    // gObjectEvents[0] as the player whenever gPlayerAvatar wasn't set up.
+    // That bled the outfit palette onto the link receptionist (slot 0 in
+    // BattleColosseum / TradeCenter / RecordCorner) since those maps
+    // never call InitPlayerAvatar. Require an explicit isPlayer flag.
+    if (!obj->active || !obj->isPlayer) return;
 
     palSlot = gSprites[obj->spriteId].oam.paletteNum;
     palBase = OBJ_PLTT_ID(palSlot);

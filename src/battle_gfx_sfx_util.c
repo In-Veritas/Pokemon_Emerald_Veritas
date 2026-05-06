@@ -687,7 +687,7 @@ void DecompressTrainerFrontPic(u16 frontPicId, u8 battlerId)
     u8 position = GetBattlerPosition(battlerId);
     u8 palSlot;
     bool8 isFemale;
-    u8 i;
+    s32 mpId;
     u8 remoteStyle;
 
     DecompressPicFromTable_2(&gTrainerFrontPicTable[frontPicId],
@@ -695,8 +695,29 @@ void DecompressTrainerFrontPic(u16 frontPicId, u8 battlerId)
                              SPECIES_NONE);
     LoadCompressedSpritePalette(&gTrainerFrontPicPaletteTable[frontPicId]);
 
-    // Apply local player clothing style
-    if (GetPlayerStyle() != PLAYER_STYLE_NONE
+    // For link battles, look up the outfit by THIS battler's link player —
+    // not by gender-matching the local outfit (the old code applied the
+    // local player's outfit to any opponent who happened to share gender,
+    // since both used the same Brendan/May front pic id). Bug 1.
+    if (gBattleTypeFlags & BATTLE_TYPE_LINK)
+    {
+        mpId = GetBattlerMultiplayerId(battlerId);
+        if (mpId >= 0 && mpId < MAX_LINK_PLAYERS)
+        {
+            remoteStyle = LINK_STYLE_ID(gLinkPlayers[mpId].neverRead);
+            if (remoteStyle != 0
+                && frontPicId == PlayerGenderToFrontTrainerPicId(gLinkPlayers[mpId].gender))
+            {
+                palSlot = IndexOfSpritePaletteTag(gTrainerFrontPicPaletteTable[frontPicId].tag);
+                if (palSlot != 0xFF)
+                    ApplyStyleToTrainerPaletteById(remoteStyle, OBJ_PLTT_ID(palSlot), gLinkPlayers[mpId].gender != MALE);
+            }
+        }
+    }
+    // Non-link: apply local player's outfit when the front pic is the local
+    // player's facility class (e.g. INGAME_PARTNER tag battles drawing the
+    // local player as the partner trainer slide).
+    else if (GetPlayerStyle() != PLAYER_STYLE_NONE
         && frontPicId == PlayerGenderToFrontTrainerPicId(gSaveBlock2Ptr->playerGender))
     {
         palSlot = IndexOfSpritePaletteTag(gTrainerFrontPicPaletteTable[frontPicId].tag);
@@ -704,29 +725,13 @@ void DecompressTrainerFrontPic(u16 frontPicId, u8 battlerId)
         if (palSlot != 0xFF)
             ApplyPlayerStyleToTrainerPalette(OBJ_PLTT_ID(palSlot), isFemale);
     }
-    // Apply remote link player clothing style
-    else if (gBattleTypeFlags & BATTLE_TYPE_LINK)
-    {
-        for (i = 0; i < MAX_LINK_PLAYERS; i++)
-        {
-            remoteStyle = LINK_STYLE_ID(gLinkPlayers[i].neverRead);
-            if (remoteStyle != 0
-                && frontPicId == PlayerGenderToFrontTrainerPicId(gLinkPlayers[i].gender))
-            {
-                palSlot = IndexOfSpritePaletteTag(gTrainerFrontPicPaletteTable[frontPicId].tag);
-                if (palSlot != 0xFF)
-                    ApplyStyleToTrainerPaletteById(remoteStyle, OBJ_PLTT_ID(palSlot), gLinkPlayers[i].gender != MALE);
-                break;
-            }
-        }
-    }
 }
 
 void DecompressTrainerBackPic(u16 backPicId, u8 battlerId)
 {
     u8 position = GetBattlerPosition(battlerId);
     bool8 isFemale;
-    u8 i;
+    s32 mpId;
     u8 remoteStyle;
 
     DecompressPicFromTable_2(&gTrainerBackPicTable[backPicId],
@@ -735,27 +740,30 @@ void DecompressTrainerBackPic(u16 backPicId, u8 battlerId)
     LoadCompressedPalette(gTrainerBackPicPaletteTable[backPicId].data,
                           OBJ_PLTT_ID(battlerId), PLTT_SIZE_4BPP);
 
-    // Apply local player clothing style
-    if (GetPlayerStyle() != PLAYER_STYLE_NONE
+    // Link battle: pick the outfit by THIS battler's broadcast link player,
+    // not by guessing from the back pic id. Without this, two same-gender
+    // peers each saw their OWN outfit on every player's back pic. Bug 1.
+    if (gBattleTypeFlags & BATTLE_TYPE_LINK)
+    {
+        mpId = GetBattlerMultiplayerId(battlerId);
+        if (mpId >= 0 && mpId < MAX_LINK_PLAYERS)
+        {
+            remoteStyle = LINK_STYLE_ID(gLinkPlayers[mpId].neverRead);
+            if (remoteStyle != 0
+                && (backPicId == (u16)(gLinkPlayers[mpId].gender + TRAINER_BACK_PIC_BRENDAN)
+                 || backPicId == (u16)(gLinkPlayers[mpId].gender + TRAINER_BACK_PIC_RUBY_SAPPHIRE_BRENDAN)))
+            {
+                ApplyStyleToTrainerPaletteById(remoteStyle, OBJ_PLTT_ID(battlerId), gLinkPlayers[mpId].gender != MALE);
+            }
+        }
+    }
+    // Non-link: apply local player's outfit when this is the local player's
+    // back pic (default case for solo battles).
+    else if (GetPlayerStyle() != PLAYER_STYLE_NONE
         && backPicId == GetPlayerPreferredBackPicId())
     {
         isFemale = (gSaveBlock2Ptr->playerGender != MALE);
         ApplyPlayerStyleToTrainerPalette(OBJ_PLTT_ID(battlerId), isFemale);
-    }
-    // Apply remote link player clothing style
-    else if (gBattleTypeFlags & BATTLE_TYPE_LINK)
-    {
-        for (i = 0; i < MAX_LINK_PLAYERS; i++)
-        {
-            remoteStyle = LINK_STYLE_ID(gLinkPlayers[i].neverRead);
-            if (remoteStyle != 0
-                && (backPicId == (u16)(gLinkPlayers[i].gender + TRAINER_BACK_PIC_BRENDAN)
-                 || backPicId == (u16)(gLinkPlayers[i].gender + TRAINER_BACK_PIC_RUBY_SAPPHIRE_BRENDAN)))
-            {
-                ApplyStyleToTrainerPaletteById(remoteStyle, OBJ_PLTT_ID(battlerId), gLinkPlayers[i].gender != MALE);
-                break;
-            }
-        }
     }
 }
 
