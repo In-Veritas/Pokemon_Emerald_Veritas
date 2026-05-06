@@ -20,6 +20,24 @@
 // u8 — no save structure change.
 #define POKENEWS_STATE_AIRED    3
 
+// PokeNews.state byte layout: bits 0-1 hold the state value (0..3),
+// bits 6-7 hold a "replay count" used by TryDoActivePokeNewsFallback so
+// the same active daily event can be re-broadcast a few times as filler
+// when the player turns on the TV with no fresh shows queued. Bit-stealing
+// inside the existing u8 — no save structure change.
+#define POKENEWS_STATE_VAL_MASK    0x03
+#define POKENEWS_REPLAY_SHIFT      6
+#define POKENEWS_REPLAY_MASK       0xC0
+// Number of times a STATE_AIRED daily event will replay as fallback
+// before the TV goes dark (counted independently per news slot, reset
+// on day rollover, on a fresh real show, and on any state transition).
+// The initial broadcast (ACTIVE -> AIRED in DoPokeNews) does NOT count
+// against this — only the fallback replays do.
+#define POKENEWS_MAX_REPLAYS       2
+#define GET_POKENEWS_STATE(s)             ((s) & POKENEWS_STATE_VAL_MASK)
+#define GET_POKENEWS_REPLAY_COUNT(s)      (((s) & POKENEWS_REPLAY_MASK) >> POKENEWS_REPLAY_SHIFT)
+#define MAKE_POKENEWS_STATE(state, count) ((u8)(((state) & POKENEWS_STATE_VAL_MASK) | (((count) & 0x3) << POKENEWS_REPLAY_SHIFT)))
+
 // Number of days to count down until the news event occurs.
 // Nothing is aired on TV the first day
 #define POKENEWS_COUNTDOWN 4

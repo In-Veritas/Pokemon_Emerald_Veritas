@@ -1058,10 +1058,29 @@ void TurnOnTVScreen(void)
     DrawWholeMapView();
 }
 
-// gSpecialVar_0x8004 here is set from GetRandomActiveShowIdx in EventScript_TryDoTVShow
+// gSpecialVar_0x8004 here is set from GetRandomActiveShowIdx in EventScript_TryDoTVShow.
+// Called once per TV interaction by the script *before* the per-line DoTVShow loop;
+// if the result is non-zero the script commits to broadcasting a real show. Use this
+// as the hook to clear any AIRED daily-event replay budget so the player gets a full
+// fresh fallback budget the next time the TV runs out of real content.
 u8 GetSelectedTVShow(void)
 {
-    return gSaveBlock1Ptr->tvShows[gSpecialVar_0x8004].common.kind;
+    u8 kind = gSaveBlock1Ptr->tvShows[gSpecialVar_0x8004].common.kind;
+    u8 i;
+    u8 stateVal;
+
+    if (kind != TVSHOW_OFF_AIR)
+    {
+        for (i = 0; i < POKE_NEWS_COUNT; i++)
+        {
+            if (gSaveBlock1Ptr->pokeNews[i].kind == POKENEWS_NONE)
+                continue;
+            stateVal = GET_POKENEWS_STATE(gSaveBlock1Ptr->pokeNews[i].state);
+            if (stateVal == POKENEWS_STATE_AIRED)
+                gSaveBlock1Ptr->pokeNews[i].state = MAKE_POKENEWS_STATE(POKENEWS_STATE_AIRED, 0);
+        }
+    }
+    return kind;
 }
 
 static u8 FindFirstActiveTVShowThatIsNotAMassOutbreak(void)
@@ -2735,7 +2754,7 @@ static void TryPutRandomPokeNewsOnAir(void)
         {
             gSaveBlock1Ptr->pokeNews[sCurTVShowSlot].kind = newsKind;
             gSaveBlock1Ptr->pokeNews[sCurTVShowSlot].dayCountdown = POKENEWS_COUNTDOWN;
-            gSaveBlock1Ptr->pokeNews[sCurTVShowSlot].state = POKENEWS_STATE_UPCOMING;
+            gSaveBlock1Ptr->pokeNews[sCurTVShowSlot].state = MAKE_POKENEWS_STATE(POKENEWS_STATE_UPCOMING, 0);
         }
     }
 }
@@ -2763,7 +2782,7 @@ static void ClearPokeNews(void)
 static void ClearPokeNewsBySlot(u8 i)
 {
     gSaveBlock1Ptr->pokeNews[i].kind = POKENEWS_NONE;
-    gSaveBlock1Ptr->pokeNews[i].state = POKENEWS_STATE_INACTIVE;
+    gSaveBlock1Ptr->pokeNews[i].state = MAKE_POKENEWS_STATE(POKENEWS_STATE_INACTIVE, 0);
     gSaveBlock1Ptr->pokeNews[i].dayCountdown = 0;
 }
 
@@ -2802,14 +2821,14 @@ static u8 FindAnyPokeNewsOnTheAir(void)
     for (i = 0; i < POKE_NEWS_COUNT; i++)
     {
         if (gSaveBlock1Ptr->pokeNews[i].kind != POKENEWS_NONE
-         && gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_ACTIVE
+         && GET_POKENEWS_STATE(gSaveBlock1Ptr->pokeNews[i].state) == POKENEWS_STATE_ACTIVE
          && gSaveBlock1Ptr->pokeNews[i].dayCountdown == 0)
             return i;
     }
     for (i = 0; i < POKE_NEWS_COUNT; i++)
     {
         if (gSaveBlock1Ptr->pokeNews[i].kind != POKENEWS_NONE
-         && gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_UPCOMING
+         && GET_POKENEWS_STATE(gSaveBlock1Ptr->pokeNews[i].state) == POKENEWS_STATE_UPCOMING
          && gSaveBlock1Ptr->pokeNews[i].dayCountdown < POKENEWS_COUNTDOWN - 1)
             return i;
     }
@@ -2830,8 +2849,10 @@ void DoPokeNews(void)
             // News event is occurring, make comment depending on how much time is left.
             // Promote ACTIVE -> AIRED so the next TV check of the day doesn't pick
             // this same slot as the first news again. Effects keep applying because
-            // IsPokeNewsActive treats AIRED as active.
-            gSaveBlock1Ptr->pokeNews[i].state = POKENEWS_STATE_AIRED;
+            // IsPokeNewsActive treats AIRED as active. Replay counter starts at 0 —
+            // TryDoActivePokeNewsFallback will then re-air this slot up to
+            // POKENEWS_MAX_REPLAYS more times before going dark.
+            gSaveBlock1Ptr->pokeNews[i].state = MAKE_POKENEWS_STATE(POKENEWS_STATE_AIRED, 0);
             if (gLocalTime.hours < 20)
                 ShowFieldMessage(sPokeNewsTextGroup_Ongoing[gSaveBlock1Ptr->pokeNews[i].kind]);
             else
@@ -2845,7 +2866,7 @@ void DoPokeNews(void)
 
             // Mark as inactive so the countdown TV airing doesn't repeat
             // Will be flagged as "upcoming" again by UpdatePokeNewsCountdown
-            gSaveBlock1Ptr->pokeNews[i].state = POKENEWS_STATE_INACTIVE;
+            gSaveBlock1Ptr->pokeNews[i].state = MAKE_POKENEWS_STATE(POKENEWS_STATE_INACTIVE, 0);
             ShowFieldMessage(sPokeNewsTextGroup_Upcoming[gSaveBlock1Ptr->pokeNews[i].kind]);
         }
         gSpecialVar_Result = TRUE;
@@ -2854,24 +2875,43 @@ void DoPokeNews(void)
 
 // Fallback when no regular TV show is selected: if any PokeNews event
 // is currently active (Shiny Day, Training Day, etc.), re-broadcast its
-// ongoing/ending announcement so the TV is never silent while an event runs.
+// ongoing/ending announcement so the TV isn't silent while an event runs.
+// Each daily event keeps a small per-slot replay counter (bit-stolen from
+// the high bits of the state byte) so the same event only re-airs as
+// filler up to POKENEWS_MAX_REPLAYS times after its initial broadcast,
+// then the TV goes dark. The counter resets on day rollover, when a fresh
+// real TV show plays, or when the slot transitions states (handled in
+// UpdatePokeNewsCountdown / DoPokeNews / DoTVShow).
 // Sets gSpecialVar_Result = TRUE if something was broadcast, FALSE otherwise.
 void TryDoActivePokeNewsFallback(void)
 {
     u8 i;
     u8 activeSlots[POKE_NEWS_COUNT];
     u8 activeCount = 0;
+    u8 stateVal;
+    u8 replayCount;
     u8 chosen;
     u8 kind;
 
     for (i = 0; i < POKE_NEWS_COUNT; i++)
     {
-        if (gSaveBlock1Ptr->pokeNews[i].kind != POKENEWS_NONE
-         && (gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_ACTIVE
-             || gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_AIRED)
-         && gSaveBlock1Ptr->pokeNews[i].dayCountdown == 0)
+        if (gSaveBlock1Ptr->pokeNews[i].kind == POKENEWS_NONE
+         || gSaveBlock1Ptr->pokeNews[i].dayCountdown != 0)
+            continue;
+
+        stateVal = GET_POKENEWS_STATE(gSaveBlock1Ptr->pokeNews[i].state);
+        if (stateVal == POKENEWS_STATE_ACTIVE)
         {
+            // Hasn't been picked up by DoPokeNews yet (e.g. countdown just hit 0
+            // with no fresh real shows queued). Always eligible — first airing.
             activeSlots[activeCount++] = i;
+        }
+        else if (stateVal == POKENEWS_STATE_AIRED)
+        {
+            // Already broadcast at least once today. Only eligible if the
+            // per-slot replay budget hasn't been exhausted.
+            if (GET_POKENEWS_REPLAY_COUNT(gSaveBlock1Ptr->pokeNews[i].state) < POKENEWS_MAX_REPLAYS)
+                activeSlots[activeCount++] = i;
         }
     }
 
@@ -2883,6 +2923,22 @@ void TryDoActivePokeNewsFallback(void)
 
     chosen = activeSlots[Random() % activeCount];
     kind = gSaveBlock1Ptr->pokeNews[chosen].kind;
+    stateVal = GET_POKENEWS_STATE(gSaveBlock1Ptr->pokeNews[chosen].state);
+    replayCount = GET_POKENEWS_REPLAY_COUNT(gSaveBlock1Ptr->pokeNews[chosen].state);
+
+    if (stateVal == POKENEWS_STATE_ACTIVE)
+    {
+        // First airing via the fallback — promote to AIRED and start the
+        // replay budget at 0 (subsequent fallback hits will increment it).
+        gSaveBlock1Ptr->pokeNews[chosen].state = MAKE_POKENEWS_STATE(POKENEWS_STATE_AIRED, 0);
+    }
+    else
+    {
+        // AIRED replay — burn one slot from the replay budget.
+        if (replayCount < POKENEWS_MAX_REPLAYS)
+            replayCount++;
+        gSaveBlock1Ptr->pokeNews[chosen].state = MAKE_POKENEWS_STATE(POKENEWS_STATE_AIRED, replayCount);
+    }
 
     if (gLocalTime.hours < 20)
         ShowFieldMessage(sPokeNewsTextGroup_Ongoing[kind]);
@@ -2895,6 +2951,7 @@ void TryDoActivePokeNewsFallback(void)
 bool8 IsPokeNewsActive(u8 newsKind)
 {
     u8 i;
+    u8 stateVal;
 
     if (newsKind == POKENEWS_NONE)
         return FALSE;
@@ -2903,8 +2960,9 @@ bool8 IsPokeNewsActive(u8 newsKind)
     {
         if (gSaveBlock1Ptr->pokeNews[i].kind == newsKind)
         {
-            if ((gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_ACTIVE
-                 || gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_AIRED)
+            stateVal = GET_POKENEWS_STATE(gSaveBlock1Ptr->pokeNews[i].state);
+            if ((stateVal == POKENEWS_STATE_ACTIVE
+                 || stateVal == POKENEWS_STATE_AIRED)
                 && ShouldApplyPokeNewsEffect(newsKind))
                 return TRUE;
 
@@ -2975,9 +3033,13 @@ static void UpdatePokeNewsCountdown(u16 days)
             }
             else
             {
-                // Progress countdown to news event
-                if (gSaveBlock1Ptr->pokeNews[i].state == POKENEWS_STATE_INACTIVE)
-                    gSaveBlock1Ptr->pokeNews[i].state = POKENEWS_STATE_UPCOMING;
+                // Progress countdown to news event. Day rollover also wipes
+                // any leftover replay counter on the AIRED slot — so a fresh
+                // day always starts with the full replay budget.
+                if (GET_POKENEWS_STATE(gSaveBlock1Ptr->pokeNews[i].state) == POKENEWS_STATE_INACTIVE)
+                    gSaveBlock1Ptr->pokeNews[i].state = MAKE_POKENEWS_STATE(POKENEWS_STATE_UPCOMING, 0);
+                else
+                    gSaveBlock1Ptr->pokeNews[i].state = MAKE_POKENEWS_STATE(GET_POKENEWS_STATE(gSaveBlock1Ptr->pokeNews[i].state), 0);
 
                 gSaveBlock1Ptr->pokeNews[i].dayCountdown -= days;
             }
@@ -3016,7 +3078,7 @@ static void UpdatePokeNewsCountdown(u16 days)
                 {
                     gSaveBlock1Ptr->pokeNews[emptySlot].kind = newsKind;
                     gSaveBlock1Ptr->pokeNews[emptySlot].dayCountdown = 0;
-                    gSaveBlock1Ptr->pokeNews[emptySlot].state = POKENEWS_STATE_ACTIVE;
+                    gSaveBlock1Ptr->pokeNews[emptySlot].state = MAKE_POKENEWS_STATE(POKENEWS_STATE_ACTIVE, 0);
                     placed = TRUE;
                     break;
                 }
@@ -3044,7 +3106,7 @@ static void UpdatePokeNewsCountdown(u16 days)
             if (soonestSlot != -1)
             {
                 gSaveBlock1Ptr->pokeNews[soonestSlot].dayCountdown = 0;
-                gSaveBlock1Ptr->pokeNews[soonestSlot].state = POKENEWS_STATE_ACTIVE;
+                gSaveBlock1Ptr->pokeNews[soonestSlot].state = MAKE_POKENEWS_STATE(POKENEWS_STATE_ACTIVE, 0);
             }
         }
     }
@@ -4232,7 +4294,7 @@ static bool8 TryMixPokeNewsShow(PokeNews *dest, PokeNews *src, s8 slot)
             return FALSE;
     }
     dest[slot].kind = src->kind;
-    dest[slot].state = POKENEWS_STATE_UPCOMING;
+    dest[slot].state = MAKE_POKENEWS_STATE(POKENEWS_STATE_UPCOMING, 0);
     dest[slot].dayCountdown = src->dayCountdown;
     return TRUE;
 }
