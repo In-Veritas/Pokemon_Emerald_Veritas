@@ -4443,6 +4443,20 @@ BattleScript_BerryCureChosenStatusRet::
 	removeitem BS_SCRIPTING
 	return
 
+@ Veritas: Mental Herb is reusable. Mirror of BerryCureChosenStatus*
+@ above without the trailing `removeitem` so the herb stays in the
+@ holder's slot and re-fires on every subsequent attraction/confusion.
+BattleScript_MentalHerbCureEnd2::
+	call BattleScript_MentalHerbCureRet
+	end2
+
+BattleScript_MentalHerbCureRet::
+	call BattleScript_HeldItemAnimation_Scripting
+	printfromtable gBerryEffectStringIds
+	waitmessage B_WAIT_TIME_LONG
+	updatestatusicon BS_SCRIPTING
+	return
+
 BattleScript_WhiteHerbEnd2::
 	call BattleScript_WhiteHerbRet
 	end2

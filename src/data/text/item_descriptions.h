@@ -749,9 +749,9 @@ static const u8 sSootheBellDesc[] = _(
     "fosters friendship.");
 
 static const u8 sMentalHerbDesc[] = _(
-    "A hold item that\n"
-    "snaps POKéMON out\n"
-    "of infatuation.");
+    "Reusable. Wards\n"
+    "off attraction and\n"
+    "confusion.");
 
 static const u8 sChoiceBandDesc[] = _(
     "Raises a move's\n"
@@ -784,14 +784,14 @@ static const u8 sSoulDewDesc[] = _(
     "LATIOS & LATIAS.");
 
 static const u8 sDeepSeaToothDesc[] = _(
-    "A hold item that\n"
-    "raises the SP. ATK\n"
-    "of CLAMPERL.");
+    "Doubles SP. ATK of\n"
+    "CLAMPERL, HUNTAIL,\n"
+    "and GOREBYSS.");
 
 static const u8 sDeepSeaScaleDesc[] = _(
-    "A hold item that\n"
-    "raises the SP. DEF\n"
-    "of CLAMPERL.");
+    "Doubles SP. DEF of\n"
+    "CLAMPERL, HUNTAIL,\n"
+    "and GOREBYSS.");
 
 static const u8 sSmokeBallDesc[] = _(
     "A hold item that\n"
@@ -829,9 +829,9 @@ static const u8 sLeftoversDesc[] = _(
     "HP in battle.");
 
 static const u8 sDragonScaleDesc[] = _(
-    "A strange scale\n"
-    "held by DRAGON-\n"
-    "type POKéMON.");
+    "Boosts WATER and\n"
+    "DRAGON moves by\n"
+    "15% when held.");
 
 static const u8 sLightBallDesc[] = _(
     "Raises the SP. ATK\n"
@@ -879,9 +879,9 @@ static const u8 sSharpBeakDesc[] = _(
     "FLYING-type moves.");
 
 static const u8 sPoisonBarbDesc[] = _(
-    "A hold item that\n"
-    "raises the power of\n"
-    "POISON-type moves.");
+    "Boosts POISON\n"
+    "moves 15%, doubles\n"
+    "poison odds.");
 
 static const u8 sNeverMeltIceDesc[] = _(
     "A hold item that\n"
@@ -914,8 +914,9 @@ static const u8 sSilkScarfDesc[] = _(
     "NORMAL-type moves.");
 
 static const u8 sUpGradeDesc[] = _(
-    "A peculiar box made\n"
-    "by SILPH CO.");
+    "SILPH CO. box.\n"
+    "Doubles PORYGON's\n"
+    "DEFENSE if held.");
 
 static const u8 sShellBellDesc[] = _(
     "A hold item that\n"
@@ -933,9 +934,9 @@ static const u8 sLaxIncenseDesc[] = _(
     "foe's accuracy.");
 
 static const u8 sLuckyPunchDesc[] = _(
-    "A hold item that\n"
-    "raises CHANSEY's\n"
-    "critical-hit rate.");
+    "Doubles CHANSEY's\n"
+    "ATTACK and crit\n"
+    "ratio when held.");
 
 static const u8 sMetalPowderDesc[] = _(
     "A hold item that\n"

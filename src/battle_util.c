@@ -3716,9 +3716,20 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                     CuredProblem = 1;
                     StringCopy(gBattleTextBuff1, gStatusConditionString_LoveJpn);
                 }
+                // Veritas: Mental Herb also clears confusion every tick.
+                if (gBattleMons[battlerId].status2 & STATUS2_CONFUSION)
+                {
+                    gBattleMons[battlerId].status2 &= ~STATUS2_CONFUSION;
+                    CuredProblem = 1;
+                    StringCopy(gBattleTextBuff1, gStatusConditionString_ConfusionJpn);
+                }
                 if (CuredProblem != 0)
                 {
-                    BattleScriptExecute(BattleScript_BerryCureChosenStatusEnd2);
+                    // Veritas: use the non-consuming Mental Herb script
+                    // (BattleScript_MentalHerbCureEnd2 omits removeitem)
+                    // so the herb persists and re-fires on every later
+                    // attraction or confusion.
+                    BattleScriptExecute(BattleScript_MentalHerbCureEnd2);
                     gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_CURED_PROBLEM;
                     effect = ITEM_EFFECT_OTHER;
                     CuredProblem = 0;
@@ -3849,11 +3860,19 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
                     CuredProblem = 1;
                     StringCopy(gBattleTextBuff1, gStatusConditionString_LoveJpn);
                 }
+                // Veritas: also wipe confusion (see matching tick handler above).
+                if (gBattleMons[battlerId].status2 & STATUS2_CONFUSION)
+                {
+                    gBattleMons[battlerId].status2 &= ~STATUS2_CONFUSION;
+                    CuredProblem = 1;
+                    StringCopy(gBattleTextBuff1, gStatusConditionString_ConfusionJpn);
+                }
                 if (CuredProblem != 0)
                 {
                     BattleScriptPushCursor();
                     gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_CURED_PROBLEM;
-                    gBattlescriptCurrInstr = BattleScript_BerryCureChosenStatusRet;
+                    // Veritas: non-consuming script — see BattleScript_MentalHerbCureRet.
+                    gBattlescriptCurrInstr = BattleScript_MentalHerbCureRet;
                     effect = ITEM_EFFECT_OTHER;
                     CuredProblem = 0;
                 }

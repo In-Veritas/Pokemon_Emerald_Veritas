@@ -3046,6 +3046,20 @@ static void Cmd_seteffectwithchance(void)
     else
         percentChance = gBattleMoves[gCurrentMove].secondaryEffectChance;
 
+    // Veritas: Poison Barb (and any future HOLD_EFFECT_POISON_POWER item)
+    // doubles the secondary poison odds for the holder. Stacks
+    // multiplicatively with Serene Grace, capped at 100%. Only fires
+    // when the move's secondary effect is poison or toxic — ordinary
+    // damage-only moves are unaffected.
+    if ((gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_POISON
+         || gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_TOXIC)
+        && ItemId_GetHoldEffect(gBattleMons[gBattlerAttacker].item) == HOLD_EFFECT_POISON_POWER)
+    {
+        percentChance *= 2;
+        if (percentChance > 100)
+            percentChance = 100;
+    }
+
     for (i = 0; i < effectCount; i++)
     {
         if (gBattleCommunication[MOVE_EFFECT_BYTE] == MOVE_EFFECT_BURN_FLINCH)

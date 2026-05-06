@@ -3373,9 +3373,18 @@ s32 CalculateBaseDamage(struct BattlePokemon *attacker, struct BattlePokemon *de
         spAttack = (150 * spAttack) / 100;
     if (defenderHoldEffect == HOLD_EFFECT_SOUL_DEW && !(gBattleTypeFlags & (BATTLE_TYPE_FRONTIER)) && (defender->species == SPECIES_LATIAS || defender->species == SPECIES_LATIOS))
         spDefense = (150 * spDefense) / 100;
-    if (attackerHoldEffect == HOLD_EFFECT_DEEP_SEA_TOOTH && attacker->species == SPECIES_CLAMPERL)
+    // Veritas: Deep Sea Tooth/Scale extended to Huntail and Gorebyss
+    // (the Clamperl evolution line) so the items remain useful after
+    // the holder evolves.
+    if (attackerHoldEffect == HOLD_EFFECT_DEEP_SEA_TOOTH
+        && (attacker->species == SPECIES_CLAMPERL
+         || attacker->species == SPECIES_HUNTAIL
+         || attacker->species == SPECIES_GOREBYSS))
         spAttack *= 2;
-    if (defenderHoldEffect == HOLD_EFFECT_DEEP_SEA_SCALE && defender->species == SPECIES_CLAMPERL)
+    if (defenderHoldEffect == HOLD_EFFECT_DEEP_SEA_SCALE
+        && (defender->species == SPECIES_CLAMPERL
+         || defender->species == SPECIES_HUNTAIL
+         || defender->species == SPECIES_GOREBYSS))
         spDefense *= 2;
     if (attackerHoldEffect == HOLD_EFFECT_LIGHT_BALL && (attacker->species == SPECIES_PIKACHU || attacker->species == SPECIES_PICHU || attacker->species == SPECIES_PLUSLE || attacker->species == SPECIES_MINUN))
         spAttack *= 2;
@@ -3383,6 +3392,17 @@ s32 CalculateBaseDamage(struct BattlePokemon *attacker, struct BattlePokemon *de
         defense *= 2;
     if (attackerHoldEffect == HOLD_EFFECT_THICK_CLUB && (attacker->species == SPECIES_CUBONE || attacker->species == SPECIES_MAROWAK))
         attack *= 2;
+    // Veritas: Lucky Punch also doubles Chansey's Attack (in addition to
+    // the +crit boost handled in src/battle_script_commands.c).
+    if (attackerHoldEffect == HOLD_EFFECT_LUCKY_PUNCH && attacker->species == SPECIES_CHANSEY)
+        attack *= 2;
+    // Veritas: Up-Grade doubles Porygon's Defense when held.
+    if (defenderHoldEffect == HOLD_EFFECT_UP_GRADE && defender->species == SPECIES_PORYGON)
+        defense *= 2;
+    // Veritas: Dragon Scale boosts Water and Dragon damage 15% (special
+    // since both types are special under gen-3 type-determined split).
+    if (attackerHoldEffect == HOLD_EFFECT_DRAGON_SCALE && (type == TYPE_WATER || type == TYPE_DRAGON))
+        spAttack = (spAttack * 115) / 100;
 
     // Are effects of weather negated with cloud nine or air lock
     if (WEATHER_HAS_EFFECT2)
