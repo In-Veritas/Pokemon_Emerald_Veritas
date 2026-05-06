@@ -656,6 +656,13 @@ The headline shinies of Pokémon Emerald Veritas. Each of the three superancient
       <sub>Dark gray petal<br>blood red eye</sub>
     </td>
   </tr>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_mareep.png" alt="Shiny Mareep" width="120"><br>
+      <b>Mareep</b><br>
+      <sub>Black sheep<br>yellow wool tuft</sub>
+    </td>
+  </tr>
 </table>
 
 #### Hoenn Starter Lines
