@@ -129,6 +129,7 @@ enum {
     MENU_SWITCH,
     MENU_BAG,
     MENU_INFO,
+    MENU_TAKE_ITEM, // "TAKE" entry for the Move-Pokemon action menu (puts held item directly into bag)
     MENU_SCENERY_1,
     MENU_SCENERY_2,
     MENU_SCENERY_3,
@@ -650,6 +651,7 @@ static void Task_ShowItemInfo(u8);
 static void Task_GiveItemFromBag(u8);
 static void Task_ItemToBag(u8);
 static void Task_TakeItemForMoving(u8);
+static void Task_TakeItemToBag(u8);
 static void Task_ShowMarkMenu(u8);
 static void Task_ShowMonSummary(u8);
 static void Task_ReleaseMon(u8);
@@ -2753,6 +2755,10 @@ static void Task_OnSelectedMon(u8 taskId)
         case MENU_BAG:
             SetPokeStorageTask(Task_ItemToBag);
             break;
+        case MENU_TAKE_ITEM:
+            PlaySE(SE_SELECT);
+            SetPokeStorageTask(Task_TakeItemToBag);
+            break;
         case MENU_SWITCH:
             PlaySE(SE_SELECT);
             SetPokeStorageTask(Task_SwitchSelectedItem);
@@ -3215,6 +3221,57 @@ static void Task_ItemToBag(u8 taskId)
     case 1:
         if (!IsItemIconAnimActive())
         {
+            PrintMessage(MSG_PLACED_IN_BAG);
+            sStorage->state = 2;
+        }
+        break;
+    case 2:
+        if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
+        {
+            ClearBottomWindow();
+            RefreshDisplayMon();
+            PrintDisplayMonInfo();
+            sStorage->state = 4;
+        }
+        break;
+    case 4:
+        if (!IsDma3ManagerBusyWithBgCopy())
+            SetPokeStorageTask(Task_PokeStorageMain);
+        break;
+    case 3:
+        if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
+        {
+            ClearBottomWindow();
+            SetPokeStorageTask(Task_PokeStorageMain);
+        }
+        break;
+    }
+}
+
+// Veritas: TAKE entry on the Move-Pokemon action menu. Pulls the selected
+// Pokemon's held item straight into the bag without going through the
+// Move-Items submenu. Bag-full case leaves the item on the Pokemon.
+static void Task_TakeItemToBag(u8 taskId)
+{
+    u16 itemId;
+
+    switch (sStorage->state)
+    {
+    case 0:
+        if (!AddBagItem(sStorage->displayMonItemId, 1))
+        {
+            PlaySE(SE_FAILURE);
+            PrintMessage(MSG_BAG_FULL);
+            sStorage->state = 3;
+        }
+        else
+        {
+            PlaySE(SE_SELECT);
+            itemId = ITEM_NONE;
+            if (sInPartyMenu)
+                SetMonData(&gPlayerParty[GetCursorPosition()], MON_DATA_HELD_ITEM, &itemId);
+            else
+                SetCurrentBoxMonData(GetCursorPosition(), MON_DATA_HELD_ITEM, &itemId);
             PrintMessage(MSG_PLACED_IN_BAG);
             sStorage->state = 2;
         }
@@ -7898,6 +7955,14 @@ static bool8 SetMenuTexts_Mon(void)
     }
 
     SetMenuText(MENU_MARK);
+    // Veritas: in Move-Pokemon mode, expose a top-level TAKE entry when the
+    // selected Pokemon is holding a (non-mail) item, so the player can drop it
+    // straight into the bag without entering the Move-Items submenu.
+    if (sStorage->boxOption == OPTION_MOVE_MONS
+     && !sIsMonBeingMoved
+     && sStorage->displayMonItemId != ITEM_NONE
+     && !ItemIsMail(sStorage->displayMonItemId))
+        SetMenuText(MENU_TAKE_ITEM);
     SetMenuText(MENU_RELEASE);
     SetMenuText(MENU_CANCEL);
     return TRUE;
@@ -8181,6 +8246,7 @@ static const u8 *const sMenuTexts[] =
     [MENU_SWITCH]     = gPCText_Switch,
     [MENU_BAG]        = gPCText_Bag,
     [MENU_INFO]       = gPCText_Info,
+    [MENU_TAKE_ITEM]  = gPCText_Take,
     [MENU_SCENERY_1]  = gPCText_Scenery1,
     [MENU_SCENERY_2]  = gPCText_Scenery2,
     [MENU_SCENERY_3]  = gPCText_Scenery3,

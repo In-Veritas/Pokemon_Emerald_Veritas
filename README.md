@@ -236,6 +236,13 @@ The full unlockable list (27 outfits): Aqua, Brazil, Chikorita, Cyndaquil, Dark,
   * RS May + Emerald Brendan (rival)
 * Credits timing optimized to match 2:55 soundtrack length
 
+#### Quick Take Item in PC
+
+* When using **Move Pokémon** in the PC, selecting a Pokémon that is holding an item now shows a **TAKE** option in its action menu
+* Picks the item straight off the Pokémon and into the bag without having to leave Move-Pokémon mode and switch to Move-Items
+* If the bag is full, the item stays on the Pokémon
+* Mail items remain protected — they cannot be taken this way
+
 #### Unlockable PC Box Wallpapers
 
 * Added 29 new custom wallpapers organized into 7 themed categories
