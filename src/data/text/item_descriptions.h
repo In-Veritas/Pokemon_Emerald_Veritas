@@ -211,9 +211,9 @@ static const u8 sWhiteFluteDesc[] = _(
     "lures wild POKéMON.");
 
 static const u8 sBerryJuiceDesc[] = _(
-    "A 100% pure juice\n"
-    "that restores HP\n"
-    "by 20 points.");
+    "At 1/4 HP, restores\n"
+    "1/3 of max HP, then\n"
+    "is consumed.");
 
 static const u8 sSacredAshDesc[] = _(
     "Fully revives and\n"

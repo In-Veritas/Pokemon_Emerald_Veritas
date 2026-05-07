@@ -461,6 +461,10 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 * **Ganlon**, **Apicot**, and **Starf** also **heal 1/8 max HP** when they trigger, in addition to their stat-up effect
 * Liechi/Salac/Petaya keep the vanilla 1/4 threshold and stat-only effect
 
+#### Berry Juice Rework
+
+* Berry Juice now triggers at **HP ≤ 1/4** (vanilla 1/2) and restores **1/3 of max HP** (vanilla flat 20). Scales with the holder instead of being a chip heal at endgame, but waits longer to fire
+
 #### Enigma Berry Effect
 
 The vanilla Enigma Berry was an inert e-Reader item with no effect on a fresh save. In Veritas it has a fixed counter-effect against opposing pressure:

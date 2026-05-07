@@ -3593,7 +3593,24 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
             switch (battlerHoldEffect)
             {
             case HOLD_EFFECT_RESTORE_HP:
-                if (gBattleMons[battlerId].hp <= gBattleMons[battlerId].maxHP / 2 && !moveTurn)
+                // Veritas: Berry Juice triggers later (HP <= 1/4 of max instead
+                // of 1/2) but heals 1/3 of max HP instead of a flat 20. Keeps
+                // Oran Berry untouched since it shares HOLD_EFFECT_RESTORE_HP.
+                if (gBattleMons[battlerId].item == ITEM_BERRY_JUICE)
+                {
+                    if (gBattleMons[battlerId].hp <= gBattleMons[battlerId].maxHP / 4 && !moveTurn)
+                    {
+                        gBattleMoveDamage = gBattleMons[battlerId].maxHP / 3;
+                        if (gBattleMoveDamage == 0)
+                            gBattleMoveDamage = 1;
+                        if (gBattleMons[battlerId].hp + gBattleMoveDamage > gBattleMons[battlerId].maxHP)
+                            gBattleMoveDamage = gBattleMons[battlerId].maxHP - gBattleMons[battlerId].hp;
+                        gBattleMoveDamage *= -1;
+                        BattleScriptExecute(BattleScript_ItemHealHP_RemoveItem);
+                        effect = ITEM_HP_CHANGE;
+                    }
+                }
+                else if (gBattleMons[battlerId].hp <= gBattleMons[battlerId].maxHP / 2 && !moveTurn)
                 {
                     gBattleMoveDamage = battlerHoldEffectParam;
                     if (gBattleMons[battlerId].hp + battlerHoldEffectParam > gBattleMons[battlerId].maxHP)
