@@ -943,6 +943,15 @@ static void Task_StartWiredCableClubBattle(u8 taskId)
         // Music starts here, the same frame the transition kicks off,
         // so the song's intro plays under the mugshot rather than
         // popping in only after the transition completes.
+        //
+        // SetLinkBattleTypeFlags MUST run before PlayMapChosenOrBattleBGM:
+        // GetBattleBGM checks (gBattleTypeFlags & BATTLE_TYPE_LINK) before
+        // it reads VAR_LINK_BATTLE_MUSIC. Without the flag set first the
+        // music branch is skipped, the trainer-class branch falls through
+        // to MUS_VS_WILD, and the player's chosen link battle song is
+        // ignored. (The flag is also re-checked from gSpecialVar_0x8004
+        // in case 5 so the LV50 cap path still keys off the same value.)
+        SetLinkBattleTypeFlags(gSpecialVar_0x8004);
         PlayMapChosenOrBattleBGM(0);
         BattleTransition_StartOnField(B_TRANSITION_LINK_BATTLE);
         task->tState++;
@@ -950,7 +959,6 @@ static void Task_StartWiredCableClubBattle(u8 taskId)
     case 5:
         if (IsBattleTransitionDone() == TRUE)
         {
-            SetLinkBattleTypeFlags(gSpecialVar_0x8004);
             if (gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE
                 || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE
                 || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)
@@ -1016,7 +1024,9 @@ static void Task_StartWirelessCableClubBattle(u8 taskId)
         break;
     case 6:
         // Music starts together with the mugshot transition (see the
-        // matching comment in Task_StartWiredCableClubBattle).
+        // matching comment in Task_StartWiredCableClubBattle, including
+        // the note on why SetLinkBattleTypeFlags MUST run first).
+        SetLinkBattleTypeFlags(gSpecialVar_0x8004);
         PlayMapChosenOrBattleBGM(0);
         BattleTransition_StartOnField(B_TRANSITION_LINK_BATTLE);
         tState = 7;
@@ -1025,7 +1035,6 @@ static void Task_StartWirelessCableClubBattle(u8 taskId)
         if (IsBattleTransitionDone() == TRUE)
         {
             gLinkPlayers[0].linkType = LINKTYPE_BATTLE;
-            SetLinkBattleTypeFlags(gSpecialVar_0x8004);
             if (gSpecialVar_0x8004 == USING_LV50_SINGLE_BATTLE
                 || gSpecialVar_0x8004 == USING_LV50_DOUBLE_BATTLE
                 || gSpecialVar_0x8004 == USING_LV50_MULTI_BATTLE)

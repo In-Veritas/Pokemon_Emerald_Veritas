@@ -19,6 +19,7 @@
 #include "international_string_util.h"
 #include "librfu.h"
 #include "link.h"
+#include "link_battle_scene.h"
 #include "link_rfu.h"
 #include "list_menu.h"
 #include "load_save.h"
@@ -1529,6 +1530,20 @@ static void Task_ExchangeCards(u8 taskId)
     switch (gTasks[taskId].data[0])
     {
     case 0:
+        // Stamp the scene-pick / RS-style / RTC broadcast bytes into our
+        // own gBlockSendBuffer right before the leader fires the size-100
+        // request. Each peer (leader and joiners alike) is asked to send
+        // its OWN gBlockSendBuffer in response to the request, so every
+        // peer needs to have done a FillSendBuffer; the leader's request
+        // alone is not enough. Without this, wireless link battles (which
+        // route trainer-card exchange through Task_ExchangeCards rather
+        // than cable_club's Task_LinkupAwaitTrainerCardData) never broadcast
+        // the picker's choice and the resolver always falls back to
+        // LINK_SCENE_NONE, making the battle terrain stay at the colosseum
+        // map default. CreateTrainerCardInBuffer already wrote the
+        // TrainerCard struct (ending at 0x64) into the buffer; the scene
+        // bytes live in TrainerCard.filler (0x44..0x4B) and don't collide.
+        LinkBattleScene_FillSendBuffer();
         if (GetMultiplayerId() == 0)
             SendBlockRequest(BLOCK_REQ_SIZE_100);
         gTasks[taskId].data[0]++;
@@ -1544,6 +1559,16 @@ static void Task_ExchangeCards(u8 taskId)
                 recvBuff = gBlockRecvBuffer[i];
                 CopyTrainerCardData(&gTrainerCards[i], (struct TrainerCard *)recvBuff, gLinkPlayers[i].version);
             }
+
+            // Stash each peer's broadcast scene/style/RTC bytes BEFORE
+            // ResetBlockReceivedFlags + the wireless lobby's later block
+            // exchanges (Task_StartWirelessCableClubBattle case 2's
+            // gLocalLinkPlayer SendBlock) overwrite gBlockRecvBuffer.
+            // Mirrors the cable-side stash in Task_LinkupAwaitTrainerCardData.
+            // No-op if no peer set the magic byte (e.g. trade/record-corner
+            // exchanges go through this same task but never call
+            // FillSendBuffer with a meaningful pick).
+            LinkBattleScene_StashPeerData();
 
             if (GetLinkPlayerCount() == 2)
             {
