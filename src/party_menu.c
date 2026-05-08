@@ -5998,8 +5998,8 @@ static u8 GetBattleEntryLevelCap(void)
     case FACILITY_UNION_ROOM:
         return UNION_ROOM_MAX_LEVEL;
     default: // Battle Frontier
-        if (gSpecialVar_0x8004 == FRONTIER_LVL_50)
-            return FRONTIER_MAX_LEVEL_50;
+        // Veritas: any level is eligible — mons above 50 are scaled down at
+        // battle entry rather than greyed out in the team-select UI.
         return FRONTIER_MAX_LEVEL_OPEN;
     }
 }
