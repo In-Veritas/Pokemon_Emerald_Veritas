@@ -670,6 +670,7 @@ static void Task_ShowMonSummary(u8);
 static void Task_ReleaseMon(u8);
 static void Task_ReleaseAllMons(u8);
 static void Task_WithdrawEggs(u8);
+static void DestroyBoxMonIconAtPosition(u8);
 static void Task_ReshowPokeStorage(u8);
 static void Task_PokeStorageMain(u8);
 static void Task_JumpBox(u8);
