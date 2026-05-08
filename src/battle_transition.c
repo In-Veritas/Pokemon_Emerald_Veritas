@@ -2736,7 +2736,20 @@ static void Mugshots_CreateTrainerPics(struct Task *task)
         // = (myId & 1) ^ 1. Both reduce to the same expression. Honors
         // each linked player's broadcast RS-style toggle via
         // LinkBattleScene_GetTrainerPicId.
-        linkOppIdx = (GetMultiplayerId() & 1) ^ 1;
+        //
+        // Use gSavedMultiplayerId instead of GetMultiplayerId(): the
+        // wired flow runs SetCloseLinkCallback + DisableSerial BEFORE
+        // the mugshot fires (Task_StartWiredCableClubBattle case 2-3),
+        // and once the serial line is disabled SIO_MULTI_CNT->id reads
+        // 0 on every machine. That made the joiner read gLinkPlayers[1]
+        // (themselves) for the opponent slot — both mugshot frames ended
+        // up showing the joiner's own face. gSavedMultiplayerId is
+        // captured by SaveLinkPlayers() during the cable-club lobby long
+        // before the link is torn down, so it stays correct here. The
+        // wireless flow keeps RFU state alive through Shutdown so it was
+        // already correct, but switching to the saved id is harmless
+        // there and keeps both flows consistent.
+        linkOppIdx = (gSavedMultiplayerId & 1) ^ 1;
         if (linkOppIdx >= MAX_LINK_PLAYERS)
             linkOppIdx = 0; // defensive
         trainerPicId = LinkBattleScene_GetTrainerPicId(linkOppIdx, gLinkPlayers[linkOppIdx].gender);
