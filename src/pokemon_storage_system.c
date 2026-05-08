@@ -671,6 +671,7 @@ static void Task_ReleaseMon(u8);
 static void Task_ReleaseAllMons(u8);
 static void Task_WithdrawEggs(u8);
 static void DestroyBoxMonIconAtPosition(u8);
+static void DestroyPartyMonIcon(u8);
 static void Task_ReshowPokeStorage(u8);
 static void Task_PokeStorageMain(u8);
 static void Task_JumpBox(u8);
@@ -3335,6 +3336,10 @@ static void Task_WithdrawEggs(u8 taskId)
     u8 partySlot;
     u8 transferred;
     u8 i;
+    u16 species;
+    u32 personality;
+    s16 spriteX;
+    s16 spriteY;
 
     switch (sStorage->state)
     {
@@ -3368,14 +3373,30 @@ static void Task_WithdrawEggs(u8 taskId)
                 break;
 
             // Direct transfer: expand box mon → struct Pokemon, write to party,
-            // zero the box slot, kill the icon. Mirrors what the move-and-place
-            // animation would do at the data level (see SetMovingMonData /
-            // SetPlacedMonData / TryStorePartyMonInBox), minus the cursor
-            // animation since we're not following the cursor here.
+            // zero the box slot, kill the box icon, spawn a party icon at the
+            // same coordinates the normal withdraw flow uses (see
+            // CreatePartyMonsSprites). Mirrors what the move-and-place
+            // animation would do at the data layer minus the cursor walk.
             BoxMonAtToMon(boxId, boxPos, &gPlayerParty[partySlot]);
             ZeroBoxMonAt(boxId, boxPos);
             DestroyBoxMonIconAtPosition(boxPos);
             sStorage->boxSpecies[boxPos] = SPECIES_NONE;
+
+            species = GetMonData(&gPlayerParty[partySlot], MON_DATA_SPECIES_OR_EGG);
+            personality = GetMonData(&gPlayerParty[partySlot], MON_DATA_PERSONALITY);
+            if (partySlot == 0)
+            {
+                spriteX = 104;
+                spriteY = 64;
+            }
+            else
+            {
+                spriteX = 152;
+                spriteY = 8 * (3 * (partySlot - 1)) + 16;
+            }
+            DestroyPartyMonIcon(partySlot);
+            sStorage->partySprites[partySlot] = CreateMonIconSprite(species, personality, spriteX, spriteY, 1, 12);
+
             transferred++;
         }
         if (transferred == 0)
@@ -3385,8 +3406,11 @@ static void Task_WithdrawEggs(u8 taskId)
             SetPokeStorageTask(Task_PokeStorageMain);
             return;
         }
-        // Refresh the egg/display panel since the egg under the cursor was
-        // just zeroed. RefreshDisplayMon picks up the new (empty) cursor mon.
+        // Repaint party-slot tilemap so the new occupied slots show the
+        // bright/dim panel art instead of empty-slot color, refresh the
+        // top-cursor display panel (the egg under the cursor was zeroed),
+        // and announce.
+        UpdatePartySlotColors();
         RefreshDisplayMon();
         PrintMessage(MSG_WITHDREW_EGGS_DONE);
         sStorage->state = 1;
