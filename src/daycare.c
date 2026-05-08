@@ -1095,6 +1095,25 @@ static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
         }
     }
 
+    // Veritas: gen-1/2-style consecutive-hatch behavior. The 256-step
+    // decrement loop above only returns TRUE on the NEXT visit after an
+    // egg hits 0, so multiple eggs that bottomed out on the same tick
+    // would otherwise hatch 256 steps apart per slot. Scanning every
+    // step lets queued zero-cycle eggs hatch on consecutive overworld
+    // steps once the first one fires.
+    for (i = 0; i < gPlayerPartyCount; i++)
+    {
+        if (!GetMonData(&gPlayerParty[i], MON_DATA_IS_EGG))
+            continue;
+        if (GetMonData(&gPlayerParty[i], MON_DATA_SANITY_IS_BAD_EGG))
+            continue;
+        if (GetMonData(&gPlayerParty[i], MON_DATA_FRIENDSHIP) == 0)
+        {
+            gSpecialVar_0x8004 = i;
+            return TRUE;
+        }
+    }
+
     return FALSE;
 }
 

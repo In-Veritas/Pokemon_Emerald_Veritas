@@ -505,6 +505,11 @@ The vanilla Enigma Berry was an inert e-Reader item with no effect on a fresh sa
 * Disabled by default; toggle in the Options Plus menu under World submenu.
 * Friendship-based evolutions that depend on time of day (e.g., Espeon by day, Umbreon by night) become actually time-of-day gated when the cycle is enabled.
 
+#### Consecutive Egg Hatching
+
+* When multiple party eggs hit zero cycles on the same 256-step tick (e.g. 5 same-species eggs picked up together), they now hatch on **consecutive overworld steps** instead of 256 steps apart per slot — gen-1/2 style sequential hatching
+* No effect on hatch *speed* — the cycle counter still ticks down at the vanilla rate per egg; this only changes when the queued hatch animations actually fire
+
 #### Mystery Egg from Pokémon Jump
 
 * The 16,000-point **Mythical** prize tier in Pokémon Jump now grants a **Mystery Egg** that always hatches into a **first-stage species** (no Pichu evolutions, no rare-baby surprises — just a clean roll across all 386 first-stage Pokémon).
