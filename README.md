@@ -252,6 +252,13 @@ The full unlockable list (27 outfits): Aqua, Brazil, Chikorita, Cyndaquil, Dark,
 * Pokémon that know a required field move (e.g. SURF) and are the only such owner stay in the party via the same "came back!" sequence as single-release
 * Eggs are released along with everything else (vanilla single-release behavior)
 
+#### Withdraw Eggs in PC
+
+* When using **Move Pokémon** in the PC, selecting an **egg** inside a box (cursor in the box, not the party) now shows a **WITHDRAW EGGS** option in its action menu
+* Fills empty party slots one-by-one with eggs from that same box, scanning top-to-bottom in box-position order
+* Stops automatically when the party is full or the box has no more eggs
+* Only appears when the cursor is on an egg, the party has at least one open slot, and you are not already holding a Pokémon
+
 #### Unlockable PC Box Wallpapers
 
 * Added 29 new custom wallpapers organized into 7 themed categories

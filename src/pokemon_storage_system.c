@@ -96,6 +96,7 @@ enum {
     MSG_CHANGED_TO_ITEM,
     MSG_CANT_STORE_MAIL,
     MSG_RELEASE_ALL_POKE, // "Release all party Pokemon except the lead?" YES/NO prompt
+    MSG_WITHDREW_EGGS_DONE, // "Eggs were brought to your party." after WITHDRAW EGGS finishes
 };
 
 // IDs for how to resolve variables in the above messages
@@ -132,6 +133,7 @@ enum {
     MENU_INFO,
     MENU_TAKE_ITEM, // "TAKE" entry for the Move-Pokemon action menu (puts held item directly into bag)
     MENU_RELEASE_ALL, // "RELEASE ALL" entry for the Move-Pokemon action menu (releases every non-lead party slot)
+    MENU_WITHDRAW_EGGS, // "WITHDRAW EGGS" entry: pulls eggs from the cursor's box into empty party slots
     MENU_SCENERY_1,
     MENU_SCENERY_2,
     MENU_SCENERY_3,
@@ -667,6 +669,7 @@ static void Task_ShowMarkMenu(u8);
 static void Task_ShowMonSummary(u8);
 static void Task_ReleaseMon(u8);
 static void Task_ReleaseAllMons(u8);
+static void Task_WithdrawEggs(u8);
 static void Task_ReshowPokeStorage(u8);
 static void Task_PokeStorageMain(u8);
 static void Task_JumpBox(u8);
@@ -1162,6 +1165,7 @@ static const struct StorageMessage sMessages[] =
     [MSG_CHANGED_TO_ITEM]      = {gText_ChangedToNewItem,        MSG_VAR_ITEM_NAME},
     [MSG_CANT_STORE_MAIL]      = {gText_MailCantBeStored,        MSG_VAR_NONE},
     [MSG_RELEASE_ALL_POKE]     = {gText_ReleaseAllPartyPokemon,  MSG_VAR_NONE},
+    [MSG_WITHDREW_EGGS_DONE]   = {gText_WithdrewEggs,             MSG_VAR_NONE},
 };
 
 static const struct WindowTemplate sYesNoWindowTemplate =
@@ -2776,6 +2780,10 @@ static void Task_OnSelectedMon(u8 taskId)
             PlaySE(SE_SELECT);
             SetPokeStorageTask(Task_ReleaseAllMons);
             break;
+        case MENU_WITHDRAW_EGGS:
+            PlaySE(SE_SELECT);
+            SetPokeStorageTask(Task_WithdrawEggs);
+            break;
         case MENU_SWITCH:
             PlaySE(SE_SELECT);
             SetPokeStorageTask(Task_SwitchSelectedItem);
@@ -3305,6 +3313,84 @@ static void Task_ReleaseAllMons(u8 taskId)
         break;
     case 50:
         // Mail-holder abort — wait for input then exit.
+        if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
+        {
+            ClearBottomWindow();
+            SetPokeStorageTask(Task_PokeStorageMain);
+        }
+        break;
+    }
+}
+
+// Veritas: WITHDRAW EGGS — when the player selects an egg inside a PC box in
+// Move-Pokemon mode, fill empty party slots one-by-one with eggs taken from
+// THE SAME box, scanning box-position order (top-left to bottom-right).
+// Stops when the party is full or the box has no more eggs. No animation —
+// the transfers are instant; we just refresh display state at the end.
+static void Task_WithdrawEggs(u8 taskId)
+{
+    u8 boxId;
+    u8 boxPos;
+    u8 partySlot;
+    u8 transferred;
+    u8 i;
+
+    switch (sStorage->state)
+    {
+    case 0:
+        boxId = StorageGetCurrentBox();
+        transferred = 0;
+        // Walk every box slot in box-position order, transferring eggs into
+        // the next free party slot. Eggs only — non-egg mons are ignored.
+        for (boxPos = 0; boxPos < IN_BOX_COUNT; boxPos++)
+        {
+            if (CountPartyMons() >= PARTY_SIZE)
+                break;
+            if (GetBoxMonDataAt(boxId, boxPos, MON_DATA_SPECIES) == SPECIES_NONE)
+                continue;
+            if (!GetBoxMonDataAt(boxId, boxPos, MON_DATA_IS_EGG))
+                continue;
+
+            // Find first empty party slot. CountPartyMons() trusts the
+            // invariant that the party is compacted from slot 0; we scan
+            // anyway in case any caller leaves holes.
+            partySlot = PARTY_SIZE;
+            for (i = 0; i < PARTY_SIZE; i++)
+            {
+                if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) == SPECIES_NONE)
+                {
+                    partySlot = i;
+                    break;
+                }
+            }
+            if (partySlot >= PARTY_SIZE)
+                break;
+
+            // Direct transfer: expand box mon → struct Pokemon, write to party,
+            // zero the box slot, kill the icon. Mirrors what the move-and-place
+            // animation would do at the data level (see SetMovingMonData /
+            // SetPlacedMonData / TryStorePartyMonInBox), minus the cursor
+            // animation since we're not following the cursor here.
+            BoxMonAtToMon(boxId, boxPos, &gPlayerParty[partySlot]);
+            ZeroBoxMonAt(boxId, boxPos);
+            DestroyBoxMonIconAtPosition(boxPos);
+            sStorage->boxSpecies[boxPos] = SPECIES_NONE;
+            transferred++;
+        }
+        if (transferred == 0)
+        {
+            // No eggs moved (party already full at entry, or some race).
+            // Nothing to announce — just go back.
+            SetPokeStorageTask(Task_PokeStorageMain);
+            return;
+        }
+        // Refresh the egg/display panel since the egg under the cursor was
+        // just zeroed. RefreshDisplayMon picks up the new (empty) cursor mon.
+        RefreshDisplayMon();
+        PrintMessage(MSG_WITHDREW_EGGS_DONE);
+        sStorage->state = 1;
+        break;
+    case 1:
         if (JOY_NEW(A_BUTTON | B_BUTTON | DPAD_ANY))
         {
             ClearBottomWindow();
@@ -8184,6 +8270,15 @@ static bool8 SetMenuTexts_Mon(void)
      && sCursorPosition != 0
      && CountPartyMons() >= 2)
         SetMenuText(MENU_RELEASE_ALL);
+    // Veritas: WITHDRAW EGGS — when the cursor is on an egg inside a box (not the
+    // party) in Move-Pokemon mode, offer a one-shot action that fills all empty
+    // party slots with eggs from this same box, scanned in box-position order.
+    if (sStorage->boxOption == OPTION_MOVE_MONS
+     && !sIsMonBeingMoved
+     && !sInPartyMenu
+     && sStorage->displayMonSpecies == SPECIES_EGG
+     && CountPartyMons() < PARTY_SIZE)
+        SetMenuText(MENU_WITHDRAW_EGGS);
     SetMenuText(MENU_CANCEL);
     return TRUE;
 }
@@ -8468,6 +8563,7 @@ static const u8 *const sMenuTexts[] =
     [MENU_INFO]       = gPCText_Info,
     [MENU_TAKE_ITEM]  = gPCText_Take,
     [MENU_RELEASE_ALL] = gPCText_ReleaseAll,
+    [MENU_WITHDRAW_EGGS] = gPCText_WithdrawEggs,
     [MENU_SCENERY_1]  = gPCText_Scenery1,
     [MENU_SCENERY_2]  = gPCText_Scenery2,
     [MENU_SCENERY_3]  = gPCText_Scenery3,
@@ -8567,10 +8663,21 @@ static s8 GetMenuItemTextId(u8 menuIdx)
 
 static void AddMenu(void)
 {
+    s32 top;
+
     sStorage->menuWindow.width = sStorage->menuWidth + 2;
     sStorage->menuWindow.height = 2 * sStorage->menuItemsCount;
     sStorage->menuWindow.tilemapLeft = 29 - sStorage->menuWindow.width;
-    sStorage->menuWindow.tilemapTop = 15 - sStorage->menuWindow.height;
+    // Vanilla anchors the menu's bottom edge at row 15 (15 - height) so a
+    // 7-entry menu (height 14) lands at row 1. With Veritas' added entries
+    // (TAKE_ITEM, RELEASE_ALL, WITHDRAW_EGGS), the menu can grow tall enough
+    // that 15 - height underflows to 0 or negative, clipping above the visible
+    // tilemap and chopping the top border. Clamp to row 1, which keeps the
+    // standard frame's outer border on-screen for any entry count.
+    top = 15 - sStorage->menuWindow.height;
+    if (top < 1)
+        top = 1;
+    sStorage->menuWindow.tilemapTop = top;
     sStorage->menuWindowId = AddWindow(&sStorage->menuWindow);
     ClearWindowTilemap(sStorage->menuWindowId);
     DrawStdFrameWithCustomTileAndPalette(sStorage->menuWindowId, FALSE, 11, 14);
