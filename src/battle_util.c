@@ -2648,6 +2648,8 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
             case ABILITY_CLOUD_NINE:
             case ABILITY_AIR_LOCK:
                 {
+                    s8 castformBattlerForRevert = -1;
+
                     // that's a weird choice for a variable, why not use i or battler?
                     for (target1 = 0; target1 < gBattlersCount; target1++)
                     {
@@ -2655,8 +2657,8 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
                         if (effect != 0)
                         {
                             BattleScriptPushCursorAndCallback(BattleScript_CastformChange);
-                            gBattleScripting.battler = target1;
                             *(&gBattleStruct->formToChangeInto) = effect - 1;
+                            castformBattlerForRevert = target1;
                             break;
                         }
                     }
@@ -2668,6 +2670,21 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
                         BattleScriptPushCursorAndCallback(BattleScript_AirLockActivates);
                         effect++;
                     }
+                    // Veritas: gBattleScripting.battler must hold the Castform's
+                    // index when BattleScript_CastformChange's docastformchangeanimation
+                    // runs (Cmd_docastformchangeanimation reads it as the target of
+                    // the form-change animation). The AirLockActivates push above
+                    // overwrote it with the suppressor's index, but its message
+                    // (STRINGID_AIRLOCKACTIVATES = "The effects of the weather
+                    // disappeared.") doesn't read this field, so writing the
+                    // Castform's index AFTER the AirLockActivates push is safe and
+                    // ensures the deferred CastformChange callback applies the
+                    // form change to the right sprite. Without this fix, the
+                    // suppressor's sprite gets Castform-Normal's palette overlay
+                    // (visible as a black-and-white tinted sprite) and the
+                    // Castform stays stuck in its prior weather form.
+                    if (castformBattlerForRevert >= 0)
+                        gBattleScripting.battler = castformBattlerForRevert;
                 }
                 break;
             }
