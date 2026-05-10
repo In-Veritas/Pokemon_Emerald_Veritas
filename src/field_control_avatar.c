@@ -180,6 +180,12 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
         return TRUE;
     }
 
+    if (TrySetupPurpleBirthdayGift())
+    {
+        ScriptContext_SetupScript(EventScript_PurpleBirthdayGift);
+        return TRUE;
+    }
+
     if (input->pressedBButton && TrySetupDiveEmergeScript() == TRUE)
         return TRUE;
     if (input->tookStep)

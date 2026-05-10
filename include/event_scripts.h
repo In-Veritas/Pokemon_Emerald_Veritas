@@ -578,6 +578,7 @@ extern const u8 EventScript_UseDiveUnderwater[];
 extern const u8 EventScript_FallDownHole[];
 extern const u8 EventScript_FieldPoison[];
 extern const u8 EventScript_InvalidRecordsCleaned[];
+extern const u8 EventScript_PurpleBirthdayGift[];
 extern const u8 EventScript_EggHatch[];
 extern const u8 AbnormalWeather_EventScript_EndEventAndCleanup_1[];
 extern const u8 IslandCave_EventScript_OpenRegiEntrance[];
