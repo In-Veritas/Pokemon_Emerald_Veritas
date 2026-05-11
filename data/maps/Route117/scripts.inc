@@ -1,6 +1,9 @@
 .set LOCALID_DAYCARE_MAN, 3
-.set LOCALID_DAYCARE_MON_0, 25
-.set LOCALID_DAYCARE_MON_1, 26
+@ Kecleon (was id 5) and Pikachu (was id 7) overworld sprites removed
+@ to improve framerate on this dense map. Shifted daycare-mon ids down
+@ by 2 (was 25/26).
+.set LOCALID_DAYCARE_MON_0, 23
+.set LOCALID_DAYCARE_MON_1, 24
 
 Route117_MapScripts::
 	map_script MAP_SCRIPT_ON_TRANSITION, Route117_OnTransition
