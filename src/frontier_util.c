@@ -891,6 +891,61 @@ static void SetFrontierData(void)
 // gSaveBlock1Ptr->playerParty across floors).
 EWRAM_DATA static u32 sLv50CapOriginalExp[MAX_FRONTIER_PARTY_SIZE] = {0};
 EWRAM_DATA static bool8 sLv50CapActive = FALSE;
+// Veritas: tracks whether gPlayerParty is currently in the "reduced" state
+// (post-ReducePlayerPartyToSelectedMons — i.e., slots 0..n hold the selected
+// mons in challenge order and slots beyond are zeroed). Used by the cap-aware
+// SavePlayerParty override to know whether to write through to the original
+// source slots (with EXP restoration) or do a vanilla save. Cleared on every
+// LoadPlayerParty; SaveGameFrontier preserves it across its internal swap.
+EWRAM_DATA static bool8 sFrontierPartyReduced = FALSE;
+
+bool32 IsFrontierLv50CapActive(void)
+{
+    return sLv50CapActive;
+}
+
+bool32 IsFrontierPartyReduced(void)
+{
+    return sFrontierPartyReduced;
+}
+
+void SetFrontierPartyReducedFlag(bool32 reduced)
+{
+    sFrontierPartyReduced = reduced;
+}
+
+// Writes the reduced+capped gPlayerParty back to gSaveBlock1Ptr->playerParty
+// using the selectedPartyMons mapping — each selected slot lands at its
+// ORIGINAL source slot in gSaveBlock1Ptr, with EXP restored from the cap
+// backup. Unselected slots in gSaveBlock1Ptr are NOT touched (keep their
+// pre-challenge values). This is the safe alternative to vanilla
+// SavePlayerParty when the player is mid-challenge.
+void FrontierLv50_SaveReducedPartyToSaveBlock1(void)
+{
+    u8 i;
+    u16 srcSlot;
+    struct Pokemon *saved;
+
+    for (i = 0; i < MAX_FRONTIER_PARTY_SIZE; i++)
+    {
+        srcSlot = gSaveBlock2Ptr->frontier.selectedPartyMons[i];
+        if (srcSlot < 1 || srcSlot > PARTY_SIZE)
+            continue;
+        saved = &gSaveBlock1Ptr->playerParty[srcSlot - 1];
+        *saved = gPlayerParty[i];
+        if (sLv50CapOriginalExp[i] != 0)
+        {
+            SetMonData(saved, MON_DATA_EXP, &sLv50CapOriginalExp[i]);
+            CalculateMonStats(saved);
+        }
+    }
+    // Recompute partyCount from the full gSaveBlock1Ptr (unselected slots
+    // were left untouched so they still hold their pre-challenge mons).
+    gSaveBlock1Ptr->playerPartyCount = 0;
+    for (i = 0; i < PARTY_SIZE; i++)
+        if (GetMonData(&gSaveBlock1Ptr->playerParty[i], MON_DATA_SPECIES) != SPECIES_NONE)
+            gSaveBlock1Ptr->playerPartyCount++;
+}
 
 static bool32 ShouldApplyLv50Cap(void)
 {
@@ -941,11 +996,16 @@ static void SetSelectedPartyOrder(void)
     for (i = 0; i < gSpecialVar_0x8005; i++)
         gSelectedOrderFromParty[i] = gSaveBlock2Ptr->frontier.selectedPartyMons[i];
     ReducePlayerPartyToSelectedMons();
-    // Veritas: scale to Lv50 only for non-Pyramid Lv50 modes. Pyramid is
-    // excluded because its between-floor SavePlayerParty would persist the
-    // capped state to flash. All other facilities save via SaveGameFrontier,
-    // which swaps gPlayerParty out for gSaveBlock1Ptr->playerParty (un-capped
-    // backup) before TrySavingData — keeping the cap volatile in RAM only.
+    // Veritas: mark gPlayerParty as in "reduced" state so the cap-aware
+    // SavePlayerParty (load_save.c) knows to map selected slots back to
+    // their original source positions in gSaveBlock1Ptr instead of doing
+    // a direct slot-for-slot vanilla save (which would corrupt the save
+    // if the player triggers a flash write while reduced — e.g. via
+    // start-menu Save mid-challenge or any path through TrySavingData).
+    sFrontierPartyReduced = TRUE;
+    // Scale to Lv50 only for non-Pyramid Lv50 modes. Pyramid is excluded
+    // because its between-floor SavePyramidChallenge bypasses the swap
+    // pattern other facilities use via SaveGameFrontier.
     if (ShouldApplyLv50Cap())
         ApplyLv50CapToPlayerParty();
 }
@@ -2501,6 +2561,13 @@ void SaveGameFrontier(void)
 {
     s32 i;
     struct Pokemon *monsParty = AllocZeroed(sizeof(struct Pokemon) * PARTY_SIZE);
+    // Veritas: the internal LoadPlayerParty below clears sFrontierPartyReduced
+    // (un-reduces gPlayerParty), but we restore gPlayerParty to the reduced
+    // state afterward — so the flag must follow the same round-trip. Without
+    // this, a SavePlayerParty call after SaveGameFrontier returns would do
+    // a vanilla save with gPlayerParty still in reduced state and corrupt
+    // gSaveBlock1Ptr.
+    bool8 wasReduced = sFrontierPartyReduced;
 
     for (i = 0; i < PARTY_SIZE; i++)
         monsParty[i] = gPlayerParty[i];
@@ -2514,6 +2581,7 @@ void SaveGameFrontier(void)
 
     for (i = 0; i < PARTY_SIZE; i++)
         gPlayerParty[i] = monsParty[i];
+    sFrontierPartyReduced = wasReduced;
 
     Free(monsParty);
 }

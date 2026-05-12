@@ -1,6 +1,7 @@
 #include "global.h"
 #include "malloc.h"
 #include "berry_powder.h"
+#include "frontier_util.h"
 #include "item.h"
 #include "load_save.h"
 #include "main.h"
@@ -164,6 +165,22 @@ void SavePlayerParty(void)
 {
     int i;
 
+    // Veritas: if a Frontier challenge has reduced gPlayerParty to the
+    // selected-mons-only state, vanilla SavePlayerParty would write the
+    // reduced + (possibly capped) party slot-for-slot into gSaveBlock1Ptr,
+    // destroying both the un-selected mons (now zeros) and the original
+    // EXP/level of any capped mons. Reroute to the cap-aware save which
+    // writes each selected slot back to its ORIGINAL source slot with
+    // EXP restored and leaves the un-selected slots in gSaveBlock1Ptr
+    // untouched. Triggered for any path that ends up here mid-challenge:
+    // start-menu Save, Common_EventScript_SaveGame, CopyPartyAndObjectsToSave
+    // inside TrySavingData, etc.
+    if (IsFrontierPartyReduced())
+    {
+        FrontierLv50_SaveReducedPartyToSaveBlock1();
+        return;
+    }
+
     gSaveBlock1Ptr->playerPartyCount = gPlayerPartyCount;
 
     for (i = 0; i < PARTY_SIZE; i++)
@@ -178,6 +195,12 @@ void LoadPlayerParty(void)
 
     for (i = 0; i < PARTY_SIZE; i++)
         gPlayerParty[i] = gSaveBlock1Ptr->playerParty[i];
+    // Veritas: loading the saved party always brings gPlayerParty back to
+    // the un-reduced state (selectedPartyMons mapping no longer applies).
+    // Frontier code that re-applies the cap (SetSelectedPartyOrder) will
+    // re-set this flag; SaveGameFrontier preserves the flag across its
+    // internal LoadPlayerParty + restore-from-monsParty dance.
+    SetFrontierPartyReducedFlag(FALSE);
 }
 
 void SaveObjectEvents(void)
