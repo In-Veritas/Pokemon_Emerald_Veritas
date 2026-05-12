@@ -904,6 +904,24 @@ bool32 IsFrontierLv50CapActive(void)
     return sLv50CapActive;
 }
 
+// Veritas: restore the un-capped EXP/level on a single saved Pokemon slot.
+// Used by ResetSketchedMoves (here and in battle_dome.c) after their raw
+// gSaveBlock1Ptr->playerParty[srcSlot] = gPlayerParty[i] writes — those
+// bypass load_save.c::SavePlayerParty's cap-aware override.
+// `slot` is the selected-team index (0..MAX_FRONTIER_PARTY_SIZE-1), used to
+// look up the original EXP in the cap-backup array.
+void FrontierLv50_RestoreSavedSlotExp(struct Pokemon *mon, u8 slot)
+{
+    if (!sLv50CapActive)
+        return;
+    if (slot >= MAX_FRONTIER_PARTY_SIZE)
+        return;
+    if (sLv50CapOriginalExp[slot] == 0)
+        return;
+    SetMonData(mon, MON_DATA_EXP, &sLv50CapOriginalExp[slot]);
+    CalculateMonStats(mon);
+}
+
 bool32 IsFrontierPartyReduced(void)
 {
     return sFrontierPartyReduced;
@@ -2349,6 +2367,16 @@ static void ResetSketchedMoves(void)
                     SetMonMoveSlot(&gPlayerParty[i], MOVE_SKETCH, j);
             }
             gSaveBlock1Ptr->playerParty[gSaveBlock2Ptr->frontier.selectedPartyMons[i] - 1] = gPlayerParty[i];
+            // Veritas: this whole-struct copy bypasses load_save.c's
+            // cap-aware SavePlayerParty override. It runs after EVERY
+            // Tower/Dome/Arena/Palace/Pike battle (via frontier_resetsketch),
+            // so without this restore the Lv50 cap permanently leaks into
+            // gSaveBlock1Ptr->playerParty across the challenge — even on a
+            // successful run that the player never interrupts. Restore the
+            // original EXP/level on the saved copy. The sketch-move-resets
+            // and any in-battle HP/PP changes from the struct copy above
+            // are preserved.
+            FrontierLv50_RestoreSavedSlotExp(&gSaveBlock1Ptr->playerParty[gSaveBlock2Ptr->frontier.selectedPartyMons[i] - 1], i);
         }
     }
 }

@@ -5789,6 +5789,14 @@ static void ResetSketchedMoves(void)
         }
 
         gSaveBlock1Ptr->playerParty[playerMonId] = gPlayerParty[i];
+        // Veritas: same fix as the frontier_util.c::ResetSketchedMoves
+        // override — this whole-struct copy bypasses the cap-aware
+        // SavePlayerParty in load_save.c. Without the restore, the Lv50
+        // cap leaks into gSaveBlock1Ptr after every Dome round and
+        // permanently downscales the player's mons. The cap-backup
+        // index for Dome maps via the tournament selection
+        // (gSelectedOrderFromParty[i] - 1).
+        FrontierLv50_RestoreSavedSlotExp(&gSaveBlock1Ptr->playerParty[playerMonId], gSelectedOrderFromParty[i] - 1);
     }
 }
 

@@ -25,11 +25,13 @@ u8 GetFrontierBrainMonNature(u8 monId);
 u8 GetFrontierBrainMonEvs(u8 monId, u8 evStatId);
 s32 GetFronterBrainSymbol(void);
 
-// Veritas: Lv50 cap helpers, used by load_save.c's cap-aware SavePlayerParty.
+// Veritas: Lv50 cap helpers, used by load_save.c's cap-aware SavePlayerParty
+// and ResetSketchedMoves overrides (frontier_util.c + battle_dome.c).
 bool32 IsFrontierLv50CapActive(void);
 bool32 IsFrontierPartyReduced(void);
 void SetFrontierPartyReducedFlag(bool32 reduced);
 void FrontierLv50_SaveReducedPartyToSaveBlock1(void);
+void FrontierLv50_RestoreSavedSlotExp(struct Pokemon *mon, u8 slot);
 
 extern const u16 gFrontierBannedSpecies[];
 
