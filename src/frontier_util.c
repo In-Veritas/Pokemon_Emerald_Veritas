@@ -885,46 +885,6 @@ static void SetFrontierData(void)
     }
 }
 
-// Veritas: Lv50 cap state for Battle Frontier challenges. Mirrors the
-// cable-club ApplyLv50Cap pattern but adds an originals backup so Pike's
-// pause flow (which writes gPlayerParty back to gSaveBlock1Ptr via
-// SaveSelectedParty) can restore the un-capped EXP rather than persisting
-// the down-level. Indexed by selected-team slot (0..MAX_FRONTIER_PARTY_SIZE-1).
-EWRAM_DATA static u32 sLv50CapOriginalExp[MAX_FRONTIER_PARTY_SIZE] = {0};
-EWRAM_DATA static bool8 sLv50CapActive = FALSE;
-
-static void ApplyLv50CapToPlayerParty(void)
-{
-    u32 i;
-    u16 species;
-    u8 level;
-    u32 newExp;
-    u32 originalExp;
-
-    sLv50CapActive = FALSE;
-    for (i = 0; i < MAX_FRONTIER_PARTY_SIZE; i++)
-        sLv50CapOriginalExp[i] = 0;
-
-    for (i = 0; i < gPlayerPartyCount && i < MAX_FRONTIER_PARTY_SIZE; i++)
-    {
-        species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL);
-        if (species == SPECIES_NONE)
-            continue;
-
-        level = GetMonData(&gPlayerParty[i], MON_DATA_LEVEL, NULL);
-        if (level > FRONTIER_MAX_LEVEL_50)
-        {
-            originalExp = GetMonData(&gPlayerParty[i], MON_DATA_EXP, NULL);
-            sLv50CapOriginalExp[i] = originalExp;
-            sLv50CapActive = TRUE;
-
-            newExp = gExperienceTables[gSpeciesInfo[species].growthRate][FRONTIER_MAX_LEVEL_50];
-            SetMonData(&gPlayerParty[i], MON_DATA_EXP, &newExp);
-            CalculateMonStats(&gPlayerParty[i]);
-        }
-    }
-}
-
 static void SetSelectedPartyOrder(void)
 {
     s32 i;
@@ -933,14 +893,6 @@ static void SetSelectedPartyOrder(void)
     for (i = 0; i < gSpecialVar_0x8005; i++)
         gSelectedOrderFromParty[i] = gSaveBlock2Ptr->frontier.selectedPartyMons[i];
     ReducePlayerPartyToSelectedMons();
-    // Veritas: scale the in-memory party to lv50 for Lv50 frontier modes
-    // (Tower / Dome / Arena / Palace / Pike / Pyramid singles, doubles,
-    // multis at FRONTIER_LVL_50). Mirrors cable_club's ApplyLv50Cap so
-    // high-level mons play at scaled stats instead of being rejected.
-    // gSaveBlock1Ptr->playerParty still holds the un-capped originals;
-    // LoadPlayerParty restores from there at challenge end.
-    if (gSaveBlock2Ptr->frontier.lvlMode == FRONTIER_LVL_50)
-        ApplyLv50CapToPlayerParty();
 }
 
 static void DoSoftReset_(void)
@@ -956,26 +908,12 @@ static void SetFrontierTrainers(void)
 static void SaveSelectedParty(void)
 {
     u8 i;
-    u16 monId;
-    struct Pokemon *saved;
 
     for (i = 0; i < MAX_FRONTIER_PARTY_SIZE; i++)
     {
-        monId = gSaveBlock2Ptr->frontier.selectedPartyMons[i] - 1;
+        u16 monId = gSaveBlock2Ptr->frontier.selectedPartyMons[i] - 1;
         if (monId < PARTY_SIZE)
-        {
-            saved = &gSaveBlock1Ptr->playerParty[monId];
-            *saved = gPlayerParty[i];
-            // Veritas: if this slot was lv50-capped on entry, write back its
-            // original EXP/level so Pike's pause flow doesn't persist the
-            // capped levels. HP/PP/status from the in-battle Pokémon are
-            // preserved (they were copied first via the assignment above).
-            if (sLv50CapActive && sLv50CapOriginalExp[i] != 0)
-            {
-                SetMonData(saved, MON_DATA_EXP, &sLv50CapOriginalExp[i]);
-                CalculateMonStats(saved);
-            }
-        }
+            gSaveBlock1Ptr->playerParty[gSaveBlock2Ptr->frontier.selectedPartyMons[i] - 1] = gPlayerParty[i];
     }
 }
 
@@ -2046,12 +1984,8 @@ static void AppendIfValid(u16 species, u16 heldItem, u16 hp, u8 lvlMode, u8 monL
 
     if (gFrontierBannedSpecies[i] != 0xFFFF)
         return;
-    // Veritas: high-level mons are eligible for Lv50 frontier modes.
-    // They get scaled down to lv50 at battle entry (see SetSelectedPartyOrder)
-    // instead of being rejected outright. monLevel and lvlMode are kept on
-    // the prototype for parity with other frontier helpers.
-    (void)monLevel;
-    (void)lvlMode;
+    if (lvlMode == FRONTIER_LVL_50 && monLevel > FRONTIER_MAX_LEVEL_50)
+        return;
 
     for (i = 0; i < *count && speciesArray[i] != species; i++)
         ;
