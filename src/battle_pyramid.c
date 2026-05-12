@@ -5,6 +5,7 @@
 #include "battle.h"
 #include "battle_setup.h"
 #include "battle_tower.h"
+#include "frontier_util.h"
 #include "save.h"
 #include "strings.h"
 #include "fieldmap.h"
@@ -1220,6 +1221,13 @@ static void RestorePyramidPlayerParty(void)
                         SetMonMoveSlot(&gPlayerParty[j], MOVE_SKETCH, k);
                 }
                 gSaveBlock1Ptr->playerParty[partyIndex] = gPlayerParty[j];
+                // Veritas: defensive — same raw-struct-copy class of bug as
+                // frontier_util.c/battle_dome.c's ResetSketchedMoves. Pyramid
+                // is excluded from the Lv50 cap so this helper is normally
+                // a no-op here, but pyramid_resetparty is ALSO called from
+                // BattleTowerMultiPartnerRoom/scripts.inc:11, and if the cap
+                // ever ends up active in that flow this would otherwise leak.
+                FrontierLv50_RestoreSavedSlotExp(&gSaveBlock1Ptr->playerParty[partyIndex], j);
                 gSelectedOrderFromParty[j] = partyIndex + 1;
                 break;
             }
