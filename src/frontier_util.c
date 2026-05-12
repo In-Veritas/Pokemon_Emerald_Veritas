@@ -885,6 +885,54 @@ static void SetFrontierData(void)
     }
 }
 
+// Veritas: Lv50 cap state. Active for Tower/Dome/Arena/Palace/Pike Lv50 modes.
+// NOT applied in Battle Pyramid (its SavePyramidChallenge bypasses the
+// SaveGameFrontier swap pattern other facilities use, so it would corrupt
+// gSaveBlock1Ptr->playerParty across floors).
+EWRAM_DATA static u32 sLv50CapOriginalExp[MAX_FRONTIER_PARTY_SIZE] = {0};
+EWRAM_DATA static bool8 sLv50CapActive = FALSE;
+
+static bool32 ShouldApplyLv50Cap(void)
+{
+    if (gSaveBlock2Ptr->frontier.lvlMode != FRONTIER_LVL_50)
+        return FALSE;
+    if (VarGet(VAR_FRONTIER_FACILITY) == FRONTIER_FACILITY_PYRAMID)
+        return FALSE;
+    return TRUE;
+}
+
+static void ApplyLv50CapToPlayerParty(void)
+{
+    u32 i;
+    u16 species;
+    u8 level;
+    u32 newExp;
+    u32 originalExp;
+
+    sLv50CapActive = FALSE;
+    for (i = 0; i < MAX_FRONTIER_PARTY_SIZE; i++)
+        sLv50CapOriginalExp[i] = 0;
+
+    for (i = 0; i < gPlayerPartyCount && i < MAX_FRONTIER_PARTY_SIZE; i++)
+    {
+        species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL);
+        if (species == SPECIES_NONE)
+            continue;
+
+        level = GetMonData(&gPlayerParty[i], MON_DATA_LEVEL, NULL);
+        if (level > FRONTIER_MAX_LEVEL_50)
+        {
+            originalExp = GetMonData(&gPlayerParty[i], MON_DATA_EXP, NULL);
+            sLv50CapOriginalExp[i] = originalExp;
+            sLv50CapActive = TRUE;
+
+            newExp = gExperienceTables[gSpeciesInfo[species].growthRate][FRONTIER_MAX_LEVEL_50];
+            SetMonData(&gPlayerParty[i], MON_DATA_EXP, &newExp);
+            CalculateMonStats(&gPlayerParty[i]);
+        }
+    }
+}
+
 static void SetSelectedPartyOrder(void)
 {
     s32 i;
@@ -893,6 +941,13 @@ static void SetSelectedPartyOrder(void)
     for (i = 0; i < gSpecialVar_0x8005; i++)
         gSelectedOrderFromParty[i] = gSaveBlock2Ptr->frontier.selectedPartyMons[i];
     ReducePlayerPartyToSelectedMons();
+    // Veritas: scale to Lv50 only for non-Pyramid Lv50 modes. Pyramid is
+    // excluded because its between-floor SavePlayerParty would persist the
+    // capped state to flash. All other facilities save via SaveGameFrontier,
+    // which swaps gPlayerParty out for gSaveBlock1Ptr->playerParty (un-capped
+    // backup) before TrySavingData — keeping the cap volatile in RAM only.
+    if (ShouldApplyLv50Cap())
+        ApplyLv50CapToPlayerParty();
 }
 
 static void DoSoftReset_(void)
@@ -908,12 +963,28 @@ static void SetFrontierTrainers(void)
 static void SaveSelectedParty(void)
 {
     u8 i;
+    u16 monId;
+    struct Pokemon *saved;
 
     for (i = 0; i < MAX_FRONTIER_PARTY_SIZE; i++)
     {
-        u16 monId = gSaveBlock2Ptr->frontier.selectedPartyMons[i] - 1;
+        monId = gSaveBlock2Ptr->frontier.selectedPartyMons[i] - 1;
         if (monId < PARTY_SIZE)
-            gSaveBlock1Ptr->playerParty[gSaveBlock2Ptr->frontier.selectedPartyMons[i] - 1] = gPlayerParty[i];
+        {
+            saved = &gSaveBlock1Ptr->playerParty[monId];
+            *saved = gPlayerParty[i];
+            // Veritas: this is only called by Pike's pause flow
+            // (frontier_saveparty). If the Lv50 cap was applied on entry,
+            // restore the original EXP on the saved-back copy so the cap
+            // doesn't persist across the pause/resume cycle. HP/PP/status
+            // from the in-battle mon are preserved (whole-struct copy above
+            // runs first; we only patch the EXP/level afterward).
+            if (sLv50CapActive && sLv50CapOriginalExp[i] != 0)
+            {
+                SetMonData(saved, MON_DATA_EXP, &sLv50CapOriginalExp[i]);
+                CalculateMonStats(saved);
+            }
+        }
     }
 }
 
@@ -1984,7 +2055,14 @@ static void AppendIfValid(u16 species, u16 heldItem, u16 hp, u8 lvlMode, u8 monL
 
     if (gFrontierBannedSpecies[i] != 0xFFFF)
         return;
-    if (lvlMode == FRONTIER_LVL_50 && monLevel > FRONTIER_MAX_LEVEL_50)
+    // Veritas: in Lv50 modes, high-level mons are allowed in most facilities
+    // (they get scaled to Lv50 at battle entry via SetSelectedPartyOrder).
+    // Battle Pyramid keeps the vanilla rejection because its between-floor
+    // SavePlayerParty corrupts gSaveBlock1Ptr's un-capped backup — see audit
+    // notes; SavePyramidChallenge doesn't use the swap-and-restore pattern
+    // that other facilities' SaveGameFrontier flow uses.
+    if (lvlMode == FRONTIER_LVL_50 && monLevel > FRONTIER_MAX_LEVEL_50
+     && VarGet(VAR_FRONTIER_FACILITY) == FRONTIER_FACILITY_PYRAMID)
         return;
 
     for (i = 0; i < *count && speciesArray[i] != species; i++)

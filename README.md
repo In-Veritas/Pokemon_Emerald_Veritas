@@ -84,6 +84,7 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 * The Cable Club now offers **Lv50 Singles**, **Lv50 Doubles**, and **Lv50 Multi** in addition to the standard battle modes.
 * Pokémon above Lv50 are temporarily scaled down for the duration of the battle and restored to their original levels afterward — no need for a competitive box.
 * Works on both wired and wireless link.
+* The same scale-don't-reject behavior applies to **Lv50 Battle Frontier** (Tower / Dome / Arena / Palace / Pike). Originals restored at challenge end via `LoadPlayerParty` from `gSaveBlock1Ptr`. Battle Pyramid Lv50 keeps the vanilla "reject high-level mons at team-select" behavior — its between-floor `SavePlayerParty` flow doesn't go through the swap-and-restore pattern other facilities use, and persisting a capped party to flash would permanently reduce levels.
 
 #### Outfit and Style Sharing in Link
 
