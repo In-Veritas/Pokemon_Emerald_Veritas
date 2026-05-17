@@ -186,6 +186,12 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
         return TRUE;
     }
 
+    if (TrySetupAlhyaApology())
+    {
+        ScriptContext_SetupScript(EventScript_AlhyaApology);
+        return TRUE;
+    }
+
     if (input->pressedBButton && TrySetupDiveEmergeScript() == TRUE)
         return TRUE;
     if (input->tookStep)

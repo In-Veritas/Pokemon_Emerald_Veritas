@@ -4930,6 +4930,31 @@ bool8 TrySetupPurpleBirthdayGift(void)
     return TRUE;
 }
 
+// Veritas: apology gift for the OT name "Alhya" / "ALHYA" / "ALHYIA" / "ALHIA"
+// to compensate for the Battle Frontier Lv50 cap bug that overwrote levels.
+// Fires once per save (gated by FLAG_UNUSED_0x4E4) on the first frame that
+// ProcessPlayerFieldInput is reached after load. Sets the flag before
+// returning TRUE so the giveitem script can run safely.
+bool8 TrySetupAlhyaApology(void)
+{
+    static const u8 sAlhya[]  = _("Alhya");
+    static const u8 sAlhyaU[] = _("ALHYA");
+    static const u8 sAlhyia[] = _("ALHYIA");
+    static const u8 sAlhia[]  = _("ALHIA");
+
+    if (FlagGet(FLAG_UNUSED_0x4E4))
+        return FALSE;
+
+    if (StringCompare(gSaveBlock2Ptr->playerName, sAlhya)  != 0
+     && StringCompare(gSaveBlock2Ptr->playerName, sAlhyaU) != 0
+     && StringCompare(gSaveBlock2Ptr->playerName, sAlhyia) != 0
+     && StringCompare(gSaveBlock2Ptr->playerName, sAlhia)  != 0)
+        return FALSE;
+
+    FlagSet(FLAG_UNUSED_0x4E4);
+    return TRUE;
+}
+
 void CreateBossLugia(void)
 {
     u16 move;

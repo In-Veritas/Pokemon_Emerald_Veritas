@@ -36,5 +36,6 @@ void SetPCBoxToSendMon(u8 boxId);
 void CleanInvalidTrainerRecords(void);
 bool8 TrySetupInvalidRecordCleanupMessage(void);
 bool8 TrySetupPurpleBirthdayGift(void);
+bool8 TrySetupAlhyaApology(void);
 
 #endif // GUARD_FIELD_SPECIALS_H

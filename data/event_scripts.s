@@ -972,6 +972,7 @@ EventScript_SelectWithoutRegisteredItem::
 	.include "data/scripts/field_poison.inc"
 	.include "data/scripts/record_cleanup.inc"
 	.include "data/scripts/purple_gift.inc"
+	.include "data/scripts/alhya_apology.inc"
 
 Common_EventScript_NopReturn::
 	return
