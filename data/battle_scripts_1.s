@@ -4796,12 +4796,14 @@ BattleScript_BabyCharmActivates::
 
 @ Quick Learner ability - boosts ATK, SPATK, and Evasion by 1 stage each when hit
 BattleScript_QuickLearnerActivates::
+	printstring STRINGID_QUICKLEARNERACTIVATED
+	waitmessage B_WAIT_TIME_LONG
 	setstatchanger STAT_ATK, 1, FALSE
 	statbuffchange STAT_CHANGE_NOT_PROTECT_AFFECTED | STAT_CHANGE_ALLOW_PTR, BattleScript_QuickLearnerSpAtk
 	jumpifbyte CMP_GREATER_THAN, cMULTISTRING_CHOOSER, 1, BattleScript_QuickLearnerSpAtk
 	setgraphicalstatchangevalues
 	playanimation BS_TARGET, B_ANIM_STATS_CHANGE, sB_ANIM_ARG1
-	printstring STRINGID_STATROSE
+	printstring STRINGID_DEFENDERSSTATROSE
 	waitmessage B_WAIT_TIME_LONG
 BattleScript_QuickLearnerSpAtk:
 	setstatchanger STAT_SPATK, 1, FALSE
@@ -4809,7 +4811,7 @@ BattleScript_QuickLearnerSpAtk:
 	jumpifbyte CMP_GREATER_THAN, cMULTISTRING_CHOOSER, 1, BattleScript_QuickLearnerEvasion
 	setgraphicalstatchangevalues
 	playanimation BS_TARGET, B_ANIM_STATS_CHANGE, sB_ANIM_ARG1
-	printstring STRINGID_STATROSE
+	printstring STRINGID_DEFENDERSSTATROSE
 	waitmessage B_WAIT_TIME_LONG
 BattleScript_QuickLearnerEvasion:
 	setstatchanger STAT_EVASION, 1, FALSE
@@ -4817,7 +4819,7 @@ BattleScript_QuickLearnerEvasion:
 	jumpifbyte CMP_GREATER_THAN, cMULTISTRING_CHOOSER, 1, BattleScript_QuickLearnerEnd
 	setgraphicalstatchangevalues
 	playanimation BS_TARGET, B_ANIM_STATS_CHANGE, sB_ANIM_ARG1
-	printstring STRINGID_STATROSE
+	printstring STRINGID_DEFENDERSSTATROSE
 	waitmessage B_WAIT_TIME_LONG
 BattleScript_QuickLearnerEnd:
 	return
