@@ -3073,10 +3073,14 @@ void CloseBattlePointsWindow(void)
 
 void TakeFrontierBattlePoints(void)
 {
+    // Vanilla zeroed BP when cost > current — a silent data-loss path that bit
+    // a tester (had 2 BP, ended up at 0 with no purchase). All Exchange Corner
+    // scripts check BP before calling this, so reaching the underflow branch
+    // means either a script-flow bug or a future regression. Refuse the
+    // deduction instead of wiping the wallet.
     if (gSaveBlock2Ptr->frontier.battlePoints < gSpecialVar_0x8004)
-        gSaveBlock2Ptr->frontier.battlePoints = 0;
-    else
-        gSaveBlock2Ptr->frontier.battlePoints -= gSpecialVar_0x8004;
+        return;
+    gSaveBlock2Ptr->frontier.battlePoints -= gSpecialVar_0x8004;
 }
 
 void GiveFrontierBattlePoints(void)
