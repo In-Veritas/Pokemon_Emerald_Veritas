@@ -95,11 +95,22 @@ void ProcessDma3Requests(void)
     }
 }
 
+// Veritas: IME-guarded so RequestDma3{Copy,Fill} are safe to call from VBlank
+// (e.g. the overworld tilemap flush) while the main loop may itself be mid-call.
+// Without this guard, an interrupt landing between the size==0 check and the
+// size write at the same cursor lets a nested call claim the same slot, and
+// the outer call then overwrites src/dest with a stale size — corrupting the
+// DMA queue (random VRAM/palette/IO writes, hangs on warp into large maps).
+// The IME-disable window is bounded by MAX_DMA_REQUESTS iterations of a tiny
+// loop; on real hardware this is well under audio's response budget.
 s16 RequestDma3Copy(const void *src, void *dest, u16 size, u8 mode)
 {
     int cursor;
     int i = 0;
+    u16 imeBackup;
 
+    imeBackup = REG_IME;
+    REG_IME = 0;
     sDma3ManagerLocked = TRUE;
     cursor = sDma3RequestCursor;
 
@@ -117,6 +128,7 @@ s16 RequestDma3Copy(const void *src, void *dest, u16 size, u8 mode)
                 sDma3Requests[cursor].mode = DMA_REQUEST_COPY16;
 
             sDma3ManagerLocked = FALSE;
+            REG_IME = imeBackup;
             return cursor;
         }
         if (++cursor >= MAX_DMA_REQUESTS) // loop back to start.
@@ -124,6 +136,7 @@ s16 RequestDma3Copy(const void *src, void *dest, u16 size, u8 mode)
         i++;
     }
     sDma3ManagerLocked = FALSE;
+    REG_IME = imeBackup;
     return -1;  // no free DMA request was found
 }
 
@@ -131,7 +144,10 @@ s16 RequestDma3Fill(s32 value, void *dest, u16 size, u8 mode)
 {
     int cursor;
     int i = 0;
+    u16 imeBackup;
 
+    imeBackup = REG_IME;
+    REG_IME = 0;
     cursor = sDma3RequestCursor;
     sDma3ManagerLocked = TRUE;
 
@@ -150,6 +166,7 @@ s16 RequestDma3Fill(s32 value, void *dest, u16 size, u8 mode)
                 sDma3Requests[cursor].mode = DMA_REQUEST_FILL16;
 
             sDma3ManagerLocked = FALSE;
+            REG_IME = imeBackup;
             return cursor;
         }
         if (++cursor >= MAX_DMA_REQUESTS) // loop back to start.
@@ -157,6 +174,7 @@ s16 RequestDma3Fill(s32 value, void *dest, u16 size, u8 mode)
         i++;
     }
     sDma3ManagerLocked = FALSE;
+    REG_IME = imeBackup;
     return -1;  // no free DMA request was found
 }
 

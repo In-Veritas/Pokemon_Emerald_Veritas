@@ -1925,6 +1925,19 @@ static void SetFieldVBlankCallback(void)
 
 static void VBlankCB_Field(void)
 {
+    // Veritas: flush any pending BG tilemap copies at the start of VBlank,
+    // before FieldUpdateBgTilemapScroll writes the new BG scroll register
+    // values. Without this, the BG scroll register can advance while the
+    // matching tile column is still sitting in EWRAM (DMA3 queue is rate-
+    // limited per VBlank — 40 KiB budget and scanline 225 cutoff), exposing
+    // the previous frame's wraparound tile at the leading edge for 1+
+    // frames. Visible as a 2-4 pixel "vertical column of leaving scene
+    // showing on the incoming scene" on horizontal scroll at any speed.
+    // Safe re-entry into RequestDma3Copy is provided by IME-guarded slot
+    // claim in gflib/dma3_manager.c (an earlier, naive version of this
+    // flush corrupted the DMA queue and caused hangs / palette glitches
+    // when warping into large maps like MeteorFalls_1F_1R).
+    DoScheduledBgTilemapCopiesToVram();
     LoadOam();
     ProcessSpriteCopyRequests();
     ScanlineEffect_InitHBlankDmaTransfer();
