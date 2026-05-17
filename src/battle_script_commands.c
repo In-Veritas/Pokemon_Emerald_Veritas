@@ -3674,7 +3674,13 @@ static void Cmd_getexp(void)
                     PREPARE_STRING_BUFFER(gBattleTextBuff2, i);
                     PREPARE_WORD_NUMBER_BUFFER(gBattleTextBuff3, 5, gBattleMoveDamage);
 
-                    if ((gBattleStruct->sentInPokes & 1) || ((holdEffect == HOLD_EFFECT_EXP_SHARE) && !FlagGet(FLAG_EXP_ALL)))
+                    // Veritas: under FLAG_EXP_ALL the per-mon "gained EXP" string was
+                    // suppressed in favor of a single summary after the loop. That
+                    // made the EXP bar (case 3) and any level-up message (case 4)
+                    // fire BEFORE the player was told the mon was gaining EXP.
+                    // Now we always queue the per-mon string here so it precedes
+                    // the bar fill and level-up text for every recipient.
+                    if ((gBattleStruct->sentInPokes & 1) || holdEffect == HOLD_EFFECT_EXP_SHARE || FlagGet(FLAG_EXP_ALL))
                         PrepareStringBattle(STRINGID_PKMNGAINEDEXP, gBattleStruct->expGetterBattlerId);
 
                     MonGainEVs(&gPlayerParty[gBattleStruct->expGetterMonId], gBattleMons[gBattlerFainted].species);
@@ -3769,14 +3775,11 @@ static void Cmd_getexp(void)
             if (gBattleStruct->expGetterMonId < PARTY_SIZE)
                 gBattleScripting.getexpState = 2; // loop again
             else
-            {                
-                if (gExpAllMessCheck && FlagGet(FLAG_EXP_ALL))
-                {
-                    gExpAllMessCheck = FALSE;
-                    gBattleStruct->expGetterMonId = 0;
-                    PREPARE_WORD_NUMBER_BUFFER(gBattleTextBuff3, 5, gExpShareExp);
-                    PrepareStringBattle(STRINGID_PKMNGAINEDEXPALL, gBattleStruct->expGetterBattlerId);
-                }
+            {
+                // Per-mon STRINGID_PKMNGAINEDEXP is now printed in case 2 for every
+                // FLAG_EXP_ALL recipient, so the consolidated summary is no longer
+                // needed (and was firing AFTER all bars/level-ups).
+                gExpAllMessCheck = FALSE;
                 gBattleScripting.getexpState = 6; // we're done
             }
         }
