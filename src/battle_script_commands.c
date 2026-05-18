@@ -3531,6 +3531,13 @@ static void Cmd_getexp(void)
                 // Mirror into gExpShareExp; case 2 below sources its
                 // payout from gExpShareExp under FLAG_EXP_ALL.
                 gExpShareExp = *exp;
+
+                // Queue the single party-wide summary BEFORE the per-mon
+                // loop starts. case 2 gates on gBattleControllerExecFlags
+                // so distribution waits for this print to finish; the bars
+                // fill (case 3) and any level-ups (case 4) then follow.
+                PREPARE_WORD_NUMBER_BUFFER(gBattleTextBuff3, 5, gExpShareExp);
+                PrepareStringBattle(STRINGID_PKMNGAINEDEXPALL, 0);
             }
             else if (viaExpShare) // held-item Exp Share present (gen 3 split)
             {
@@ -3674,13 +3681,9 @@ static void Cmd_getexp(void)
                     PREPARE_STRING_BUFFER(gBattleTextBuff2, i);
                     PREPARE_WORD_NUMBER_BUFFER(gBattleTextBuff3, 5, gBattleMoveDamage);
 
-                    // Veritas: under FLAG_EXP_ALL the per-mon "gained EXP" string was
-                    // suppressed in favor of a single summary after the loop. That
-                    // made the EXP bar (case 3) and any level-up message (case 4)
-                    // fire BEFORE the player was told the mon was gaining EXP.
-                    // Now we always queue the per-mon string here so it precedes
-                    // the bar fill and level-up text for every recipient.
-                    if ((gBattleStruct->sentInPokes & 1) || holdEffect == HOLD_EFFECT_EXP_SHARE || FlagGet(FLAG_EXP_ALL))
+                    // Under FLAG_EXP_ALL the party-wide summary was already queued
+                    // in case 1 before this loop began; skip the per-mon line.
+                    if ((gBattleStruct->sentInPokes & 1) || ((holdEffect == HOLD_EFFECT_EXP_SHARE) && !FlagGet(FLAG_EXP_ALL)))
                         PrepareStringBattle(STRINGID_PKMNGAINEDEXP, gBattleStruct->expGetterBattlerId);
 
                     MonGainEVs(&gPlayerParty[gBattleStruct->expGetterMonId], gBattleMons[gBattlerFainted].species);
