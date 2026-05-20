@@ -3581,9 +3581,17 @@ static s8 CompareItemsByMost(struct ItemSlot* itemSlot1, struct ItemSlot* itemSl
 
 static s8 CompareItemsByType(struct ItemSlot* itemSlot1, struct ItemSlot* itemSlot2)
 {
-    //Null items go last
-    u8 type1 = (itemSlot1->itemId == ITEM_NONE) ? 0xFF : sItemsByType[itemSlot1->itemId];
-    u8 type2 = (itemSlot2->itemId == ITEM_NONE) ? 0xFF : sItemsByType[itemSlot2->itemId];
+    u16 id1 = itemSlot1->itemId;
+    u16 id2 = itemSlot2->itemId;
+    u8 type1, type2;
+
+    // Treat NONE and any out-of-range id as "last" — sItemsByType is sized to
+    // ITEMS_COUNT and indexing past it reads stray memory, which faulted
+    // immediately on sort-by-type when any bag slot held a stale or
+    // out-of-range item id (alphabetical / amount sort never hit this because
+    // their paths sanitize via ItemId_GetName or skip the lookup entirely).
+    type1 = (id1 == ITEM_NONE || id1 >= ITEMS_COUNT) ? 0xFF : sItemsByType[id1];
+    type2 = (id2 == ITEM_NONE || id2 >= ITEMS_COUNT) ? 0xFF : sItemsByType[id2];
 
     if (type1 < type2)
         return -1;
