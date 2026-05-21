@@ -5991,7 +5991,6 @@ static u8 GetMinBattleEntries(void)
 
 static u8 GetBattleEntryLevelCap(void)
 {
-    u16 facility;
     switch (VarGet(VAR_FRONTIER_FACILITY))
     {
     case FACILITY_MULTI_OR_EREADER:
@@ -5999,14 +5998,11 @@ static u8 GetBattleEntryLevelCap(void)
     case FACILITY_UNION_ROOM:
         return UNION_ROOM_MAX_LEVEL;
     default: // Battle Frontier
-        // Veritas: in Lv50 modes, mons above 50 are accepted and scaled at
-        // battle entry — EXCEPT in Battle Pyramid, where vanilla rejection
-        // is kept because the between-floor SavePlayerParty would corrupt
-        // the un-capped backup in gSaveBlock1Ptr (SavePyramidChallenge does
-        // not use the swap-and-restore pattern other facilities use).
-        facility = VarGet(VAR_FRONTIER_FACILITY);
-        if (gSpecialVar_0x8004 == FRONTIER_LVL_50 && facility == FRONTIER_FACILITY_PYRAMID)
-            return FRONTIER_MAX_LEVEL_50;
+        // Veritas: in Lv50 modes, mons above 50 are accepted in every
+        // facility (Pyramid included) and scaled at battle entry via
+        // SetSelectedPartyOrder. The cap-aware SavePlayerParty override
+        // keeps Pyramid's between-floor saves from corrupting the un-capped
+        // EXP backup in gSaveBlock1Ptr.
         return FRONTIER_MAX_LEVEL_OPEN;
     }
 }

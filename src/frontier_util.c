@@ -969,8 +969,6 @@ static bool32 ShouldApplyLv50Cap(void)
 {
     if (gSaveBlock2Ptr->frontier.lvlMode != FRONTIER_LVL_50)
         return FALSE;
-    if (VarGet(VAR_FRONTIER_FACILITY) == FRONTIER_FACILITY_PYRAMID)
-        return FALSE;
     return TRUE;
 }
 
@@ -1021,9 +1019,10 @@ static void SetSelectedPartyOrder(void)
     // if the player triggers a flash write while reduced — e.g. via
     // start-menu Save mid-challenge or any path through TrySavingData).
     sFrontierPartyReduced = TRUE;
-    // Scale to Lv50 only for non-Pyramid Lv50 modes. Pyramid is excluded
-    // because its between-floor SavePyramidChallenge bypasses the swap
-    // pattern other facilities use via SaveGameFrontier.
+    // Scale to Lv50 in any Lv50-mode challenge (all facilities, Pyramid
+    // included). Pyramid's mid-floor save flows through SavePlayerParty's
+    // cap-aware override so the un-capped EXP backup in gSaveBlock1Ptr
+    // survives intact across between-floor TrySavingData calls.
     if (ShouldApplyLv50Cap())
         ApplyLv50CapToPlayerParty();
 }
@@ -2133,16 +2132,14 @@ static void AppendIfValid(u16 species, u16 heldItem, u16 hp, u8 lvlMode, u8 monL
 
     if (gFrontierBannedSpecies[i] != 0xFFFF)
         return;
-    // Veritas: in Lv50 modes, high-level mons are allowed in most facilities
-    // (they get scaled to Lv50 at battle entry via SetSelectedPartyOrder).
-    // Battle Pyramid keeps the vanilla rejection because its between-floor
-    // SavePlayerParty corrupts gSaveBlock1Ptr's un-capped backup — see audit
-    // notes; SavePyramidChallenge doesn't use the swap-and-restore pattern
-    // that other facilities' SaveGameFrontier flow uses.
-    if (lvlMode == FRONTIER_LVL_50 && monLevel > FRONTIER_MAX_LEVEL_50
-     && VarGet(VAR_FRONTIER_FACILITY) == FRONTIER_FACILITY_PYRAMID)
-        return;
-
+    // Veritas: in Lv50 modes, high-level mons are allowed in all facilities
+    // (including Pyramid). SetSelectedPartyOrder scales gPlayerParty to Lv50
+    // and arms the cap-aware SavePlayerParty hook (IsFrontierPartyReduced),
+    // so any Pyramid mid-floor SavePyramidChallenge → TrySavingData(SAVE_LINK)
+    // call routes the save through FrontierLv50_SaveReducedPartyToSaveBlock1
+    // and writes back to the original source slots with original EXP intact.
+    // RestorePyramidPlayerParty's defensive FrontierLv50_RestoreSavedSlotExp
+    // handles the exit path.
     for (i = 0; i < *count && speciesArray[i] != species; i++)
         ;
     if (i != *count)
