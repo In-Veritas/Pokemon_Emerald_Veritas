@@ -384,6 +384,10 @@ CableClub_EventScript_SelectBattleMusic::
 	case LINK_MUSIC_VS_ELITE_FOUR, CableClub_EventScript_MusicVsEliteFour
 	case LINK_MUSIC_VS_SHADOW, CableClub_EventScript_MusicVsShadow
 	case LINK_MUSIC_VS_FRIENDS, CableClub_EventScript_MusicVsFriends
+	case LINK_MUSIC_VS_WALLY, CableClub_EventScript_MusicVsWally
+	case LINK_MUSIC_VS_GRUNT, CableClub_EventScript_MusicVsGrunt
+	case LINK_MUSIC_VS_FRONTIER_BRAIN, CableClub_EventScript_MusicVsFrontierBrain
+	case LINK_MUSIC_VS_ZINNIA, CableClub_EventScript_MusicVsZinnia
 	case LINK_MUSIC_RANDOM, CableClub_EventScript_MusicRandom
 	case LINK_MUSIC_CANCEL, CableClub_EventScript_MusicCancel
 	case MULTI_B_PRESSED, CableClub_EventScript_MusicCancel
@@ -435,6 +439,22 @@ CableClub_EventScript_MusicVsShadow::
 
 CableClub_EventScript_MusicVsFriends::
 	setvar VAR_LINK_BATTLE_MUSIC, MUS_RG_VS_GYM_LEADER
+	return
+
+CableClub_EventScript_MusicVsWally::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_WALLY
+	return
+
+CableClub_EventScript_MusicVsGrunt::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_VS_AQUA_MAGMA
+	return
+
+CableClub_EventScript_MusicVsFrontierBrain::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_VS_FRONTIER_BRAIN
+	return
+
+CableClub_EventScript_MusicVsZinnia::
+	setvar VAR_LINK_BATTLE_MUSIC, MUS_ZINNIA
 	return
 
 CableClub_EventScript_MusicRandom::

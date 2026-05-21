@@ -696,6 +696,10 @@ SecretBase_EventScript_SelectBattleMusic::
 	case LINK_MUSIC_VS_ELITE_FOUR, CableClub_EventScript_MusicVsEliteFour
 	case LINK_MUSIC_VS_SHADOW, CableClub_EventScript_MusicVsShadow
 	case LINK_MUSIC_VS_FRIENDS, CableClub_EventScript_MusicVsFriends
+	case LINK_MUSIC_VS_WALLY, CableClub_EventScript_MusicVsWally
+	case LINK_MUSIC_VS_GRUNT, CableClub_EventScript_MusicVsGrunt
+	case LINK_MUSIC_VS_FRONTIER_BRAIN, CableClub_EventScript_MusicVsFrontierBrain
+	case LINK_MUSIC_VS_ZINNIA, CableClub_EventScript_MusicVsZinnia
 	case LINK_MUSIC_RANDOM, CableClub_EventScript_MusicRandom
 	@ Cancel or B press defaults to standard trainer music
 	setvar VAR_LINK_BATTLE_MUSIC, 0
