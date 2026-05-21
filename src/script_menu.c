@@ -578,6 +578,10 @@ static const u8 *const sLinkBattleMusicNames[] =
     [LINK_MUSIC_VS_ELITE_FOUR] = gText_LinkMusic_VsEliteFour,
     [LINK_MUSIC_VS_SHADOW]     = gText_LinkMusic_Shadow,
     [LINK_MUSIC_VS_FRIENDS]    = gText_LinkMusic_VsFriends,
+    [LINK_MUSIC_VS_WALLY]          = gText_LinkMusic_VsWally,
+    [LINK_MUSIC_VS_GRUNT]          = gText_LinkMusic_VsGrunt,
+    [LINK_MUSIC_VS_FRONTIER_BRAIN] = gText_LinkMusic_VsFrontierBrain,
+    [LINK_MUSIC_VS_ZINNIA]         = gText_LinkMusic_VsZinnia,
     [LINK_MUSIC_RANDOM]        = gText_LinkMusic_Random,
     [LINK_MUSIC_CANCEL]        = gText_Cancel2,
 };
@@ -596,6 +600,10 @@ static const u16 sLinkBattleMusicIds[] =
     [LINK_MUSIC_VS_ELITE_FOUR] = MUS_VS_ELITE_FOUR,
     [LINK_MUSIC_VS_SHADOW]     = MUS_RG_VS_CHAMPION,
     [LINK_MUSIC_VS_FRIENDS]    = MUS_RG_VS_GYM_LEADER,
+    [LINK_MUSIC_VS_WALLY]          = MUS_WALLY,
+    [LINK_MUSIC_VS_GRUNT]          = MUS_VS_AQUA_MAGMA,
+    [LINK_MUSIC_VS_FRONTIER_BRAIN] = MUS_VS_FRONTIER_BRAIN,
+    [LINK_MUSIC_VS_ZINNIA]         = MUS_ZINNIA,
 };
 
 static bool8 IsLinkMusicUnlocked(u8 musicIndex)
@@ -636,6 +644,21 @@ static bool8 IsLinkMusicUnlocked(u8 musicIndex)
         return HasAllKantoMons();
     case LINK_MUSIC_VS_FRIENDS:
         return GetGameStat(GAME_STAT_LINK_BATTLE_WINS) >= 10;
+    case LINK_MUSIC_VS_WALLY:
+        return FlagGet(FLAG_HOENN_DEX_COMPLETE);
+    case LINK_MUSIC_VS_GRUNT:
+        return FlagGet(FLAG_STYLE_UNLOCKED_MAGMA)
+            && FlagGet(FLAG_STYLE_UNLOCKED_AQUA);
+    case LINK_MUSIC_VS_FRONTIER_BRAIN:
+        return FlagGet(FLAG_SYS_TOWER_SILVER)
+            || FlagGet(FLAG_SYS_DOME_SILVER)
+            || FlagGet(FLAG_SYS_PALACE_SILVER)
+            || FlagGet(FLAG_SYS_ARENA_SILVER)
+            || FlagGet(FLAG_SYS_FACTORY_SILVER)
+            || FlagGet(FLAG_SYS_PIKE_SILVER)
+            || FlagGet(FLAG_SYS_PYRAMID_SILVER);
+    case LINK_MUSIC_VS_ZINNIA:
+        return GetGameStat(GAME_STAT_LINK_BATTLE_WINS) >= 20;
     default:
         return FALSE;
     }
@@ -714,9 +737,21 @@ static void Task_HandleLinkMusicListInput(u8 taskId)
     {
         PlaySE(SE_SELECT);
         if (input == LIST_CANCEL)
+        {
             gSpecialVar_Result = MULTI_B_PRESSED;
+        }
         else
-            gSpecialVar_Result = input;
+        {
+            // Translate the visible-row index to the LINK_MUSIC_VS_* macro
+            // IMMEDIATELY. Previously the row index was stored in VAR_RESULT
+            // and translated later via a separate `special` call after the
+            // window/dialog teardown — any incidental write to VAR_RESULT in
+            // that window (or a teardown side-effect) caused the lookup to
+            // index slot 0, which is always LINK_MUSIC_VS_TRAINER. Result:
+            // every pick silently became "Vs Trainer". Translating here
+            // closes that window.
+            gSpecialVar_Result = sLinkBattleMusicSelections[input];
+        }
 
         DestroyListMenuTask(sLinkMusicListTaskId, NULL, NULL);
         ClearToTransparentAndRemoveWindow(sLinkMusicWindowId);
@@ -743,10 +778,11 @@ bool8 ScriptMenu_CreateLinkBattleMusicMultichoice(void)
 
 void GetLinkBattleMusicSelection(void)
 {
-    if (gSpecialVar_Result != MULTI_B_PRESSED)
-    {
-        gSpecialVar_Result = sLinkBattleMusicSelections[gSpecialVar_Result];
-    }
+    // No-op: Task_HandleLinkMusicListInput now translates the picker's row
+    // index into the LINK_MUSIC_VS_* macro before script execution resumes,
+    // so VAR_RESULT already holds the correct value by the time this
+    // `special` fires. Kept as a stub for backwards compatibility with the
+    // existing cable_club.inc / secret_base.inc script flow that invokes it.
 }
 
 void SetRandomLinkBattleMusic(void)
@@ -880,11 +916,29 @@ static void Task_HandleLinkSceneListInput(u8 taskId)
 
     if (input != LIST_NOTHING_CHOSEN)
     {
+        u8 pick;
         PlaySE(SE_SELECT);
         if (input == LIST_CANCEL)
+        {
             gSpecialVar_Result = MULTI_B_PRESSED;
+            // Aborted picker — default to STANDARD so the link still works.
+            pick = LINK_SCENE_OPT_STANDARD;
+        }
         else
+        {
             gSpecialVar_Result = input;
+            if (input == LINK_SCENE_OPT_RANDOM)
+                pick = LINK_SCENE_RANDOM;
+            else
+                pick = (u8)input;
+        }
+        // Store immediately. Same race that hits the music picker hits this
+        // one: if we wait for a follow-up `special` to read VAR_RESULT after
+        // ScriptContext_Enable, any incidental write to VAR_RESULT in the
+        // window between teardown and the next special call clobbers the
+        // pick — sLocalScenePick stays at LINK_SCENE_NONE / STANDARD and
+        // every link battle silently uses the default terrain.
+        LinkBattleScene_StoreLocalPick(pick);
 
         DestroyListMenuTask(sLinkSceneListTaskId, NULL, NULL);
         ClearToTransparentAndRemoveWindow(sLinkSceneWindowId);
@@ -902,27 +956,13 @@ void ScriptMenu_OpenLinkBattleScenePicker(void)
     CreateLinkBattleSceneMultichoice();
 }
 
-// Maps the picker's option index to the value stored locally and
-// broadcast to peers. RANDOM goes through as LINK_SCENE_RANDOM and
-// gets resolved to a concrete terrain at battle setup time.
+// No-op: Task_HandleLinkSceneListInput now stores the pick directly via
+// LinkBattleScene_StoreLocalPick before script execution resumes, closing
+// the same race window that previously bit the music picker. Kept as a
+// stub so the cable_club.inc script flow that calls this `special`
+// continues to work unchanged.
 void ScriptMenu_GetLinkBattleSceneSelection(void)
 {
-    u8 pick;
-
-    if (gSpecialVar_Result == MULTI_B_PRESSED)
-    {
-        // Aborted picker — default to STANDARD so the link still works.
-        pick = LINK_SCENE_OPT_STANDARD;
-    }
-    else if (gSpecialVar_Result == LINK_SCENE_OPT_RANDOM)
-    {
-        pick = LINK_SCENE_RANDOM;
-    }
-    else
-    {
-        pick = (u8)gSpecialVar_Result;
-    }
-    LinkBattleScene_StoreLocalPick(pick);
 }
 
 #define tState       data[0]
