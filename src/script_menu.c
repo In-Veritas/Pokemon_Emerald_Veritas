@@ -650,13 +650,17 @@ static bool8 IsLinkMusicUnlocked(u8 musicIndex)
         return FlagGet(FLAG_STYLE_UNLOCKED_MAGMA)
             && FlagGet(FLAG_STYLE_UNLOCKED_AQUA);
     case LINK_MUSIC_VS_FRONTIER_BRAIN:
+        // Requires every silver symbol — defeating all seven Frontier Brains
+        // at least once. The label says "6" colloquially but the codebase has
+        // seven facility brains (Tower, Dome, Palace, Arena, Factory, Pike,
+        // Pyramid); all are required so the unlock matches "beat every brain".
         return FlagGet(FLAG_SYS_TOWER_SILVER)
-            || FlagGet(FLAG_SYS_DOME_SILVER)
-            || FlagGet(FLAG_SYS_PALACE_SILVER)
-            || FlagGet(FLAG_SYS_ARENA_SILVER)
-            || FlagGet(FLAG_SYS_FACTORY_SILVER)
-            || FlagGet(FLAG_SYS_PIKE_SILVER)
-            || FlagGet(FLAG_SYS_PYRAMID_SILVER);
+            && FlagGet(FLAG_SYS_DOME_SILVER)
+            && FlagGet(FLAG_SYS_PALACE_SILVER)
+            && FlagGet(FLAG_SYS_ARENA_SILVER)
+            && FlagGet(FLAG_SYS_FACTORY_SILVER)
+            && FlagGet(FLAG_SYS_PIKE_SILVER)
+            && FlagGet(FLAG_SYS_PYRAMID_SILVER);
     case LINK_MUSIC_VS_ZINNIA:
         return GetGameStat(GAME_STAT_LINK_BATTLE_WINS) >= 20;
     default:
