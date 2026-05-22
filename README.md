@@ -679,6 +679,11 @@ The headline shinies of Pokémon Emerald Veritas. Each of the three superancient
       <b>Mareep</b><br>
       <sub>Black sheep<br>yellow wool tuft</sub>
     </td>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_typhlosion.png" alt="Shiny Typhlosion" width="120"><br>
+      <b>Typhlosion</b><br>
+      <sub>Purple body fur<br>(Gen 2 silver/gold/crystal design)</sub>
+    </td>
   </tr>
 </table>
 
