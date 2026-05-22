@@ -949,7 +949,7 @@ BattleFrontier_BattleDomeBattleRoom_Text_PlayerIsLv50Champ:
 	.string "Congratulations!$"
 
 BattleFrontier_BattleDomeBattleRoom_Text_PlayerIsLvOpenChamp:
-	.string "{PLAYER} is the Open Level\n"
+	.string "{PLAYER} is the Lv. 100\n"
 	.string "Battle Tournament Champion!\p"
 	.string "Congratulations!$"
 
@@ -1161,7 +1161,7 @@ BattleFrontier_BattleDomeBattleRoom_Text_PlayerIsLv50Champ2:
 
 @ Unused
 BattleFrontier_BattleDomeBattleRoom_Text_PlayerIsLvOpenChamp2:
-	.string "{PLAYER} is the Open Level\n"
+	.string "{PLAYER} is the Lv. 100\n"
 	.string "Battle Tournament Champion!\p"
 	.string "Congratulations!$"
 

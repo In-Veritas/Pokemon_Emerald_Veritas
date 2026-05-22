@@ -493,7 +493,7 @@ ALIGNED(4) static const u8 sText_ChooseLeaderCuteContest[] = _("CUTENESS CONTEST
 ALIGNED(4) static const u8 sText_ChooseLeaderSmartContest[] = _("SMARTNESS CONTEST!\nPlease choose the LEADER.");
 ALIGNED(4) static const u8 sText_ChooseLeaderToughContest[] = _("TOUGHNESS CONTEST!\nPlease choose the LEADER.");
 ALIGNED(4) static const u8 sText_ChooseLeaderBattleTowerLv50[] = _("BATTLE TOWER LEVEL 50!\nPlease choose the LEADER.");
-ALIGNED(4) static const u8 sText_ChooseLeaderBattleTowerOpenLv[] = _("BATTLE TOWER OPEN LEVEL!\nPlease choose the LEADER.");
+ALIGNED(4) static const u8 sText_ChooseLeaderBattleTowerOpenLv[] = _("BATTLE TOWER LV. 100!\nPlease choose the LEADER.");
 
 static const u8 *const sChooseTrainerTexts[NUM_LINK_GROUP_TYPES] =
 {
@@ -566,7 +566,7 @@ ALIGNED(4) static const u8 sText_CuteContest[] = _("CUTE CONTEST");
 ALIGNED(4) static const u8 sText_SmartContest[] = _("SMART CONTEST");
 ALIGNED(4) static const u8 sText_ToughContest[] = _("TOUGH CONTEST");
 ALIGNED(4) static const u8 sText_BattleTowerLv50[] = _("BATTLE TOWER LV. 50");
-ALIGNED(4) static const u8 sText_BattleTowerOpenLv[] = _("BATTLE TOWER OPEN LEVEL");
+ALIGNED(4) static const u8 sText_BattleTowerOpenLv[] = _("BATTLE TOWER LV. 100");
 ALIGNED(4) static const u8 sText_ItsNormalCard[] = _("It's a NORMAL CARD.");
 ALIGNED(4) static const u8 sText_ItsBronzeCard[] = _("It's a BRONZE CARD!");
 ALIGNED(4) static const u8 sText_ItsCopperCard[] = _("It's a COPPER CARD!");

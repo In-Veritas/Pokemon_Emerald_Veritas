@@ -39,7 +39,7 @@ FallarborTown_BattleTentLobby_Text_SaveBeforeChallenge:
 @ Unused
 FallarborTown_BattleTentLobby_Text_WhichLevelMode:
 	.string "We offer two levels of challenge,\n"
-	.string "Level 50 and Open Level.\l"
+	.string "Level 50 and Lv. 100.\l"
 	.string "Which is your choice?$"
 
 FallarborTown_BattleTentLobby_Text_SelectThreeMons:
@@ -154,7 +154,7 @@ VerdanturfTown_BattleTentLobby_Text_ReturnFortified:
 @ Unused
 VerdanturfTown_BattleTentLobby_Text_WhichLevelMode:
 	.string "There are two levels of difficulty,\n"
-	.string "Level 50 and Open Level.\l"
+	.string "Level 50 and Lv. 100.\l"
 	.string "Which is your choice of a challenge?$"
 
 VerdanturfTown_BattleTentLobby_Text_NotEnoughValidMonsLv50:
