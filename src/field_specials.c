@@ -4988,7 +4988,7 @@ void CreateCookieZigzagoon(void)
     static const u16 sMoves[MAX_MON_MOVES] = {
         MOVE_EXTREME_SPEED, MOVE_GUILLOTINE, MOVE_THIEF, MOVE_YAWN,
     };
-    const u32 otId = 31337; // funny suite — the classic "leet" trainer id
+    const u32 otId = 50135;
     u32 personality;
     u16 lo;
     u16 hi;
@@ -5006,13 +5006,14 @@ void CreateCookieZigzagoon(void)
     // construct the high half so HIHALF ^ LOHALF ^ HIHALF_OT ^ LOHALF_OT
     // is < SHINY_ODDS (8) — the standard shiny-rebuild trick from
     // CreateBoxMon's FLAG_SHINY_CREATION path. Then loop until Cookie
-    // comes out male (the boyfriend's barking dog).
+    // is male (boyfriend's barking dog) AND has the Naughty nature.
     do
     {
         lo = Random();
         hi = ((u16)otId ^ (u16)(otId >> 16)) ^ lo ^ (u16)(Random() & (SHINY_ODDS - 1));
         personality = ((u32)hi << 16) | lo;
-    } while ((personality & 0xFF) < 127); // Zigzagoon gender threshold = 127
+    } while ((personality & 0xFF) < 127
+          || (personality % NUM_NATURES) != NATURE_NAUGHTY);
 
     level = (gSpecialVar_0x8005 < PARTY_SIZE)
           ? GetMonData(&gPlayerParty[gSpecialVar_0x8005], MON_DATA_LEVEL, NULL)
