@@ -124,39 +124,41 @@ BattleFrontier_PokemonCenter_1F_EventScript_TradedShinyMon::
 	end
 	
 BattleFrontier_PokemonCenter_1F_Text_CookieIntro:
-	.string "Oh, finally — a TRAINER with an eye\n"
-	.string "for rare-colored POKéMON!\p"
+	.string "Oh, hey! You seem like a TRAINER\n"
+	.string "who loves shiny POKéMON!\p"
 	.string "Listen, my boyfriend left me his\n"
-	.string "ZIGZAGOON when he went off to train\l"
-	.string "at the FRONTIER. Its name is COOKIE.\p"
-	.string "COOKIE barks ALL night… AND every\n"
-	.string "morning I'm down one more sock.\p"
-	.string "I would TRADE this little gremlin\n"
+	.string "ZIGZAGOON when he went off to\l"
+	.string "train at the FRONTIER.\p"
+	.string "He barks at me all the time and\n"
+	.string "is always stealing my socks!\p"
+	.string "I would TRADE this stinky pup\n"
 	.string "for ANY shiny POKéMON.\p"
 	.string "What do you say? Got anything\n"
-	.string "sparkly to trade?$"
+	.string "you want to trade?$"
 
 BattleFrontier_PokemonCenter_1F_Text_NotShiny:
-	.string "Hmm… a sweet POKéMON, but not the\n"
-	.string "SHINY I was hoping for.\p"
+	.string "Hmm… I want to get rid of him,\n"
+	.string "but not THAT much.\p"
 	.string "Come back when you find something\n"
 	.string "with a little more… sparkle.$"
 
 BattleFrontier_PokemonCenter_1F_Text_TakeCookie:
-	.string "Oh — OHHH! That is EXACTLY what I'm\n"
-	.string "talking about!\p"
-	.string "Take COOKIE. And his sock collection.\n"
-	.string "PLEASE.$"
+	.string "Oh… OHHH! That is EXACTLY what\n"
+	.string "I'm talking about!\p"
+	.string "Take COOKIE. And his sock\n"
+	.string "collection. PLEASE.$"
 
 BattleFrontier_PokemonCenter_1F_Text_DeclineCookie:
-	.string "Oh… well, if you change your mind…\p"
-	.string "COOKIE! Drop the sock! COOKIE, I said —$"
+	.string "Oh… well, if you change your\n"
+	.string "mind…\p"
+	.string "COOKIE! Drop the sock!\n"
+	.string "COOKIE, I said…$"
 
 BattleFrontier_PokemonCenter_1F_Text_AfterCookieGone:
 	.string "Hi again. No more lost socks.\n"
 	.string "Life is good.\p"
-	.string "Take good care of COOKIE for me,\n"
-	.string "alright?$"
+	.string "Take good care of COOKIE for\n"
+	.string "me, alright? He's a good boy.$"
 
 BattleFrontier_PokemonCenter_1F_Text_NextStopBattleArena:
 	.string "Okay! Next stop, the BATTLE ARENA!\n"
@@ -171,10 +173,10 @@ BattleFrontier_PokemonCenter_1F_Text_Skitty:
 	.string "SKITTY: Mya myaaah!$"
 
 BattleFrontier_PokemonCenter_1F_Text_Zigzagoon:
-	.string "COOKIE: Zigaa! Zig zig!\p"
+	.string "COOKIE: Wouf Wouf! Wouf!\p"
 	.string "(There's a chewed-up sock at\n"
 	.string "your feet.)$"
 
 BattleFrontier_PokemonCenter_1F_Text_TradedShinyMon:
-	.string "The shiny {STR_VAR_1} circles the\n"
-	.string "BEAUTY, tail wagging happily.$"
+	.string "The shiny {STR_VAR_1} circles\n"
+	.string "the spoiled girl.$"
