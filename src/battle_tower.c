@@ -1177,13 +1177,41 @@ static void UNUSED GetRandomScaledFrontierTrainerIdRange(u8 challengeNum, u8 bat
     *rangePtr = range;
 }
 
+// Veritas elite-trainer overworld-gfx overrides. The facility-class
+// pic still drives the in-battle portrait (BEAUTY for Emeline, COOLTRAINER_M
+// for Yann, etc.) but the OVERWORLD sprite — what the player sees if the
+// trainer ever appears in a Multi Battle partner room or similar
+// context — gets pulled from here instead of the facility-class table.
+// This is how Emeline keeps the same look in both places (Pokémon Center
+// NPC + Frontier trainer overworld), since the Pokémon Center NPC uses
+// OBJ_EVENT_GFX_WOMAN_4. Returns 0 if no override applies.
+static u16 GetEliteTrainerOverworldGfxOverride(u16 trainerId)
+{
+    if (trainerId == FRONTIER_TRAINER_EMELINE)
+        return OBJ_EVENT_GFX_WOMAN_4;
+    return 0;
+}
+
 void SetBattleFacilityTrainerGfxId(u16 trainerId, u8 tempVarId)
 {
     u32 i;
     u8 facilityClass;
     u8 trainerObjectGfxId;
+    u16 eliteOverride = GetEliteTrainerOverworldGfxOverride(trainerId);
 
     SetFacilityPtrsGetLevel();
+
+    if (eliteOverride != 0)
+    {
+        switch (tempVarId)
+        {
+        case 0:
+        default: VarSet(VAR_OBJ_GFX_ID_0, eliteOverride); return;
+        case 1:  VarSet(VAR_OBJ_GFX_ID_1, eliteOverride); return;
+        case 15: VarSet(VAR_OBJ_GFX_ID_E, eliteOverride); return;
+        }
+    }
+
     if (trainerId == TRAINER_EREADER)
     {
         facilityClass = gSaveBlock2Ptr->frontier.ereaderTrainer.facilityClass;
@@ -1279,8 +1307,16 @@ u16 GetBattleFacilityTrainerGfxId(u16 trainerId)
     u32 i;
     u8 facilityClass;
     u16 trainerObjectGfxId;
+    u16 eliteOverride = GetEliteTrainerOverworldGfxOverride(trainerId);
 
     SetFacilityPtrsGetLevel();
+
+    // Veritas: elite-trainer overworld override takes priority over the
+    // facility-class lookup (used e.g. by Pyramid floor sprite spawning
+    // at battle_pyramid.c:1890).
+    if (eliteOverride != 0)
+        return eliteOverride;
+
     if (trainerId == TRAINER_EREADER)
     {
         facilityClass = gSaveBlock2Ptr->frontier.ereaderTrainer.facilityClass;
