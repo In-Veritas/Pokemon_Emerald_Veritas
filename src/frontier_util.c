@@ -965,13 +965,25 @@ void FrontierLv50_SaveReducedPartyToSaveBlock1(void)
             gSaveBlock1Ptr->playerPartyCount++;
 }
 
-static bool32 ShouldApplyLv50Cap(void)
+static bool32 ShouldNormalizeFrontierLevel(void)
 {
-    if (gSaveBlock2Ptr->frontier.lvlMode != FRONTIER_LVL_50)
-        return FALSE;
-    return TRUE;
+    // Lv50: cap mons DOWN to 50. Open: normalize mons UP to 100.
+    // Both share the sLv50CapOriginalExp backup + RestoreSavedSlotExp
+    // path. Tents (FRONTIER_LVL_TENT) keep vanilla behavior — they
+    // operate at a fixed lower level and their team validation already
+    // enforces it on the player side.
+    u8 lvlMode = gSaveBlock2Ptr->frontier.lvlMode;
+    return lvlMode == FRONTIER_LVL_50 || lvlMode == FRONTIER_LVL_OPEN;
 }
 
+// Veritas: in Lv50 mode, scale every mon above Lv50 DOWN to Lv50; in
+// Open mode, scale every mon below Lv100 UP to Lv100. Original EXP for
+// each touched slot is stashed in sLv50CapOriginalExp so the post-run
+// restore in FrontierLv50_RestoreSavedSlotExp can hand the mon back at
+// the player's original level untouched.
+//
+// Function name kept (Lv50Cap-prefixed) for the audit trail with the
+// existing helpers — same backup array, same flag, same restore path.
 static void ApplyLv50CapToPlayerParty(void)
 {
     u32 i;
@@ -979,25 +991,32 @@ static void ApplyLv50CapToPlayerParty(void)
     u8 level;
     u32 newExp;
     u32 originalExp;
+    u8 targetLevel;
+    bool32 isOpen = (gSaveBlock2Ptr->frontier.lvlMode == FRONTIER_LVL_OPEN);
 
     sLv50CapActive = FALSE;
     for (i = 0; i < MAX_FRONTIER_PARTY_SIZE; i++)
         sLv50CapOriginalExp[i] = 0;
 
+    targetLevel = isOpen ? MAX_LEVEL : FRONTIER_MAX_LEVEL_50;
+
     for (i = 0; i < gPlayerPartyCount && i < MAX_FRONTIER_PARTY_SIZE; i++)
     {
+        bool32 needsScale;
+
         species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL);
         if (species == SPECIES_NONE)
             continue;
 
         level = GetMonData(&gPlayerParty[i], MON_DATA_LEVEL, NULL);
-        if (level > FRONTIER_MAX_LEVEL_50)
+        needsScale = isOpen ? (level < MAX_LEVEL) : (level > FRONTIER_MAX_LEVEL_50);
+        if (needsScale)
         {
             originalExp = GetMonData(&gPlayerParty[i], MON_DATA_EXP, NULL);
             sLv50CapOriginalExp[i] = originalExp;
             sLv50CapActive = TRUE;
 
-            newExp = gExperienceTables[gSpeciesInfo[species].growthRate][FRONTIER_MAX_LEVEL_50];
+            newExp = gExperienceTables[gSpeciesInfo[species].growthRate][targetLevel];
             SetMonData(&gPlayerParty[i], MON_DATA_EXP, &newExp);
             CalculateMonStats(&gPlayerParty[i]);
         }
@@ -1019,11 +1038,13 @@ static void SetSelectedPartyOrder(void)
     // if the player triggers a flash write while reduced — e.g. via
     // start-menu Save mid-challenge or any path through TrySavingData).
     sFrontierPartyReduced = TRUE;
-    // Scale to Lv50 in any Lv50-mode challenge (all facilities, Pyramid
-    // included). Pyramid's mid-floor save flows through SavePlayerParty's
-    // cap-aware override so the un-capped EXP backup in gSaveBlock1Ptr
-    // survives intact across between-floor TrySavingData calls.
-    if (ShouldApplyLv50Cap())
+    // Normalize level: Lv50 mode scales mons DOWN to 50; Open mode
+    // scales mons UP to 100. Both paths backup the original EXP into
+    // sLv50CapOriginalExp and rely on the same restore path. Pyramid's
+    // mid-floor save flows through SavePlayerParty's cap-aware override
+    // so the un-capped EXP backup in gSaveBlock1Ptr survives intact
+    // across between-floor TrySavingData calls regardless of direction.
+    if (ShouldNormalizeFrontierLevel())
         ApplyLv50CapToPlayerParty();
 }
 
