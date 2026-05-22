@@ -1108,6 +1108,22 @@ u16 GetRandomScaledFrontierTrainerId(u8 challengeNum, u8 battleNum)
 {
     u16 trainerId;
 
+    // Veritas: elite-trainer cameo. On the LAST battle of any
+    // challenge run (battleNum == 6 of 7) once the win streak is
+    // >= 14 (challengeNum >= 2), a 12.5% per-slot roll pulls one of
+    // the five elite trainers (Gabriel / Niji / Emeline / Nicolas /
+    // Yann) instead of the scaled bucket. Open level only — their
+    // monSets sit past FRONTIER_MONS_HIGH_TIER so the team-fill loop
+    // would deadlock if we let them spawn in Lv50 mode. Brain battles
+    // never reach this function so leaders aren't replaced.
+    if (battleNum == FRONTIER_STAGES_PER_CHALLENGE - 1
+     && challengeNum >= 2
+     && gSaveBlock2Ptr->frontier.lvlMode != FRONTIER_LVL_50
+     && (Random() & 7) == 0)
+    {
+        return FRONTIER_TRAINER_ELITE_FIRST + (Random() % FRONTIER_TRAINER_ELITE_COUNT);
+    }
+
     if (challengeNum <= 7)
     {
         if (battleNum == FRONTIER_STAGES_PER_CHALLENGE - 1)

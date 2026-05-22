@@ -1841,8 +1841,66 @@ u8 GetFrontierBrainStatus(void)
     return status;
 }
 
+// Veritas: raw-string speech for the elite cohort (indexed by
+// trainerId - FRONTIER_TRAINER_ELITE_FIRST). The 3 columns are
+// [0] = pre-battle, [1] = trainer wins (player lost), [2] = trainer
+// loses (player won) — matching the order that CopyFrontierTrainerText
+// uses for FRONTIER_BEFORE_TEXT / FRONTIER_PLAYER_LOST_TEXT /
+// FRONTIER_PLAYER_WON_TEXT respectively. These bypass the EasyChat
+// pipeline so the trainers can speak in plain English / French /
+// Portuguese.
+static const u8 sEliteSpeech_Gabriel_Before[]   = _("I hope COOKIE is doing ok.");
+static const u8 sEliteSpeech_Gabriel_Win[]      = _("I guess I'll make her wait\na little longer.");
+static const u8 sEliteSpeech_Gabriel_Lose[]     = _("I should get back to my\ngirlfriend now, she's waiting\lfor me.");
+static const u8 sEliteSpeech_Niji_Before[]      = _("My english not very good\ntake me easy ok?");
+static const u8 sEliteSpeech_Niji_Win[]         = _("I am winneur! Take me hard\nnext time!");
+static const u8 sEliteSpeech_Niji_Lose[]        = _("I am loseur.\nYou take me too hard!");
+static const u8 sEliteSpeech_Emeline_Before[]   = _("I got tired of waiting for\nmy boyfriend, have you\lseen him?");
+static const u8 sEliteSpeech_Emeline_Win[]      = _("I WON! I love winning!\nYou are so bad!");
+static const u8 sEliteSpeech_Emeline_Lose[]     = _("GRRRR, This isn't fair!\nMy boyfriend will make you\lpay!");
+static const u8 sEliteSpeech_Nicolas_Before[]   = _("Oi.");
+static const u8 sEliteSpeech_Nicolas_Win[]      = _("Ah! Tchau!");
+static const u8 sEliteSpeech_Nicolas_Lose[]     = _("Ah. Tchau.");
+static const u8 sEliteSpeech_Yann_Before[]      = _("I have to go home soon so\nlet's make this quick.");
+static const u8 sEliteSpeech_Yann_Win[]         = _("I need to go call my mom\nnow.");
+static const u8 sEliteSpeech_Yann_Lose[]        = _("I may have trolled a little\ntoo much.");
+
+static const u8 *const sEliteTrainerSpeech[FRONTIER_TRAINER_ELITE_COUNT][3] =
+{
+    [FRONTIER_TRAINER_GABRIEL - FRONTIER_TRAINER_ELITE_FIRST] = { sEliteSpeech_Gabriel_Before, sEliteSpeech_Gabriel_Win, sEliteSpeech_Gabriel_Lose },
+    [FRONTIER_TRAINER_NIJI    - FRONTIER_TRAINER_ELITE_FIRST] = { sEliteSpeech_Niji_Before,    sEliteSpeech_Niji_Win,    sEliteSpeech_Niji_Lose    },
+    [FRONTIER_TRAINER_EMELINE - FRONTIER_TRAINER_ELITE_FIRST] = { sEliteSpeech_Emeline_Before, sEliteSpeech_Emeline_Win, sEliteSpeech_Emeline_Lose },
+    [FRONTIER_TRAINER_NICOLAS - FRONTIER_TRAINER_ELITE_FIRST] = { sEliteSpeech_Nicolas_Before, sEliteSpeech_Nicolas_Win, sEliteSpeech_Nicolas_Lose },
+    [FRONTIER_TRAINER_YANN    - FRONTIER_TRAINER_ELITE_FIRST] = { sEliteSpeech_Yann_Before,    sEliteSpeech_Yann_Win,    sEliteSpeech_Yann_Lose    },
+};
+
+// Returns TRUE and writes gStringVar4 with the elite trainer's custom
+// speech if trainerId is in the elite cohort range. Returns FALSE to
+// signal the caller to fall through to the normal EasyChat pipeline.
+static bool32 TryCopyEliteTrainerText(u8 whichText, u16 trainerId)
+{
+    u16 eliteIdx;
+    u8 col;
+
+    if (trainerId < FRONTIER_TRAINER_ELITE_FIRST
+     || trainerId >= FRONTIER_TRAINER_ELITE_FIRST + FRONTIER_TRAINER_ELITE_COUNT)
+        return FALSE;
+    eliteIdx = trainerId - FRONTIER_TRAINER_ELITE_FIRST;
+    switch (whichText)
+    {
+    case FRONTIER_BEFORE_TEXT:      col = 0; break;
+    case FRONTIER_PLAYER_LOST_TEXT: col = 1; break; // trainer's "I won" line
+    case FRONTIER_PLAYER_WON_TEXT:  col = 2; break; // trainer's "I lost" line
+    default: return FALSE;
+    }
+    StringCopy(gStringVar4, sEliteTrainerSpeech[eliteIdx][col]);
+    return TRUE;
+}
+
 void CopyFrontierTrainerText(u8 whichText, u16 trainerId)
 {
+    if (TryCopyEliteTrainerText(whichText, trainerId))
+        return;
     switch (whichText)
     {
     case FRONTIER_BEFORE_TEXT:

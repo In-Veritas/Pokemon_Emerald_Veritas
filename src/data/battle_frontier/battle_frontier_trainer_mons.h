@@ -7631,3 +7631,55 @@ const u16 gBattleFrontierTrainerMons_Gretel[] =
 {
     FRONTIER_MONS_AROMA_LADY_3
 };
+
+// ---- Veritas elite-trainer monSets (open level only) ----
+// 4 mons per pool, terminator -1 == 0xFFFF (matches bfMonCount loop).
+// The team-fill picks 3 (or 2 for Multi) at random with species and
+// held-item deduplication.
+
+const u16 gBattleFrontierTrainerMons_Gabriel[] =
+{
+    FRONTIER_MON_ELITE_LUGIA_GABRIEL,
+    FRONTIER_MON_ELITE_FERALIGATR_GABRIEL,
+    FRONTIER_MON_ELITE_PORYGON2_GABRIEL,
+    FRONTIER_MON_ELITE_MISDREAVUS_GABRIEL,
+    -1
+};
+
+const u16 gBattleFrontierTrainerMons_Niji[] =
+{
+    FRONTIER_MON_ELITE_FLYGON_NIJI,
+    FRONTIER_MON_ELITE_MIGHTYENA_NIJI,
+    FRONTIER_MON_ELITE_RAYQUAZA_NIJI,
+    FRONTIER_MON_ELITE_SWAMPERT_NIJI,
+    -1
+};
+
+// Vaporeon listed first as the intended lead (convention only — the
+// team-fill picks slot order at random).
+const u16 gBattleFrontierTrainerMons_Emeline[] =
+{
+    FRONTIER_MON_ELITE_VAPOREON_EMELINE,
+    FRONTIER_MON_ELITE_FLAREON_EMELINE,
+    FRONTIER_MON_ELITE_JIRACHI_EMELINE,
+    FRONTIER_MON_ELITE_GYARADOS_EMELINE,
+    -1
+};
+
+const u16 gBattleFrontierTrainerMons_Nicolas[] =
+{
+    FRONTIER_MON_ELITE_NOCTOWL_NICOLAS,
+    FRONTIER_MON_ELITE_ZAPDOS_NICOLAS,
+    FRONTIER_MON_ELITE_GENGAR_NICOLAS,
+    FRONTIER_MON_ELITE_GARDEVOIR_NICOLAS,
+    -1
+};
+
+const u16 gBattleFrontierTrainerMons_Yann[] =
+{
+    FRONTIER_MON_ELITE_MAWILE_YANN,
+    FRONTIER_MON_ELITE_LATIOS_YANN,
+    FRONTIER_MON_ELITE_LAPRAS_YANN,
+    FRONTIER_MON_ELITE_MILOTIC_YANN,
+    -1
+};

@@ -1,0 +1,117 @@
+FRONTIER ELITE TRAINERS — options reference
+============================================
+
+How to use: open frontier_elite_trainers.csv and fill each row. Leave any
+column blank and I'll pick something sensible for it.
+
+Encounter rule (already locked in, just FYI):
+  12.5% chance per opponent slot on the LAST battle of any Battle Tower
+  (Singles / Doubles / Multi) / Palace / Arena / Pike / Factory / Dome
+  random-bracket run once the win streak in that facility is >= 14.
+  Never replaces a Frontier Brain battle.
+
+
+COLUMN 1 — Name
+---------------
+Up to 7 characters, uppercase (matches the rest of the pool, e.g.
+JAXON, GRETEL, ZACHERY).
+
+
+COLUMN 2 — Class
+----------------
+Pick one. Drives both the trainer's pic and how their name appears
+("LADY KIM", "BLACK BELT TYRELL", etc.).
+
+Smart / competitive:
+  COOLTRAINER   COOLTRAINER_2   EXPERT        PSYCHIC
+  DRAGON_TAMER  BLACK_BELT      BATTLE_GIRL   COLLECTOR
+  PKMN_BREEDER  PKMN_RANGER     GENTLEMAN
+
+Quirky / themed:
+  HEX_MANIAC    RUIN_MANIAC     POKEMANIAC    BUG_MANIAC
+  KINDLER       GUITARIST       AROMA_LADY    BIRD_KEEPER
+  FISHERMAN     NINJA_BOY       TRIATHLETE
+
+Posh:
+  LADY          BEAUTY          RICH_BOY      POKEFAN
+
+Outdoorsy:
+  HIKER         CAMPER          PICNICKER     SAILOR
+  SWIMMER_M     SWIMMER_F       PARASOL_LADY
+
+Kid-coded:
+  YOUNGSTER     LASS            SCHOOL_KID    SR_AND_JR
+  BUG_CATCHER   TUBER_M         TUBER_F
+
+Paired (uses fixed 2-mon team because there's "two" of them):
+  TWINS         YOUNG_COUPLE    OLD_COUPLE    SIS_AND_BRO
+
+Themed cameo:
+  WINSTRATE
+
+DO NOT USE (reserved for story / brain battles):
+  PKMN_TRAINER_1   PKMN_TRAINER_2   AQUA_LEADER       MAGMA_LEADER
+  ELITE_FOUR       LEADER           CHAMPION          CHAMPION_STEVEN
+  RIVAL            SALON_MAIDEN     DOME_ACE          PALACE_MAVEN
+  ARENA_TYCOON     FACTORY_HEAD     PIKE_QUEEN        PYRAMID_KING
+  RS_PROTAG        LOREKEEPER       WALLY             INTERVIEWER
+
+
+COLUMN 3 — Gender
+-----------------
+MALE or FEMALE. Some classes are inherently one (LADY = female, BLACK_BELT
+= male, etc.); for the ambiguous ones (COOLTRAINER, PSYCHIC, EXPERT,
+PKMN_BREEDER, PKMN_RANGER) this picks the pic variant. Defaults to MALE
+if blank.
+
+
+COLUMN 4 — AIFlags
+------------------
+Pick one preset:
+
+  STANDARD  — vanilla Tower-trainer AI. Plays reasonably.
+  ELITE     — recommended. Adds RISKY (will use risky moves like Focus
+              Punch / Belly Drum / Sky Attack when it judges them safe).
+  SETUP     — adds SETUP_FIRST_TURN. Good if the lead's first move is a
+              boost (Dragon Dance, Bulk Up, Calm Mind, etc.).
+  NUKE      — adds PREFER_POWER_EXTREMES. Always reaches for the highest-
+              damage move. Good for raw-damage teams (Lucky Egg, Choice).
+  SUN       — adds TRY_SUNNY_DAY_START. Good for sun teams.
+
+  Or write a custom pipe-separated list from:
+  CHECK_BAD_MOVE, TRY_TO_FAINT, CHECK_VIABILITY, HP_AWARE, RISKY,
+  SETUP_FIRST_TURN, PREFER_POWER_EXTREMES, PREFER_BATON_PASS,
+  TRY_SUNNY_DAY_START
+
+
+COLUMN 5 — TeamTheme
+--------------------
+Freeform. Describe what the team should do; I'll pick the species, items,
+moves, EVs, IVs, nature. Examples:
+
+  "Mono-Steel defensive — Metagross lead, Skarmory + Forretress backline."
+  "Rain stall — Politoed lead with Drizzle, Toxapex + Tentacruel + Ludicolo."
+  "Fast offense — Salamence + Garchomp + Tyranitar, all Choice Banded."
+  "Trick room — Dusclops sets TR, Rhydon + Slowking sweep."
+  "Gimmick — every mon knows Explosion or Self-Destruct."
+  "Counter-meta — has answers to the common top-tier picks."
+
+Leave blank to let me pick a thematic team from the existing high-tier
+slice of gBattleFrontierMons.
+
+
+COLUMN 6 — Notes
+----------------
+Anything else: signature gimmick, fixed lead order, dialog tone, held-
+item theme, lore hook, etc. Optional.
+
+
+-----------------------------------------------------------------------
+WORKED EXAMPLE (don't paste — just for shape)
+-----------------------------------------------------------------------
+Name,Class,Gender,AIFlags,TeamTheme,Notes
+NESSA,SWIMMER_F,FEMALE,ELITE,Rain offense — Politoed lead Drizzle then sweepers,Always leads with Politoed
+TYRELL,BLACK_BELT,MALE,SETUP,Bulk Up Heracross + Medicham + Hariyama,Hates dragons
+,LADY,FEMALE,,Aroma stall around Roselia + Vileplume,
+ARGUS,RUIN_MANIAC,,NUKE,,Likes Selfdestruct — fits the "Maniac" angle
+,,,,,

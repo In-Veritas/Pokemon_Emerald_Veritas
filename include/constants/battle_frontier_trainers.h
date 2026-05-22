@@ -302,8 +302,21 @@
 #define FRONTIER_TRAINER_ABBY           298
 #define FRONTIER_TRAINER_GRETEL         299
 
-#define FRONTIER_TRAINERS_COUNT         300
+// Veritas elite cohort — appended after the vanilla 0..299 range. These
+// five trainers are the only ones eligible for the elite-cameo branch
+// in GetRandomScaledFrontierTrainerId (fires on the last battle of any
+// challenge run once win streak >= 14, 12.5% per slot).
+#define FRONTIER_TRAINER_GABRIEL        300
+#define FRONTIER_TRAINER_NIJI           301
+#define FRONTIER_TRAINER_EMELINE        302
+#define FRONTIER_TRAINER_NICOLAS        303
+#define FRONTIER_TRAINER_YANN           304
 
-// special trainer IDs begin at 300, see constants/trainers.h
+#define FRONTIER_TRAINER_ELITE_FIRST    FRONTIER_TRAINER_GABRIEL
+#define FRONTIER_TRAINER_ELITE_COUNT    5
+
+#define FRONTIER_TRAINERS_COUNT         305
+
+// special trainer IDs begin at 305 (was 300), see constants/trainers.h
 
 #endif  // GUARD_CONSTANTS_BATTLE_FRONTIER_TRAINERS_H

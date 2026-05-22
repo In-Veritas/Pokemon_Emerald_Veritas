@@ -6545,5 +6545,153 @@ const struct FacilityMon gBattleFrontierMons[NUM_FRONTIER_MONS] =
         .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
         .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_HP,
         .nature = NATURE_JOLLY
+    },
+    // ---- Veritas elite-trainer mons (Open level only) ----
+    // GABRIEL — Cookie's owner; the boyfriend Emeline complains about.
+    [FRONTIER_MON_ELITE_LUGIA_GABRIEL] = {
+        .species = SPECIES_LUGIA,
+        .moves = {MOVE_CALM_MIND, MOVE_RECOVER, MOVE_PSYCHIC, MOVE_AEROBLAST},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_MILD
+    },
+    [FRONTIER_MON_ELITE_FERALIGATR_GABRIEL] = {
+        .species = SPECIES_FERALIGATR,
+        .moves = {MOVE_DRAGON_DANCE, MOVE_HYDRO_CANNON, MOVE_EARTHQUAKE, MOVE_DYNAMIC_PUNCH},
+        .itemTableId = BATTLE_FRONTIER_ITEM_MYSTIC_WATER,
+        .evSpread = F_EV_SPREAD_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_HASTY
+    },
+    [FRONTIER_MON_ELITE_PORYGON2_GABRIEL] = {
+        .species = SPECIES_PORYGON2,
+        .moves = {MOVE_THUNDER, MOVE_ICE_BEAM, MOVE_TRI_ATTACK, MOVE_RECOVER},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_HP,
+        .nature = NATURE_MODEST
+    },
+    [FRONTIER_MON_ELITE_MISDREAVUS_GABRIEL] = {
+        .species = SPECIES_MISDREAVUS,
+        .moves = {MOVE_THUNDER, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_DESTINY_BOND},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_MODEST
+    },
+    // NIJI — broken-English Rich Boy.
+    [FRONTIER_MON_ELITE_FLYGON_NIJI] = {
+        .species = SPECIES_FLYGON,
+        .moves = {MOVE_EARTHQUAKE, MOVE_DRAGON_CLAW, MOVE_CRUNCH, MOVE_AERIAL_ACE},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LUM_BERRY,
+        .evSpread = F_EV_SPREAD_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_JOLLY
+    },
+    [FRONTIER_MON_ELITE_MIGHTYENA_NIJI] = {
+        .species = SPECIES_MIGHTYENA,
+        .moves = {MOVE_CRUNCH, MOVE_IRON_TAIL, MOVE_ROAR, MOVE_HOWL},
+        .itemTableId = BATTLE_FRONTIER_ITEM_SITRUS_BERRY,
+        .evSpread = F_EV_SPREAD_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_JOLLY
+    },
+    [FRONTIER_MON_ELITE_RAYQUAZA_NIJI] = {
+        .species = SPECIES_RAYQUAZA,
+        .moves = {MOVE_DRAGON_DANCE, MOVE_OUTRAGE, MOVE_EARTHQUAKE, MOVE_EXTREME_SPEED},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LUM_BERRY,
+        .evSpread = F_EV_SPREAD_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_JOLLY
+    },
+    [FRONTIER_MON_ELITE_SWAMPERT_NIJI] = {
+        .species = SPECIES_SWAMPERT,
+        .moves = {MOVE_EARTHQUAKE, MOVE_SURF, MOVE_ICE_BEAM, MOVE_COUNTER},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .evSpread = F_EV_SPREAD_HP | F_EV_SPREAD_ATTACK,
+        .nature = NATURE_ADAMANT
+    },
+    // EMELINE — the BEAUTY who trades Cookie. Gabriel's girlfriend.
+    // Vaporeon listed first as the intended lead (the team-fill picks
+    // slot order at random, so this is a convention not an enforcement).
+    [FRONTIER_MON_ELITE_VAPOREON_EMELINE] = {
+        .species = SPECIES_VAPOREON,
+        .moves = {MOVE_ACID_ARMOR, MOVE_BATON_PASS, MOVE_WISH, MOVE_SURF},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .evSpread = F_EV_SPREAD_HP | F_EV_SPREAD_DEFENSE,
+        .nature = NATURE_BOLD
+    },
+    [FRONTIER_MON_ELITE_FLAREON_EMELINE] = {
+        .species = SPECIES_FLAREON,
+        .moves = {MOVE_FLAMETHROWER, MOVE_SHADOW_BALL, MOVE_QUICK_ATTACK, MOVE_TOXIC},
+        .itemTableId = BATTLE_FRONTIER_ITEM_CHARCOAL,
+        .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_MODEST
+    },
+    [FRONTIER_MON_ELITE_JIRACHI_EMELINE] = {
+        .species = SPECIES_JIRACHI,
+        .moves = {MOVE_BODY_SLAM, MOVE_HEADBUTT, MOVE_DOOM_DESIRE, MOVE_SUBSTITUTE},
+        .itemTableId = BATTLE_FRONTIER_ITEM_KINGS_ROCK,
+        .evSpread = F_EV_SPREAD_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_JOLLY
+    },
+    [FRONTIER_MON_ELITE_GYARADOS_EMELINE] = {
+        .species = SPECIES_GYARADOS,
+        .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_HIDDEN_POWER},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LUM_BERRY,
+        .evSpread = F_EV_SPREAD_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_ADAMANT
+    },
+    // NICOLAS — Portuguese minimalist Hex Maniac.
+    [FRONTIER_MON_ELITE_NOCTOWL_NICOLAS] = {
+        .species = SPECIES_NOCTOWL,
+        .moves = {MOVE_HYPNOSIS, MOVE_DREAM_EATER, MOVE_PSYCHIC, MOVE_TOXIC},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_HP,
+        .nature = NATURE_MODEST
+    },
+    [FRONTIER_MON_ELITE_ZAPDOS_NICOLAS] = {
+        .species = SPECIES_ZAPDOS,
+        .moves = {MOVE_THUNDERBOLT, MOVE_DRILL_PECK, MOVE_DETECT, MOVE_THUNDER_WAVE},
+        .itemTableId = BATTLE_FRONTIER_ITEM_MAGNET,
+        .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_HASTY
+    },
+    [FRONTIER_MON_ELITE_GENGAR_NICOLAS] = {
+        .species = SPECIES_GENGAR,
+        .moves = {MOVE_SHADOW_BALL, MOVE_THUNDERBOLT, MOVE_SLUDGE_BOMB, MOVE_HYPNOSIS},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_TIMID
+    },
+    [FRONTIER_MON_ELITE_GARDEVOIR_NICOLAS] = {
+        .species = SPECIES_GARDEVOIR,
+        .moves = {MOVE_PSYCHIC, MOVE_CALM_MIND, MOVE_THUNDERBOLT, MOVE_HYPNOSIS},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_SP_DEFENSE,
+        .nature = NATURE_BOLD
+    },
+    // YANN — lazy speedrun Cooltrainer.
+    [FRONTIER_MON_ELITE_MAWILE_YANN] = {
+        .species = SPECIES_MAWILE,
+        .moves = {MOVE_IRON_DEFENSE, MOVE_BATON_PASS, MOVE_SUBSTITUTE, MOVE_IRON_TAIL},
+        .itemTableId = BATTLE_FRONTIER_ITEM_SITRUS_BERRY,
+        .evSpread = F_EV_SPREAD_HP | F_EV_SPREAD_DEFENSE,
+        .nature = NATURE_BOLD
+    },
+    [FRONTIER_MON_ELITE_LATIOS_YANN] = {
+        .species = SPECIES_LATIOS,
+        .moves = {MOVE_LUSTER_PURGE, MOVE_DRAGON_CLAW, MOVE_THUNDERBOLT, MOVE_RECOVER},
+        .itemTableId = BATTLE_FRONTIER_ITEM_TWISTED_SPOON,
+        .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_SPEED,
+        .nature = NATURE_TIMID
+    },
+    [FRONTIER_MON_ELITE_LAPRAS_YANN] = {
+        .species = SPECIES_LAPRAS,
+        .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_BODY_SLAM, MOVE_CONFUSE_RAY},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_HP,
+        .nature = NATURE_MODEST
+    },
+    [FRONTIER_MON_ELITE_MILOTIC_YANN] = {
+        .species = SPECIES_MILOTIC,
+        .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_RECOVER, MOVE_TOXIC},
+        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_HP,
+        .nature = NATURE_MODEST
     }
 };

@@ -947,6 +947,32 @@
 #define FRONTIER_MON_DEOXYS_DEFENSE_4  933
 #define FRONTIER_MON_DEOXYS_SPEED_4    934
 
-#define NUM_FRONTIER_MONS           935
+// Veritas elite-trainer mons (4 per trainer = 20 total). All sit past
+// FRONTIER_MONS_HIGH_TIER (871), so the team-fill loop filters them out
+// in Lv50 mode. Elite-trainer cameo therefore fires only in Open level
+// runs (the encounter-branch in GetRandomScaledFrontierTrainerId also
+// gates on lvlMode to avoid an infinite team-fill loop at Lv50).
+#define FRONTIER_MON_ELITE_LUGIA_GABRIEL        935
+#define FRONTIER_MON_ELITE_FERALIGATR_GABRIEL   936
+#define FRONTIER_MON_ELITE_PORYGON2_GABRIEL     937
+#define FRONTIER_MON_ELITE_MISDREAVUS_GABRIEL   938
+#define FRONTIER_MON_ELITE_FLYGON_NIJI          939
+#define FRONTIER_MON_ELITE_MIGHTYENA_NIJI       940
+#define FRONTIER_MON_ELITE_RAYQUAZA_NIJI        941
+#define FRONTIER_MON_ELITE_SWAMPERT_NIJI        942
+#define FRONTIER_MON_ELITE_VAPOREON_EMELINE     943
+#define FRONTIER_MON_ELITE_FLAREON_EMELINE      944
+#define FRONTIER_MON_ELITE_JIRACHI_EMELINE      945
+#define FRONTIER_MON_ELITE_GYARADOS_EMELINE     946
+#define FRONTIER_MON_ELITE_NOCTOWL_NICOLAS      947
+#define FRONTIER_MON_ELITE_ZAPDOS_NICOLAS       948
+#define FRONTIER_MON_ELITE_GENGAR_NICOLAS       949
+#define FRONTIER_MON_ELITE_GARDEVOIR_NICOLAS    950
+#define FRONTIER_MON_ELITE_MAWILE_YANN          951
+#define FRONTIER_MON_ELITE_LATIOS_YANN          952
+#define FRONTIER_MON_ELITE_LAPRAS_YANN          953
+#define FRONTIER_MON_ELITE_MILOTIC_YANN         954
+
+#define NUM_FRONTIER_MONS           955
 
 #endif //GUARD_CONSTANTS_BATTLE_FRONTIER_MONS_H

@@ -2399,5 +2399,49 @@ const struct BattleFrontierTrainer gBattleFrontierTrainers[FRONTIER_TRAINERS_COU
         .speechWin = {EC_WORD_IT_S, EC_WORD_ONLY, EC_WORD_NATURAL, EC_WORD_SEE_YA, EC_WORD_BYE_BYE, EC_WORD_EXCL},
         .speechLose = {EC_WORD_IT_S, EC_WORD_HARD, EC_WORD_TO, EC_WORD_BELIEVE, EC_WORD_BUT, EC_WORD_CONGRATS},
         .monSet = gBattleFrontierTrainerMons_Gretel
+    },
+    // ---- Veritas elite cohort ----
+    // The EasyChat speech fields are left empty — CopyFrontierTrainerText
+    // (src/frontier_util.c) intercepts trainer ids >= FRONTIER_TRAINER_ELITE_FIRST
+    // and substitutes raw strings from sEliteTrainerSpeech instead.
+    [FRONTIER_TRAINER_GABRIEL] = {
+        .facilityClass = FACILITY_CLASS_PKMN_RANGER_M,
+        .trainerName = _("GABRIEL"),
+        .speechBefore = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .speechWin    = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .speechLose   = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .monSet = gBattleFrontierTrainerMons_Gabriel
+    },
+    [FRONTIER_TRAINER_NIJI] = {
+        .facilityClass = FACILITY_CLASS_RICH_BOY,
+        .trainerName = _("NIJI"),
+        .speechBefore = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .speechWin    = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .speechLose   = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .monSet = gBattleFrontierTrainerMons_Niji
+    },
+    [FRONTIER_TRAINER_EMELINE] = {
+        .facilityClass = FACILITY_CLASS_BEAUTY,
+        .trainerName = _("EMELINE"),
+        .speechBefore = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .speechWin    = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .speechLose   = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .monSet = gBattleFrontierTrainerMons_Emeline
+    },
+    [FRONTIER_TRAINER_NICOLAS] = {
+        .facilityClass = FACILITY_CLASS_HEX_MANIAC,
+        .trainerName = _("NICOLAS"),
+        .speechBefore = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .speechWin    = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .speechLose   = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .monSet = gBattleFrontierTrainerMons_Nicolas
+    },
+    [FRONTIER_TRAINER_YANN] = {
+        .facilityClass = FACILITY_CLASS_COOLTRAINER_M,
+        .trainerName = _("YANN"),
+        .speechBefore = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .speechWin    = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .speechLose   = {EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD, EC_EMPTY_WORD},
+        .monSet = gBattleFrontierTrainerMons_Yann
     }
 };
