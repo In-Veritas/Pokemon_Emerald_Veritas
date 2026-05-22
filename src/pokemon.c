@@ -6807,13 +6807,13 @@ void ClearBattleMonForms(void)
 }
 
 // Veritas Frontier music variations. Returns a MUS_* override or 0 if no
-// override applies. Called from inside GetBattleBGM after trainer class is
-// determined but before the class switch — so any non-zero return wins
-// against the class-default fallback (MUS_VS_TRAINER) without overriding
-// the specific brain / Hoenn-trainer cases that already return above.
+// override applies. Used by the default branch of GetBattleBGM's trainer
+// class switch — brain classes return MUS_VS_FRONTIER_BRAIN above the
+// default and are never overridden by any of these rules.
 //
-// Three rules, applied in order of priority:
-//   1. Legendary opponent → that legendary's theme. Scans gEnemyParty.
+// Three rules, applied in order inside the default branch:
+//   1. Legendary opponent → that legendary's theme (the first legendary
+//      found while scanning gEnemyParty wins if the team has more than one).
 //   2. Final battle of the run → 50/50 MUS_VS_GYM_LEADER or MUS_RG_VS_GYM_LEADER.
 //   3. 5% chance MUS_VS_RIVAL on a regular trainer.
 //
@@ -6821,10 +6821,6 @@ void ClearBattleMonForms(void)
 // than Random() so GetBattleBGM is stable across re-calls within a battle
 // (low-HP music change, post-faint resume, etc. — Random() advances every
 // call and would otherwise re-roll mid-battle).
-//
-// Brain classes return MUS_VS_FRONTIER_BRAIN inside the switch BEFORE the
-// default fallback, so this override never preempts brain music — matches
-// the user requirement that the rival/gym rules don't fire against leaders.
 static u16 SpeciesToFrontierLegendaryMusic(u16 species)
 {
     switch (species)
@@ -6850,9 +6846,9 @@ static u16 SpeciesToFrontierLegendaryMusic(u16 species)
     case SPECIES_GROUDON:
         return MUS_VS_KYOGRE_GROUDON;
     case SPECIES_RAYQUAZA:
+        return MUS_VS_RAYQUAZA;
     case SPECIES_LATIOS:
     case SPECIES_LATIAS:
-        return MUS_VS_RAYQUAZA;
     case SPECIES_JIRACHI:
     case SPECIES_DEOXYS:
     case SPECIES_CELEBI:
@@ -6954,9 +6950,9 @@ u16 GetBattleBGM(void)
         case TRAINER_CLASS_FACTORY_HEAD:
         case TRAINER_CLASS_PIKE_QUEEN:
         case TRAINER_CLASS_PYRAMID_KING:
-            // Veritas: a frontier brain fielding a legendary still uses
-            // that legendary's theme (override applies even to leaders).
-            return (frontierMusic != 0) ? frontierMusic : MUS_VS_FRONTIER_BRAIN;
+            // Frontier brains always use brain music — never overridden
+            // by legendary detection or any other Frontier music rule.
+            return MUS_VS_FRONTIER_BRAIN;
         default:
             // Veritas Frontier music variations layered on top of the
             // default trainer fallback. Order: legendary → final-battle
