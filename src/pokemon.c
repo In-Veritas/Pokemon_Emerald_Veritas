@@ -39,6 +39,7 @@
 #include "util.h"
 #include "wild_encounter.h"
 #include "constants/abilities.h"
+#include "constants/battle_dome.h"
 #include "constants/battle_frontier.h"
 #include "constants/flags.h"
 #include "constants/battle_move_effects.h"
@@ -6805,6 +6806,87 @@ void ClearBattleMonForms(void)
         gBattleMonForms[i] = 0;
 }
 
+// Veritas Frontier music variations. Returns a MUS_* override or 0 if no
+// override applies. Called from inside GetBattleBGM after trainer class is
+// determined but before the class switch — so any non-zero return wins
+// against the class-default fallback (MUS_VS_TRAINER) without overriding
+// the specific brain / Hoenn-trainer cases that already return above.
+//
+// Three rules, applied in order of priority:
+//   1. Legendary opponent → that legendary's theme. Scans gEnemyParty.
+//   2. Final battle of the run → 50/50 MUS_VS_GYM_LEADER or MUS_RG_VS_GYM_LEADER.
+//   3. 5% chance MUS_VS_RIVAL on a regular trainer.
+//
+// The "5%" and "50/50" use deterministic functions of the trainer id rather
+// than Random() so GetBattleBGM is stable across re-calls within a battle
+// (low-HP music change, post-faint resume, etc. — Random() advances every
+// call and would otherwise re-roll mid-battle).
+//
+// Brain classes return MUS_VS_FRONTIER_BRAIN inside the switch BEFORE the
+// default fallback, so this override never preempts brain music — matches
+// the user requirement that the rival/gym rules don't fire against leaders.
+static u16 SpeciesToFrontierLegendaryMusic(u16 species)
+{
+    switch (species)
+    {
+    case SPECIES_MEWTWO:
+    case SPECIES_MEW:
+        return MUS_RG_VS_MEWTWO;
+    case SPECIES_RAIKOU:
+    case SPECIES_ENTEI:
+    case SPECIES_SUICUNE:
+        return MUS_C_VS_LEGEND_BEAST;
+    case SPECIES_ARTICUNO:
+    case SPECIES_ZAPDOS:
+    case SPECIES_MOLTRES:
+    case SPECIES_LUGIA:
+    case SPECIES_HO_OH:
+        return MUS_RG_VS_LEGEND;
+    case SPECIES_REGIROCK:
+    case SPECIES_REGICE:
+    case SPECIES_REGISTEEL:
+        return MUS_VS_REGI;
+    case SPECIES_KYOGRE:
+    case SPECIES_GROUDON:
+        return MUS_VS_KYOGRE_GROUDON;
+    case SPECIES_RAYQUAZA:
+    case SPECIES_LATIOS:
+    case SPECIES_LATIAS:
+        return MUS_VS_RAYQUAZA;
+    case SPECIES_JIRACHI:
+    case SPECIES_DEOXYS:
+    case SPECIES_CELEBI:
+        return MUS_RG_VS_DEOXYS;
+    default:
+        return 0;
+    }
+}
+
+static u16 GetFrontierLegendaryOpponentMusic(void)
+{
+    u32 i;
+    u16 species;
+    u16 music;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        species = GetMonData(&gEnemyParty[i], MON_DATA_SPECIES, NULL);
+        if (species == SPECIES_NONE || species == SPECIES_EGG)
+            continue;
+        music = SpeciesToFrontierLegendaryMusic(species);
+        if (music != 0)
+            return music;
+    }
+    return 0;
+}
+
+static bool32 IsFinalFrontierBattle(void)
+{
+    if (VarGet(VAR_FRONTIER_FACILITY) == FRONTIER_FACILITY_DOME)
+        return gSaveBlock2Ptr->frontier.curChallengeBattleNum == DOME_FINAL;
+    return gSaveBlock2Ptr->frontier.curChallengeBattleNum == FRONTIER_STAGES_PER_CHALLENGE - 1;
+}
+
 u16 GetBattleBGM(void)
 {
     if (gBattleTypeFlags & BATTLE_TYPE_KYOGRE_GROUDON)
@@ -6821,6 +6903,7 @@ u16 GetBattleBGM(void)
     else if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
     {
         u8 trainerClass;
+        u16 frontierMusic = 0;
 
         if (gBattleTypeFlags & BATTLE_TYPE_FRONTIER)
             trainerClass = GetFrontierOpponentClass(gTrainerBattleOpponent_A);
@@ -6830,6 +6913,12 @@ u16 GetBattleBGM(void)
             trainerClass = gTrainers[gTrainerBattleOpponent_A].trainerClass;
         if (gTrainerBattleOpponent_A == TRAINER_EXCLSIOR || gTrainerBattleOpponent_A == TRAINER_CHAMPION_EXCLSIOR)
             return MUS_C_VS_LEGEND_BEAST;
+        // Veritas: Frontier-only — legendary opponent wins over every
+        // class-based song below (including brain music). Computed here so
+        // we have it before the switch decides whether to use it (only the
+        // default branch falls through to use it; brains keep their theme).
+        if (gBattleTypeFlags & BATTLE_TYPE_FRONTIER)
+            frontierMusic = GetFrontierLegendaryOpponentMusic();
         switch (trainerClass)
         {
         case TRAINER_CLASS_AQUA_LEADER:
@@ -6865,8 +6954,22 @@ u16 GetBattleBGM(void)
         case TRAINER_CLASS_FACTORY_HEAD:
         case TRAINER_CLASS_PIKE_QUEEN:
         case TRAINER_CLASS_PYRAMID_KING:
-            return MUS_VS_FRONTIER_BRAIN;
+            // Veritas: a frontier brain fielding a legendary still uses
+            // that legendary's theme (override applies even to leaders).
+            return (frontierMusic != 0) ? frontierMusic : MUS_VS_FRONTIER_BRAIN;
         default:
+            // Veritas Frontier music variations layered on top of the
+            // default trainer fallback. Order: legendary → final-battle
+            // gym theme → 5% rival roll → vanilla MUS_VS_TRAINER.
+            if (gBattleTypeFlags & BATTLE_TYPE_FRONTIER)
+            {
+                if (frontierMusic != 0)
+                    return frontierMusic;
+                if (IsFinalFrontierBattle())
+                    return (gTrainerBattleOpponent_A & 1) ? MUS_VS_GYM_LEADER : MUS_RG_VS_GYM_LEADER;
+                if ((gTrainerBattleOpponent_A % 20) == 0)
+                    return MUS_VS_RIVAL;
+            }
             return MUS_VS_TRAINER;
         }
     }
