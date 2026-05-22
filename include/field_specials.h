@@ -39,6 +39,8 @@ bool8 TrySetupPurpleBirthdayGift(void);
 bool8 TrySetupAlhyaApology(void);
 void IsSelectedPartyMonShiny(void);
 void CreateCookieZigzagoon(void);
+void SetCookieTradeOverworldToOfferedShiny(void);
+void PrepareTradeFloatingMonGreeting(void);
 void IsSelectedMonGabrielsCookie(void);
 
 #endif // GUARD_FIELD_SPECIALS_H

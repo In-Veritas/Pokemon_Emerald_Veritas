@@ -271,6 +271,8 @@ gSpecials::
 	@ Veritas: Battle Frontier "Cookie" trade specials.
 	def_special IsSelectedPartyMonShiny
 	def_special CreateCookieZigzagoon
+	def_special SetCookieTradeOverworldToOfferedShiny
+	def_special PrepareTradeFloatingMonGreeting
 	def_special IsSelectedMonGabrielsCookie
 	def_special GetWeekCount
 	def_special RetrieveLotteryNumber

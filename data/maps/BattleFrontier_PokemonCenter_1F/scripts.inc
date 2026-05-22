@@ -15,7 +15,7 @@ BattleFrontier_PokemonCenter_1F_OnTransition:
 	end
 
 BattleFrontier_PokemonCenter_1F_EventScript_SetUpZigzagoon::
-	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_MON_BASE+SPECIES_ZIGZAGOON
+	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_MON_BASE+SPECIES_ZIGZAGOON+SPECIES_OVERWORLD_SHINY_TAG
 	return
 
 BattleFrontier_PokemonCenter_1F_EventScript_Nurse::
@@ -40,6 +40,12 @@ BattleFrontier_PokemonCenter_1F_EventScript_CookieTrader::
 	@ Mirror the chosen slot into VAR_0x8005 so CreateCookieZigzagoon can
 	@ inherit the player's level (matches vanilla trade behavior).
 	copyvar VAR_0x8005, VAR_0x8004
+	@ Capture the offered species into VAR_OBJ_GFX_ID_1 (with the shiny
+	@ overworld tag) BEFORE the trade scene runs, since the trade scene
+	@ replaces the offered mon in gPlayerParty with Cookie. The captured
+	@ value is then used when LOCALID_TRADEMON is re-spawned post-trade
+	@ — the floating sprite becomes the shiny species the player gave up.
+	special SetCookieTradeOverworldToOfferedShiny
 	special CreateCookieZigzagoon
 	fadescreen FADE_TO_BLACK
 	removeobject LOCALID_TRADEMON
@@ -47,6 +53,10 @@ BattleFrontier_PokemonCenter_1F_EventScript_CookieTrader::
 	special DoInGameTradeScene
 	waitstate
 	msgbox BattleFrontier_PokemonCenter_1F_Text_TakeCookie, MSGBOX_DEFAULT
+	closemessage
+	fadescreen FADE_TO_BLACK
+	addobject LOCALID_TRADEMON
+	fadescreen FADE_FROM_BLACK
 	setflag FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED
 	release
 	end
@@ -85,10 +95,12 @@ BattleFrontier_PokemonCenter_1F_EventScript_Skitty::
 	end
 
 BattleFrontier_PokemonCenter_1F_EventScript_Mon::
-	@ The floating Pokémon next to the trader is only Cookie before the
-	@ trade. Post-trade the object event is removed, so this script
-	@ only fires while Cookie is still here.
+	@ Pre-trade: floating sprite is the shiny Zigzagoon (Cookie).
+	@ Post-trade: floating sprite is whatever shiny the player traded in,
+	@ so the handler reads VAR_OBJ_GFX_ID_1 dynamically and plays the
+	@ corresponding species cry / name in a generic greeting line.
 	call_if_unset FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED, BattleFrontier_PokemonCenter_1F_EventScript_Zigzagoon
+	call_if_set FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED, BattleFrontier_PokemonCenter_1F_EventScript_TradedShinyMon
 	end
 
 BattleFrontier_PokemonCenter_1F_EventScript_Zigzagoon::
@@ -97,6 +109,16 @@ BattleFrontier_PokemonCenter_1F_EventScript_Zigzagoon::
 	waitse
 	playmoncry SPECIES_ZIGZAGOON, CRY_MODE_NORMAL
 	msgbox BattleFrontier_PokemonCenter_1F_Text_Zigzagoon, MSGBOX_DEFAULT
+	waitmoncry
+	release
+	end
+
+BattleFrontier_PokemonCenter_1F_EventScript_TradedShinyMon::
+	lock
+	faceplayer
+	waitse
+	special PrepareTradeFloatingMonGreeting
+	msgbox BattleFrontier_PokemonCenter_1F_Text_TradedShinyMon, MSGBOX_DEFAULT
 	waitmoncry
 	release
 	end
@@ -152,3 +174,7 @@ BattleFrontier_PokemonCenter_1F_Text_Zigzagoon:
 	.string "COOKIE: Zigaa! Zig zig!\p"
 	.string "(There's a chewed-up sock at\n"
 	.string "your feet.)$"
+
+BattleFrontier_PokemonCenter_1F_Text_TradedShinyMon:
+	.string "The shiny {STR_VAR_1} circles the\n"
+	.string "BEAUTY, tail wagging happily.$"

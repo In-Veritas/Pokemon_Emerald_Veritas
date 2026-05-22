@@ -5048,6 +5048,46 @@ void CreateCookieZigzagoon(void)
     CalculateMonStats(&gEnemyParty[0]);
 }
 
+// Veritas: capture the offered Pokémon's species into VAR_OBJ_GFX_ID_1
+// (with the shiny overworld tag), so the floating sprite next to the
+// Beauty trader becomes the shiny species the player just gave up.
+// Must be called BEFORE the trade scene runs — the trade scene swaps
+// gPlayerParty[gSpecialVar_0x8005] with Cookie, so the offered species
+// is lost from gPlayerParty afterward. After the script re-spawns
+// LOCALID_TRADEMON, the new sprite is the captured shiny species.
+void SetCookieTradeOverworldToOfferedShiny(void)
+{
+    u16 species;
+    if (gSpecialVar_0x8005 >= PARTY_SIZE)
+        return;
+    species = GetMonData(&gPlayerParty[gSpecialVar_0x8005], MON_DATA_SPECIES, NULL);
+    if (species == SPECIES_NONE || species == SPECIES_EGG)
+        return;
+    VarSet(VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_MON_BASE + species + SPECIES_OVERWORLD_SHINY_TAG);
+}
+
+// Veritas: load the species currently set on VAR_OBJ_GFX_ID_1 (the
+// floating-Pokémon sprite next to the Beauty trader) into gStringVar1
+// and play its cry. Used by the post-trade _Mon handler so the floating
+// sprite reacts to interaction regardless of which species the player
+// traded. Strips both OBJ_EVENT_GFX_MON_BASE and SPECIES_OVERWORLD_SHINY_TAG
+// before doing the species lookup.
+void PrepareTradeFloatingMonGreeting(void)
+{
+    u16 gfx = VarGet(VAR_OBJ_GFX_ID_1);
+    u16 species;
+
+    if (gfx < OBJ_EVENT_GFX_MON_BASE)
+        return;
+    species = gfx - OBJ_EVENT_GFX_MON_BASE;
+    if (species >= SPECIES_OVERWORLD_SHINY_TAG)
+        species -= SPECIES_OVERWORLD_SHINY_TAG;
+    if (species == SPECIES_NONE || species >= NUM_SPECIES)
+        return;
+    StringCopy(gStringVar1, gSpeciesNames[species]);
+    PlayCry_Normal(species, 0);
+}
+
 // Veritas: name-rater refusal check. Returns TRUE if the chosen party
 // mon is Cookie (Gabriel's Zigzagoon) — in which case the Slateport
 // Name Rater refuses to rename it. Checked AFTER the egg check and
