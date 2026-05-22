@@ -3822,7 +3822,14 @@ static void BattleIntroDrawTrainersOrMonsSprites(void)
 
             gBattleMons[gActiveBattler].type1 = gSpeciesInfo[gBattleMons[gActiveBattler].species].types[0];
             gBattleMons[gActiveBattler].type2 = gSpeciesInfo[gBattleMons[gActiveBattler].species].types[1];
-            gBattleMons[gActiveBattler].ability = GetAbilityBySpecies(gBattleMons[gActiveBattler].species, gBattleMons[gActiveBattler].abilityNum);
+            // Veritas: name-aware resolver picks up Cookie / OT Gabriel
+            // and substitutes Baby Charm. nickname/otName are already
+            // present in gBattleMons from the byte-copy above.
+            gBattleMons[gActiveBattler].ability = ResolveMonAbilityByName(
+                gBattleMons[gActiveBattler].species,
+                gBattleMons[gActiveBattler].abilityNum,
+                gBattleMons[gActiveBattler].nickname,
+                gBattleMons[gActiveBattler].otName);
             hpOnSwitchout = &gBattleStruct->hpOnSwitchout[GetBattlerSide(gActiveBattler)];
             *hpOnSwitchout = gBattleMons[gActiveBattler].hp;
             for (i = 0; i < NUM_BATTLE_STATS; i++)

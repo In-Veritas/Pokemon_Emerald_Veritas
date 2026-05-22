@@ -4928,7 +4928,12 @@ static void Cmd_switchindataupdate(void)
 
     gBattleMons[gActiveBattler].type1 = gSpeciesInfo[gBattleMons[gActiveBattler].species].types[0];
     gBattleMons[gActiveBattler].type2 = gSpeciesInfo[gBattleMons[gActiveBattler].species].types[1];
-    gBattleMons[gActiveBattler].ability = GetAbilityBySpecies(gBattleMons[gActiveBattler].species, gBattleMons[gActiveBattler].abilityNum);
+    // Veritas: name-aware resolver picks up Cookie / OT Gabriel.
+    gBattleMons[gActiveBattler].ability = ResolveMonAbilityByName(
+        gBattleMons[gActiveBattler].species,
+        gBattleMons[gActiveBattler].abilityNum,
+        gBattleMons[gActiveBattler].nickname,
+        gBattleMons[gActiveBattler].otName);
 
     // check knocked off item
     i = GetBattlerSide(gActiveBattler);
@@ -8706,7 +8711,12 @@ static void Cmd_healpartystatus(void)
                          && !(gAbsentBattlerFlags & gBitTable[gActiveBattler]))
                     ability = gBattleMons[gActiveBattler].ability;
                 else
-                    ability = GetAbilityBySpecies(species, abilityNum);
+                    // Veritas: GetMonAbility routes through the name-aware
+                    // resolver so a benched Cookie blocks Heal Bell via
+                    // Baby Charm too (Baby Charm doesn't block Heal Bell
+                    // currently, but the call is correct for future-proofing
+                    // and for any other custom abilities added later).
+                    ability = GetMonAbility(&party[i]);
 
                 if (ability != ABILITY_SOUNDPROOF)
                     toHeal |= (1 << i);

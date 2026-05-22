@@ -37,5 +37,8 @@ void CleanInvalidTrainerRecords(void);
 bool8 TrySetupInvalidRecordCleanupMessage(void);
 bool8 TrySetupPurpleBirthdayGift(void);
 bool8 TrySetupAlhyaApology(void);
+void IsSelectedPartyMonShiny(void);
+void CreateCookieZigzagoon(void);
+void IsSelectedMonGabrielsCookie(void);
 
 #endif // GUARD_FIELD_SPECIALS_H

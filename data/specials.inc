@@ -268,6 +268,10 @@ gSpecials::
 	def_special CreateInGameTradePokemon
 	def_special DoInGameTradeScene
 	def_special GetTradeSpecies
+	@ Veritas: Battle Frontier "Cookie" trade specials.
+	def_special IsSelectedPartyMonShiny
+	def_special CreateCookieZigzagoon
+	def_special IsSelectedMonGabrielsCookie
 	def_special GetWeekCount
 	def_special RetrieveLotteryNumber
 	def_special PickLotteryCornerTicket

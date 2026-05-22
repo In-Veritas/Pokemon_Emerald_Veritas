@@ -8,16 +8,14 @@ BattleFrontier_PokemonCenter_1F_MapScripts::
 
 BattleFrontier_PokemonCenter_1F_OnTransition:
 	setrespawn HEAL_LOCATION_BATTLE_FRONTIER_OUTSIDE_EAST
-	call_if_set FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED, BattleFrontier_PokemonCenter_1F_EventScript_SetUpRalts
-	call_if_unset FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED, BattleFrontier_PokemonCenter_1F_EventScript_SetUpSeedot
+	@ Floating Pokémon next to the trader is Cookie the Zigzagoon. After
+	@ the trade the LOCALID_TRADEMON object is removed permanently, so
+	@ the setvar only matters on first visit (or pre-trade visits).
+	call_if_unset FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED, BattleFrontier_PokemonCenter_1F_EventScript_SetUpZigzagoon
 	end
 
-BattleFrontier_PokemonCenter_1F_EventScript_SetUpRalts::
-	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_MON_BASE+SPECIES_RALTS
-	return
-
-BattleFrontier_PokemonCenter_1F_EventScript_SetUpSeedot::
-	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_MON_BASE+SPECIES_SEEDOT
+BattleFrontier_PokemonCenter_1F_EventScript_SetUpZigzagoon::
+	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_MON_BASE+SPECIES_ZIGZAGOON
 	return
 
 BattleFrontier_PokemonCenter_1F_EventScript_Nurse::
@@ -28,55 +26,43 @@ BattleFrontier_PokemonCenter_1F_EventScript_Nurse::
 	release
 	end
 
-BattleFrontier_PokemonCenter_1F_EventScript_SchoolKid::
+BattleFrontier_PokemonCenter_1F_EventScript_CookieTrader::
 	lock
 	faceplayer
 	goto_if_set FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED, BattleFrontier_PokemonCenter_1F_EventScript_TradeCompleted
-	setvar VAR_0x8008, INGAME_TRADE_SEEDOT
-	copyvar VAR_0x8004, VAR_0x8008
-	specialvar VAR_RESULT, GetInGameTradeSpeciesInfo
-	copyvar VAR_0x8009, VAR_RESULT
-	msgbox BattleFrontier_PokemonCenter_1F_Text_IllTradeIfYouWant, MSGBOX_YESNO
+	msgbox BattleFrontier_PokemonCenter_1F_Text_CookieIntro, MSGBOX_YESNO
 	goto_if_eq VAR_RESULT, NO, BattleFrontier_PokemonCenter_1F_EventScript_DeclineTrade
 	special ChoosePartyMon
 	waitstate
-	copyvar VAR_0x800A, VAR_0x8004
 	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, BattleFrontier_PokemonCenter_1F_EventScript_DeclineTrade
-	copyvar VAR_0x8005, VAR_0x800A
-	specialvar VAR_RESULT, GetTradeSpecies
-	copyvar VAR_0x800B, VAR_RESULT
-	goto_if_ne VAR_RESULT, VAR_0x8009, BattleFrontier_PokemonCenter_1F_EventScript_NotRequestedMon
-	copyvar VAR_0x8004, VAR_0x8008
-	copyvar VAR_0x8005, VAR_0x800A
-	special CreateInGameTradePokemon
+	specialvar VAR_RESULT, IsSelectedPartyMonShiny
+	goto_if_eq VAR_RESULT, FALSE, BattleFrontier_PokemonCenter_1F_EventScript_NotShiny
+	@ Mirror the chosen slot into VAR_0x8005 so CreateCookieZigzagoon can
+	@ inherit the player's level (matches vanilla trade behavior).
+	copyvar VAR_0x8005, VAR_0x8004
+	special CreateCookieZigzagoon
 	fadescreen FADE_TO_BLACK
 	removeobject LOCALID_TRADEMON
 	fadescreen FADE_FROM_BLACK
 	special DoInGameTradeScene
 	waitstate
-	msgbox BattleFrontier_PokemonCenter_1F_Text_PleaseBeGoodToMyPokemon, MSGBOX_DEFAULT
-	closemessage
-	fadescreen FADE_TO_BLACK
-	call BattleFrontier_PokemonCenter_1F_EventScript_SetUpRalts
-	addobject LOCALID_TRADEMON
-	fadescreen FADE_FROM_BLACK
+	msgbox BattleFrontier_PokemonCenter_1F_Text_TakeCookie, MSGBOX_DEFAULT
 	setflag FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED
 	release
 	end
 
 BattleFrontier_PokemonCenter_1F_EventScript_DeclineTrade::
-	msgbox BattleFrontier_PokemonCenter_1F_Text_YouDontWantToThatsOkay, MSGBOX_DEFAULT
+	msgbox BattleFrontier_PokemonCenter_1F_Text_DeclineCookie, MSGBOX_DEFAULT
 	release
 	end
 
-BattleFrontier_PokemonCenter_1F_EventScript_NotRequestedMon::
-	bufferspeciesname STR_VAR_1, VAR_0x8009
-	msgbox BattleFrontier_PokemonCenter_1F_Text_DoesntLookLikeMonToMe, MSGBOX_DEFAULT
+BattleFrontier_PokemonCenter_1F_EventScript_NotShiny::
+	msgbox BattleFrontier_PokemonCenter_1F_Text_NotShiny, MSGBOX_DEFAULT
 	release
 	end
 
 BattleFrontier_PokemonCenter_1F_EventScript_TradeCompleted::
-	msgbox BattleFrontier_PokemonCenter_1F_Text_AnyPokemonCanBeCute, MSGBOX_DEFAULT
+	msgbox BattleFrontier_PokemonCenter_1F_Text_AfterCookieGone, MSGBOX_DEFAULT
 	release
 	end
 
@@ -99,56 +85,56 @@ BattleFrontier_PokemonCenter_1F_EventScript_Skitty::
 	end
 
 BattleFrontier_PokemonCenter_1F_EventScript_Mon::
-	call_if_set FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED, BattleFrontier_PokemonCenter_1F_EventScript_Ralts
-	call_if_unset FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED, BattleFrontier_PokemonCenter_1F_EventScript_Seedot
+	@ The floating Pokémon next to the trader is only Cookie before the
+	@ trade. Post-trade the object event is removed, so this script
+	@ only fires while Cookie is still here.
+	call_if_unset FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED, BattleFrontier_PokemonCenter_1F_EventScript_Zigzagoon
 	end
 
-BattleFrontier_PokemonCenter_1F_EventScript_Ralts::
+BattleFrontier_PokemonCenter_1F_EventScript_Zigzagoon::
 	lock
 	faceplayer
 	waitse
-	playmoncry SPECIES_RALTS, CRY_MODE_NORMAL
-	msgbox BattleFrontier_PokemonCenter_1F_Text_Ralts, MSGBOX_DEFAULT
-	waitmoncry
-	release
-	end
-
-BattleFrontier_PokemonCenter_1F_EventScript_Seedot::
-	lock
-	faceplayer
-	waitse
-	playmoncry SPECIES_SEEDOT, CRY_MODE_NORMAL
-	msgbox BattleFrontier_PokemonCenter_1F_Text_Seedot, MSGBOX_DEFAULT
+	playmoncry SPECIES_ZIGZAGOON, CRY_MODE_NORMAL
+	msgbox BattleFrontier_PokemonCenter_1F_Text_Zigzagoon, MSGBOX_DEFAULT
 	waitmoncry
 	release
 	end
 	
-BattleFrontier_PokemonCenter_1F_Text_IllTradeIfYouWant:
-	.string "There was someone here using a {STR_VAR_1},\n"
-	.string "a POKéMON I've never seen before.\p"
-	.string "I couldn't help but notice it was\n"
-	.string "both rare and quite impressive.\p"
-	.string "If you find one, I'm willing to\n"
-	.string "trade you my {STR_VAR_2}.\p"
-	.string "It may not be as rare, but I know\n"
-	.string "my POKéMON is cute. Maybe you’ll\l"
-	.string "find it worth the trade.$"
+BattleFrontier_PokemonCenter_1F_Text_CookieIntro:
+	.string "Oh, finally — a TRAINER with an eye\n"
+	.string "for rare-colored POKéMON!\p"
+	.string "Listen, my boyfriend left me his\n"
+	.string "ZIGZAGOON when he went off to train\l"
+	.string "at the FRONTIER. Its name is COOKIE.\p"
+	.string "COOKIE barks ALL night… AND every\n"
+	.string "morning I'm down one more sock.\p"
+	.string "I would TRADE this little gremlin\n"
+	.string "for ANY shiny POKéMON.\p"
+	.string "What do you say? Got anything\n"
+	.string "sparkly to trade?$"
 
-BattleFrontier_PokemonCenter_1F_Text_PleaseBeGoodToMyPokemon:
-	.string "Eheheh…\n"
-	.string "Please be good to my POKéMON.$"
+BattleFrontier_PokemonCenter_1F_Text_NotShiny:
+	.string "Hmm… a sweet POKéMON, but not the\n"
+	.string "SHINY I was hoping for.\p"
+	.string "Come back when you find something\n"
+	.string "with a little more… sparkle.$"
 
-BattleFrontier_PokemonCenter_1F_Text_DoesntLookLikeMonToMe:
-	.string "Huh? That doesn't look anything like\n"
-	.string "a {STR_VAR_1} to me.$"
+BattleFrontier_PokemonCenter_1F_Text_TakeCookie:
+	.string "Oh — OHHH! That is EXACTLY what I'm\n"
+	.string "talking about!\p"
+	.string "Take COOKIE. And his sock collection.\n"
+	.string "PLEASE.$"
 
-BattleFrontier_PokemonCenter_1F_Text_YouDontWantToThatsOkay:
-	.string "Oh, if you don't want to, that's okay.\n"
-	.string "But my POKéMON is cute, you know…$"
+BattleFrontier_PokemonCenter_1F_Text_DeclineCookie:
+	.string "Oh… well, if you change your mind…\p"
+	.string "COOKIE! Drop the sock! COOKIE, I said —$"
 
-BattleFrontier_PokemonCenter_1F_Text_AnyPokemonCanBeCute:
-	.string "Any POKéMON can be cute if you raise\n"
-	.string "it with care and kindness.$"
+BattleFrontier_PokemonCenter_1F_Text_AfterCookieGone:
+	.string "Hi again. No more lost socks.\n"
+	.string "Life is good.\p"
+	.string "Take good care of COOKIE for me,\n"
+	.string "alright?$"
 
 BattleFrontier_PokemonCenter_1F_Text_NextStopBattleArena:
 	.string "Okay! Next stop, the BATTLE ARENA!\n"
@@ -162,8 +148,7 @@ BattleFrontier_PokemonCenter_1F_Text_GoingThroughEveryChallenge:
 BattleFrontier_PokemonCenter_1F_Text_Skitty:
 	.string "SKITTY: Mya myaaah!$"
 
-BattleFrontier_PokemonCenter_1F_Text_Ralts:
-	.string "RALTS: Ra ru!$"
-
-BattleFrontier_PokemonCenter_1F_Text_Seedot:
-	.string "DOTS: Sesesese!$"
+BattleFrontier_PokemonCenter_1F_Text_Zigzagoon:
+	.string "COOKIE: Zigaa! Zig zig!\p"
+	.string "(There's a chewed-up sock at\n"
+	.string "your feet.)$"

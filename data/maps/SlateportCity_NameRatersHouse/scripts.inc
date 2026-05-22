@@ -25,10 +25,19 @@ SlateportCity_NameRatersHouse_EventScript_DeclineNameRate::
 SlateportCity_NameRatersHouse_EventScript_RateMonNickname::
 	specialvar VAR_RESULT, ScriptGetPartyMonSpecies
 	goto_if_eq VAR_RESULT, SPECIES_EGG, SlateportCity_NameRatersHouse_EventScript_CantRateEgg
+	@ Veritas: refuse to rename the Battle Frontier trade Zigzagoon
+	@ (nickname "Cookie", OT "Gabriel"). The rater recognizes the dog.
+	specialvar VAR_RESULT, IsSelectedMonGabrielsCookie
+	goto_if_eq VAR_RESULT, TRUE, SlateportCity_NameRatersHouse_EventScript_CookieIsPerfect
 	special BufferMonNickname
 	msgbox SlateportCity_NameRatersHouse_Text_FineNameSuggestBetterOne, MSGBOX_YESNO
 	goto_if_eq VAR_RESULT, YES, SlateportCity_NameRatersHouse_EventScript_ChangeNickname
 	goto_if_eq VAR_RESULT, NO, SlateportCity_NameRatersHouse_EventScript_DeclineNameRate
+	end
+
+SlateportCity_NameRatersHouse_EventScript_CookieIsPerfect::
+	msgbox SlateportCity_NameRatersHouse_Text_CookieIsGabrielsDog, MSGBOX_DEFAULT
+	release
 	end
 
 SlateportCity_NameRatersHouse_EventScript_CantRateEgg::
@@ -103,4 +112,13 @@ SlateportCity_NameRatersHouse_Text_MagnificentName:
 SlateportCity_NameRatersHouse_Text_ThatIsMerelyAnEgg:
 	.string "Now, now.\n"
 	.string "That is merely an EGG!$"
+
+SlateportCity_NameRatersHouse_Text_CookieIsGabrielsDog:
+	.string "Hmm… COOKIE, raised by GABRIEL?\n"
+	.string "Let me see…\p"
+	.string "Why, that's GABRIEL's dog!\n"
+	.string "Everyone has heard of COOKIE.\p"
+	.string "COOKIE is already a perfect name.\n"
+	.string "I refuse to change a single letter.\p"
+	.string "Take that fine POKéMON home now.$"
 

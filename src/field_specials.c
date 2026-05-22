@@ -4955,6 +4955,128 @@ bool8 TrySetupAlhyaApology(void)
     return TRUE;
 }
 
+// Veritas: shiny check for the Battle Frontier "Cookie" Zigzagoon trade.
+// The Beauty NPC accepts ANY shiny in trade rather than a fixed species,
+// so the script asks this special after ChoosePartyMon and branches on
+// the result. VAR_0x8004 holds the chosen party slot.
+void IsSelectedPartyMonShiny(void)
+{
+    if (gSpecialVar_0x8004 >= PARTY_SIZE)
+        gSpecialVar_Result = FALSE;
+    else
+        gSpecialVar_Result = IsMonShiny(&gPlayerParty[gSpecialVar_0x8004]);
+}
+
+// Veritas: builds gEnemyParty[0] as Cookie — the Beauty NPC's shiny
+// Zigzagoon. Bypasses CreateInGameTradePokemon entirely so we can carry
+// a custom moveset (Extremespeed / Guillotine / Thief / Yawn), force a
+// shiny PID against the preset OT id, and skip the sIngameTrades table.
+// The trade-scene UI (DoInGameTradeScene) reads from gEnemyParty[0] so
+// the trade animation still plays normally after this runs.
+//
+// Cookie's level matches the player's offered shiny — same convention
+// as vanilla in-game trades (see CreateInGameTradePokemonInternal in
+// src/trade.c, which inherits the chosen mon's level).
+//
+// The forced ability (Baby Charm) is NOT stored on the Pokémon — see
+// ResolveMonAbilityByName in src/pokemon.c, which detects Cookie by
+// species + nickname + OT name at every ability-lookup site.
+void CreateCookieZigzagoon(void)
+{
+    static const u8 sNickname[] = _("Cookie");
+    static const u8 sOtName[] = _("Gabriel");
+    static const u16 sMoves[MAX_MON_MOVES] = {
+        MOVE_EXTREME_SPEED, MOVE_GUILLOTINE, MOVE_THIEF, MOVE_YAWN,
+    };
+    const u32 otId = 31337; // funny suite — the classic "leet" trainer id
+    u32 personality;
+    u16 lo;
+    u16 hi;
+    u8 i;
+    u8 level;
+    u8 ivVal = MAX_PER_STAT_IVS;
+    u8 abilityNum = 0;
+    u8 otGender = MALE;
+    u8 pp;
+    u8 metLocation = METLOC_IN_GAME_TRADE;
+    u16 heldItem = ITEM_LAVA_COOKIE;
+    u16 move;
+
+    // Force a shiny PID against the preset OT. Pick a random low half and
+    // construct the high half so HIHALF ^ LOHALF ^ HIHALF_OT ^ LOHALF_OT
+    // is < SHINY_ODDS (8) — the standard shiny-rebuild trick from
+    // CreateBoxMon's FLAG_SHINY_CREATION path. Then loop until Cookie
+    // comes out male (the boyfriend's barking dog).
+    do
+    {
+        lo = Random();
+        hi = ((u16)otId ^ (u16)(otId >> 16)) ^ lo ^ (u16)(Random() & (SHINY_ODDS - 1));
+        personality = ((u32)hi << 16) | lo;
+    } while ((personality & 0xFF) < 127); // Zigzagoon gender threshold = 127
+
+    level = (gSpecialVar_0x8005 < PARTY_SIZE)
+          ? GetMonData(&gPlayerParty[gSpecialVar_0x8005], MON_DATA_LEVEL, NULL)
+          : 20;
+
+    CreateMon(&gEnemyParty[0], SPECIES_ZIGZAGOON, level, USE_RANDOM_IVS,
+              TRUE, personality, OT_ID_PRESET, otId);
+
+    // Max IVs across the board.
+    SetMonData(&gEnemyParty[0], MON_DATA_HP_IV, &ivVal);
+    SetMonData(&gEnemyParty[0], MON_DATA_ATK_IV, &ivVal);
+    SetMonData(&gEnemyParty[0], MON_DATA_DEF_IV, &ivVal);
+    SetMonData(&gEnemyParty[0], MON_DATA_SPEED_IV, &ivVal);
+    SetMonData(&gEnemyParty[0], MON_DATA_SPATK_IV, &ivVal);
+    SetMonData(&gEnemyParty[0], MON_DATA_SPDEF_IV, &ivVal);
+
+    SetMonData(&gEnemyParty[0], MON_DATA_NICKNAME, sNickname);
+    SetMonData(&gEnemyParty[0], MON_DATA_OT_NAME, sOtName);
+    SetMonData(&gEnemyParty[0], MON_DATA_OT_GENDER, &otGender);
+    SetMonData(&gEnemyParty[0], MON_DATA_ABILITY_NUM, &abilityNum);
+    SetMonData(&gEnemyParty[0], MON_DATA_MET_LOCATION, &metLocation);
+    SetMonData(&gEnemyParty[0], MON_DATA_HELD_ITEM, &heldItem);
+
+    for (i = 0; i < MAX_MON_MOVES; i++)
+    {
+        move = sMoves[i];
+        SetMonData(&gEnemyParty[0], MON_DATA_MOVE1 + i, &move);
+        pp = gBattleMoves[move].pp;
+        SetMonData(&gEnemyParty[0], MON_DATA_PP1 + i, &pp);
+    }
+
+    CalculateMonStats(&gEnemyParty[0]);
+}
+
+// Veritas: name-rater refusal check. Returns TRUE if the chosen party
+// mon is Cookie (Gabriel's Zigzagoon) — in which case the Slateport
+// Name Rater refuses to rename it. Checked AFTER the egg check and
+// BEFORE the regular "fine name, want to change it?" prompt.
+void IsSelectedMonGabrielsCookie(void)
+{
+    static const u8 sCookieName[] = _("Cookie");
+    static const u8 sGabrielName[] = _("Gabriel");
+    u8 nickname[POKEMON_NAME_BUFFER_SIZE];
+    u8 otName[PLAYER_NAME_LENGTH + 1];
+    u16 species;
+
+    if (gSpecialVar_0x8004 >= PARTY_SIZE)
+    {
+        gSpecialVar_Result = FALSE;
+        return;
+    }
+
+    species = GetMonData(&gPlayerParty[gSpecialVar_0x8004], MON_DATA_SPECIES, NULL);
+    if (species != SPECIES_ZIGZAGOON)
+    {
+        gSpecialVar_Result = FALSE;
+        return;
+    }
+    GetMonData(&gPlayerParty[gSpecialVar_0x8004], MON_DATA_NICKNAME, nickname);
+    GetMonData(&gPlayerParty[gSpecialVar_0x8004], MON_DATA_OT_NAME, otName);
+    gSpecialVar_Result = (StringCompare(nickname, sCookieName) == 0
+                       && StringCompare(otName, sGabrielName) == 0);
+}
+
 void CreateBossLugia(void)
 {
     u16 move;

@@ -4878,11 +4878,50 @@ u8 GetAbilityBySpecies(u16 species, u8 abilityNum)
     return gLastUsedAbility;
 }
 
+// Veritas: per-Pokémon ability override. Pokémon Emerald only stores a
+// 1-bit ability slot index and looks the actual ability up from
+// gSpeciesInfo[species].abilities[abilityNum]; there is no hidden-ability
+// or per-mon ability storage. To give the Battle Frontier trade
+// Zigzagoon "COOKIE / OT GABRIEL" Baby Charm without touching wild
+// Zigzagoon's ability list, we identify the mon by species + locked-in
+// nickname + locked-in OT name and substitute Baby Charm at every site
+// that resolves an ability via GetAbilityBySpecies.
+//
+// Name-matching is case-sensitive so a player who happens to be named
+// "Gabriel" doesn't accidentally trigger it on any random "Cookie" they
+// nicknamed (they'd have to spell-match both fields).
+static bool32 IsCookieGabrielsZigzagoon(u16 species, const u8 *nickname, const u8 *otName)
+{
+    static const u8 sCookieName[] = _("Cookie");
+    static const u8 sGabrielName[] = _("Gabriel");
+    if (species != SPECIES_ZIGZAGOON)
+        return FALSE;
+    if (StringCompare(nickname, sCookieName) != 0)
+        return FALSE;
+    if (StringCompare(otName, sGabrielName) != 0)
+        return FALSE;
+    return TRUE;
+}
+
+u8 ResolveMonAbilityByName(u16 species, u8 abilityNum, const u8 *nickname, const u8 *otName)
+{
+    if (IsCookieGabrielsZigzagoon(species, nickname, otName))
+    {
+        gLastUsedAbility = ABILITY_BABY_CHARM;
+        return gLastUsedAbility;
+    }
+    return GetAbilityBySpecies(species, abilityNum);
+}
+
 u8 GetMonAbility(struct Pokemon *mon)
 {
     u16 species = GetMonData(mon, MON_DATA_SPECIES, NULL);
     u8 abilityNum = GetMonData(mon, MON_DATA_ABILITY_NUM, NULL);
-    return GetAbilityBySpecies(species, abilityNum);
+    u8 nickname[POKEMON_NAME_BUFFER_SIZE];
+    u8 otName[PLAYER_NAME_LENGTH + 1];
+    GetMonData(mon, MON_DATA_NICKNAME, nickname);
+    GetMonData(mon, MON_DATA_OT_NAME, otName);
+    return ResolveMonAbilityByName(species, abilityNum, nickname, otName);
 }
 
 void CreateSecretBaseEnemyParty(struct SecretBase *secretBaseRecord)
@@ -5036,10 +5075,17 @@ void CopyPlayerPartyMonToBattleData(u8 battlerId, u8 partyIndex)
     gBattleMons[battlerId].otId = GetMonData(&gPlayerParty[partyIndex], MON_DATA_OT_ID, NULL);
     gBattleMons[battlerId].type1 = gSpeciesInfo[gBattleMons[battlerId].species].types[0];
     gBattleMons[battlerId].type2 = gSpeciesInfo[gBattleMons[battlerId].species].types[1];
-    gBattleMons[battlerId].ability = GetAbilityBySpecies(gBattleMons[battlerId].species, gBattleMons[battlerId].abilityNum);
     GetMonData(&gPlayerParty[partyIndex], MON_DATA_NICKNAME, nickname);
     StringCopy_Nickname(gBattleMons[battlerId].nickname, nickname);
     GetMonData(&gPlayerParty[partyIndex], MON_DATA_OT_NAME, gBattleMons[battlerId].otName);
+    // Veritas: route through the name-aware resolver so Cookie / OT
+    // Gabriel gets Baby Charm. Moved below the nickname/OT copies so
+    // the resolver can read the populated battle-mon fields.
+    gBattleMons[battlerId].ability = ResolveMonAbilityByName(
+        gBattleMons[battlerId].species,
+        gBattleMons[battlerId].abilityNum,
+        gBattleMons[battlerId].nickname,
+        gBattleMons[battlerId].otName);
 
     hpSwitchout = &gBattleStruct->hpOnSwitchout[GetBattlerSide(battlerId)];
     *hpSwitchout = gBattleMons[battlerId].hp;
