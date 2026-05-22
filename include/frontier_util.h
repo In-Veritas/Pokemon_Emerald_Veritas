@@ -33,6 +33,14 @@ void SetFrontierPartyReducedFlag(bool32 reduced);
 void FrontierLv50_SaveReducedPartyToSaveBlock1(void);
 void FrontierLv50_RestoreSavedSlotExp(struct Pokemon *mon, u8 slot);
 
+// Veritas elite-trainer dialog override. Returns TRUE and writes
+// gStringVar4 with a raw custom string when trainerId is one of the
+// elite-cohort ids (FRONTIER_TRAINER_GABRIEL..YANN); returns FALSE for
+// every other trainer so the caller can fall through to the EasyChat
+// pipeline. whichText is FRONTIER_BEFORE_TEXT / FRONTIER_PLAYER_LOST_TEXT
+// / FRONTIER_PLAYER_WON_TEXT from constants/frontier_util.h.
+bool32 TryCopyEliteTrainerText(u8 whichText, u16 trainerId);
+
 extern const u16 gFrontierBannedSpecies[];
 
 #endif // GUARD_FRONTIER_UTIL_H

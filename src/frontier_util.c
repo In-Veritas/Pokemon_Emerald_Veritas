@@ -1898,7 +1898,12 @@ static const u8 *const sEliteTrainerSpeech[FRONTIER_TRAINER_ELITE_COUNT][3] =
 // Returns TRUE and writes gStringVar4 with the elite trainer's custom
 // speech if trainerId is in the elite cohort range. Returns FALSE to
 // signal the caller to fall through to the normal EasyChat pipeline.
-static bool32 TryCopyEliteTrainerText(u8 whichText, u16 trainerId)
+// Exposed (not static) because facility-specific intro paths
+// (battle_tower.c, battle_palace.c, battle_pike.c, battle_pyramid.c)
+// short-circuit CopyFrontierTrainerText and call FrontierSpeechToString
+// directly on the speechBefore/Win/Lose fields — they need to check
+// this helper too, otherwise elite trainers come out silent.
+bool32 TryCopyEliteTrainerText(u8 whichText, u16 trainerId)
 {
     u16 eliteIdx;
     u8 col;

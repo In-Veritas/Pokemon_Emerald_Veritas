@@ -159,6 +159,8 @@ static void SetPalaceOpponent(void)
 
 static void BufferOpponentIntroSpeech(void)
 {
+    if (TryCopyEliteTrainerText(FRONTIER_BEFORE_TEXT, gTrainerBattleOpponent_A))
+        return;
     if (gTrainerBattleOpponent_A < FRONTIER_TRAINERS_COUNT)
         FrontierSpeechToString(gFacilityTrainers[gTrainerBattleOpponent_A].speechBefore);
 }

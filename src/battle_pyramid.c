@@ -1462,16 +1462,22 @@ void SoftResetInBattlePyramid(void)
 
 void CopyPyramidTrainerSpeechBefore(u16 trainerId)
 {
+    if (TryCopyEliteTrainerText(FRONTIER_BEFORE_TEXT, trainerId))
+        return;
     FrontierSpeechToString(gFacilityTrainers[trainerId].speechBefore);
 }
 
 void CopyPyramidTrainerWinSpeech(u16 trainerId)
 {
+    if (TryCopyEliteTrainerText(FRONTIER_PLAYER_LOST_TEXT, trainerId))
+        return;
     FrontierSpeechToString(gFacilityTrainers[trainerId].speechWin);
 }
 
 void CopyPyramidTrainerLoseSpeech(u16 trainerId)
 {
+    if (TryCopyEliteTrainerText(FRONTIER_PLAYER_WON_TEXT, trainerId))
+        return;
     FrontierSpeechToString(gFacilityTrainers[trainerId].speechLose);
 }
 

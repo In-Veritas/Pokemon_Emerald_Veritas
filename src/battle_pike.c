@@ -1469,11 +1469,15 @@ static void BufferTrainerIntro(void)
 {
     if (gSpecialVar_0x8005 == 0)
     {
+        if (TryCopyEliteTrainerText(FRONTIER_BEFORE_TEXT, gTrainerBattleOpponent_A))
+            return;
         if (gTrainerBattleOpponent_A < FRONTIER_TRAINERS_COUNT)
             FrontierSpeechToString(gFacilityTrainers[gTrainerBattleOpponent_A].speechBefore);
     }
     else if (gSpecialVar_0x8005 == 1)
     {
+        if (TryCopyEliteTrainerText(FRONTIER_BEFORE_TEXT, gTrainerBattleOpponent_B))
+            return;
         if (gTrainerBattleOpponent_B < FRONTIER_TRAINERS_COUNT)
             FrontierSpeechToString(gFacilityTrainers[gTrainerBattleOpponent_B].speechBefore);
     }
