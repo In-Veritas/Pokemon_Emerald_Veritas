@@ -27,7 +27,12 @@ BattleFrontier_PokemonCenter_1F_EventScript_Nurse::
 	end
 
 BattleFrontier_PokemonCenter_1F_EventScript_CookieTrader::
-	lock
+	@ lockall (not just lock) freezes Cookie too. Without this, Cookie's
+	@ autonomous WALK_SEQUENCE keeps orbiting and visibly animates during
+	@ the brief field-load frames between the party menu fade-out and the
+	@ trade scene starting up — looks jittery. lockall keeps the entire
+	@ map static for the whole trade flow.
+	lockall
 	faceplayer
 	goto_if_set FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED, BattleFrontier_PokemonCenter_1F_EventScript_TradeCompleted
 	msgbox BattleFrontier_PokemonCenter_1F_Text_CookieIntro, MSGBOX_YESNO
@@ -58,22 +63,22 @@ BattleFrontier_PokemonCenter_1F_EventScript_CookieTrader::
 	addobject LOCALID_TRADEMON
 	fadescreen FADE_FROM_BLACK
 	setflag FLAG_FRONTIER_SEEDOT_NPC_TRADE_COMPLETED
-	release
+	releaseall
 	end
 
 BattleFrontier_PokemonCenter_1F_EventScript_DeclineTrade::
 	msgbox BattleFrontier_PokemonCenter_1F_Text_DeclineCookie, MSGBOX_DEFAULT
-	release
+	releaseall
 	end
 
 BattleFrontier_PokemonCenter_1F_EventScript_NotShiny::
 	msgbox BattleFrontier_PokemonCenter_1F_Text_NotShiny, MSGBOX_DEFAULT
-	release
+	releaseall
 	end
 
 BattleFrontier_PokemonCenter_1F_EventScript_TradeCompleted::
 	msgbox BattleFrontier_PokemonCenter_1F_Text_AfterCookieGone, MSGBOX_DEFAULT
-	release
+	releaseall
 	end
 
 BattleFrontier_PokemonCenter_1F_EventScript_Man::

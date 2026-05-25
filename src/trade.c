@@ -3324,6 +3324,12 @@ static void BufferTradeSceneStrings(void)
     u8 mpId;
     u8 name[POKEMON_NAME_BUFFER_SIZE];
     const struct InGameTrade *ingameTrade;
+    // Veritas: detection state for the Cookie trade override below.
+    u8 enemyNickname[POKEMON_NAME_BUFFER_SIZE];
+    u8 enemyOtName[TRAINER_NAME_LENGTH + 1];
+    static const u8 sCookieNickname[] = _("Cookie");
+    static const u8 sGabrielOt[] = _("Gabriel");
+    static const u8 sEmelineSender[] = _("EMELINE");
 
     if (sTradeAnim->isLinkTrade)
     {
@@ -3336,9 +3342,31 @@ static void BufferTradeSceneStrings(void)
     }
     else
     {
-        ingameTrade = &sIngameTrades[gSpecialVar_0x8004];
-        StringCopy(gStringVar1, ingameTrade->otName);
-        StringCopy_Nickname(gStringVar3, ingameTrade->nickname);
+        // Veritas: the Cookie trade bypasses CreateInGameTradePokemon
+        // (see CreateCookieZigzagoon in field_specials.c) so it never
+        // sets gSpecialVar_0x8004 to a valid sIngameTrades index. The
+        // trade scene would then index sIngameTrades by the player's
+        // chosen party slot and display whichever NPC name happened to
+        // sit there (commonly "SKYLAR" at INGAME_TRADE_BAGON = 2).
+        // Detect Cookie via the nickname + OT combo CreateCookieZigzagoon
+        // wrote into gEnemyParty[0] and substitute Emeline's name for
+        // the trade-scene sender line. Cookie's stored OT stays "Gabriel"
+        // so the summary screen still credits him.
+        GetMonData(&gEnemyParty[0], MON_DATA_NICKNAME, enemyNickname);
+        GetMonData(&gEnemyParty[0], MON_DATA_OT_NAME, enemyOtName);
+        if (GetMonData(&gEnemyParty[0], MON_DATA_SPECIES) == SPECIES_ZIGZAGOON
+         && StringCompare(enemyNickname, sCookieNickname) == 0
+         && StringCompare(enemyOtName, sGabrielOt) == 0)
+        {
+            StringCopy(gStringVar1, sEmelineSender);
+            StringCopy_Nickname(gStringVar3, enemyNickname);
+        }
+        else
+        {
+            ingameTrade = &sIngameTrades[gSpecialVar_0x8004];
+            StringCopy(gStringVar1, ingameTrade->otName);
+            StringCopy_Nickname(gStringVar3, ingameTrade->nickname);
+        }
         GetMonData(&gPlayerParty[gSpecialVar_0x8005], MON_DATA_NICKNAME, name);
         StringCopy_Nickname(gStringVar2, name);
     }
