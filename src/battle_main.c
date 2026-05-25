@@ -14,7 +14,6 @@
 #include "battle_util.h"
 #include "berry.h"
 #include "day_night.h"
-#include "link_battle_scene.h"
 #include "bg.h"
 #include "data.h"
 #include "debug.h"
@@ -698,19 +697,6 @@ static void CB2_InitBattleInternal(void)
 
     if (gBattleTypeFlags & BATTLE_TYPE_RECORDED)
         gBattleTerrain = BATTLE_TERRAIN_BUILDING;
-
-    // Cable-club link battles can override the terrain with a scene that
-    // every player picked + had resolved deterministically. The resolver
-    // reads picks from gBlockRecvBuffer (populated by the trainer-card
-    // exchange in src/cable_club.c) and converges on the same terrain on
-    // every machine. LINK_SCENE_NONE means no peer broadcast a pick, in
-    // which case we keep the map-derived terrain.
-    if (gBattleTypeFlags & BATTLE_TYPE_LINK)
-    {
-        u8 linkScene = LinkBattleScene_ResolveAndGetTerrain();
-        if (linkScene != LINK_SCENE_NONE)
-            gBattleTerrain = linkScene;
-    }
 
     InitBattleBgsVideo();
     LoadBattleTextboxAndBackground();

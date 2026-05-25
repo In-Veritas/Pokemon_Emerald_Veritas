@@ -941,11 +941,12 @@ static const u16 *const sOpponentMugshotsPals[MUGSHOTS_COUNT] =
 // (no new .gbapal binaries) since their dominant hues already cover the
 // red / blue / green / orange / purple / teal range we need.
 //
-// Row order matches the index order of sPickableTerrains[] in
-// src/link_battle_scene.c (PLAIN, GRASS, SAND, WATER, CAVE, MOUNTAIN,
-// BUILDING). Task_LinkBattle picks one of the two columns deterministically
-// via the same XOR-of-trainer-IDs seed used by the scene picker, so every
-// peer renders the same color.
+// Rows are keyed by BATTLE_TERRAIN_* (mapped via LinkBattleSceneToBgPairIdx
+// below) so each terrain has a clashing pair of palettes. Task_LinkBattle
+// picks one of the two columns deterministically via the same XOR-of-
+// trainer-IDs-and-RTC seed (LinkBattleScene_GetSyncSeed), so every peer
+// renders the same color. With the terrain picker removed, the resolved
+// terrain is always LINK_SCENE_NONE → row 0 (PLAIN) pair.
 //
 // Palette → dominant hue:
 //   sMugshotPal_Sidney   = red    sMugshotPal_Drake   = orange
@@ -2369,9 +2370,10 @@ static void Task_SecretBase(u8 taskId)
 }
 
 // Map a resolved BATTLE_TERRAIN_* to the row index of sLinkBattleSceneBgPals.
-// Same order as sPickableTerrains[] in src/link_battle_scene.c. Returns 0
-// (PLAIN row) for any terrain that isn't a player-pickable scene — covers
-// non-cable-club link battles and unexpected terrains.
+// With the scene picker removed, the resolver always returns LINK_SCENE_NONE
+// and we fall through to row 0 (PLAIN). The other cases are dead code at
+// the moment but kept so future per-terrain BG selection (e.g., driven by
+// the map's terrain) can be wired up without rebuilding the table.
 static u8 LinkBattleSceneToBgPairIdx(u8 terrain)
 {
     switch (terrain)
