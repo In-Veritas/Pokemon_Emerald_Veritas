@@ -2791,13 +2791,20 @@ const struct ObjectEventGraphicsInfo *GetObjectEventGraphicsInfo(u16 graphicsId)
     if (graphicsId >= OBJ_EVENT_GFX_VARS && graphicsId <= OBJ_EVENT_GFX_VAR_F)
         graphicsId = VarGetObjectEventGraphicsId(graphicsId - OBJ_EVENT_GFX_VARS);
 
+    // Strip the shiny tag before the form-bits check. The shiny encoding
+    // MON_BASE + species + SHINY_TAG already crosses the 11-bit species
+    // mask for species >= 36 (since MON_BASE + SHINY_TAG = 2012), so the
+    // form check would otherwise misread it as form info — e.g. shiny
+    // Zigzagoon (graphicsId 2300) would decode to form=1, species=252,
+    // which is OBJ_EVENT_GFX_ZINNIA.
+    if (graphicsId >= OBJ_EVENT_GFX_MON_BASE + SPECIES_OVERWORLD_SHINY_TAG)
+        graphicsId -= SPECIES_OVERWORLD_SHINY_TAG;
+
     // graphicsId may contain mon form info
     if (graphicsId > OBJ_EVENT_GFX_SPECIES_MASK) {
         form = graphicsId >> OBJ_EVENT_GFX_SPECIES_BITS;
         graphicsId = graphicsId & OBJ_EVENT_GFX_SPECIES_MASK;
     }
-    if (graphicsId >= OBJ_EVENT_GFX_MON_BASE + SPECIES_OVERWORLD_SHINY_TAG)
-        graphicsId -= SPECIES_OVERWORLD_SHINY_TAG;
 
     if (graphicsId == OBJ_EVENT_GFX_BARD) {
         return gMauvilleOldManGraphicsInfoPointers[GetCurrentMauvilleOldMan()];
@@ -6023,6 +6030,7 @@ u32 GetObjectObjectCollidesWith(struct ObjectEvent *objectEvent, s16 x, s16 y, b
 {
     u8 i;
     struct ObjectEvent *curObject;
+    bool32 bothWalkSequence;
 
     if (objectEvent->localId == OBJ_EVENT_ID_FOLLOWER)
         return OBJECT_EVENTS_COUNT; // follower cannot collide with other objects, but they can collide with it
@@ -6037,7 +6045,18 @@ u32 GetObjectObjectCollidesWith(struct ObjectEvent *objectEvent, s16 x, s16 y, b
         curObject = &gObjectEvents[i];
         if (curObject->active && (curObject->movementType != MOVEMENT_TYPE_FOLLOW_PLAYER || objectEvent != &gObjectEvents[gPlayerAvatar.objectEventId]) && curObject != objectEvent)
         {
-            if ((curObject->currentCoords.x == x && curObject->currentCoords.y == y) || (curObject->previousCoords.x == x && curObject->previousCoords.y == y))
+            // Two paired WALK_SEQUENCE_* objects orbiting a shared area
+            // need to swap tiles each frame (each one walks into the tile
+            // the other just vacated). The previousCoords swap-guard exists
+            // to keep NPCs from visually passing through each other; for
+            // a coordinated orbit it just deadlocks both of them. Allow
+            // the swap when both sides are autonomous WALK_SEQUENCE.
+            bothWalkSequence = (objectEvent->movementType >= MOVEMENT_TYPE_WALK_SEQUENCE_UP_RIGHT_LEFT_DOWN
+                             && objectEvent->movementType <= MOVEMENT_TYPE_WALK_SEQUENCE_RIGHT_DOWN_LEFT_UP
+                             && curObject->movementType   >= MOVEMENT_TYPE_WALK_SEQUENCE_UP_RIGHT_LEFT_DOWN
+                             && curObject->movementType   <= MOVEMENT_TYPE_WALK_SEQUENCE_RIGHT_DOWN_LEFT_UP);
+            if ((curObject->currentCoords.x == x && curObject->currentCoords.y == y)
+             || (!bothWalkSequence && curObject->previousCoords.x == x && curObject->previousCoords.y == y))
             {
                 if (AreElevationsCompatible(objectEvent->currentElevation, curObject->currentElevation))
                     return i;
