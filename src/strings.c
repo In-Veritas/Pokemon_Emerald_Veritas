@@ -966,6 +966,17 @@ const u8 gPCText_Mark[] = _("MARK");
 const u8 gPCText_Name[] = _("NAME");
 const u8 gPCText_Jump[] = _("JUMP");
 const u8 gPCText_Wallpaper[] = _("WALLPAPER");
+// Veritas: PC search filter menu entries.
+const u8 gPCText_Search[] = _("SEARCH");
+const u8 gPCText_SearchShiny[] = _("SHINY");
+const u8 gPCText_SearchSpecies[] = _("SPECIES");
+const u8 gPCText_SearchType[] = _("TYPE");
+const u8 gPCText_SearchMark[] = _("MARK");
+const u8 gPCText_SearchClear[] = _("CLEAR");
+const u8 gPCText_MarkCircle[] = _("CIRCLE");
+const u8 gPCText_MarkSquare[] = _("SQUARE");
+const u8 gPCText_MarkTriangle[] = _("TRIANGLE");
+const u8 gPCText_MarkHeart[] = _("HEART");
 const u8 gPCText_Take[] = _("TAKE");
 const u8 gPCText_Give[] = _("GIVE");
 const u8 gPCText_Switch[] = _("SWITCH");

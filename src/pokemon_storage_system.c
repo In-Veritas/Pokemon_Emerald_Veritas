@@ -111,6 +111,15 @@ enum {
     MSG_VAR_ITEM_NAME,
 };
 
+// Veritas: PC search filter types.
+enum {
+    SEARCH_FILTER_NONE,
+    SEARCH_FILTER_SHINY,
+    SEARCH_FILTER_SPECIES,
+    SEARCH_FILTER_TYPE,
+    SEARCH_FILTER_MARK,
+};
+
 // IDs for menu selection items. See SetMenuText, HandleMenuInput, etc
 enum {
     MENU_CANCEL,
@@ -125,6 +134,20 @@ enum {
     MENU_JUMP,
     MENU_WALLPAPER,
     MENU_NAME,
+    // Veritas: Search filter menu entries (top-level + mark picker).
+    // SPECIES and TYPE both read from the mon under the cursor instead
+    // of opening a value-picker submenu — keeps the menu shallow and
+    // avoids a 17-entry type list that wouldn't fit on the GBA screen.
+    MENU_SEARCH,
+    MENU_SEARCH_SHINY,
+    MENU_SEARCH_SPECIES,
+    MENU_SEARCH_TYPE,
+    MENU_SEARCH_MARK,
+    MENU_SEARCH_CLEAR,
+    MENU_MARK_CIRCLE,
+    MENU_MARK_SQUARE,
+    MENU_MARK_TRIANGLE,
+    MENU_MARK_HEART,
     MENU_TAKE,
     MENU_GIVE,
     MENU_GIVE_2,
@@ -612,6 +635,12 @@ struct PokemonStorageSystemData
     u8 ALIGNED(4) itemIconBuffer[0x800];
     u8 wallpaperBgTilemapBuffer[0x1000];
     u8 displayMenuTilemapBuffer[0x800];
+    // Veritas: PC search filter. Dims non-matching mons in the current
+    // box using the same OBJ blend mode that the move-items mode uses
+    // for itemless mons (so the visual style is consistent). Filter
+    // persists across box switches until cleared. Resets on PC close.
+    u8 searchFilterType;   // SEARCH_FILTER_*
+    u16 searchFilterValue; // species / type / mark-bit, by filter type
 };
 
 static u32 sItemIconGfxBuffer[98];
@@ -677,6 +706,13 @@ static void Task_PokeStorageMain(u8);
 static void Task_JumpBox(u8);
 static void Task_HandleWallpapers(u8);
 static void Task_NameBox(u8);
+// Veritas: PC search filter tasks and helpers.
+static void Task_HandleSearch(u8);
+static void Task_HandleSearchMarkPick(u8);
+static void ApplySearchFilterToVisibleBox(void);
+static bool32 DoesBoxMonMatchSearchFilter(u8 boxId, u8 boxPosition);
+// Defined further down (line ~6783); the SPECIES/TYPE filters read from it.
+static u16 GetSpeciesAtCursorPosition(void);
 static void Task_PrintCantStoreMail(u8);
 static void Task_HandleMovingMonFromParty(u8);
 
@@ -2088,6 +2124,9 @@ void EnterPokeStorage(u8 boxOption)
         sStorage->isReopening = FALSE;
         sMovingItemId = ITEM_NONE;
         sStorage->state = 0;
+        // Veritas: PC search filter starts cleared on every PC open.
+        sStorage->searchFilterType = SEARCH_FILTER_NONE;
+        sStorage->searchFilterValue = 0;
         sStorage->taskId = CreateTask(Task_InitPokeStorage, 3);
         sLastUsedBox = StorageGetCurrentBox();
         SetMainCallback2(CB2_PokeStorage);
@@ -2107,6 +2146,9 @@ static void CB2_ReturnToPokeStorage(void)
         sStorage->boxOption = sCurrentBoxOption;
         sStorage->isReopening = TRUE;
         sStorage->state = 0;
+        // Veritas: PC search filter starts cleared on reopen too.
+        sStorage->searchFilterType = SEARCH_FILTER_NONE;
+        sStorage->searchFilterValue = 0;
         sStorage->taskId = CreateTask(Task_InitPokeStorage, 3);
         SetMainCallback2(CB2_PokeStorage);
     }
@@ -3847,9 +3889,230 @@ static void Task_HandleBoxOptions(u8 taskId)
             ClearBottomWindow();
             SetPokeStorageTask(Task_JumpBox);
             break;
+        case MENU_SEARCH:
+            PlaySE(SE_SELECT);
+            ClearBottomWindow();
+            SetPokeStorageTask(Task_HandleSearch);
+            break;
         }
         break;
     }
+}
+
+// Veritas: Search filter — top-level criterion picker.
+// Submenu entries: SHINY / SPECIES (uses cursor mon's species) / TYPE
+// (opens type picker) / MARK (opens mark picker) / CLEAR / CANCEL.
+// SHINY and CLEAR apply immediately; SPECIES reads the mon under the
+// cursor and applies; TYPE and MARK drop into a value picker task.
+static void Task_HandleSearch(u8 taskId)
+{
+    switch (sStorage->state)
+    {
+    case 0:
+        PrintMessage(MSG_WHAT_YOU_DO);
+        InitMenu();
+        SetMenuText(MENU_SEARCH_SHINY);
+        SetMenuText(MENU_SEARCH_SPECIES);
+        SetMenuText(MENU_SEARCH_TYPE);
+        SetMenuText(MENU_SEARCH_MARK);
+        SetMenuText(MENU_SEARCH_CLEAR);
+        SetMenuText(MENU_CANCEL);
+        AddMenu();
+        sStorage->state++;
+        break;
+    case 1:
+        if (IsMenuLoading())
+            return;
+        sStorage->state++;
+    case 2:
+        switch (HandleMenuInput())
+        {
+        case MENU_B_PRESSED:
+        case MENU_CANCEL:
+            AnimateBoxScrollArrows(TRUE);
+            ClearBottomWindow();
+            SetPokeStorageTask(Task_PokeStorageMain);
+            break;
+        case MENU_SEARCH_SHINY:
+            PlaySE(SE_SELECT);
+            sStorage->searchFilterType = SEARCH_FILTER_SHINY;
+            sStorage->searchFilterValue = 0;
+            ApplySearchFilterToVisibleBox();
+            AnimateBoxScrollArrows(TRUE);
+            ClearBottomWindow();
+            SetPokeStorageTask(Task_PokeStorageMain);
+            break;
+        case MENU_SEARCH_SPECIES:
+            PlaySE(SE_SELECT);
+            // Uses the species of the mon currently under the cursor.
+            // If the cursor isn't over a real mon (empty slot or sitting
+            // on the box title), leave the filter untouched and just
+            // close the menu — applying a "species == 0" filter would
+            // hide everything which isn't what the player wanted.
+            {
+                u16 cursorSpecies = GetSpeciesAtCursorPosition();
+                if (cursorSpecies != SPECIES_NONE)
+                {
+                    sStorage->searchFilterType = SEARCH_FILTER_SPECIES;
+                    sStorage->searchFilterValue = cursorSpecies;
+                    ApplySearchFilterToVisibleBox();
+                }
+            }
+            AnimateBoxScrollArrows(TRUE);
+            ClearBottomWindow();
+            SetPokeStorageTask(Task_PokeStorageMain);
+            break;
+        case MENU_SEARCH_TYPE:
+            PlaySE(SE_SELECT);
+            // Uses the primary type of the mon under the cursor. The
+            // match predicate checks both type1 and type2 against the
+            // chosen value, so picking a dual-type mon's primary still
+            // catches single-types of that type AND dual-types sharing
+            // it. Empty cursor slot is a no-op (same logic as SPECIES).
+            {
+                u16 cursorSpecies = GetSpeciesAtCursorPosition();
+                if (cursorSpecies != SPECIES_NONE)
+                {
+                    sStorage->searchFilterType = SEARCH_FILTER_TYPE;
+                    sStorage->searchFilterValue = gSpeciesInfo[cursorSpecies].types[0];
+                    ApplySearchFilterToVisibleBox();
+                }
+            }
+            AnimateBoxScrollArrows(TRUE);
+            ClearBottomWindow();
+            SetPokeStorageTask(Task_PokeStorageMain);
+            break;
+        case MENU_SEARCH_MARK:
+            PlaySE(SE_SELECT);
+            ClearBottomWindow();
+            SetPokeStorageTask(Task_HandleSearchMarkPick);
+            break;
+        case MENU_SEARCH_CLEAR:
+            PlaySE(SE_SELECT);
+            sStorage->searchFilterType = SEARCH_FILTER_NONE;
+            sStorage->searchFilterValue = 0;
+            ApplySearchFilterToVisibleBox();
+            AnimateBoxScrollArrows(TRUE);
+            ClearBottomWindow();
+            SetPokeStorageTask(Task_PokeStorageMain);
+            break;
+        }
+        break;
+    }
+}
+
+// Veritas: Search filter — mark picker submenu. 4 marks; the result
+// is a bitmask (1 << markIndex) matching MON_DATA_MARKINGS layout.
+static void Task_HandleSearchMarkPick(u8 taskId)
+{
+    switch (sStorage->state)
+    {
+    case 0:
+        PrintMessage(MSG_WHAT_YOU_DO);
+        InitMenu();
+        SetMenuText(MENU_MARK_CIRCLE);
+        SetMenuText(MENU_MARK_SQUARE);
+        SetMenuText(MENU_MARK_TRIANGLE);
+        SetMenuText(MENU_MARK_HEART);
+        SetMenuText(MENU_CANCEL);
+        AddMenu();
+        sStorage->state++;
+        break;
+    case 1:
+        if (IsMenuLoading())
+            return;
+        sStorage->state++;
+    case 2:
+        {
+            int input = HandleMenuInput();
+            if (input == MENU_B_PRESSED || input == MENU_CANCEL)
+            {
+                AnimateBoxScrollArrows(TRUE);
+                ClearBottomWindow();
+                SetPokeStorageTask(Task_PokeStorageMain);
+            }
+            else if (input >= MENU_MARK_CIRCLE && input <= MENU_MARK_HEART)
+            {
+                PlaySE(SE_SELECT);
+                sStorage->searchFilterType = SEARCH_FILTER_MARK;
+                sStorage->searchFilterValue = 1 << (input - MENU_MARK_CIRCLE);
+                ApplySearchFilterToVisibleBox();
+                AnimateBoxScrollArrows(TRUE);
+                ClearBottomWindow();
+                SetPokeStorageTask(Task_PokeStorageMain);
+            }
+        }
+        break;
+    }
+}
+
+// Veritas: Search filter — visual update.
+// Walks every slot in the current box and sets the OBJ blend mode on
+// each mon icon. Dimming uses the same ST_OAM_OBJ_BLEND mode the
+// move-items mode uses for itemless mons, so a mon is dimmed if EITHER
+// the search filter is active and the mon doesn't match, OR the player
+// opened the PC in item-move mode and the mon has no held item. Means
+// clearing the search filter correctly resets icons even when the user
+// is also in item-move mode.
+static void ApplySearchFilterToVisibleBox(void)
+{
+    u8 i;
+    u8 currentBox;
+    bool32 filterActive;
+    bool32 itemMode;
+    bool32 dim;
+
+    currentBox = StorageGetCurrentBox();
+    filterActive = (sStorage->searchFilterType != SEARCH_FILTER_NONE);
+    itemMode = (sStorage->boxOption == OPTION_MOVE_ITEMS);
+
+    for (i = 0; i < IN_BOX_COUNT; i++)
+    {
+        if (sStorage->boxMonsSprites[i] == NULL)
+            continue;
+        dim = FALSE;
+        if (filterActive && !DoesBoxMonMatchSearchFilter(currentBox, i))
+            dim = TRUE;
+        if (itemMode && GetBoxMonDataAt(currentBox, i, MON_DATA_HELD_ITEM) == ITEM_NONE)
+            dim = TRUE;
+        sStorage->boxMonsSprites[i]->oam.objMode = dim ? ST_OAM_OBJ_BLEND : ST_OAM_OBJ_NORMAL;
+    }
+}
+
+// Veritas: Search filter — predicate. Returns TRUE if the mon at
+// (boxId, boxPosition) matches the active filter. Empty slots and
+// eggs never match.
+static bool32 DoesBoxMonMatchSearchFilter(u8 boxId, u8 boxPosition)
+{
+    u16 species;
+    u32 personality;
+    u32 otId;
+    u32 shinyValue;
+    u8 markings;
+
+    species = GetBoxMonDataAt(boxId, boxPosition, MON_DATA_SPECIES_OR_EGG);
+    if (species == SPECIES_NONE || species == SPECIES_EGG)
+        return FALSE;
+    if (GetBoxMonDataAt(boxId, boxPosition, MON_DATA_IS_EGG))
+        return FALSE;
+
+    switch (sStorage->searchFilterType)
+    {
+    case SEARCH_FILTER_SHINY:
+        personality = GetBoxMonDataAt(boxId, boxPosition, MON_DATA_PERSONALITY);
+        otId        = GetBoxMonDataAt(boxId, boxPosition, MON_DATA_OT_ID);
+        shinyValue  = (HIHALF(otId) ^ LOHALF(otId)) ^ (HIHALF(personality) ^ LOHALF(personality));
+        return shinyValue < SHINY_ODDS;
+    case SEARCH_FILTER_SPECIES:
+        return species == sStorage->searchFilterValue;
+    case SEARCH_FILTER_TYPE:
+        return gSpeciesInfo[species].types[0] == sStorage->searchFilterValue
+            || gSpeciesInfo[species].types[1] == sStorage->searchFilterValue;
+    case SEARCH_FILTER_MARK:
+        markings = GetBoxMonDataAt(boxId, boxPosition, MON_DATA_MARKINGS);
+        return (markings & sStorage->searchFilterValue) != 0;
+    }
+    return FALSE;
 }
 
 static void Task_HandleWallpapers(u8 taskId)
@@ -5054,6 +5317,10 @@ static void InitBoxMonSprites(u8 boxId)
                 sStorage->boxMonsSprites[boxPosition]->oam.objMode = ST_OAM_OBJ_BLEND;
         }
     }
+    // Veritas: re-apply search filter on every box-icon spawn so it
+    // persists across box switches without the player having to reopen
+    // the search menu.
+    ApplySearchFilterToVisibleBox();
 }
 
 static void CreateBoxMonIconAtPos(u8 boxPosition)
@@ -5068,6 +5335,11 @@ static void CreateBoxMonIconAtPos(u8 boxPosition)
 
         sStorage->boxMonsSprites[boxPosition] = CreateMonIconSprite(species, personality, x, y, 2, 19 - (boxPosition % IN_BOX_COLUMNS));
         if (sStorage->boxOption == OPTION_MOVE_ITEMS)
+            sStorage->boxMonsSprites[boxPosition]->oam.objMode = ST_OAM_OBJ_BLEND;
+        // Veritas: respect active search filter when a single mon icon
+        // is re-spawned (e.g. after a withdraw/deposit/shift refresh).
+        else if (sStorage->searchFilterType != SEARCH_FILTER_NONE
+              && !DoesBoxMonMatchSearchFilter(StorageGetCurrentBox(), boxPosition))
             sStorage->boxMonsSprites[boxPosition]->oam.objMode = ST_OAM_OBJ_BLEND;
     }
 }
@@ -8216,6 +8488,7 @@ static void AddBoxOptionsMenu(void)
     SetMenuText(MENU_JUMP);
     SetMenuText(MENU_WALLPAPER);
     SetMenuText(MENU_NAME);
+    SetMenuText(MENU_SEARCH);
     SetMenuText(MENU_CANCEL);
 }
 
@@ -8580,6 +8853,17 @@ static const u8 *const sMenuTexts[] =
     [MENU_JUMP]       = gPCText_Jump,
     [MENU_WALLPAPER]  = gPCText_Wallpaper,
     [MENU_NAME]       = gPCText_Name,
+    // Veritas: PC search filter menu entries.
+    [MENU_SEARCH]            = gPCText_Search,
+    [MENU_SEARCH_SHINY]      = gPCText_SearchShiny,
+    [MENU_SEARCH_SPECIES]    = gPCText_SearchSpecies,
+    [MENU_SEARCH_TYPE]       = gPCText_SearchType,
+    [MENU_SEARCH_MARK]       = gPCText_SearchMark,
+    [MENU_SEARCH_CLEAR]      = gPCText_SearchClear,
+    [MENU_MARK_CIRCLE]       = gPCText_MarkCircle,
+    [MENU_MARK_SQUARE]       = gPCText_MarkSquare,
+    [MENU_MARK_TRIANGLE]     = gPCText_MarkTriangle,
+    [MENU_MARK_HEART]        = gPCText_MarkHeart,
     [MENU_TAKE]       = gPCText_Take,
     [MENU_GIVE]       = gPCText_Give,
     [MENU_GIVE_2]     = gPCText_Give,
