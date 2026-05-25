@@ -1088,13 +1088,13 @@ const struct BattleFrontierTrainer gBattleFrontierTrainers[FRONTIER_TRAINERS_COU
         .speechLose = {EC_WORD_BREAK, EC_WORD_DOWN, EC_MOVE2(DIVE), EC_WORD_TIME, EC_WORD_FOR, EC_WORD_ME},
         .monSet = gBattleFrontierTrainerMons_Zackary
     },
-    [FRONTIER_TRAINER_GABRIEL] = {
+    [FRONTIER_TRAINER_KYLE] = {
         .facilityClass = FACILITY_CLASS_COLLECTOR,
-        .trainerName = _("GABRIEL"),
+        .trainerName = _("KYLE"),
         .speechBefore = {EC_MOVE2(POUND), EC_WORD_THE, EC_WORD_THICK_FAT, EC_WORD_ON, EC_WORD_MY, EC_MOVE2(BELLY_DRUM)},
         .speechWin = {EC_MOVE2(POUND), EC_WORD_MY, EC_MOVE2(BELLY_DRUM), EC_MOVE2(POUND), EC_WORD_MY, EC_MOVE2(BELLY_DRUM)},
         .speechLose = {EC_WORD_MY, EC_MOVE2(BELLY_DRUM), EC_WORD_WAS, EC_WORD_TOO_WEAK, EC_WORD_ELLIPSIS, EC_EMPTY_WORD},
-        .monSet = gBattleFrontierTrainerMons_Gabriel
+        .monSet = gBattleFrontierTrainerMons_Kyle
     },
     [FRONTIER_TRAINER_EMILY] = {
         .facilityClass = FACILITY_CLASS_PARASOL_LADY,
