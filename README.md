@@ -75,8 +75,6 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 * Link battles now open with the same dramatic **VS mugshot transition** the Elite Four/Champion fights use, replacing the default cable-club spiral wipe.
 * The mugshot dynamically pulls each peer's trainer pic from `gLinkPlayers`, so you actually see your opponent's face (Brendan / May / RS variants depending on their unlocked style).
 * In **multi battles** (4-player Lv50 Multi), the transition shows both opposing trainers side-by-side and labels them clearly.
-* The cutscene background colors are picked per-battle-scene (red/blue/green clashing pairs), so each battle scene has its own visual identity even when the same trainers are matched up.
-* **Battle scene resolution between peers**: when players pick different scenes for the same match, the engine deterministically resolves whose pick wins by hashing each peer's pick with the shared RTC seed. So picking the "same" scene with the same friends across multiple sessions does NOT always pick the same player's choice — it's truly random across runs.
 * The cutscene runs in sync with the battle music — the song starts the moment all players are in place, mugshots fire on-beat.
 
 #### Lv 50 Cable Club Battle Modes
@@ -85,6 +83,19 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 * Pokémon above Lv50 are temporarily scaled down for the duration of the battle and restored to their original levels afterward — no need for a competitive box.
 * Works on both wired and wireless link.
 * The same scale-don't-reject behavior applies to **Lv50 Battle Frontier** (Tower / Dome / Arena / Palace / Pike). Originals restored at challenge end via `LoadPlayerParty` from `gSaveBlock1Ptr`. Battle Pyramid Lv50 keeps the vanilla "reject high-level mons at team-select" behavior — its between-floor `SavePlayerParty` flow doesn't go through the swap-and-restore pattern other facilities use, and persisting a capped party to flash would permanently reduce levels.
+
+#### Battle Frontier Lv. 100 Mode
+
+* "Open Level" mode in the Battle Frontier is renamed to **Lv. 100** and now actually normalizes every Pokémon up to Lv100 for the run (the symmetric counterpart of Lv50 scaling).
+* All party originals are restored at challenge end, the same swap-and-restore pattern Lv50 uses.
+* Works across all eligible facilities (Tower / Dome / Arena / Palace / Pike). Battle Pyramid skipped for the same reason as Lv50 above.
+
+#### Battle Frontier Elite Trainers
+
+* On the **last battle of any Lv. 100 challenge run** once your streak is **14 or higher**, there's a **12.5% chance** the opponent is one of 5 hand-built elite trainers (Gabriel / Niji / Emeline / Nicolas / Yann) instead of a random Frontier roster pick.
+* Each elite has their own dialog (encounter, win, lose) and a curated 4-mon pool with Gen-3-legal moves, EVs, natures, and held items. The team-fill still picks 3 of 4 (2 for Multi) at random for variety across runs.
+* Elite trainers are excluded from Frontier Brain battles — the brain still gets their dedicated slot.
+* Lv50 mode skips them entirely because their mons sit above the FRONTIER_MONS_HIGH_TIER cutoff that gates Lv50 team-fill.
 
 #### Outfit and Style Sharing in Link
 
@@ -260,6 +271,18 @@ The full unlockable list (27 outfits): Aqua, Brazil, Chikorita, Cyndaquil, Dark,
 * Stops automatically when the party is full or the box has no more eggs
 * Only appears when the cursor is on an egg, the party has at least one open slot, and you are not already holding a Pokémon
 
+#### PC Search Filter
+
+* Selecting the box title bar in the PC now shows a **SEARCH** option alongside JUMP / WALLPAPER / NAME
+* Four criteria, one at a time:
+  * **SHINY** — highlights every shiny in the current box
+  * **SPECIES** — uses the species of the Pokémon under the cursor (find more like this one)
+  * **TYPE** — uses the primary type of the Pokémon under the cursor (matches mons whose type1 OR type2 is the chosen type)
+  * **MARK** — pick one of the 4 mark shapes (CIRCLE / SQUARE / TRIANGLE / HEART); matches any mon tagged with that mark
+* Non-matching Pokémon icons are **dimmed** using the same semi-transparent treatment that move-items mode uses for itemless mons
+* Filter **persists across box switches** until you pick **CLEAR** or close the PC — flip through every box to scan for matches
+* Coexists cleanly with item-move mode (a mon stays dimmed if either condition applies)
+
 #### Unlockable PC Box Wallpapers
 
 * Added 29 new custom wallpapers organized into 7 themed categories
@@ -320,6 +343,13 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 
 * The gift Beldum in Steven's house now has "STEVEN" as its OT name, male OT gender, and a unique trainer ID
 * Makes the Beldum feel like a genuine gift from Steven rather than a self-caught Pokémon
+
+#### Cookie the Shiny Zigzagoon (Battle Frontier Trade)
+
+* A Beauty NPC named Emeline at the Battle Frontier Pokémon Center will trade her boyfriend Gabriel's shiny Zigzagoon ("Cookie") for **any** shiny Pokémon you bring her.
+* Cookie comes with a curated moveset (Extreme Speed / Guillotine / Thief / Yawn), perfect IVs across the board, a Naughty nature, a Lava Cookie held item, and a hidden ability override (Baby Charm) detected by name + species combo at every ability-lookup site.
+* After the trade, the floating shiny next to Emeline becomes whatever shiny species you traded in — visually different every playthrough.
+* The Name Rater refuses to rename Cookie ("such a perfect name").
 
 #### Champion Exclsior (Post-Game)
 
