@@ -25,6 +25,8 @@
 #include "mystery_gift.h"
 #include "match_call.h"
 #include "menu.h"
+#include "naming_screen.h"
+#include "item.h"
 #include "overworld.h"
 #include "party_menu.h"
 #include "pokeblock.h"
@@ -5178,5 +5180,149 @@ void UpdateRoute117WandererFlags(void)
         FlagClear(FLAG_HIDE_ROUTE117_AZUMARILL);
     else
         FlagSet(FLAG_HIDE_ROUTE117_AZUMARILL);
+}
+
+// ============================================================
+// Tournament prize codes
+// ============================================================
+// Redeemed at the Cable Club attendant (TOURNAMENT PRIZE menu option).
+// Codes are generated offline with tools/make_prize_code.py and bind
+// (visible trainer ID, prize ID, salt), so a code only works on the
+// winner's save, and each prize ID redeems once per save (bitmask in
+// VAR_TOURNEY_PRIZES_REDEEMED). Code format: 8 characters from a
+// 32-letter alphabet — [0] = prize ID, [1..7] = a 35-bit keyed MAC.
+// To add or change prizes, edit sTournamentPrizes below and hand out
+// codes for the new ID. To invalidate ALL outstanding codes, change the
+// salts here and in the tool, then rebuild.
+
+#define TOURNEY_CODE_LENGTH 8
+#define TOURNEY_PRIZE_COUNT 16
+#define TOURNEY_SALT_1 0x56455249 // "VERI" — must match tools/make_prize_code.py
+#define TOURNEY_SALT_2 0x54415321 // "TAS!"
+
+static const struct
+{
+    u16 itemId;
+    u8 quantity;
+} sTournamentPrizes[TOURNEY_PRIZE_COUNT] =
+{
+    [1] = {ITEM_GOLDEN_CAP, 1},
+    [2] = {ITEM_MASTER_BALL, 1},
+    [3] = {ITEM_RARE_CANDY, 5},
+    // IDs 4-15 are open — add tournament prizes here.
+};
+
+// 32-character code alphabet (no I, O, 0 or 1 — too easy to misread).
+// Must match ALPHABET in tools/make_prize_code.py.
+static const u8 sTourneyCodeAlphabet[32] =
+{
+    CHAR_A, CHAR_B, CHAR_C, CHAR_D, CHAR_E, CHAR_F, CHAR_G, CHAR_H,
+    CHAR_J, CHAR_K, CHAR_L, CHAR_M, CHAR_N, CHAR_P, CHAR_Q, CHAR_R,
+    CHAR_S, CHAR_T, CHAR_U, CHAR_V, CHAR_W, CHAR_X, CHAR_Y, CHAR_Z,
+    CHAR_2, CHAR_3, CHAR_4, CHAR_5, CHAR_6, CHAR_7, CHAR_8, CHAR_9,
+};
+
+enum
+{
+    TOURNEY_CODE_INVALID,      // bad code / unknown prize
+    TOURNEY_CODE_OK,           // prize granted (item in 0x8004, qty in 0x8005)
+    TOURNEY_CODE_ALREADY_USED, // this prize ID was already redeemed
+    TOURNEY_CODE_NO_BAG_SPACE, // valid, but no room in the bag
+    TOURNEY_CODE_CANCELLED,    // player backed out of the naming screen
+};
+
+static u32 TourneyMix(u32 x)
+{
+    x ^= x >> 16;
+    x *= 0x7FEB352D;
+    x ^= x >> 15;
+    x *= 0x846CA68B;
+    x ^= x >> 16;
+    return x;
+}
+
+// Returns 0-31, or -1 if the character isn't in the code alphabet.
+// Lowercase input is accepted and treated as uppercase.
+static s32 TourneyCharToIndex(u8 c)
+{
+    s32 i;
+
+    if (c >= CHAR_a && c <= CHAR_z)
+        c -= CHAR_a - CHAR_A;
+    for (i = 0; i < 32; i++)
+    {
+        if (sTourneyCodeAlphabet[i] == c)
+            return i;
+    }
+    return -1;
+}
+
+static u16 RedeemTournamentCode(const u8 *code)
+{
+    s32 idx[TOURNEY_CODE_LENGTH];
+    u32 h1, h2, mac;
+    u32 prizeId;
+    u16 tid, redeemed, itemId, quantity;
+    s32 i;
+
+    if (code[0] == EOS)
+        return TOURNEY_CODE_CANCELLED;
+
+    for (i = 0; i < TOURNEY_CODE_LENGTH; i++)
+    {
+        idx[i] = TourneyCharToIndex(code[i]);
+        if (idx[i] < 0)
+            return TOURNEY_CODE_INVALID;
+    }
+    if (code[TOURNEY_CODE_LENGTH] != EOS)
+        return TOURNEY_CODE_INVALID;
+
+    prizeId = idx[0];
+    if (prizeId == 0 || prizeId >= TOURNEY_PRIZE_COUNT)
+        return TOURNEY_CODE_INVALID;
+    itemId = sTournamentPrizes[prizeId].itemId;
+    quantity = sTournamentPrizes[prizeId].quantity;
+    if (itemId == ITEM_NONE)
+        return TOURNEY_CODE_INVALID;
+
+    // Visible trainer ID — the 5-digit number on the Trainer Card.
+    tid = gSaveBlock2Ptr->playerTrainerId[0] | (gSaveBlock2Ptr->playerTrainerId[1] << 8);
+    h1 = TourneyMix(TOURNEY_SALT_1 ^ ((u32)tid << 8) ^ prizeId);
+    h2 = TourneyMix(h1 ^ TOURNEY_SALT_2);
+
+    mac = 0;
+    for (i = 1; i <= 6; i++)
+        mac |= (u32)idx[i] << (5 * (i - 1));
+    if (mac != (h1 & 0x3FFFFFFF))
+        return TOURNEY_CODE_INVALID;
+    if (idx[7] != (s32)(((h1 >> 30) ^ h2) & 31))
+        return TOURNEY_CODE_INVALID;
+
+    redeemed = VarGet(VAR_TOURNEY_PRIZES_REDEEMED);
+    if (redeemed & (1 << prizeId))
+        return TOURNEY_CODE_ALREADY_USED;
+
+    if (!CheckBagHasSpace(itemId, quantity))
+        return TOURNEY_CODE_NO_BAG_SPACE;
+
+    VarSet(VAR_TOURNEY_PRIZES_REDEEMED, redeemed | (1 << prizeId));
+    gSpecialVar_0x8004 = itemId;
+    gSpecialVar_0x8005 = quantity;
+    return TOURNEY_CODE_OK;
+}
+
+static void CB2_HandleTournamentCode(void)
+{
+    gSpecialVar_Result = RedeemTournamentCode(gStringVar2);
+    gFieldCallback = FieldCB_ContinueScriptHandleMusic;
+    SetMainCallback2(CB2_ReturnToField);
+}
+
+// Opens the Walda-style naming screen for prize code entry. The waiting
+// script resumes with VAR_RESULT set to a TOURNEY_CODE_* value.
+void TournamentPrize_DoCodeEntry(void)
+{
+    gStringVar2[0] = EOS;
+    DoNamingScreen(NAMING_SCREEN_WALDA, gStringVar2, 0, 0, 0, CB2_HandleTournamentCode);
 }
 

@@ -522,6 +522,7 @@ static const struct MenuAction MultichoiceList_CableClubNoRecordMix[] =
 {
     {gText_TradeCenter},
     {gText_Colosseum},
+    {gText_TournamentPrize},
     {gText_Exit},
 };
 
@@ -530,6 +531,7 @@ static const struct MenuAction MultichoiceList_CableClubWithRecordMix[] =
     {gText_TradeCenter},
     {gText_Colosseum},
     {gText_RecordCorner},
+    {gText_TournamentPrize},
     {gText_Exit},
 };
 

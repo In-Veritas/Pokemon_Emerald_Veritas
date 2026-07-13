@@ -565,3 +565,4 @@ gSpecials::
 	def_special Fashionista_UnlockOutfit
 	def_special Fashionista_GetTip
 	def_special UpdateRoute117WandererFlags
+	def_special TournamentPrize_DoCodeEntry

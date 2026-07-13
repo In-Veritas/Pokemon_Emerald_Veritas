@@ -497,3 +497,26 @@ CableClub_Text_ExplainWirelessClub:
 CableClub_Text_HopeYouEnjoyWirelessSystem:
 	.string "I hope you enjoy the Wireless\n"
 	.string "Communication System.$"
+
+CableClub_Text_TournamentPrizeAskCode:
+	.string "Oh! You have a TOURNAMENT PRIZE\n"
+	.string "code?\p"
+	.string "Please enter the eight-character\n"
+	.string "code exactly as you received it.$"
+
+CableClub_Text_TournamentPrizeWinner:
+	.string "That's a winning code!\p"
+	.string "Congratulations, champ!$"
+
+CableClub_Text_TournamentPrizeInvalid:
+	.string "I'm sorry, that code doesn't seem\n"
+	.string "to be valid on this save.$"
+
+CableClub_Text_TournamentPrizeAlreadyUsed:
+	.string "You've already claimed that prize\n"
+	.string "on this save. Enjoy!$"
+
+CableClub_Text_TournamentPrizeNoRoom:
+	.string "Oh dear, your BAG is full.\p"
+	.string "Please make room, then come back\n"
+	.string "with your code.$"

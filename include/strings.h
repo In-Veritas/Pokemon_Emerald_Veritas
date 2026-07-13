@@ -1441,6 +1441,7 @@ extern const u8 gText_BlueTent[];
 extern const u8 gText_TradeCenter[];
 extern const u8 gText_Colosseum[];
 extern const u8 gText_RecordCorner[];
+extern const u8 gText_TournamentPrize[];
 extern const u8 gText_SingleBattle[];
 extern const u8 gText_DoubleBattle[];
 extern const u8 gText_MultiBattle[];

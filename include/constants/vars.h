@@ -103,7 +103,7 @@
 #define VAR_LAVARIDGE_TOWN_STATE                         0x4053
 #define VAR_CURRENT_SECRET_BASE                          0x4054 // was probably allocated for VAR_FALLARBOR_TOWN_STATE at one point
 #define VAR_VERDANTURF_TOWN_STATE                        0x4055 // Unused Var — was VAR_OVERWORLD_SPEEDUP (speedup feature removed); old saves may hold 0-3, clear before reuse
-#define VAR_PACIFIDLOG_TOWN_STATE                        0x4056 // Unused Var
+#define VAR_TOURNEY_PRIZES_REDEEMED                      0x4056 // Bitmask of redeemed tournament prize code IDs 1-15 (was unused VAR_PACIFIDLOG_TOWN_STATE)
 #define VAR_PETALBURG_CITY_STATE                         0x4057
 #define VAR_SLATEPORT_CITY_STATE                         0x4058
 #define VAR_MAUVILLE_CITY_STATE                          0x4059

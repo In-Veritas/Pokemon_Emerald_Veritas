@@ -108,6 +108,13 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 * The Record Corner and Trade Center also got dedicated themes (GSC Pewter/Saffron city theme).
 * Lilycove, Mossdeep, Sootopolis, and Pacifidlog Pokémon Centers play the Crystal Comm Center theme to feel like proper hub locations for online play.
 
+#### Tournament Prize Codes
+
+* The Cable Club attendant (first desk in every Pokémon Center 2F) now offers a **TOURNAMENT PRIZE** option in her service menu
+* Winners enter an **8-character prize code**; codes are generated offline with `tools/make_prize_code.py` from the winner's visible Trainer ID + a prize ID, so a code **only works on that winner's save**, and each prize ID redeems **once per save**
+* Prizes live in a small table in `field_specials.c` (seeded with Golden Cap, Master Ball, and Rare Candy ×5 as IDs 1-3; IDs 4-15 open) — adding a new prize is a one-line change
+* This replaces hardcoded name-based gifts as the tournament reward channel; changing the shared salt invalidates all outstanding codes
+
 #### Auto Record Mixing After Link Battles
 
 * After a normal 2P or 4P link battle ends, every player is asked **"Mix records with the linked players?"** on the post-battle screen. If **everyone** picks Yes, records mix immediately over the same link session — no walk to the Record Corner, no re-connecting.

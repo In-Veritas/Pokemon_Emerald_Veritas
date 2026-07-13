@@ -818,6 +818,7 @@ const u8 gText_ExpertTagMatch[] = _("EXPERT TAG MATCH");
 const u8 gText_TradeCenter[] = _("TRADE CENTER");
 const u8 gText_Colosseum[] = _("COLOSSEUM");
 const u8 gText_RecordCorner[] = _("RECORD CORNER");
+const u8 gText_TournamentPrize[] = _("TOURNAMENT PRIZE");
 const u8 gText_BerryCrush3[] = _("BERRY CRUSH");
 const u8 gText_EmptyLinkService[] = _(""); // Maybe Spin Trade?
 const u8 gText_Minigames[] = _("MINIGAMES");
