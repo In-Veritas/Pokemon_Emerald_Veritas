@@ -39,7 +39,8 @@ EWRAM_DATA static u16 sHatchedEggEggMoves[EGG_MOVES_ARRAY_COUNT] = {0};
 EWRAM_DATA static u16 sHatchedEggMotherMoves[MAX_MON_MOVES] = {0};
 
 // Toggle that flips on every 256-step hatch tick. Used to halve the effective
-// decrement rate for Latios/Latias eggs so they take ~100k steps to hatch.
+// decrement rate for legendary eggs (Latios/Latias, and anything born of a
+// Mew pairing with a legendary) so they take ~100k steps to hatch.
 // Reset on save load (ephemeral); the averaging-out across resets is harmless.
 EWRAM_DATA static u8 sLegendaryHatchTickParity = 0;
 
@@ -864,6 +865,41 @@ static void GiveVoltTackleIfLightBall(struct Pokemon *mon, struct DayCare *dayca
     }
 }
 
+// Gen 1-3 legendaries + mythicals. Used by the Mew universal-breeding rules:
+// Mew x legendary pairs breed at the legendary-pair rate, and any legendary
+// egg (not just Latios/Latias) hatches on the slow LEGENDARY_PAIR_EGG_CYCLES
+// schedule.
+static bool8 IsSpeciesLegendary(u16 species)
+{
+    switch (species)
+    {
+    case SPECIES_ARTICUNO:
+    case SPECIES_ZAPDOS:
+    case SPECIES_MOLTRES:
+    case SPECIES_MEWTWO:
+    case SPECIES_MEW:
+    case SPECIES_RAIKOU:
+    case SPECIES_ENTEI:
+    case SPECIES_SUICUNE:
+    case SPECIES_LUGIA:
+    case SPECIES_HO_OH:
+    case SPECIES_CELEBI:
+    case SPECIES_REGIROCK:
+    case SPECIES_REGICE:
+    case SPECIES_REGISTEEL:
+    case SPECIES_LATIAS:
+    case SPECIES_LATIOS:
+    case SPECIES_KYOGRE:
+    case SPECIES_GROUDON:
+    case SPECIES_RAYQUAZA:
+    case SPECIES_JIRACHI:
+    case SPECIES_DEOXYS:
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
+
 static u16 DetermineEggSpeciesAndParentSlots(struct DayCare *daycare, u8 *parentSlots)
 {
     u16 i;
@@ -873,7 +909,11 @@ static u16 DetermineEggSpeciesAndParentSlots(struct DayCare *daycare, u8 *parent
     for (i = 0; i < DAYCARE_MON_COUNT; i++)
     {
         species[i] = GetBoxMonData(&daycare->mons[i].mon, MON_DATA_SPECIES);
-        if (species[i] == SPECIES_DITTO)
+        // Veritas: Mew is a universal parent and slots exactly like Ditto —
+        // the partner takes the species-defining (mother) slot. This also
+        // guarantees the slots get initialized for Mew + male/genderless
+        // partners, which would otherwise fall through both branches.
+        if (species[i] == SPECIES_DITTO || species[i] == SPECIES_MEW)
         {
             parentSlots[0] = i ^ 1;
             parentSlots[1] = i;
@@ -907,8 +947,11 @@ static u16 DetermineEggSpeciesAndParentSlots(struct DayCare *daycare, u8 *parent
             eggSpecies = SPECIES_LATIAS;
     }
 
-    // Make Ditto the "mother" slot if the other daycare mon is male.
-    if (species[parentSlots[1]] == SPECIES_DITTO && GetBoxMonGender(&daycare->mons[parentSlots[0]].mon) != MON_FEMALE)
+    // Make Ditto/Mew the "mother" slot if the other daycare mon is male or
+    // genderless (e.g. Mew + Regirock), so the partner sits in the father
+    // slot for egg-move inheritance.
+    if ((species[parentSlots[1]] == SPECIES_DITTO || species[parentSlots[1]] == SPECIES_MEW)
+     && GetBoxMonGender(&daycare->mons[parentSlots[0]].mon) != MON_FEMALE)
     {
         u8 ditto = parentSlots[1];
         parentSlots[1] = parentSlots[0];
@@ -1009,7 +1052,7 @@ static void SetInitialEggData(struct Pokemon *mon, u16 species, struct DayCare *
     language = LANGUAGE_JAPANESE;
     SetMonData(mon, MON_DATA_POKEBALL, &ball);
     SetMonData(mon, MON_DATA_NICKNAME, sJapaneseEggNickname);
-    if (species == SPECIES_LATIOS || species == SPECIES_LATIAS)
+    if (IsSpeciesLegendary(species))
     {
         // Cap at 255 (u8 storage) and apply the slow-decrement gate during
         // hatching so the effective hatch time is well over 100k steps.
@@ -1059,7 +1102,7 @@ static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
         bool32 skipThisTick;
 
         // Flip the slow-hatch parity toggle every time the 256-step boundary
-        // is crossed. Latios/Latias eggs decrement only when the toggle is 0,
+        // is crossed. Legendary eggs decrement only when the toggle is 0,
         // halving their effective decrement rate.
         sLegendaryHatchTickParity ^= 1;
         skipThisTick = sLegendaryHatchTickParity;
@@ -1072,7 +1115,7 @@ static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
                 continue;
 
             eggSpecies = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES);
-            slowHatch = (eggSpecies == SPECIES_LATIOS || eggSpecies == SPECIES_LATIAS);
+            slowHatch = IsSpeciesLegendary(eggSpecies);
 
             eggCycles = GetMonData(&gPlayerParty[i], MON_DATA_FRIENDSHIP);
             if (eggCycles != 0)
@@ -1235,6 +1278,24 @@ static u8 GetDaycareCompatibilityScore(struct DayCare *daycare)
         (species[0] == SPECIES_DITTO || species[1] == SPECIES_DITTO))
     {
         return PARENTS_INCOMPATIBLE;
+    }
+
+    // Veritas: Mew is a universal parent — it pairs with ANY Pokémon,
+    // legendaries included, and the egg always comes from the partner's
+    // line (see DetermineEggSpeciesAndParentSlots). Mew + Ditto stays
+    // forbidden (two wildcards, no species to inherit); Mew + Mew works
+    // and yields a Mew egg. Legendary partners breed at the same tiny rate
+    // as the Latios/Latias pair; everyone else at low compatibility.
+    // Normal inheritance (IVs, nature, egg moves) applies unchanged.
+    if (species[0] == SPECIES_MEW || species[1] == SPECIES_MEW)
+    {
+        u16 partner = (species[0] == SPECIES_MEW) ? species[1] : species[0];
+
+        if (partner == SPECIES_DITTO)
+            return PARENTS_INCOMPATIBLE;
+        if (IsSpeciesLegendary(partner)) // includes Mew + Mew
+            return PARENTS_LEGENDARY_PAIR;
+        return PARENTS_LOW_COMPATIBILITY;
     }
 
     // check unbreedable egg group

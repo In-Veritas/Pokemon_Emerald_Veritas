@@ -462,6 +462,14 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 * Displays which box the egg was sent to
 * If PC boxes are also full, the egg stays at the daycare
 
+#### Mew Universal Breeding
+
+* **Mew can breed with ANY Pokémon — legendaries included.** Mew acts as a wildcard parent (a super-Ditto): the egg always comes from the partner's line (e.g. Mew + Salamence → Bagon egg, Mew + Groudon → Groudon egg)
+* All normal breeding rules still apply — IV inheritance (including the guaranteed 31-IV pass-down), nature, egg moves, incense babies
+* **Legendary eggs hatch on the slow schedule** (~100k+ steps), same as Latios/Latias pair eggs
+* Odds: Mew + legendary produces eggs at the same very rare ~1%-per-cycle rate as the Latios/Latias pair; Mew + regular Pokémon breeds at low compatibility
+* Mew + Mew yields a Mew egg; Mew + Ditto remains incompatible (two wildcards, nothing to inherit)
+
 #### Perfect IV Inheritance
 
 * Any stat where either daycare parent has a 31 IV is guaranteed to pass to the egg
