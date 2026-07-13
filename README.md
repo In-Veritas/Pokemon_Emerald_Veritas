@@ -738,6 +738,18 @@ The headline shinies of Pokémon Emerald Veritas. Each of the three superancient
       <b>Typhlosion</b><br>
       <sub>Purple body fur<br>(Gen 2 silver/gold/crystal design)</sub>
     </td>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_latias.png" alt="Shiny Latias" width="120"><br>
+      <b>Latias</b><br>
+      <sub>Blue body — wears her<br>brother LATIOS's colors</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_latios.png" alt="Shiny Latios" width="120"><br>
+      <b>Latios</b><br>
+      <sub>Red body — wears his<br>sister LATIAS's colors</sub>
+    </td>
   </tr>
 </table>
 
