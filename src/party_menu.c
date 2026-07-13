@@ -7005,6 +7005,109 @@ void ItemUseCB_MorphPowder(u8 taskId, TaskFunc task)
 #undef tMonId
 #undef tOldFunc
 
+#define tState   data[0]
+#define tMonId   data[3]
+#define tOldFunc 4
+
+// Golden Cap: maxes all six IVs of one Pokémon (real IVs, so stats and
+// Hidden Power follow). No effect on eggs or already-perfect Pokémon.
+void Task_GoldenCap(u8 taskId)
+{
+    static const u8 askText[] = _("Draw out {STR_VAR_1}'s\nfull inner potential?");
+    static const u8 doneText[] = _("{STR_VAR_1}'s potential was\nfully drawn out!{PAUSE_UNTIL_PRESS}");
+    s16 *data = gTasks[taskId].data;
+    u32 iv;
+    u16 i;
+    bool8 allMax;
+
+    switch (tState)
+    {
+    case 0:
+        allMax = TRUE;
+        for (i = MON_DATA_HP_IV; i <= MON_DATA_SPDEF_IV; i++)
+        {
+            if (GetMonData(&gPlayerParty[tMonId], i, NULL) < MAX_PER_STAT_IVS)
+                allMax = FALSE;
+        }
+        if (allMax || GetMonData(&gPlayerParty[tMonId], MON_DATA_IS_EGG, NULL))
+        {
+            gPartyMenuUseExitCallback = FALSE;
+            PlaySE(SE_SELECT);
+            DisplayPartyMenuMessage(gText_WontHaveEffect, 1);
+            ScheduleBgCopyTilemapToVram(2);
+            gTasks[taskId].func = Task_ClosePartyMenuAfterText;
+            return;
+        }
+        gPartyMenuUseExitCallback = TRUE;
+        GetMonNickname(&gPlayerParty[tMonId], gStringVar1);
+        StringExpandPlaceholders(gStringVar4, askText);
+        PlaySE(SE_SELECT);
+        DisplayPartyMenuMessage(gStringVar4, 1);
+        ScheduleBgCopyTilemapToVram(2);
+        tState++;
+        break;
+    case 1:
+        if (!IsPartyMenuTextPrinterActive())
+        {
+            PartyMenuDisplayYesNoMenu();
+            tState++;
+        }
+        break;
+    case 2:
+        switch (Menu_ProcessInputNoWrapClearOnChoose())
+        {
+        case 0:
+            tState++;
+            break;
+        case 1:
+        case MENU_B_PRESSED:
+            gPartyMenuUseExitCallback = FALSE;
+            PlaySE(SE_SELECT);
+            ScheduleBgCopyTilemapToVram(2);
+            ClearStdWindowAndFrameToTransparent(6, 0);
+            ClearWindowTilemap(6);
+            DisplayPartyMenuStdMessage(5);
+            gTasks[taskId].func = (void *)GetWordTaskArg(taskId, tOldFunc);
+            return;
+        }
+        break;
+    case 3:
+        PlaySE(SE_USE_ITEM);
+        iv = MAX_PER_STAT_IVS;
+        for (i = MON_DATA_HP_IV; i <= MON_DATA_SPDEF_IV; i++)
+            SetMonData(&gPlayerParty[tMonId], i, &iv);
+        CalculateMonStats(&gPlayerParty[tMonId]);
+        GetMonNickname(&gPlayerParty[tMonId], gStringVar1);
+        StringExpandPlaceholders(gStringVar4, doneText);
+        DisplayPartyMenuMessage(gStringVar4, 1);
+        ScheduleBgCopyTilemapToVram(2);
+        tState++;
+        break;
+    case 4:
+        if (!IsPartyMenuTextPrinterActive())
+            tState++;
+        break;
+    case 5:
+        RemoveBagItem(gSpecialVar_ItemId, 1);
+        gTasks[taskId].func = Task_ClosePartyMenu;
+        break;
+    }
+}
+
+void ItemUseCB_GoldenCap(u8 taskId, TaskFunc task)
+{
+    s16 *data = gTasks[taskId].data;
+
+    tState = 0;
+    tMonId = gPartyMenu.slotId;
+    SetWordTaskArg(taskId, tOldFunc, (uintptr_t)(gTasks[taskId].func));
+    gTasks[taskId].func = Task_GoldenCap;
+}
+
+#undef tState
+#undef tMonId
+#undef tOldFunc
+
 void ItemUseCB_PokeBall(u8 taskId, TaskFunc task)
 {
     struct Pokemon *mon = &gPlayerParty[gPartyMenu.slotId];

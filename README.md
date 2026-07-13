@@ -387,6 +387,14 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * The change is stored within existing unused Pokémon data bits — no save structure changes
 * Safe for trading and Pokémon Box — other games simply ignore the flag and show the original gender
 
+#### Golden Cap
+
+* A new item that **maxes all six IVs** of one party Pokémon to 31 — like Gen 7's Gold Bottle Cap, except it changes the real IVs, so stats, Hidden Power and everything downstream follow
+* Used from the bag on a party Pokémon; asks for confirmation, then recalculates stats immediately
+* Has no effect on eggs or Pokémon whose IVs are already perfect (and isn't consumed)
+* Reuses the Nugget icon and an unused item slot — no new graphics, no save structure changes
+* Not yet distributed in-game — available via the debug menu for testing; place it in shops/events as desired
+
 #### Wild Held Item Changes
 
 * **Clamperl**: 35% chance to hold a Pearl (rare slot is 50/50 Deep Sea Scale or Deep Sea Tooth)

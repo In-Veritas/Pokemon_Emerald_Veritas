@@ -87,11 +87,12 @@ Debug_Script_5::
 	release
 	end
 
-@ Debug script to test regular shiny sparkles (blue in debug) — gives shiny Ralts + Morph Powder
+@ Debug script to test regular shiny sparkles (blue in debug) — gives shiny Ralts + Morph Powder + Golden Cap
 Debug_Script_6::
 	setflag FLAG_SHINY_CREATION
 	givemon SPECIES_RALTS, 25
 	additem ITEM_MORPH_POWDER, 5
+	additem ITEM_GOLDEN_CAP, 5
 	msgbox Debug_Text_RegularShinyGiven, MSGBOX_DEFAULT
 	release
 	end

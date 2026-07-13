@@ -1680,4 +1680,9 @@ static const u8 sMorphPowderDesc[] = _(
     "A mysterious powder\n"
     "that changes a\n"
     "POKéMON's gender.");
+
+static const u8 sGoldenCapDesc[] = _(
+    "Draws out the full\n"
+    "inner potential of\n"
+    "one POKéMON.");
     

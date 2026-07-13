@@ -1176,6 +1176,12 @@ void ItemUseOutOfBattle_MorphPowder(u8 taskId)
     SetUpItemUseCallback(taskId);
 }
 
+void ItemUseOutOfBattle_GoldenCap(u8 taskId)
+{
+    gItemUseCB = ItemUseCB_GoldenCap;
+    SetUpItemUseCallback(taskId);
+}
+
 void ItemUseOutOfBattle_PokeBall(u8 taskId)
 {
     gItemUseCB = ItemUseCB_PokeBall;

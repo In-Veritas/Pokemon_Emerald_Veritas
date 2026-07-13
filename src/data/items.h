@@ -4841,4 +4841,17 @@ const struct Item gItems[] =
         .type = ITEM_USE_PARTY_MENU,
         .fieldUseFunc = ItemUseOutOfBattle_MorphPowder,
     },
+
+    // Golden Cap
+
+    [ITEM_GOLDEN_CAP] =
+    {
+        .name = _("GOLDEN CAP"),
+        .itemId = ITEM_GOLDEN_CAP,
+        .price = 20000,
+        .description = sGoldenCapDesc,
+        .pocket = POCKET_ITEMS,
+        .type = ITEM_USE_PARTY_MENU,
+        .fieldUseFunc = ItemUseOutOfBattle_GoldenCap,
+    },
 };

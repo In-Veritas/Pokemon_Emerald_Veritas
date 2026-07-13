@@ -452,7 +452,10 @@
 // Morph Powder
 #define ITEM_MORPH_POWDER        401
 
-#define ITEMS_COUNT              402
+// Golden Cap
+#define ITEM_GOLDEN_CAP          402
+
+#define ITEMS_COUNT              403
 
 // A special item id associated with "Cancel"/"Exit" etc. in a list of items or decorations
 // Its icon is defined at ITEMS_COUNT as the "return to field" arrow
