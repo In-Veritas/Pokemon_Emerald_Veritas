@@ -27,6 +27,7 @@ u16 ConvertDateToDayCount(u8 year, u8 month, u8 day);
 u16 RtcGetDayCount(struct SiiRtcInfo *rtc);
 void RtcInit(void);
 u16 RtcGetErrorStatus(void);
+bool8 RtcIsClockNotRunning(void);
 void RtcGetInfo(struct SiiRtcInfo *rtc);
 void RtcGetDateTime(struct SiiRtcInfo *rtc);
 void RtcGetStatus(struct SiiRtcInfo *rtc);

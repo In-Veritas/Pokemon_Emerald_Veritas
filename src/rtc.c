@@ -8,6 +8,7 @@ static u16 sErrorStatus;
 static struct SiiRtcInfo sRtc;
 static u8 sProbeResult;
 static u16 sSavedIme;
+static struct SiiRtcInfo sRtcBootSnapshot;
 
 // iwram common
 struct Time gLocalTime;
@@ -116,11 +117,47 @@ void RtcInit(void)
 
     RtcGetRawInfo(&sRtc);
     sErrorStatus = RtcCheckInfo(&sRtc);
+    // Snapshot the raw boot time so RtcIsClockNotRunning() can later check
+    // that the clock has actually advanced.
+    sRtcBootSnapshot = sRtc;
 }
 
 u16 RtcGetErrorStatus(void)
 {
     return sErrorStatus;
+}
+
+// Detects the dead-clock cases the battery-dry check misses. Returns TRUE
+// when the clock cannot be trusted to advance:
+//  - the chip never answered the boot probe (RTC_INIT_ERROR). Common on
+//    bootleg cartridges, which usually have no real RTC — probe failure is
+//    NOT in RTC_ERR_FLAG_MASK, so vanilla stays silent about it.
+//  - the chip answers with valid-looking data that has not advanced since
+//    RtcInit() (dead oscillator, or a fake RTC returning a constant).
+// Only call this after enough real time has passed since boot for a working
+// clock to have ticked — the main menu appears several seconds after
+// RtcInit(), so it qualifies. Errors in RTC_ERR_FLAG_MASK return FALSE here
+// because the vanilla battery-dry message already covers them.
+// Known limit: emulator fast-forward can compress boot -> main menu to under
+// one host second and trip this on a healthy host-clock RTC. The warning is
+// dismissable and the window is narrow, so we accept the false positive.
+bool8 RtcIsClockNotRunning(void)
+{
+    struct SiiRtcInfo now;
+
+    if (sErrorStatus & RTC_INIT_ERROR)
+        return TRUE;
+
+    if (sErrorStatus & RTC_ERR_FLAG_MASK)
+        return FALSE;
+
+    RtcGetRawInfo(&now);
+    return now.second == sRtcBootSnapshot.second
+        && now.minute == sRtcBootSnapshot.minute
+        && now.hour == sRtcBootSnapshot.hour
+        && now.day == sRtcBootSnapshot.day
+        && now.month == sRtcBootSnapshot.month
+        && now.year == sRtcBootSnapshot.year;
 }
 
 void RtcGetInfo(struct SiiRtcInfo *rtc)

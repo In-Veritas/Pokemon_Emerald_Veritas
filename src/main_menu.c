@@ -803,14 +803,25 @@ static void Task_MainMenuCheckBattery(u8 taskId)
         SetGpuReg(REG_OFFSET_BLDALPHA, 0);
         SetGpuReg(REG_OFFSET_BLDY, 7);
 
-        if (!(RtcGetErrorStatus() & RTC_ERR_FLAG_MASK))
+        if (RtcGetErrorStatus() & RTC_ERR_FLAG_MASK)
         {
-            gTasks[taskId].func = Task_DisplayMainMenu;
+            // Chip responded but reported power failure / invalid data —
+            // the classic dead-battery case on an authentic cartridge.
+            CreateMainMenuErrorWindow(gText_BatteryRunDry);
+            gTasks[taskId].func = Task_WaitForBatteryDryErrorWindow;
+        }
+        else if (RtcIsClockNotRunning())
+        {
+            // Silent failures vanilla misses: no RTC answered the boot probe
+            // (typical bootleg cartridge), or the clock returns valid data
+            // that hasn't advanced since boot (dead oscillator / fake RTC).
+            // Boot was several seconds ago, so a working clock has ticked.
+            CreateMainMenuErrorWindow(gText_RtcNotRunning);
+            gTasks[taskId].func = Task_WaitForBatteryDryErrorWindow;
         }
         else
         {
-            CreateMainMenuErrorWindow(gText_BatteryRunDry);
-            gTasks[taskId].func = Task_WaitForBatteryDryErrorWindow;
+            gTasks[taskId].func = Task_DisplayMainMenu;
         }
     }
 }

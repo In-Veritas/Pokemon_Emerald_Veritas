@@ -527,6 +527,13 @@ The vanilla Enigma Berry was an inert e-Reader item with no effect on a fresh sa
 * **6+** Lucky Eggs → effectively 2.00× battle EXP
 * Eggs (the unhatched kind) still don't gain EXP — only living party members holding Lucky Eggs are counted
 
+#### Cartridge Clock Failure Warning
+
+* The main menu now warns about **all** dead-clock scenarios, not just the official one. Vanilla only shows "The internal battery has run dry" when the RTC chip itself reports a power failure — silently missing the most common real-world case: bootleg/repro cartridges with no working RTC at all.
+* Two additional failure modes are detected: the RTC chip not answering the boot probe, and a chip that answers with valid data but hasn't ticked since power-on (dead oscillator / fake clock).
+* New message at the main menu: *"The Cartridge's internal clock is not running. The game can be played. However, clock-based events will not occur."* — dismiss with A, same as the vanilla battery message. Healthy cartridges and emulators with RTC enabled never see it.
+* Known corner case: emulator **fast-forward** through the boot/title screens can compress startup to under one real second and briefly trip the warning on a perfectly healthy clock — dismiss it; rare and harmless
+
 #### Consecutive Egg Hatching
 
 * When multiple party eggs hit zero cycles on the same 256-step tick (e.g. 5 same-species eggs picked up together), they now hatch on **consecutive overworld steps** instead of 256 steps apart per slot — gen-1/2 style sequential hatching

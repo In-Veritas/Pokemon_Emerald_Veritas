@@ -38,6 +38,7 @@ const u8 gText_SaveFileCorrupted[] = _("The save file is corrupted. The\npreviou
 const u8 gText_SaveFileErased[] = _("The save file has been erased\ndue to corruption or damage.");
 const u8 gJPText_No1MSubCircuit[] = _("1Mサブきばんが ささっていません！");
 const u8 gText_BatteryRunDry[] = _("The internal battery has run dry.\nThe game can be played.\pHowever, clock-based events will\nno longer occur.");
+const u8 gText_RtcNotRunning[] = _("The Cartridge's internal clock\nis not running.\pThe game can be played. However,\nclock-based events will not occur.");
 const u8 gText_Player[] = _("PLAYER"); // Unused
 const u8 gText_Pokedex[] = _("POKéDEX"); // Unused
 const u8 gText_Time[] = _("TIME");
