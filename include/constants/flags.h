@@ -1294,8 +1294,8 @@
 #define FLAG_RECEIVED_DODRIO_SHINY_CHARM                            0x4E0 // Dodrio Berry Picking 20k+ Shiny Charm one-shot
 #define FLAG_RECEIVED_DODRIO_SHINY_DODUO_EGG                        0x4E1 // Dodrio Berry Picking Mystery Egg shiny Doduo one-shot
 #define FLAG_HIDE_ROUTE117_ZIGZAGOON                                0x4E2 // Route 117 wanderer day rotation (was day/night option, then unused — safe: rewritten on every Route 117 map load, including continue)
-#define FLAG_UNUSED_0x4E3                                           0x4E3 // Unused Flag
-#define FLAG_UNUSED_0x4E4                                           0x4E4 // Unused Flag
+#define FLAG_RECEIVED_PURPLE_BIRTHDAY_GIFT                          0x4E3 // One-shot gate: birthday gift for OT name "Purple" (field_specials.c; was misleadingly named FLAG_UNUSED_0x4E3)
+#define FLAG_RECEIVED_ALHYA_APOLOGY                                 0x4E4 // One-shot gate: apology gift for OT name "Alhya" (field_specials.c; was misleadingly named FLAG_UNUSED_0x4E4)
 #define FLAG_HIDE_ROUTE117_AZUMARILL                                0x4E5 // Route 117 wanderer day rotation (was FLAG_UNUSED_0x4E5)
 #define FLAG_UNUSED_0x4E6                                           0x4E6 // Unused Flag
 #define FLAG_UNUSED_0x4E7                                           0x4E7 // Unused Flag

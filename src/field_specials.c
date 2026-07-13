@@ -4910,7 +4910,7 @@ bool8 TrySetupInvalidRecordCleanupMessage(void)
 }
 
 // Veritas: special-case birthday gift for the OT name "PURPLE" / "Purple" /
-// "purple". Fires once per save (gated by FLAG_UNUSED_0x4E3) on the first
+// "purple". Fires once per save (gated by FLAG_RECEIVED_PURPLE_BIRTHDAY_GIFT) on the first
 // frame that ProcessPlayerFieldInput is reached after load. Sets the flag
 // before returning TRUE so the giveitem script can run safely.
 bool8 TrySetupPurpleBirthdayGift(void)
@@ -4919,7 +4919,7 @@ bool8 TrySetupPurpleBirthdayGift(void)
     static const u8 sPurpleTitle[] = _("Purple");
     static const u8 sPurpleLower[] = _("purple");
 
-    if (FlagGet(FLAG_UNUSED_0x4E3))
+    if (FlagGet(FLAG_RECEIVED_PURPLE_BIRTHDAY_GIFT))
         return FALSE;
 
     if (StringCompare(gSaveBlock2Ptr->playerName, sPurpleUpper) != 0
@@ -4927,13 +4927,13 @@ bool8 TrySetupPurpleBirthdayGift(void)
      && StringCompare(gSaveBlock2Ptr->playerName, sPurpleLower) != 0)
         return FALSE;
 
-    FlagSet(FLAG_UNUSED_0x4E3);
+    FlagSet(FLAG_RECEIVED_PURPLE_BIRTHDAY_GIFT);
     return TRUE;
 }
 
 // Veritas: apology gift for the OT name "Alhya" / "ALHYA" / "ALHYIA" / "ALHIA"
 // to compensate for the Battle Frontier Lv50 cap bug that overwrote levels.
-// Fires once per save (gated by FLAG_UNUSED_0x4E4) on the first frame that
+// Fires once per save (gated by FLAG_RECEIVED_ALHYA_APOLOGY) on the first frame that
 // ProcessPlayerFieldInput is reached after load. Sets the flag before
 // returning TRUE so the giveitem script can run safely.
 bool8 TrySetupAlhyaApology(void)
@@ -4943,7 +4943,7 @@ bool8 TrySetupAlhyaApology(void)
     static const u8 sAlhyia[] = _("ALHYIA");
     static const u8 sAlhia[]  = _("ALHIA");
 
-    if (FlagGet(FLAG_UNUSED_0x4E4))
+    if (FlagGet(FLAG_RECEIVED_ALHYA_APOLOGY))
         return FALSE;
 
     if (StringCompare(gSaveBlock2Ptr->playerName, sAlhya)  != 0
@@ -4952,7 +4952,7 @@ bool8 TrySetupAlhyaApology(void)
      && StringCompare(gSaveBlock2Ptr->playerName, sAlhia)  != 0)
         return FALSE;
 
-    FlagSet(FLAG_UNUSED_0x4E4);
+    FlagSet(FLAG_RECEIVED_ALHYA_APOLOGY);
     return TRUE;
 }
 
