@@ -446,6 +446,11 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 
 </details>
 
+#### Follower Transform RNG Fix
+
+* The follower system rolled the global RNG **every frame** for any following Pokémon while checking for the Ditto/Mew transform gimmick — the species check now comes first, so the RNG stream only advances when a Ditto or Mew is actually following
+* No gameplay change for Ditto/Mew followers (same transform odds); RNG-manipulation routines are no longer disturbed by other followers
+
 #### Daycare Egg to PC
 
 * When your party is full, daycare eggs are automatically sent to a PC box instead of being rejected

@@ -5263,6 +5263,9 @@ static bool32 EndFollowerTransformEffect(struct ObjectEvent *objectEvent, struct
     return FALSE;
 }
 
+// Runs every frame for a following Pokémon. The Ditto/Mew branch checks
+// species BEFORE rolling Random() so the global RNG stream isn't advanced
+// every frame by followers that can never transform.
 static bool32 TryStartFollowerTransformEffect(struct ObjectEvent *objectEvent, struct Sprite *sprite) {
     u32 multi;
     if (OW_SPECIES(objectEvent) == SPECIES_CASTFORM && OW_FORM(objectEvent) != (multi = GetOverworldCastformForm())) {
@@ -5270,8 +5273,8 @@ static bool32 TryStartFollowerTransformEffect(struct ObjectEvent *objectEvent, s
         objectEvent->graphicsId &= OBJ_EVENT_GFX_SPECIES_MASK;
         objectEvent->graphicsId |= multi << OBJ_EVENT_GFX_SPECIES_BITS;
         return TRUE;
-    } else if ((Random() & 0xFFFF) < 18 && GetLocalWildMon(FALSE)
-            && (OW_SPECIES(objectEvent) == SPECIES_MEW || OW_SPECIES(objectEvent) == SPECIES_DITTO)) {
+    } else if ((OW_SPECIES(objectEvent) == SPECIES_MEW || OW_SPECIES(objectEvent) == SPECIES_DITTO)
+            && (Random() & 0xFFFF) < 18 && GetLocalWildMon(FALSE)) {
         sprite->data[7] = TRANSFORM_TYPE_RANDOM_WILD << 8;
         PlaySE(SE_M_MINIMIZE);
         return TRUE;
