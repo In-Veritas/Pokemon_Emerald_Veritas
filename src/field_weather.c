@@ -16,7 +16,6 @@
 #include "task.h"
 #include "trig.h"
 #include "gpu_regs.h"
-#include "day_night.h"
 
 #define DROUGHT_COLOR_INDEX(color) ((((color) >> 1) & 0xF) | (((color) >> 2) & 0xF0) | (((color) >> 3) & 0xF00))
 
@@ -246,9 +245,6 @@ static void Task_WeatherMain(u8 taskId)
     }
 
     gWeatherPalStateFuncs[gWeatherPtr->palProcessingState]();
-    // Day/Night tint runs AFTER weather palette processing so it composes on
-    // top instead of being overwritten. No-op when the option is disabled.
-    DayNight_ApplyOverworldTint();
 }
 
 static void None_Init(void)

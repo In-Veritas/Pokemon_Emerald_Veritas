@@ -6,7 +6,6 @@
 #include "battle_setup.h"
 #include "battle_tower.h"
 #include "data.h"
-#include "day_night.h"
 #include "event_data.h"
 #include "frontier_util.h"
 #include "graphics.h"
@@ -350,11 +349,6 @@ static const u8 sText_SandstormSubsided[] = _("The sandstorm subsided.");
 static const u8 sText_SunlightGotBright[] = _("The sunlight got bright!");
 static const u8 sText_SunlightStrong[] = _("The sunlight is strong.");
 static const u8 sText_SunlightFaded[] = _("The sunlight faded.");
-// Day/night cycle: at night, "sunlight" is overridden with "moonlight"
-// flavor text via BufferStringBattle. Same weather mechanic, different text.
-static const u8 sText_MoonlightGotBright[] = _("The moonlight grew bright!");
-static const u8 sText_MoonlightStrong[] = _("The moonlight is bright.");
-static const u8 sText_MoonlightFaded[] = _("The moonlight faded.");
 static const u8 sText_StartedHail[] = _("It started to hail!");
 static const u8 sText_HailContinues[] = _("Hail continues to fall.");
 static const u8 sText_HailStopped[] = _("The hail stopped.");
@@ -2373,27 +2367,6 @@ void BufferStringBattle(u16 stringID)
         {
             stringPtr = gBattleStringsTable[stringID - BATTLESTRINGS_TABLE_START];
         }
-        break;
-    }
-
-    // Day/night flavor: at night with the cycle option enabled, swap
-    // Sunny Day's "sunlight" lines for "moonlight" equivalents. The weather
-    // mechanic itself (Drought) is unchanged — only the announcement text.
-    // Check the stringId BEFORE IsTimeOfDayNight() so we don't pay an RTC
-    // read on every single battle message — only on the three sun strings.
-    switch (stringID)
-    {
-    case STRINGID_SUNLIGHTGOTBRIGHT:
-        if (IsTimeOfDayNight())
-            stringPtr = sText_MoonlightGotBright;
-        break;
-    case STRINGID_SUNLIGHTSTRONG:
-        if (IsTimeOfDayNight())
-            stringPtr = sText_MoonlightStrong;
-        break;
-    case STRINGID_SUNLIGHTFADED:
-        if (IsTimeOfDayNight())
-            stringPtr = sText_MoonlightFaded;
         break;
     }
 

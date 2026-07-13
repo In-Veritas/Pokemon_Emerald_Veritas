@@ -527,15 +527,6 @@ The vanilla Enigma Berry was an inert e-Reader item with no effect on a fresh sa
 * **6+** Lucky Eggs → effectively 2.00× battle EXP
 * Eggs (the unhatched kind) still don't gain EXP — only living party members holding Lucky Eggs are counted
 
-#### Day/Night Cycle (optional)
-
-* Optional day/night palette tinting on the overworld, driven by the GBA's Real-Time Clock.
-* When enabled, the overworld and the player/follower/NPC sprites tint dusk-orange in the evening and dark-blue at night; bright daylight returns in the morning.
-* **Menus, dialog boxes, and UI elements are unaffected** — only the world layer and sprite layer are tinted, so battle screens, the bag, the Pokénav, and HP bars stay readable.
-* Indoor maps (houses, caves, secret bases) are NOT tinted — the world stays at "indoor lighting" regardless of clock.
-* Disabled by default; toggle in the Options Plus menu under World submenu.
-* Friendship-based evolutions that depend on time of day (e.g., Espeon by day, Umbreon by night) become actually time-of-day gated when the cycle is enabled.
-
 #### Consecutive Egg Hatching
 
 * When multiple party eggs hit zero cycles on the same 256-step tick (e.g. 5 same-species eggs picked up together), they now hatch on **consecutive overworld steps** instead of 256 steps apart per slot — gen-1/2 style sequential hatching

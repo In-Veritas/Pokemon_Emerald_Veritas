@@ -1293,7 +1293,7 @@
 #define FLAG_ENABLE_NICKNAME                                        0x4DE // Flag for enabling use of Nickname changer within Party Menu
 #define FLAG_RECEIVED_DODRIO_SHINY_CHARM                            0x4E0 // Dodrio Berry Picking 20k+ Shiny Charm one-shot
 #define FLAG_RECEIVED_DODRIO_SHINY_DODUO_EGG                        0x4E1 // Dodrio Berry Picking Mystery Egg shiny Doduo one-shot
-#define FLAG_OPTION_DAYNIGHT_CYCLE                                  0x4E2 // Day/Night palette tint toggle (was FLAG_UNUSED_0x4E2)
+#define FLAG_UNUSED_0x4E2                                           0x4E2 // Unused Flag — was FLAG_OPTION_DAYNIGHT_CYCLE (day/night tint, removed). May still be SET on saves that enabled it; clear before reuse.
 #define FLAG_UNUSED_0x4E3                                           0x4E3 // Unused Flag
 #define FLAG_UNUSED_0x4E4                                           0x4E4 // Unused Flag
 #define FLAG_UNUSED_0x4E5                                           0x4E5 // Unused Flag
