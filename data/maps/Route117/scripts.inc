@@ -6,8 +6,16 @@
 .set LOCALID_DAYCARE_MON_1, 24
 
 Route117_MapScripts::
+	map_script MAP_SCRIPT_ON_LOAD, Route117_OnLoad
 	map_script MAP_SCRIPT_ON_TRANSITION, Route117_OnTransition
 	.byte 0
+
+@ ON_LOAD runs on every way this map can appear — warps, connection
+@ crossings, AND continuing a saved game (ON_TRANSITION skips continue),
+@ so the wanderer flags can never go stale on a save made on this route.
+Route117_OnLoad:
+	special UpdateRoute117WandererFlags
+	end
 
 .macro getdaycaregfx var0:req var1:req var2:req var3:req
 callfunc ScrFunc_getdaycaregfx

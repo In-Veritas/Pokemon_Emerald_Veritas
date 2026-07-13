@@ -564,3 +564,4 @@ gSpecials::
 	def_special Fashionista_CheckShownPokemon
 	def_special Fashionista_UnlockOutfit
 	def_special Fashionista_GetTip
+	def_special UpdateRoute117WandererFlags

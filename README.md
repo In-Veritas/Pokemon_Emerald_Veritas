@@ -446,6 +446,11 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 
 </details>
 
+#### Route 117 Wild Wanderers Rotation
+
+* The wild Zigzagoon and Azumarill roaming near the daycare now rotate on a daily schedule: each day shows **both**, **only Zigzagoon**, **only Azumarill**, or **neither** (¼ of days each)
+* 3 out of 4 days have at most one wanderer out — Route 117 is the densest map in the game, so this eases the sprite load that was causing framerate dips
+
 #### Follower Transform RNG Fix
 
 * The follower system rolled the global RNG **every frame** for any following Pokémon while checking for the Ditto/Mew transform gimmick — the species check now comes first, so the RNG stream only advances when a Ditto or Mew is actually following

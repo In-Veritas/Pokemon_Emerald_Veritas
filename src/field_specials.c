@@ -5158,3 +5158,25 @@ void SetVarToMultiplayerId(void)
     gSpecialVar_0x8005 = GetMultiplayerId();
 }
 
+// Route 117's wild wanderers (Zigzagoon / Azumarill) rotate by day:
+// day & 3 == 0 -> both, 1 -> Zigzagoon only, 2 -> Azumarill only, 3 -> neither.
+// 3 out of 4 days show one or none, easing object load on this dense map.
+// Called from Route117_OnLoad — ON_LOAD runs on warps, connection crossings
+// AND continue-save (ON_TRANSITION would miss continue and leave the flags
+// stale). VAR_DAYS is fresh in all of those paths because DoTimeBasedEvents
+// runs earlier in each load sequence.
+void UpdateRoute117WandererFlags(void)
+{
+    u16 daySel = VarGet(VAR_DAYS) & 3;
+
+    if (daySel == 0 || daySel == 1)
+        FlagClear(FLAG_HIDE_ROUTE117_ZIGZAGOON);
+    else
+        FlagSet(FLAG_HIDE_ROUTE117_ZIGZAGOON);
+
+    if (daySel == 0 || daySel == 2)
+        FlagClear(FLAG_HIDE_ROUTE117_AZUMARILL);
+    else
+        FlagSet(FLAG_HIDE_ROUTE117_AZUMARILL);
+}
+
