@@ -637,6 +637,9 @@ static const u8 *const OptionTextDescription(void)
         selection = sOptions->sel[menuItem];
         if (menuItem == MENUITEM_MAIN_TEXTSPEED || menuItem == MENUITEM_MAIN_FRAMETYPE)
             selection = 0;
+        // Hidden legacy button modes (3/9) exceed the description columns.
+        if (menuItem == MENUITEM_MAIN_BUTTONMODE && selection > 2)
+            selection = 0;
         return sOptionMenuItemDescriptionsMain[menuItem][selection];
     case MENU_BATTLE:
         if (!CheckConditions(menuItem))
@@ -898,11 +901,18 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel[MENUITEM_MAIN_SOUND]       = gSaveBlock2Ptr->optionsSound;
         // Button mode picker exposes 3 indexes (NORMAL=0, L=A=1, SEL=R=2),
         // but the storage constant for SEL=R is 10 (constants/global.h).
-        // Translate 10 -> 2 here; raw values 0/1 pass through; any other
-        // mode (3-9, set via debug or older menu paths) passes through
-        // raw and the picker will display its index unchanged.
+        // Translate 10 -> 2 here. The retired L=Speed / L=Fast Mode family
+        // (4-8, overworld speedup feature removed) migrates to NORMAL so
+        // stale saves are healed the next time options are saved. The
+        // hidden-but-live L=Settings (3) and L=Follower (9) modes pass
+        // through raw and survive a save; the picker can't display them —
+        // see the bounds guards in DrawChoices_ButtonMode and
+        // OptionTextDescription.
         if (gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_SELECT_EQUALS_R)
             sOptions->sel[MENUITEM_MAIN_BUTTONMODE] = 2;
+        else if (gSaveBlock2Ptr->optionsButtonMode >= OPTIONS_BUTTON_MODE_L_EQUALS_OVERWORLD_SPEED
+              && gSaveBlock2Ptr->optionsButtonMode <= OPTIONS_BUTTON_MODE_L_EQUALS_FASTMODE)
+            sOptions->sel[MENUITEM_MAIN_BUTTONMODE] = 0;
         else
             sOptions->sel[MENUITEM_MAIN_BUTTONMODE] = gSaveBlock2Ptr->optionsButtonMode;
         sOptions->sel[MENUITEM_MAIN_FRAMETYPE]   = gSaveBlock2Ptr->optionsWindowFrameType;
@@ -1585,8 +1595,6 @@ static void DrawChoices_SEVolume(int selection, int y)
     DrawOptionMenuChoiceStrings(selection, y, active, sSEVolumeStrings, 5);
 }
 
-static const u8 sText_ButtonType_Settings[]         = _("L=SETTINGS");
-static const u8 sText_ButtonType_FastMode[]         = _("L=FAST MODE");
 static const u8 sText_ButtonType_SelectEqualsR[]    = _("SEL=R");
 static const u8 *const sButtonModeStrings[] =
     {
@@ -1597,6 +1605,10 @@ static const u8 *const sButtonModeStrings[] =
 static void DrawChoices_ButtonMode(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_MAIN_BUTTONMODE);
+    // Hidden legacy modes (L=Settings 3 / L=Follower 9) have no picker
+    // string — draw slot 0 instead of reading past sButtonModeStrings[3].
+    if (selection > 2)
+        selection = 0;
     DrawOptionMenuChoiceStrings(selection, y, active, sButtonModeStrings, 3);
 }
 

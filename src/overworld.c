@@ -1571,26 +1571,6 @@ void CB1_Overworld(void)
         DoCB1_Overworld(gMain.newKeys, gMain.heldKeys);
 }
 
-u8 OverworldSpeedup_AdditionalIterations(u16 speed, bool32 overworld)
-{
-    if (overworld
-        && VAR_OVERWORLD_SPEEDUP != 0
-        && (JOY_HELD(R_BUTTON))
-        )
-    {
-        return OPTIONS_OVERWORLD_SPEED_1X_EXTRA_ITERATIONS;
-    }
-
-    switch (speed)
-    {
-        case OPTIONS_OVERWORLD_SPEED_8X: return OPTIONS_OVERWORLD_SPEED_1X_EXTRA_ITERATIONS;
-        case OPTIONS_OVERWORLD_SPEED_4X: return OPTIONS_OVERWORLD_SPEED_1X_EXTRA_ITERATIONS;
-        case OPTIONS_OVERWORLD_SPEED_2X: return OPTIONS_OVERWORLD_SPEED_1X_EXTRA_ITERATIONS;
-        case OPTIONS_OVERWORLD_SPEED_1X: return OPTIONS_OVERWORLD_SPEED_1X_EXTRA_ITERATIONS;
-        default: return OPTIONS_OVERWORLD_SPEED_1X_EXTRA_ITERATIONS;
-    }
-}
-
 static void OverworldBasic(void)
 {
     ScriptContext_RunScript();
@@ -1614,18 +1594,9 @@ void CB2_OverworldBasic(void)
 void CB2_Overworld(void)
 {
     bool32 fading = (gPaletteFade.active != 0);
-    u8 loops;
     if (fading)
         SetVBlankCallback(NULL);
     OverworldBasic();
-
-    for (loops = 0; loops < OverworldSpeedup_AdditionalIterations(VarGet(VAR_OVERWORLD_SPEEDUP), TRUE); loops++)
-    {
-        AnimateSprites();
-        CameraUpdate();
-        UpdateCameraPanning();
-    }
-    
     if (fading)
         SetFieldVBlankCallback();
 }

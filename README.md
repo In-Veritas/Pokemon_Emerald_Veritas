@@ -1031,20 +1031,13 @@ Veritas uses a re-roll system where each Shiny Charm adds +1 re-roll attempt. Ba
 * Ability to change in-game font from Hoenn (original Emerald font) to Kanto (FireRed/LeafGreen font).
 * Ability to hide Nickname option from Party Menu.
 * Ability to change Battle Mode (Normal/Hard Mode/Hardcore(Nuzlocke)) after beating Steven in Meteor Falls.
-* Ability to increase player and NPC in-game speed (World Speed) by 2x, 4x, or 8x (Music speed stays the same.)
-  * Holding "R" button will slow back to standard 1x speed.
-    * May conflict with changing Bike type. Recommend to use Button Mode: "L = Settings" to move Bike swap.
-  * **Note:** 8x Speed may have some minor visual bugs. This is due some some frames being skipped at that speed.
 * Added extra "Button Modes" for the "L" button as a shortcut in the overworld when pressing the "L" button:
   * L = Settings: Will change the relevant contextual setting based on what the player is doing:
     * If walking or running, toggle Auto Run.
     * If surfing, toggle Fast Surf.
     * If diving, will step through the different diving speeds on each press.
     * If on bike and unlocked dual swapping bike in post-game, swap bikes.
-      * This is as an alternate for players using the above World Speed options to be able to change bike type and use the manual slow down of holding "R". Pressing "R" in this mode does not change the bike type.
   * Pressing A+B simultaneously while on a bike also swaps bike type (post-game unlock required)
-  * L = Speed: Will either step through, or toggle on/off the relevant chosen World Speed option
-  * L = Fast Mode: Either toggles Auto Run, Fast Surf, World Speed and Diving speed to On or Max (as appropriate), or turns them all to Off or Minimum as appropriate.
   * L = Follower: Toggles Follower On or Off:
     * When turning off, follower will return to Pokeball immediately.
     * When toggling off, player needs to take a step for follower to spawn (if able)
