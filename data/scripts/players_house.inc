@@ -332,6 +332,12 @@ PlayersHouse_1F_EventScript_Mom::
 	@ Birthday: Mom has a one-time Shiny Charm gift, then a warm greeting.
 	specialvar VAR_RESULT, IsPlayerBirthdayToday
 	goto_if_eq VAR_RESULT, TRUE, PlayersHouse_1F_EventScript_MomBirthday
+	@ Save anniversary — Mom marvels at how long you've been away.
+	specialvar VAR_RESULT, IsSaveAnniversaryToday
+	goto_if_ne VAR_RESULT, 0, PlayersHouse_1F_EventScript_MomSaveAnniv
+	@ Luvdisc Day — Mom teases about sweethearts.
+	specialvar VAR_RESULT, IsLuvdiscDayToday
+	goto_if_eq VAR_RESULT, TRUE, PlayersHouse_1F_EventScript_MomLuvdisc
 	goto_if_eq VAR_LITTLEROOT_HOUSES_STATE_MAY, 4, PlayersHouse_1F_EventScript_DontPushYourselfTooHard
 	goto_if_eq VAR_LITTLEROOT_HOUSES_STATE_BRENDAN, 4, PlayersHouse_1F_EventScript_DontPushYourselfTooHard
 	goto_if_set FLAG_HAS_MATCH_CALL, PlayersHouse_1F_EventScript_TryRegisterMom
@@ -746,3 +752,55 @@ PlayersHouse_1F_Text_MomBirthdayBagFull:
 	.string "Oh my, your BAG is stuffed full!\p"
 	.string "Come back for your present after\n"
 	.string "you make some room, okay?$"
+
+PlayersHouse_1F_EventScript_MomSaveAnniv::
+	buffernumberstring STR_VAR_1, VAR_RESULT
+	goto_if_eq VAR_RESULT, 1, PlayersHouse_1F_EventScript_MomSaveAnniv1
+	goto_if_lt VAR_RESULT, 10, PlayersHouse_1F_EventScript_MomSaveAnnivFew
+	msgbox PlayersHouse_1F_Text_MomSaveAnnivMany, MSGBOX_DEFAULT
+	release
+	end
+
+PlayersHouse_1F_EventScript_MomSaveAnniv1::
+	msgbox PlayersHouse_1F_Text_MomSaveAnniv1, MSGBOX_DEFAULT
+	release
+	end
+
+PlayersHouse_1F_EventScript_MomSaveAnnivFew::
+	msgbox PlayersHouse_1F_Text_MomSaveAnnivFew, MSGBOX_DEFAULT
+	release
+	end
+
+PlayersHouse_1F_Text_MomSaveAnniv1:
+	.string "Oh, {PLAYER}! Has it really been\n"
+	.string "a whole year since you left home?\p"
+	.string "I'm so proud of you, sweetheart.\n"
+	.string "Don't forget to eat well!$"
+
+PlayersHouse_1F_Text_MomSaveAnnivFew:
+	.string "{STR_VAR_1} years since you set\n"
+	.string "off on your journey…\p"
+	.string "You've grown into such a fine\n"
+	.string "TRAINER. Your father would be\l"
+	.string "beaming!$"
+
+PlayersHouse_1F_Text_MomSaveAnnivMany:
+	.string "{STR_VAR_1} years, {PLAYER}…\p"
+	.string "It feels like just yesterday you\n"
+	.string "were toddling around this house.\p"
+	.string "No matter how many years pass,\n"
+	.string "you'll always be my little one.$"
+
+PlayersHouse_1F_EventScript_MomLuvdisc::
+	msgbox PlayersHouse_1F_Text_MomLuvdisc, MSGBOX_DEFAULT
+	release
+	end
+
+PlayersHouse_1F_Text_MomLuvdisc:
+	.string "Happy LUVDISC Day, {PLAYER}!\p"
+	.string "You know, your father swept me\n"
+	.string "off my feet on a day just like\l"
+	.string "this one…\p"
+	.string "Oh, listen to me reminiscing!\n"
+	.string "Is there someone special YOU'VE\l"
+	.string "got your eye on? Hee hee!$"

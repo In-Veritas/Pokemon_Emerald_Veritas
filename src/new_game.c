@@ -241,6 +241,11 @@ void NewGameInitData(void)
     FlagSet(FLAG_ENABLE_FOLLOWER);
     FlagSet(FLAG_ENABLE_SURFOVERWORLD);
 
+    // Mark this save eligible for the save-anniversary feature; the intro
+    // clock records its birth date. Existing saves never set this, so they
+    // are excluded (there's no way to know their true creation date).
+    FlagSet(FLAG_SAVE_ANNIV_ELIGIBLE);
+
     // If National Dex Mode selected, set all wild encounters to national Dex
     if (natDexMode)
     {        

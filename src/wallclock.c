@@ -1109,6 +1109,8 @@ static void Task_SetDate_HandleConfirmInput(u8 taskId)
         VarSet(VAR_CALENDAR_BASE, ((u16)gTasks[taskId].dMonth << 8) | (u8)gTasks[taskId].dDay);
         RtcCalcLocalTime();
         VarSet(VAR_CALENDAR_BASE_DAYCOUNT, (u16)gLocalTime.days);
+        // Record the save's own birthday on the first (intro) date set.
+        RecordSaveAnniversaryIfEligible();
         BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
         gTasks[taskId].func = Task_SetClock_Exit;
         break;

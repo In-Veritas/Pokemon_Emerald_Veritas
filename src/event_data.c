@@ -137,7 +137,8 @@ void ClearMysteryGiftVars(void)
     VarSet(VAR_SE_VOLUME, 0);
     VarSet(VAR_PLAYER_STYLE, 0);
     VarSet(VAR_OUTFIT_CONDITIONS, 0);
-    VarSet(VAR_GIFT_UNUSED_6, 0);
+    // VAR_DELIVERY_DAY_LAST (ex GIFT_UNUSED_6) is deliberately NOT
+    // cleared here — it's the Delivery Day once-per-month purchase latch.
     VarSet(VAR_GIFT_UNUSED_7, 0);
 }
 

@@ -10,9 +10,21 @@ Common_EventScript_PkmnCenterNurse::
 	@ birthday today, remind the player to send wishes (dialogue only).
 	specialvar VAR_RESULT, BufferPartyBirthdayTrainerName
 	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_FriendBirthday
+	@ Save anniversary — VAR_RESULT holds the year number (0 = not today).
+	specialvar VAR_RESULT, IsSaveAnniversaryToday
+	call_if_ne VAR_RESULT, 0, EventScript_PkmnCenterNurse_SaveAnniv
 	@ Spooky Day (31/10, National Dex required) — an eerie greeting.
 	specialvar VAR_RESULT, IsSpookyDayToday
 	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_SpookyDay
+	@ Hoenn Day (21/11) — announce the regional celebration and its perks.
+	specialvar VAR_RESULT, IsHoennDayToday
+	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_HoennDay
+	@ Luvdisc Day (14/02) — announce the romance.
+	specialvar VAR_RESULT, IsLuvdiscDayToday
+	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_LuvdiscDay
+	@ Delivery Day (1st of the month) — point at the Slateport market.
+	specialvar VAR_RESULT, IsDeliveryDayToday
+	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_DeliveryDay
 	specialvar VAR_RESULT, CountPlayerTrainerStars
 	goto_if_eq VAR_RESULT, 4, EventScript_PkmnCenterNurse_GoldCard
 	@ If short dialog option is enabled, skip the yes/no question
@@ -173,4 +185,43 @@ EventScript_PkmnCenterNurse_FriendBirthday::
 
 EventScript_PkmnCenterNurse_SpookyDay::
 	msgbox gText_NurseSpookyDay, MSGBOX_DEFAULT
+	return
+
+EventScript_PkmnCenterNurse_HoennDay::
+	msgbox gText_NurseHoennDay, MSGBOX_DEFAULT
+	return
+
+EventScript_PkmnCenterNurse_LuvdiscDay::
+	msgbox gText_NurseLuvdiscDay, MSGBOX_DEFAULT
+	return
+
+EventScript_PkmnCenterNurse_DeliveryDay::
+	msgbox gText_NurseDeliveryDay, MSGBOX_DEFAULT
+	return
+
+@ Save anniversary greeting. VAR_RESULT holds the year number; the flavor
+@ gets quirkier as the years pile up.
+EventScript_PkmnCenterNurse_SaveAnniv::
+	buffernumberstring STR_VAR_1, VAR_RESULT
+	goto_if_eq VAR_RESULT, 1, EventScript_PkmnCenterNurse_SaveAnniv1
+	goto_if_lt VAR_RESULT, 5, EventScript_PkmnCenterNurse_SaveAnnivFew
+	goto_if_lt VAR_RESULT, 10, EventScript_PkmnCenterNurse_SaveAnnivMany
+	goto_if_lt VAR_RESULT, 25, EventScript_PkmnCenterNurse_SaveAnnivLots
+	msgbox gText_NurseSaveAnnivAncient, MSGBOX_DEFAULT
+	return
+
+EventScript_PkmnCenterNurse_SaveAnniv1::
+	msgbox gText_NurseSaveAnniv1, MSGBOX_DEFAULT
+	return
+
+EventScript_PkmnCenterNurse_SaveAnnivFew::
+	msgbox gText_NurseSaveAnnivFew, MSGBOX_DEFAULT
+	return
+
+EventScript_PkmnCenterNurse_SaveAnnivMany::
+	msgbox gText_NurseSaveAnnivMany, MSGBOX_DEFAULT
+	return
+
+EventScript_PkmnCenterNurse_SaveAnnivLots::
+	msgbox gText_NurseSaveAnnivLots, MSGBOX_DEFAULT
 	return

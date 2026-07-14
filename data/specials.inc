@@ -572,3 +572,9 @@ gSpecials::
 	def_special FanClub_StartBirthdayEntry
 	def_special BufferPartyBirthdayTrainerName
 	def_special IsSpookyDayToday
+	def_special IsSaveAnniversaryToday
+	def_special IsHoennDayToday
+	def_special IsLuvdiscDayToday
+	def_special IsDeliveryDayToday
+	def_special DeliveryDay_GetTodaysOffer
+	def_special DeliveryDay_TryPurchase

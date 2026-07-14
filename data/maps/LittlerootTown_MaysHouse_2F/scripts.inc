@@ -240,6 +240,12 @@ RivalsHouse_2F_EventScript_Rival::
 	@ Birthday greeting from the rival (any story state).
 	specialvar VAR_RESULT, IsPlayerBirthdayToday
 	goto_if_eq VAR_RESULT, TRUE, RivalsHouse_2F_EventScript_RivalBirthday
+	@ Save anniversary — the rival reminisces about the shared journey.
+	specialvar VAR_RESULT, IsSaveAnniversaryToday
+	goto_if_ne VAR_RESULT, 0, RivalsHouse_2F_EventScript_RivalSaveAnniv
+	@ Luvdisc Day — the rival gets a little flustered.
+	specialvar VAR_RESULT, IsLuvdiscDayToday
+	goto_if_eq VAR_RESULT, TRUE, RivalsHouse_2F_EventScript_RivalLuvdisc
 	goto_if_set FLAG_MET_RIVAL_LILYCOVE, RivalsHouse_2F_EventScript_RivalPostLilycove
 	checkplayergender
 	goto_if_eq VAR_RESULT, MALE, RivalsHouse_2F_EventScript_May
@@ -422,3 +428,44 @@ RivalsHouse_2F_Text_RivalBirthday:
 	.string "Don't think I'll go easy on you\n"
 	.string "just because it's your special\l"
 	.string "day, though!$"
+
+RivalsHouse_2F_EventScript_RivalSaveAnniv::
+	applymovement VAR_LAST_TALKED, Common_Movement_FacePlayer
+	waitmovement 0
+	buffernumberstring STR_VAR_1, VAR_RESULT
+	goto_if_lt VAR_RESULT, 10, RivalsHouse_2F_EventScript_RivalSaveAnnivFew
+	msgbox RivalsHouse_2F_Text_RivalSaveAnnivMany, MSGBOX_DEFAULT
+	releaseall
+	end
+
+RivalsHouse_2F_EventScript_RivalSaveAnnivFew::
+	msgbox RivalsHouse_2F_Text_RivalSaveAnnivFew, MSGBOX_DEFAULT
+	releaseall
+	end
+
+RivalsHouse_2F_Text_RivalSaveAnnivFew:
+	.string "Whoa, {PLAYER}! Has it really\n"
+	.string "been {STR_VAR_1} year(s) since we\l"
+	.string "both started out?\p"
+	.string "We've come so far! But I'm still\n"
+	.string "not letting you win!$"
+
+RivalsHouse_2F_Text_RivalSaveAnnivMany:
+	.string "{STR_VAR_1} years, huh…\p"
+	.string "After all this time, you're still\n"
+	.string "my greatest rival, {PLAYER}.\p"
+	.string "Here's to {STR_VAR_1} more!$"
+
+RivalsHouse_2F_EventScript_RivalLuvdisc::
+	applymovement VAR_LAST_TALKED, Common_Movement_FacePlayer
+	waitmovement 0
+	msgbox RivalsHouse_2F_Text_RivalLuvdisc, MSGBOX_DEFAULT
+	releaseall
+	end
+
+RivalsHouse_2F_Text_RivalLuvdisc:
+	.string "O-oh! {PLAYER}! It's LUVDISC\n"
+	.string "Day, you know…\p"
+	.string "N-not that I was thinking about\n"
+	.string "anyone in particular! I just—\p"
+	.string "…U-um! Forget I said anything!$"

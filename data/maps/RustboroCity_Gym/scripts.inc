@@ -18,6 +18,8 @@ RustboroCity_Gym_EventScript_TryRematchRewardEnd::
 	end
 
 RustboroCity_Gym_EventScript_Roxanne::
+	goto_if_set FLAG_DEFEATED_RUSTBORO_GYM, RustboroCity_Gym_EventScript_Roxanne_LuvCheck
+RustboroCity_Gym_EventScript_Roxanne_Resume::
 	trainerbattle_single TRAINER_ROXANNE_1, RustboroCity_Gym_Text_RoxanneIntro, RustboroCity_Gym_Text_RoxanneDefeat, RustboroCity_Gym_EventScript_RoxanneDefeated, NO_MUSIC
 	specialvar VAR_RESULT, ShouldTryRematchBattle
 	goto_if_eq VAR_RESULT, TRUE, RustboroCity_Gym_EventScript_RoxanneRematch
@@ -340,3 +342,24 @@ RustboroCity_Gym_Text_RoxanneRematchNeedTwoMons:
 	.string "You only have one POKéMON with you?\p"
 	.string "Please return with at least one more\n"
 	.string "POKéMON.$"
+
+@ Luvdisc Day: post-defeat, ROXANNE gets flustered around a male TRAINER.
+RustboroCity_Gym_EventScript_Roxanne_LuvCheck::
+	specialvar VAR_RESULT, IsLuvdiscDayToday
+	goto_if_ne VAR_RESULT, TRUE, RustboroCity_Gym_EventScript_Roxanne_Resume
+	checkplayergender
+	goto_if_eq VAR_RESULT, MALE, RustboroCity_Gym_EventScript_Roxanne_Flirt
+	goto RustboroCity_Gym_EventScript_Roxanne_Resume
+
+RustboroCity_Gym_EventScript_Roxanne_Flirt::
+	msgbox RustboroCity_Gym_Text_RoxanneLuvdisc, MSGBOX_DEFAULT
+	release
+	end
+
+RustboroCity_Gym_Text_RoxanneLuvdisc:
+	.string "O-oh, {PLAYER}! It's you…\p"
+	.string "Is it true it's LUVDISC Day?\n"
+	.string "I've been so buried in my studies\l"
+	.string "I nearly forgot…\p"
+	.string "M-maybe you could tutor me on the\n"
+	.string "subject sometime? For research!$"

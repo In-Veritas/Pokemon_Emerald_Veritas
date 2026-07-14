@@ -569,6 +569,12 @@ LittlerootTown_ProfessorBirchsLab_EventScript_Birch::
 	@ block them).
 	specialvar VAR_RESULT, IsPlayerBirthdayToday
 	goto_if_eq VAR_RESULT, TRUE, LittlerootTown_ProfessorBirchsLab_EventScript_BirchBirthday
+	@ Save anniversary — Birch reflects on the research journey.
+	specialvar VAR_RESULT, IsSaveAnniversaryToday
+	goto_if_ne VAR_RESULT, 0, LittlerootTown_ProfessorBirchsLab_EventScript_BirchSaveAnniv
+	@ Luvdisc Day — Birch shares a cheerful research tidbit.
+	specialvar VAR_RESULT, IsLuvdiscDayToday
+	goto_if_eq VAR_RESULT, TRUE, LittlerootTown_ProfessorBirchsLab_EventScript_BirchLuvdisc
 	goto_if_unset FLAG_HAS_MATCH_CALL, LittlerootTown_ProfessorBirchsLab_EventScript_TryRatePokedexOrRegister
 	goto_if_unset FLAG_ENABLE_PROF_BIRCH_MATCH_CALL, EventScript_RegisterProfBirch
 	goto LittlerootTown_ProfessorBirchsLab_EventScript_TryRatePokedexOrRegister
@@ -2137,3 +2143,44 @@ LittlerootTown_ProfessorBirchsLab_Text_BirchBirthday:
 	.string "their TRAINER's birthday.\p"
 	.string "Some even seem to… sparkle!\p"
 	.string "Go enjoy the day together!$"
+
+LittlerootTown_ProfessorBirchsLab_EventScript_BirchSaveAnniv::
+	buffernumberstring STR_VAR_1, VAR_RESULT
+	goto_if_lt VAR_RESULT, 10, LittlerootTown_ProfessorBirchsLab_EventScript_BirchSaveAnnivFew
+	msgbox LittlerootTown_ProfessorBirchsLab_Text_BirchSaveAnnivMany, MSGBOX_DEFAULT
+	release
+	end
+
+LittlerootTown_ProfessorBirchsLab_EventScript_BirchSaveAnnivFew::
+	msgbox LittlerootTown_ProfessorBirchsLab_Text_BirchSaveAnnivFew, MSGBOX_DEFAULT
+	release
+	end
+
+LittlerootTown_ProfessorBirchsLab_Text_BirchSaveAnnivFew:
+	.string "{PLAYER}! Do you realize it's\n"
+	.string "been {STR_VAR_1} year(s) since I\l"
+	.string "sent you out with that first\l"
+	.string "POKéMON?\p"
+	.string "My field data has never been\n"
+	.string "richer. Thank you!$"
+
+LittlerootTown_ProfessorBirchsLab_Text_BirchSaveAnnivMany:
+	.string "{STR_VAR_1} years of research\n"
+	.string "alongside you, {PLAYER}…\p"
+	.string "At this point YOU are the\n"
+	.string "POKéMON professor! Ha ha!\p"
+	.string "Here's to many more years in\n"
+	.string "the field!$"
+
+LittlerootTown_ProfessorBirchsLab_EventScript_BirchLuvdisc::
+	msgbox LittlerootTown_ProfessorBirchsLab_Text_BirchLuvdisc, MSGBOX_DEFAULT
+	release
+	end
+
+LittlerootTown_ProfessorBirchsLab_Text_BirchLuvdisc:
+	.string "Ah, LUVDISC Day!\p"
+	.string "Did you know a LUVDISC pair will\n"
+	.string "stay together their whole lives?\p"
+	.string "Fascinating creatures. Perhaps\n"
+	.string "there's something we humans can\l"
+	.string "learn from them, eh, {PLAYER}?$"

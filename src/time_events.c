@@ -1,6 +1,7 @@
 #include "global.h"
 #include "time_events.h"
 #include "event_data.h"
+#include "field_specials.h"
 #include "field_weather.h"
 #include "pokemon.h"
 #include "random.h"
@@ -45,6 +46,10 @@ bool8 IsMirageIslandPresent(void)
     u16 mask;
     int i;
     u32 species;
+
+    // Special calendar dates always reveal Mirage Island.
+    if (IsAnySpecialDateToday())
+        return TRUE;
 
     // Post-E4: 7-bit mask (~1/128 per mon, ~4.6%/day with 6 mons)
     // Pre-E4: 11-bit mask (~1/2048 per mon, ~0.29%/day with 6 mons)

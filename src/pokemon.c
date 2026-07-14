@@ -2308,10 +2308,16 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
                 // +1 roll during Shiny Day PokeNews event
                 if (IsPokeNewsActive(POKENEWS_SHINY_DAY))
                     maxRolls++;
-                // +2 rolls on the player's birthday — trainers really do
-                // see shimmering Pokémon on their special day.
-                if (IsPlayerBirthdayToday())
+                // +2 rolls on the player's birthday or the save's own
+                // anniversary — a doubly lucky day.
+                if (IsPlayerBirthdayToday() || IsSaveAnniversaryToday())
                     maxRolls += 2;
+                // Trick Day: DITTO pranksters shine twice as often.
+                if (species == SPECIES_DITTO && IsTrickDayToday())
+                    maxRolls++;
+                // Hoenn Day: Hoenn natives shine twice as often.
+                if (IsHoennDayToday() && IsHoennNativeSpecies(species))
+                    maxRolls++;
                 // Re-roll until shiny or out of attempts
                 // If hasFixedPersonality (e.g. Synchronize), preserve the nature
                 if (hasFixedPersonality)
@@ -6389,9 +6395,13 @@ void MonGainEVs(struct Pokemon *mon, u16 defeatedSpecies)
         else
             multiplier = 1;
 
-        // Birthday bonus: double EVs on the player's declared birthday
-        // (stacks with Pokérus and Macho Brace).
-        if (IsPlayerBirthdayToday())
+        // Birthday / save-anniversary bonus: double EVs (stacks with
+        // Pokérus and Macho Brace).
+        if (IsPlayerBirthdayToday() || IsSaveAnniversaryToday())
+            multiplier *= 2;
+
+        // Hoenn Day: Hoenn natives yield double EVs.
+        if (IsHoennDayToday() && IsHoennNativeSpecies(defeatedSpecies))
             multiplier *= 2;
 
         switch (i)
@@ -7247,6 +7257,15 @@ void SetWildMonHeldItem(void)
         {
             chanceNoItem = 90;
             chanceNotRare = 95;
+        }
+
+        // Luvdisc Day (14/02): every wild LUVDISC clutches a HEART SCALE.
+        if (species == SPECIES_LUVDISC && IsLuvdiscDayToday())
+        {
+            u16 heartScale = ITEM_HEART_SCALE;
+
+            SetMonData(&gEnemyParty[0], MON_DATA_HELD_ITEM, &heartScale);
+            return;
         }
 
         if (!GetMonData(&gPlayerParty[0], MON_DATA_SANITY_IS_EGG, 0)

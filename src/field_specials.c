@@ -25,6 +25,7 @@
 #include "mystery_gift.h"
 #include "match_call.h"
 #include "menu.h"
+#include "money.h"
 #include "naming_screen.h"
 #include "item.h"
 #include "overworld.h"
@@ -5403,6 +5404,7 @@ static const u8 sBdayName_Alhia[]  = _("ALHIA");
 static const u8 sBdayName_Luna[]   = _("LUNA");   // 27/07
 static const u8 sBdayName_Mapu[]   = _("MAPU");   // 22/08
 static const u8 sBdayName_Ania[]   = _("ANIA");   // 27/07
+static const u8 sBdayName_Lucy[]   = _("LUCY");   // 14/03
 
 static const struct
 {
@@ -5422,6 +5424,7 @@ static const struct
     {sBdayName_Luna,    7, 27},
     {sBdayName_Mapu,    8, 22},
     {sBdayName_Ania,    7, 27},
+    {sBdayName_Lucy,    3, 14},
 };
 
 // Case-insensitive player-name compare in the game charset.
@@ -5561,6 +5564,77 @@ bool8 TrySetupDateNotSetReminder(void)
         return FALSE;
     sShownDateReminder = TRUE;
     return TRUE;
+}
+
+// ============================================================
+// Save anniversary (the save file's own birthday)
+// ============================================================
+// Packed into VAR_SAVE_ANNIVERSARY as (yearsCelebrated << 9) | (month << 5)
+// | day; 0 = untracked. Only saves created after this feature shipped are
+// tracked — RecordSaveAnniversaryIfEligible runs from the intro clock flow
+// (gated by FLAG_SAVE_ANNIV_ELIGIBLE, set only at new game), so existing
+// saves stay 0 and never celebrate. yearsCelebrated doubles as the year
+// number, incremented once per real anniversary via the same 364-day latch
+// the player birthday uses (VAR_SAVE_ANNIV_ARMED) — re-dialing the calendar
+// can't farm it, and it persists for the whole day it arms on.
+
+#define SAVE_ANNIV_DAY(v)   ((v) & 0x1F)
+#define SAVE_ANNIV_MONTH(v) (((v) >> 5) & 0xF)
+#define SAVE_ANNIV_YEARS(v) (((v) >> 9) & 0x7F)
+#define SAVE_ANNIV_PACK(years, month, day) (((u16)(years) << 9) | ((u16)(month) << 5) | (u8)(day))
+
+// Called from the intro wall-clock date picker. Records this save's birth
+// date + day counter the first time a NEW game sets its date.
+void RecordSaveAnniversaryIfEligible(void)
+{
+    u8 month, day;
+
+    if (!FlagGet(FLAG_SAVE_ANNIV_ELIGIBLE))
+        return;
+    if (VarGet(VAR_SAVE_ANNIVERSARY) != 0)
+        return;
+    GetVirtualDate(&month, &day); // refreshes gLocalTime from the just-set date
+    if (month == 0)
+        return;
+    VarSet(VAR_SAVE_ANNIVERSARY, SAVE_ANNIV_PACK(0, month, day));
+    VarSet(VAR_SAVE_ANNIV_ARMED, (u16)gLocalTime.days + 1); // creation day counts as armed
+    FlagClear(FLAG_SAVE_ANNIV_ELIGIBLE);
+}
+
+// Returns the anniversary year number (>= 1) if today is a fresh save
+// anniversary, else 0. Arms the once-per-364-days latch and advances the
+// year counter on the first call of the day. Also a script special.
+u16 IsSaveAnniversaryToday(void)
+{
+    u16 packed = VarGet(VAR_SAVE_ANNIVERSARY);
+    u8 month, day;
+    u16 celebrated, stored, d;
+
+    if (packed == 0 || !IsCalendarDateSet())
+        return 0;
+    GetVirtualDate(&month, &day); // refreshes gLocalTime
+    if (month != SAVE_ANNIV_MONTH(packed) || day != SAVE_ANNIV_DAY(packed))
+        return 0;
+
+    celebrated = SAVE_ANNIV_YEARS(packed);
+    d = (u16)gLocalTime.days;
+    stored = VarGet(VAR_SAVE_ANNIV_ARMED);
+    if (stored != 0 && (u16)(d + 1) == stored)
+        return celebrated; // armed today (0 on the creation day itself)
+    if (stored != 0 && (u16)(d + 1) < stored)
+    {
+        VarSet(VAR_SAVE_ANNIV_ARMED, 0); // day counter went backward — re-arm
+        stored = 0;
+    }
+    if (stored == 0 || d >= (u16)(stored - 1 + 364))
+    {
+        if (celebrated < 127)
+            celebrated++;
+        VarSet(VAR_SAVE_ANNIVERSARY, SAVE_ANNIV_PACK(celebrated, SAVE_ANNIV_MONTH(packed), SAVE_ANNIV_DAY(packed)));
+        VarSet(VAR_SAVE_ANNIV_ARMED, d + 1);
+        return celebrated;
+    }
+    return 0;
 }
 
 // If today is a hardcoded friend's birthday and the player carries a
@@ -5752,17 +5826,152 @@ u16 FanClub_GetBirthdayAskState(void)
 // Unlike birthdays, special dates only activate once the National
 // Pokédex has been unlocked.
 
+static bool8 IsSpecialCalendarDate(u8 month, u8 day)
+{
+    u8 m, d;
+
+    if (!IsCalendarDateSet() || !IsNationalPokedexEnabled())
+        return FALSE;
+    GetVirtualDate(&m, &d);
+    return m == month && d == day;
+}
+
 // Spooky Day — October 31. Nurses get an eerie greeting, Mt. Pyre
 // crawls with ghosts, and the day's mass outbreak is always a GHOST
 // Pokémon (see wild_encounter.c and tv.c).
 u16 IsSpookyDayToday(void)
 {
-    u8 month, day;
+    return IsSpecialCalendarDate(10, 31);
+}
+
+// Hoenn Day — November 21 (Ruby/Sapphire's launch date). Hoenn-native
+// Pokémon give double EXP and EVs when defeated and shine twice as
+// often when generated (see battle_script_commands.c and pokemon.c).
+u16 IsHoennDayToday(void)
+{
+    return IsSpecialCalendarDate(11, 21);
+}
+
+// Trick Day — April 1. Half of all wild encounters, anywhere, are
+// secretly DITTO — and prankster DITTO shine twice as often.
+u16 IsTrickDayToday(void)
+{
+    return IsSpecialCalendarDate(4, 1);
+}
+
+// Luvdisc Day — February 14. LUVDISC swarm the ocean routes clutching
+// HEART SCALES, eggs develop twice as fast, daycare couples get along
+// twice as well — and a few familiar faces get a little flustered.
+u16 IsLuvdiscDayToday(void)
+{
+    return IsSpecialCalendarDate(2, 14);
+}
+
+// Delivery Day — the 1st of every month. The Slateport market's Energy
+// Guru stocks one special item, one purchase per month.
+u16 IsDeliveryDayToday(void)
+{
+    u8 m, d;
 
     if (!IsCalendarDateSet() || !IsNationalPokedexEnabled())
         return FALSE;
+    GetVirtualDate(&m, &d);
+    return d == 1;
+}
+
+// TRUE on any of the fixed special calendar dates (not birthdays/anniversary,
+// which arm latches). Pure date reads — safe to call from map load. Used to
+// keep Mirage Island visible on holidays.
+bool8 IsAnySpecialDateToday(void)
+{
+    return IsSpookyDayToday() || IsHoennDayToday() || IsTrickDayToday()
+        || IsLuvdiscDayToday() || IsDeliveryDayToday();
+}
+
+// TRUE for species in the (expanded) Hoenn regional dex.
+bool8 IsHoennNativeSpecies(u16 species)
+{
+    u16 hoennNum;
+
+    if (species == SPECIES_NONE)
+        return FALSE;
+    hoennNum = NationalToHoennOrder(SpeciesToNationalPokedexNum(species));
+    return hoennNum != 0 && hoennNum <= HOENN_DEX_COUNT;
+}
+
+// Delivery Day stock, one entry per month (January first).
+static const struct
+{
+    u16 itemId;
+    u16 price;
+} sDeliveryDayStock[12] =
+{
+    {ITEM_LEFTOVERS,      9800}, // January
+    {ITEM_PP_MAX,         9800}, // February
+    {ITEM_KINGS_ROCK,     4800}, // March
+    {ITEM_METAL_COAT,     4800}, // April
+    {ITEM_SCOPE_LENS,     4800}, // May
+    {ITEM_FOCUS_BAND,     4800}, // June
+    {ITEM_DEEP_SEA_TOOTH, 3800}, // July
+    {ITEM_DEEP_SEA_SCALE, 3800}, // August
+    {ITEM_LUCKY_EGG,      9800}, // September
+    {ITEM_MOON_STONE,     3000}, // October
+    {ITEM_SUN_STONE,      3000}, // November
+    {ITEM_STAR_PIECE,     2500}, // December
+};
+
+// VAR_RESULT: 0 = not Delivery Day, 1 = offer available (item id in
+// 0x8004, name in STR_VAR_1, price in STR_VAR_2), 2 = already bought
+// this month. The once-per-month latch stores (day counter + 1) at
+// purchase; consecutive 1sts are 28-31 days apart, so a sub-25-day gap
+// means "same month" without needing to track years.
+void DeliveryDay_GetTodaysOffer(void)
+{
+    u8 month, day;
+    u16 stored, d;
+
+    gSpecialVar_Result = 0;
+    if (!IsDeliveryDayToday())
+        return;
+    GetVirtualDate(&month, &day); // also refreshes gLocalTime
+    d = (u16)gLocalTime.days;
+    stored = VarGet(VAR_DELIVERY_DAY_LAST);
+    if (stored != 0 && (u16)(d - (stored - 1)) < 25)
+    {
+        gSpecialVar_Result = 2;
+        return;
+    }
+    gSpecialVar_0x8004 = sDeliveryDayStock[month - 1].itemId;
+    CopyItemName(gSpecialVar_0x8004, gStringVar1);
+    ConvertIntToDecimalStringN(gStringVar2, sDeliveryDayStock[month - 1].price, STR_CONV_MODE_LEFT_ALIGN, 5);
+    gSpecialVar_Result = 1;
+}
+
+// VAR_RESULT: 1 = paid (item in 0x8004 for the script's giveitem),
+// 2 = not enough money, 3 = no room in the bag. Deducts the money and
+// arms the monthly latch here; the script hands the item over.
+void DeliveryDay_TryPurchase(void)
+{
+    u8 month, day;
+    u16 price;
+
     GetVirtualDate(&month, &day);
-    return month == 10 && day == 31;
+    price = sDeliveryDayStock[month - 1].price;
+    if (!IsEnoughMoney(&gSaveBlock1Ptr->money, price))
+    {
+        gSpecialVar_Result = 2;
+        return;
+    }
+    if (!CheckBagHasSpace(sDeliveryDayStock[month - 1].itemId, 1))
+    {
+        gSpecialVar_Result = 3;
+        return;
+    }
+    RemoveMoney(&gSaveBlock1Ptr->money, price);
+    gSpecialVar_0x8004 = sDeliveryDayStock[month - 1].itemId;
+    RtcCalcLocalTime();
+    VarSet(VAR_DELIVERY_DAY_LAST, (u16)gLocalTime.days + 1);
+    gSpecialVar_Result = 1;
 }
 
 // The visiting spirits of Spooky Day.

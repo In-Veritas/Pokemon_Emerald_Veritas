@@ -34,6 +34,8 @@ FortreeCity_Gym_EventScript_InitRotatingGates::
 	end
 
 FortreeCity_Gym_EventScript_Winona::
+	goto_if_set FLAG_DEFEATED_FORTREE_GYM, FortreeCity_Gym_EventScript_Winona_LuvCheck
+FortreeCity_Gym_EventScript_Winona_Resume::
 	trainerbattle_single TRAINER_WINONA_1, FortreeCity_Gym_Text_WinonaIntro, FortreeCity_Gym_Text_WinonaDefeat, FortreeCity_Gym_EventScript_WinonaDefeated, NO_MUSIC
 	specialvar VAR_RESULT, ShouldTryRematchBattle
 	goto_if_eq VAR_RESULT, TRUE, FortreeCity_Gym_EventScript_WinonaRematch
@@ -378,3 +380,24 @@ FortreeCity_Gym_Text_WinonaRematchNeedTwoMons:
 	.string "POKéMON with you?\p"
 	.string "Please return with two POKéMON\n"
 	.string "at the very least.$"
+
+@ Luvdisc Day: post-defeat, WINONA drifts a little dreamy for a male TRAINER.
+FortreeCity_Gym_EventScript_Winona_LuvCheck::
+	specialvar VAR_RESULT, IsLuvdiscDayToday
+	goto_if_ne VAR_RESULT, TRUE, FortreeCity_Gym_EventScript_Winona_Resume
+	checkplayergender
+	goto_if_eq VAR_RESULT, MALE, FortreeCity_Gym_EventScript_Winona_Flirt
+	goto FortreeCity_Gym_EventScript_Winona_Resume
+
+FortreeCity_Gym_EventScript_Winona_Flirt::
+	msgbox FortreeCity_Gym_Text_WinonaLuvdisc, MSGBOX_DEFAULT
+	release
+	end
+
+FortreeCity_Gym_Text_WinonaLuvdisc:
+	.string "The skies feel especially gentle\n"
+	.string "on LUVDISC Day, don't they?\p"
+	.string "…When you battled me, {PLAYER},\n"
+	.string "my heart soared like never before.\p"
+	.string "Perhaps one day we could fly\n"
+	.string "together. Just a thought…$"

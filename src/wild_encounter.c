@@ -7,6 +7,7 @@
 #include "field_player_avatar.h"
 #include "field_specials.h"
 #include "constants/region_map_sections.h"
+#include "constants/map_types.h"
 #include "event_data.h"
 #include "safari_zone.h"
 #include "overworld.h"
@@ -825,6 +826,30 @@ static bool8 TryGenerateWildMon(const struct WildPokemonInfo *wildMonInfo, u8 ar
      && IsSpookyDayToday() && (Random() & 1))
     {
         CreateWildMon(GetRandomSpookySpecies(), level);
+        return TRUE;
+    }
+
+    // Save anniversary: a 1% chance for MEW to appear in any land grass,
+    // anywhere. Hidden — no fanfare, no announcement.
+    if (area == WILD_AREA_LAND && IsSaveAnniversaryToday() && (Random() % 100) == 0)
+    {
+        CreateWildMon(SPECIES_MEW, level);
+        return TRUE;
+    }
+
+    // Trick Day (01/04): half of everything, everywhere, is secretly DITTO.
+    if (IsTrickDayToday() && (Random() & 1))
+    {
+        CreateWildMon(SPECIES_DITTO, level);
+        return TRUE;
+    }
+
+    // Luvdisc Day (14/02): surfing on ocean routes is half LUVDISC,
+    // and they all carry HEART SCALES (see the wild held item logic).
+    if (area == WILD_AREA_WATER && gMapHeader.mapType == MAP_TYPE_OCEAN_ROUTE
+     && IsLuvdiscDayToday() && (Random() & 1))
+    {
+        CreateWildMon(SPECIES_LUVDISC, level);
         return TRUE;
     }
 

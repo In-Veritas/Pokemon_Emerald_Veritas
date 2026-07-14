@@ -77,3 +77,57 @@ gText_NurseSpookyDay::
 	.string "to people than they usually do…\p"
 	.string "Do be careful out there tonight.\n"
 	.string "Heehee…$"
+
+gText_NurseHoennDay::
+	.string "Happy HOENN DAY!\p"
+	.string "Today we celebrate the POKéMON\n"
+	.string "of our beautiful region!\p"
+	.string "They say Hoenn natives grow\n"
+	.string "faster, train harder, and even\l"
+	.string "sparkle more on this day!$"
+
+gText_NurseLuvdiscDay::
+	.string "Happy LUVDISC DAY!\p"
+	.string "LUVDISC are gathering along the\n"
+	.string "ocean routes with little gifts…\p"
+	.string "And they say POKéMON eggs feel\n"
+	.string "warmer than usual today.\l"
+	.string "How romantic!$"
+
+gText_NurseDeliveryDay::
+	.string "Oh, it's the first of the month!\p"
+	.string "The monthly DELIVERY has arrived\n"
+	.string "at the SLATEPORT market—\l"
+	.string "one special item, first come,\l"
+	.string "first served!$"
+
+gText_NurseSaveAnniv1::
+	.string "Oh! Do you know what today is?\p"
+	.string "It's been exactly one year since\n"
+	.string "you and your POKéMON set out\l"
+	.string "together!\p"
+	.string "Happy anniversary!$"
+
+gText_NurseSaveAnnivFew::
+	.string "Happy anniversary!\p"
+	.string "{STR_VAR_1} years on your journey\n"
+	.string "already… time really flies!$"
+
+gText_NurseSaveAnnivMany::
+	.string "{STR_VAR_1} years together today!\p"
+	.string "You and your POKéMON are true\n"
+	.string "veterans now. I'm impressed!$"
+
+gText_NurseSaveAnnivLots::
+	.string "{STR_VAR_1} whole years?!\p"
+	.string "Why, you're practically a living\n"
+	.string "LEGEND around here!\p"
+	.string "Happy anniversary, champion!$"
+
+gText_NurseSaveAnnivAncient::
+	.string "…{STR_VAR_1} years.\p"
+	.string "{STR_VAR_1} years on the same\n"
+	.string "journey. I… I don't even know\l"
+	.string "what to say anymore!\p"
+	.string "You're a phenomenon. Happy\n"
+	.string "anniversary, eternal TRAINER!$"

@@ -381,6 +381,16 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * Muddy Water base power increased from 85 to 95
 * Mudkip now learns Muddy Water at level 50
 
+#### Move Rebalancing
+
+* **Pay Day** now snowballs like Uproar: each **consecutive** use adds **+20 power** (60 → 160 cap) **and** scatters progressively more coins. Using another move resets the chain. Description updated to match.
+* **Rapid Spin** now also **raises the user's Speed by one stage** (in addition to clearing hazards/binding), like its modern incarnation.
+* **Doom Desire** base power increased from 150 to **160**.
+
+#### Ability Capsule → Medicine Pocket
+
+* The Ability Capsule now files under the bag's **Medicine** sub-pocket (alongside the other "use on a Pokémon" items) instead of general items.
+
 #### Egg Move Tutor Price
 
 * Egg Move Tutors (Fallarbor Town and Artisan Cave) now charge a **Nugget** or **Pearl** per move taught
@@ -472,16 +482,30 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 * **Mom has a one-time birthday gift: a SHINY CHARM.** May and Professor Birch have birthday greetings of their own
 * Birthday perks, all day: **double EXP**, **double EVs**, and **two bonus shiny rolls** on every Pokémon generated (wild, gifts, eggs — even trainers' Pokémon can shimmer)
 * Birthdays arm **once per 364 days** on the real day counter, so re-dialing the calendar can't repeat the perks — and a fresh save can always celebrate its first one
-* Registered birthdays: NIJI 14/09 · AILES 14/08 · GABS 16/10 · PURPLE 14/05 · ALHYA 02/10 · LUNA 27/07 · MAPU 22/08 · ANIA 27/07 — new names are a one-line table entry
-* Not on the list? A member of the **Lilycove Pokémon Trainer Fan Club** keeps a birthday chart and will record yours: a single-number spinner picks the month (1-12), then the day (with proper 28/30/31-day months); his record-mixing fan dialogue stays intact afterwards
+* Registered birthdays: NIJI 14/09 · AILES 14/08 · GABS 16/10 · PURPLE 14/05 · ALHYA 02/10 · LUNA 27/07 · MAPU 22/08 · ANIA 27/07 · LUCY 14/03 — new names are a one-line table entry
+* Not on the list? A member of the **Lilycove Pokémon Trainer Fan Club** keeps a birthday chart and will record yours: a single-number spinner picks the month (1-12), then the day (with proper 28/30/31-day months); his record-mixing fan dialogue stays intact afterwards. Already registered? **Talk to him twice** to change it
 * Carrying a **friend's traded Pokémon on their birthday**? The nurse recognizes its original Trainer and reminds you to wish them a happy birthday (a gentle nudge — no music or perks)
 
-#### Spooky Day (31/10)
+<details>
+<summary><b>🎉 Secret calendar events (spoilers — dates hidden on purpose!)</b></summary>
 
-* On **October 31**, Hoenn gets spooky — special calendar dates (unlike birthdays) require the **National Pokédex**
-* Pokémon Center nurses have an eerie greeting: *"…Oh! Did you feel that chill?"*
-* **Mt. Pyre crawls with ghosts**: half of all land encounters there (every floor, exterior and summit) become GASTLY, HAUNTER, DUSKULL, SHUPPET, or MISDREAVUS at the local level
-* The day's **mass outbreak is guaranteed and always one of those five ghosts** — species and fitting movesets swap onto whatever route the outbreak roll picks, at that route's level
+> Special dates (unlike birthdays) only activate once the **National Pokédex** is unlocked. Discover them yourself, or peek here.
+
+**Spooky Day — October 31.** Pokémon Center nurses give an eerie greeting. **Mt. Pyre crawls with ghosts**: half of all land encounters there (every floor, exterior, and summit) become Gastly, Haunter, Duskull, Shuppet, or Misdreavus at the local level. The day's **mass outbreak is guaranteed and always one of those five ghosts**, with fitting movesets, on whatever route the roll picks.
+
+**Hoenn Day — November 21** (Ruby/Sapphire's launch). The nurse announces it. **Hoenn-native Pokémon** give **double EXP**, **double EVs**, and **double shiny chance** when generated or defeated.
+
+**Luvdisc Day — February 14.** The nurse announces the romance. **Luvdisc swarm every ocean route (50% of surf encounters), each holding a Heart Scale.** Eggs develop **twice as fast** and daycare compatibility **doubles**. Mom, Professor Birch, your rival, and the **younger Gym Leaders** (Roxanne, Brawly, Flannery, Winona — flirty depending on your gender) all have special dialogue.
+
+**Trick Day — April 1.** **50% of all wild encounters, anywhere, are secretly Ditto** — with **double shiny odds** on those Ditto. No warning; the grass just lies to you.
+
+**Delivery Day — the 1st of every month.** The Slateport market's Energy Guru stocks **one special item, one purchase per month** (rotates monthly: Leftovers, PP Max, King's Rock, Metal Coat, Scope Lens, Focus Band, Deep Sea Tooth/Scale, Lucky Egg, Moon/Sun Stone, Star Piece). The nurse points you to it.
+
+**Save Anniversary — your save's own birthday.** New saves quietly record their creation date at the intro clock (existing saves can't — there's no way to know their true age). Each year on that date, the nurse, Mom, Birch, and your rival congratulate you and count the years, getting quirkier as they pile up. That day grants **double EXP/EVs/shiny**, and **Mew has a 1% chance to appear in any patch of grass, anywhere** — completely hidden.
+
+**Mirage Island** on Route 130 is **always visible on any of the special dates above.**
+
+</details>
 
 #### Follower Transform RNG Fix
 

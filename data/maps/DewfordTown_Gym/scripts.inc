@@ -151,6 +151,8 @@ DewfordTown_Gym_EventScript_StopCountingTrainers::
 	return
 
 DewfordTown_Gym_EventScript_Brawly::
+	goto_if_set FLAG_DEFEATED_DEWFORD_GYM, DewfordTown_Gym_EventScript_Brawly_LuvCheck
+DewfordTown_Gym_EventScript_Brawly_Resume::
 	goto_if_set FLAG_DEFEATED_DEWFORD_GYM, DewfordTown_Gym_EventScript_DoBrawly1
 	goto_if_set FLAG_DEFEATED_LAVARIDGE_GYM, DewfordTown_Gym_EventScript_BeatFlannery
 	goto_if_set FLAG_DEFEATED_MAUVILLE_GYM, DewfordTown_Gym_EventScript_BeatWattson
@@ -547,3 +549,24 @@ DewfordTown_Gym_Text_BrawlyRematchNeedTwoMons:
 	.string "that can battle.\p"
 	.string "I'm sorry, but I'd like you to come back\n"
 	.string "with at least two POKéMON.$"
+
+@ Luvdisc Day: post-defeat, BRAWLY flexes a little for a female TRAINER.
+DewfordTown_Gym_EventScript_Brawly_LuvCheck::
+	specialvar VAR_RESULT, IsLuvdiscDayToday
+	goto_if_ne VAR_RESULT, TRUE, DewfordTown_Gym_EventScript_Brawly_Resume
+	checkplayergender
+	goto_if_eq VAR_RESULT, FEMALE, DewfordTown_Gym_EventScript_Brawly_Flirt
+	goto DewfordTown_Gym_EventScript_Brawly_Resume
+
+DewfordTown_Gym_EventScript_Brawly_Flirt::
+	msgbox DewfordTown_Gym_Text_BrawlyLuvdisc, MSGBOX_DEFAULT
+	release
+	end
+
+DewfordTown_Gym_Text_BrawlyLuvdisc:
+	.string "Whoa, is it LUVDISC Day already?\p"
+	.string "You know, {PLAYER}, a wave only\n"
+	.string "hits this hard once in a while…\p"
+	.string "And YOU crashed into my life like\n"
+	.string "a big one! Ha ha!\p"
+	.string "Catch a wave with me sometime?$"

@@ -206,6 +206,7 @@ LilycoveCity_PokemonTrainerFanClub_EventScript_Man::
 	@ record-mixing chatter below is never lost.
 	specialvar VAR_RESULT, FanClub_GetBirthdayAskState
 	goto_if_eq VAR_RESULT, 1, FanClub_EventScript_OfferBirthday
+	goto_if_eq VAR_RESULT, 0, FanClub_EventScript_AlreadyRegistered
 	call_if_eq VAR_RESULT, 2, FanClub_EventScript_BragBirthday
 	setvar VAR_0x8004, FANCLUB_MEMBER6
 	special BufferFanClubTrainerName
@@ -834,6 +835,25 @@ FanClub_EventScript_BragBirthday::
 	msgbox FanClub_Text_BirthdayOnMyChart, MSGBOX_DEFAULT
 	return
 
+@ Custom birthday already on file. First talk brags + hints; talking again
+@ (VAR_TEMP_1 latch, cleared on map reload) re-opens the spinner to change it.
+FanClub_EventScript_AlreadyRegistered::
+	goto_if_eq VAR_TEMP_1, 1, FanClub_EventScript_ChangeBirthday
+	setvar VAR_TEMP_1, 1
+	msgbox FanClub_Text_AlreadyOnChart, MSGBOX_DEFAULT
+	release
+	end
+
+FanClub_EventScript_ChangeBirthday::
+	message FanClub_Text_PickMonthThenDay
+	waitmessage
+	special FanClub_StartBirthdayEntry
+	waitstate
+	goto_if_eq VAR_RESULT, FALSE, FanClub_EventScript_BirthdayDeclined
+	msgbox FanClub_Text_BirthdayNoted, MSGBOX_DEFAULT
+	release
+	end
+
 FanClub_EventScript_OfferBirthday::
 	msgbox FanClub_Text_TellMeYourBirthday, MSGBOX_YESNO
 	goto_if_eq VAR_RESULT, NO, FanClub_EventScript_BirthdayDeclined
@@ -876,3 +896,9 @@ FanClub_Text_BirthdayNoted:
 FanClub_Text_BirthdayMaybeLater:
 	.string "Aww… Well, come tell me any\n"
 	.string "time!$"
+
+FanClub_Text_AlreadyOnChart:
+	.string "A star like you is already on my\n"
+	.string "birthday chart!\p"
+	.string "…Though if I've got it wrong, just\n"
+	.string "tell me again and I'll fix it!$"

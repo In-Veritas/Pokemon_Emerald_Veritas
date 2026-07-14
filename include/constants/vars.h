@@ -102,7 +102,7 @@
 #define VAR_STARTER_MON_NAT_DEX                          0x4052 // Replaced unused VAR_DEWFORD_TOWN_STATE - Hold National Dex Starter Selection_Nat -  // 0=Treecko, 1=Torchic, 2=Mudkip, 3=Bulbasaur, 4=Charmander, 5=Squirtle, 6=Chikorita, 7=Cyndaquil, 8=Totodile
 #define VAR_LAVARIDGE_TOWN_STATE                         0x4053
 #define VAR_CURRENT_SECRET_BASE                          0x4054 // was probably allocated for VAR_FALLARBOR_TOWN_STATE at one point
-#define VAR_VERDANTURF_TOWN_STATE                        0x4055 // Unused Var — was VAR_OVERWORLD_SPEEDUP (speedup feature removed); old saves may hold 0-3, clear before reuse
+#define VAR_SAVE_ANNIVERSARY                             0x4055 // Save birthday: (yearsCelebrated << 9) | (month << 5) | day. 0 = untracked (existing saves). Set once at new-game intro. (was unused VAR_VERDANTURF_TOWN_STATE / VAR_OVERWORLD_SPEEDUP; old saves may hold 0-3, treated as untracked)
 #define VAR_TOURNEY_PRIZES_REDEEMED                      0x4056 // Bitmask of redeemed tournament prize code IDs 1-15 (was unused VAR_PACIFIDLOG_TOWN_STATE)
 #define VAR_PETALBURG_CITY_STATE                         0x4057
 #define VAR_SLATEPORT_CITY_STATE                         0x4058
@@ -244,8 +244,8 @@
 #define VAR_SE_VOLUME                                    0x40E0 // 0=medium(50%), 1=quiet(mute), 2=loud(100%), 3=low(25%), 4=high(75%)
 #define VAR_PLAYER_STYLE                                 0x40E1 // Player clothing style index (0=default, 1-24=custom styles)
 #define VAR_OUTFIT_CONDITIONS                            0x40E2 // Bitmask for hook-based outfit unlock conditions
-#define VAR_GIFT_UNUSED_6                                0x40E3 // Var is written to, but never read
-#define VAR_GIFT_UNUSED_7                                0x40E4 // var is written to, but never read
+#define VAR_DELIVERY_DAY_LAST                            0x40E3 // (day counter + 1) of the last Delivery Day purchase; 0 = never (was write-only VAR_GIFT_UNUSED_6, its zeroing removed from ClearMysteryGiftVars)
+#define VAR_SAVE_ANNIV_ARMED                             0x40E4 // (day counter + 1) when the save anniversary last armed; 0 = never. 364-day cooldown latch, mirrors the birthday latch (was write-only VAR_GIFT_UNUSED_7)
 #define VAR_ROUTE117_WILD_SET                            0x40E5
 #define VAR_DAILY_SLOTS                                  0x40E6
 #define VAR_DAILY_WILDS                                  0x40E7

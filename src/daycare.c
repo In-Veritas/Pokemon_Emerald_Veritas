@@ -1,4 +1,5 @@
 #include "global.h"
+#include "field_specials.h"
 #include "pokemon.h"
 #include "battle.h"
 #include "daycare.h"
@@ -1088,6 +1089,9 @@ static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
     if (daycare->offspringPersonality == 0 && validEggs == DAYCARE_MON_COUNT && (daycare->mons[1].steps & 0xFF) == 0xFF)
     {
         u8 compatibility = GetDaycareCompatibilityScore(daycare);
+        // Luvdisc Day (14/02): love is in the air — compatibility doubles.
+        if (IsLuvdiscDayToday())
+            compatibility *= 2;
         if (compatibility > (Random() * 100u) / USHRT_MAX)
             TriggerPendingDaycareEgg();
     }
@@ -1097,6 +1101,10 @@ static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
     {
         u32 eggCycles;
         u8 toSub = GetEggCyclesToSubtract();
+
+        // Luvdisc Day (14/02): eggs develop twice as fast.
+        if (IsLuvdiscDayToday())
+            toSub *= 2;
         u16 eggSpecies;
         bool32 slowHatch;
         bool32 skipThisTick;

@@ -65,6 +65,8 @@ LavaridgeTown_Gym_1F_EventScript_EndCheckBuryTrainers::
 	return
 
 LavaridgeTown_Gym_1F_EventScript_Flannery::
+	goto_if_set FLAG_DEFEATED_LAVARIDGE_GYM, LavaridgeTown_Gym_1F_EventScript_Flannery_LuvCheck
+LavaridgeTown_Gym_1F_EventScript_Flannery_Resume::
 	trainerbattle_single TRAINER_FLANNERY_1, LavaridgeTown_Gym_1F_Text_FlanneryIntro, LavaridgeTown_Gym_1F_Text_FlanneryDefeat, LavaridgeTown_Gym_1F_EventScript_FlanneryDefeated, NO_MUSIC
 	specialvar VAR_RESULT, ShouldTryRematchBattle
 	goto_if_eq VAR_RESULT, TRUE, LavaridgeTown_Gym_1F_EventScript_FlanneryRematch
@@ -463,3 +465,24 @@ LavaridgeTown_Gym_1F_Text_FlanneryRematchNeedTwoMons:
 	.string "that can battle?\p"
 	.string "I hate to say this, but when you come\n"
 	.string "see me, bring at least two POKéMON.$"
+
+@ Luvdisc Day: post-defeat, FLANNERY turns up the heat for a male TRAINER.
+LavaridgeTown_Gym_1F_EventScript_Flannery_LuvCheck::
+	specialvar VAR_RESULT, IsLuvdiscDayToday
+	goto_if_ne VAR_RESULT, TRUE, LavaridgeTown_Gym_1F_EventScript_Flannery_Resume
+	checkplayergender
+	goto_if_eq VAR_RESULT, MALE, LavaridgeTown_Gym_1F_EventScript_Flannery_Flirt
+	goto LavaridgeTown_Gym_1F_EventScript_Flannery_Resume
+
+LavaridgeTown_Gym_1F_EventScript_Flannery_Flirt::
+	msgbox LavaridgeTown_Gym_1F_Text_FlanneryLuvdisc, MSGBOX_DEFAULT
+	release
+	end
+
+LavaridgeTown_Gym_1F_Text_FlanneryLuvdisc:
+	.string "Well, well! Look who battled his\n"
+	.string "way back to me on LUVDISC Day!\p"
+	.string "My grandfather always said a bold\n"
+	.string "TRAINER makes a bold sweetheart…\p"
+	.string "Careful, {PLAYER}—I burn HOT!\n"
+	.string "Hee hee!$"

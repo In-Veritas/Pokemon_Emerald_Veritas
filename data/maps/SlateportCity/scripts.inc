@@ -147,6 +147,11 @@ SlateportCity_EventScript_EnergyGuru::
 	faceplayer
 	specialvar VAR_RESULT, LeadMonHasEffortRibbon
 	call_if_eq VAR_RESULT, TRUE, SlateportCity_EventScript_EnergyGuru_AbilityCapsule
+	@ Delivery Day (1st of the month): one special item, once per month.
+	special DeliveryDay_GetTodaysOffer
+	goto_if_eq VAR_RESULT, 1, SlateportCity_EventScript_DeliveryOffer
+	call_if_eq VAR_RESULT, 2, SlateportCity_EventScript_DeliverySoldOutNote
+SlateportCity_EventScript_EnergyGuru_Shop::
 	message SlateportCity_Text_EnergyGuruSellWhatYouNeed
 	waitmessage
 	pokemart SlateportCity_Pokemart_EnergyGuru
@@ -1484,3 +1489,73 @@ SlateportCity_Text_TakingBattleTentChallenge:
 	.string "After all, a tough TRAINER is\n"
 	.string "the perfect fit for the BATTLE TENT!\p"
 	.string "Give it your best effort!$"
+
+@ Delivery Day (see DeliveryDay_* specials in field_specials.c). The
+@ special pre-checks money and bag space and deducts the money, so the
+@ giveitem below always succeeds.
+SlateportCity_EventScript_DeliveryOffer::
+	msgbox SlateportCity_Text_DeliveryOffer, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, SlateportCity_EventScript_DeliveryDeclined
+	special DeliveryDay_TryPurchase
+	switch VAR_RESULT
+	case 1, SlateportCity_EventScript_DeliveryBought
+	case 2, SlateportCity_EventScript_DeliveryNoMoney
+	case 3, SlateportCity_EventScript_DeliveryNoRoom
+	end
+
+SlateportCity_EventScript_DeliveryBought::
+	giveitem VAR_0x8004, 1
+	msgbox SlateportCity_Text_DeliveryThanks, MSGBOX_DEFAULT
+	goto SlateportCity_EventScript_EnergyGuru_Shop
+	end
+
+SlateportCity_EventScript_DeliveryDeclined::
+	msgbox SlateportCity_Text_DeliveryDeclined, MSGBOX_DEFAULT
+	goto SlateportCity_EventScript_EnergyGuru_Shop
+	end
+
+SlateportCity_EventScript_DeliveryNoMoney::
+	msgbox SlateportCity_Text_DeliveryNoMoney, MSGBOX_DEFAULT
+	goto SlateportCity_EventScript_EnergyGuru_Shop
+	end
+
+SlateportCity_EventScript_DeliveryNoRoom::
+	msgbox SlateportCity_Text_DeliveryNoRoom, MSGBOX_DEFAULT
+	goto SlateportCity_EventScript_EnergyGuru_Shop
+	end
+
+SlateportCity_EventScript_DeliverySoldOutNote::
+	msgbox SlateportCity_Text_DeliverySoldOut, MSGBOX_DEFAULT
+	return
+
+SlateportCity_Text_DeliveryOffer:
+	.string "Psst! The monthly DELIVERY came\n"
+	.string "in this morning!\p"
+	.string "This month only: {STR_VAR_1}\n"
+	.string "for ¥{STR_VAR_2}!\p"
+	.string "One per customer. Want it?$"
+
+SlateportCity_Text_DeliveryThanks:
+	.string "Pleasure doing business!\p"
+	.string "Come back on the first of next\n"
+	.string "month for a new delivery!$"
+
+SlateportCity_Text_DeliveryDeclined:
+	.string "No rush! The offer stands until\n"
+	.string "the day ends.\p"
+	.string "Now, about my usual wares…$"
+
+SlateportCity_Text_DeliveryNoMoney:
+	.string "Oh… you're a little short on\n"
+	.string "funds for that, friend.$"
+
+SlateportCity_Text_DeliveryNoRoom:
+	.string "Your BAG is packed full!\p"
+	.string "Make some room and hurry back\n"
+	.string "before the day ends!$"
+
+SlateportCity_Text_DeliverySoldOut:
+	.string "This month's DELIVERY is already\n"
+	.string "in your hands!\p"
+	.string "Come back on the first of next\n"
+	.string "month!$"

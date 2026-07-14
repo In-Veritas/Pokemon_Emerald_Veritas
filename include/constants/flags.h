@@ -1298,7 +1298,7 @@
 #define FLAG_RECEIVED_ALHYA_APOLOGY                                 0x4E4 // One-shot gate: apology gift for OT name "Alhya" (field_specials.c; was misleadingly named FLAG_UNUSED_0x4E4)
 #define FLAG_HIDE_ROUTE117_AZUMARILL                                0x4E5 // Route 117 wanderer day rotation (was FLAG_UNUSED_0x4E5)
 #define FLAG_RECEIVED_BIRTHDAY_SHINY_CHARM                          0x4E6 // Mom's one-time birthday Shiny Charm gift (was FLAG_UNUSED_0x4E6)
-#define FLAG_UNUSED_0x4E7                                           0x4E7 // Unused Flag
+#define FLAG_SAVE_ANNIV_ELIGIBLE                                    0x4E7 // Set at new game; consumed when the intro sets the date to record the save anniversary. Absent on existing saves so they never get a save birthday.
 #define FLAG_UNUSED_0x4E8                                           0x4E8 // Unused Flag
 #define FLAG_UNUSED_0x4E9                                           0x4E9 // Unused Flag
 #define FLAG_UNUSED_0x4EA                                           0x4EA // Unused Flag
