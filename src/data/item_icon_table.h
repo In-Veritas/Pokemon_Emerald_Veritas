@@ -436,8 +436,8 @@ const u32 *const gItemIconTable[ITEMS_COUNT + 1][2] =
 
     [ITEM_MORPH_POWDER] = {gItemIcon_MetalPowder, gItemIconPalette_MorphPowder},
 
-    // Golden Cap reuses the Nugget icon — no new graphics
-    [ITEM_GOLDEN_CAP] = {gItemIcon_Nugget, gItemIconPalette_Nugget},
+    // Golden Cap reuses the Nugget icon with a brighter gold palette
+    [ITEM_GOLDEN_CAP] = {gItemIcon_Nugget, gItemIconPalette_GoldenCap},
 
     [ITEMS_COUNT] = {gItemIcon_ReturnToFieldArrow, gItemIconPalette_ReturnToFieldArrow},
 };

@@ -761,3 +761,5 @@ const u32 gItemIcon_OldSeaMap[] = INCBIN_U32("graphics/items/icons/old_sea_map.4
 const u32 gItemIconPalette_OldSeaMap[] = INCBIN_U32("graphics/items/icon_palettes/old_sea_map.gbapal.lz");
 
 const u32 gItemIconPalette_MorphPowder[] = INCBIN_U32("graphics/items/icon_palettes/morph_powder.gbapal.lz");
+
+const u32 gItemIconPalette_GoldenCap[] = INCBIN_U32("graphics/items/icon_palettes/golden_cap.gbapal.lz");

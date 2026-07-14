@@ -399,7 +399,7 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * A new item that **maxes all six IVs** of one party Pokémon to 31 — like Gen 7's Gold Bottle Cap, except it changes the real IVs, so stats, Hidden Power and everything downstream follow
 * Used from the bag on a party Pokémon; asks for confirmation, then recalculates stats immediately
 * Has no effect on eggs or Pokémon whose IVs are already perfect (and isn't consumed)
-* Reuses the Nugget icon and an unused item slot — no new graphics, no save structure changes
+* Uses the Nugget icon with a slightly brighter gold palette, in an unused item slot — no save structure changes
 * Not yet distributed in-game — available via the debug menu for testing; place it in shops/events as desired
 
 #### Wild Held Item Changes
