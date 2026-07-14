@@ -5187,13 +5187,15 @@ void UpdateRoute117WandererFlags(void)
 // ============================================================
 // Redeemed at the Cable Club attendant (TOURNAMENT PRIZE menu option).
 // Codes are generated offline with tools/make_prize_code.py and bind
-// (visible trainer ID, prize ID, salt), so a code only works on the
-// winner's save, and each prize ID redeems once per save (bitmask in
-// VAR_TOURNEY_PRIZES_REDEEMED). Code format: 8 characters from a
-// 32-letter alphabet — [0] = prize ID, [1..7] = a 35-bit keyed MAC.
-// To add or change prizes, edit sTournamentPrizes below and hand out
-// codes for the new ID. To invalidate ALL outstanding codes, change the
-// salts here and in the tool, then rebuild.
+// (visible trainer ID, prize ID, tournament, placement, salt), so a code
+// only works on the winner's save, and each prize ID redeems once per
+// save (bitmask in VAR_TOURNEY_PRIZES_REDEEMED). Code format: 8 chars
+// from a 32-letter alphabet — [0] = prize ID, [1] = (tournament ID << 2)
+// | placement, [2..7] = a 30-bit keyed MAC over all of it. Tournament ID
+// 0 keeps the generic congratulations; 1+ makes the clerk name the
+// tournament and placement. To add prizes or tournaments, extend
+// sTournamentPrizes / sTournamentNames below. To invalidate ALL
+// outstanding codes, change the salts here and in the tool, then rebuild.
 
 #define TOURNEY_CODE_LENGTH 8
 #define TOURNEY_PRIZE_COUNT 16
@@ -5209,7 +5211,31 @@ static const struct
     [1] = {ITEM_GOLDEN_CAP, 1},
     [2] = {ITEM_MASTER_BALL, 1},
     [3] = {ITEM_RARE_CANDY, 5},
-    // IDs 4-15 are open — add tournament prizes here.
+    [4] = {ITEM_SHINY_CHARM, 1},
+    // IDs 5-15 are open — add tournament prizes here.
+};
+
+// Tournament IDs for code char [1] bits 2-4. ID 0 = no specific
+// tournament (generic congratulations). IDs 3-7 are open.
+static const u8 sTourneyName_MagmaVsAqua[]    = _("MAGMA VS AQUA");
+static const u8 sTourneyName_SouthernIsland[] = _("SOUTHERN ISLAND");
+static const u8 *const sTournamentNames[8] =
+{
+    NULL,
+    sTourneyName_MagmaVsAqua,
+    sTourneyName_SouthernIsland,
+};
+
+// Placement for code char [1] bits 0-1.
+static const u8 sTourneyPlace_First[]  = _("first place");
+static const u8 sTourneyPlace_Second[] = _("second place");
+static const u8 sTourneyPlace_Third[]  = _("third place");
+static const u8 *const sTourneyPlacements[4] =
+{
+    sTourneyPlace_First,
+    sTourneyPlace_Second,
+    sTourneyPlace_Third,
+    sTourneyPlace_First, // reserved
 };
 
 // 32-character code alphabet (no I, O, 0 or 1 — too easy to misread).
@@ -5260,8 +5286,8 @@ static s32 TourneyCharToIndex(u8 c)
 static u16 RedeemTournamentCode(const u8 *code)
 {
     s32 idx[TOURNEY_CODE_LENGTH];
-    u32 h1, h2, mac;
-    u32 prizeId;
+    u32 h1, mac;
+    u32 prizeId, payload, tournamentId, placement;
     u16 tid, redeemed, itemId, quantity;
     s32 i;
 
@@ -5285,17 +5311,20 @@ static u16 RedeemTournamentCode(const u8 *code)
     if (itemId == ITEM_NONE)
         return TOURNEY_CODE_INVALID;
 
+    payload = idx[1]; // (tournament ID << 2) | placement
+    tournamentId = payload >> 2;
+    placement = payload & 3;
+    if (tournamentId != 0 && sTournamentNames[tournamentId] == NULL)
+        return TOURNEY_CODE_INVALID;
+
     // Visible trainer ID — the 5-digit number on the Trainer Card.
     tid = gSaveBlock2Ptr->playerTrainerId[0] | (gSaveBlock2Ptr->playerTrainerId[1] << 8);
-    h1 = TourneyMix(TOURNEY_SALT_1 ^ ((u32)tid << 8) ^ prizeId);
-    h2 = TourneyMix(h1 ^ TOURNEY_SALT_2);
+    h1 = TourneyMix(TOURNEY_SALT_1 ^ ((u32)tid << 12) ^ (prizeId << 7) ^ payload ^ TOURNEY_SALT_2);
 
     mac = 0;
-    for (i = 1; i <= 6; i++)
-        mac |= (u32)idx[i] << (5 * (i - 1));
+    for (i = 2; i <= 7; i++)
+        mac |= (u32)idx[i] << (5 * (i - 2));
     if (mac != (h1 & 0x3FFFFFFF))
-        return TOURNEY_CODE_INVALID;
-    if (idx[7] != (s32)(((h1 >> 30) ^ h2) & 31))
         return TOURNEY_CODE_INVALID;
 
     redeemed = VarGet(VAR_TOURNEY_PRIZES_REDEEMED);
@@ -5308,6 +5337,14 @@ static u16 RedeemTournamentCode(const u8 *code)
     VarSet(VAR_TOURNEY_PRIZES_REDEEMED, redeemed | (1 << prizeId));
     gSpecialVar_0x8004 = itemId;
     gSpecialVar_0x8005 = quantity;
+    // 0 = generic congratulations; 1+ = clerk names tournament + placement
+    // (buffered here so the script's msgbox can use {STR_VAR_1}/{STR_VAR_2}).
+    gSpecialVar_0x8006 = tournamentId;
+    if (tournamentId != 0)
+    {
+        StringCopy(gStringVar1, sTournamentNames[tournamentId]);
+        StringCopy(gStringVar2, sTourneyPlacements[placement]);
+    }
     return TOURNEY_CODE_OK;
 }
 
@@ -5325,4 +5362,3 @@ void TournamentPrize_DoCodeEntry(void)
     gStringVar2[0] = EOS;
     DoNamingScreen(NAMING_SCREEN_WALDA, gStringVar2, 0, 0, 0, CB2_HandleTournamentCode);
 }
-

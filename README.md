@@ -112,7 +112,8 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 
 * The Cable Club attendant (first desk in every Pokémon Center 2F) now offers a **TOURNAMENT PRIZE** option in her service menu
 * Winners enter an **8-character prize code**; codes are generated offline with `tools/make_prize_code.py` from the winner's visible Trainer ID + a prize ID, so a code **only works on that winner's save**, and each prize ID redeems **once per save**
-* Prizes live in a small table in `field_specials.c` (seeded with Golden Cap, Master Ball, and Rare Candy ×5 as IDs 1-3; IDs 4-15 open) — adding a new prize is a one-line change
+* Prizes live in a small table in `field_specials.c` (Golden Cap, Master Ball, Rare Candy ×5, Shiny Charm as IDs 1-4; IDs 5-15 open) — adding a new prize is a one-line change
+* Codes can also carry a **tournament and placement**: the clerk then congratulates the winner on taking first/second/third place in the tournament by name ("MAGMA VS AQUA" and "SOUTHERN ISLAND" registered; more are a one-line addition)
 * This replaces hardcoded name-based gifts as the tournament reward channel; changing the shared salt invalidates all outstanding codes
 
 #### Auto Record Mixing After Link Battles

@@ -520,3 +520,9 @@ CableClub_Text_TournamentPrizeNoRoom:
 	.string "Oh dear, your BAG is full.\p"
 	.string "Please make room, then come back\n"
 	.string "with your code.$"
+
+CableClub_Text_TournamentPrizePlacement:
+	.string "That's a winning code!\p"
+	.string "Congratulations on taking\n"
+	.string "{STR_VAR_2} in the\l"
+	.string "{STR_VAR_1} Tournament!$"

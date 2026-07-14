@@ -308,7 +308,17 @@ CableClub_EventScript_TournamentPrize::
 	end
 
 CableClub_EventScript_TournamentPrizeGive::
+	goto_if_ne VAR_0x8006, 0, CableClub_EventScript_TournamentPrizePlacement
 	msgbox CableClub_Text_TournamentPrizeWinner, MSGBOX_DEFAULT
+	giveitem VAR_0x8004, VAR_0x8005
+	goto CableClub_EventScript_SelectCableClubRoom
+	end
+
+@ Tournament-specific congratulations: STR_VAR_1 = tournament name,
+@ STR_VAR_2 = placement ("first place"/"second place"/"third place"),
+@ both buffered by RedeemTournamentCode.
+CableClub_EventScript_TournamentPrizePlacement::
+	msgbox CableClub_Text_TournamentPrizePlacement, MSGBOX_DEFAULT
 	giveitem VAR_0x8004, VAR_0x8005
 	goto CableClub_EventScript_SelectCableClubRoom
 	end
