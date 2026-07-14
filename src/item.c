@@ -1060,6 +1060,7 @@ u8 GetItemVirtualPocket(u16 itemId)
      || fieldFunc == ItemUseOutOfBattle_SacredAsh
      || fieldFunc == ItemUseOutOfBattle_MorphPowder
      || fieldFunc == ItemUseOutOfBattle_GoldenCap
+     || fieldFunc == ItemUseOutOfBattle_AbilityCapsule
      || battleUsage == ITEM_B_USE_MEDICINE)
         return MEDICINE_POCKET;
 
