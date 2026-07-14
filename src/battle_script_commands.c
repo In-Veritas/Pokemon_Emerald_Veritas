@@ -1305,6 +1305,22 @@ static void Cmd_critcalc(void)
 static void Cmd_damagecalc(void)
 {
     u16 sideStatus = gSideStatuses[GET_BATTLER_SIDE(gBattlerTarget)];
+
+    // Veritas: Pay Day scales +20 power per consecutive use (cap +100, so
+    // 60 -> 160). payDayCounter is bumped in the MOVE_EFFECT_PAYDAY handler
+    // and reset here whenever the attacker uses a different damaging move.
+    if (gCurrentMove == MOVE_PAY_DAY)
+    {
+        u32 payDayBonus = gDisableStructs[gBattlerAttacker].payDayCounter * 20;
+        if (payDayBonus > 100)
+            payDayBonus = 100;
+        gDynamicBasePower += payDayBonus;
+    }
+    else
+    {
+        gDisableStructs[gBattlerAttacker].payDayCounter = 0;
+    }
+
     gBattleMoveDamage = CalculateBaseDamage(&gBattleMons[gBattlerAttacker], &gBattleMons[gBattlerTarget], gCurrentMove,
                                             sideStatus, gDynamicBasePower,
                                             gBattleStruct->dynamicMoveType, gBattlerAttacker, gBattlerTarget);
@@ -2725,10 +2741,15 @@ void SetMoveEffect(bool8 primary, u8 certain)
                 if (GET_BATTLER_SIDE(gBattlerAttacker) == B_SIDE_PLAYER)
                 {
                     u16 payday = gPaydayMoney;
-                    gPaydayMoney += (gBattleMons[gBattlerAttacker].level * 5);
+                    // Veritas: repeated Pay Day scatters more coins each use.
+                    gPaydayMoney += (gBattleMons[gBattlerAttacker].level * 5
+                                     * (gDisableStructs[gBattlerAttacker].payDayCounter + 1));
                     if (payday > gPaydayMoney)
                         gPaydayMoney = 0xFFFF;
                 }
+                // Veritas: advance the consecutive-use counter (power caps at +100).
+                if (gDisableStructs[gBattlerAttacker].payDayCounter < 5)
+                    gDisableStructs[gBattlerAttacker].payDayCounter++;
                 BattleScriptPush(gBattlescriptCurrInstr + 1);
                 gBattlescriptCurrInstr = sMoveEffectBS_Ptrs[gBattleCommunication[MOVE_EFFECT_BYTE]];
                 break;
@@ -3502,6 +3523,10 @@ static void Cmd_getexp(void)
 
             // Birthday bonus: double EXP on the player's declared birthday.
             if (IsPlayerBirthdayToday())
+                calculatedExp *= 2;
+
+            // Hoenn Day: defeating Hoenn natives grants double EXP.
+            if (IsHoennDayToday() && IsHoennNativeSpecies(gBattleMons[gBattlerFainted].species))
                 calculatedExp *= 2;
 
             // Lucky Egg stack with diminishing returns. Each successive egg

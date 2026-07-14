@@ -22,8 +22,8 @@ static const u8 sMegaPunchDescription[] = _(
     "incredible power.");
 
 static const u8 sPayDayDescription[] = _(
-    "Throws coins at the foe.\n"
-    "Money is recovered after.");
+    "Coin power and payout grow\n"
+    "with repeated use.");
 
 static const u8 sFirePunchDescription[] = _(
     "A fiery punch that may burn\n"

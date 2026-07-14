@@ -872,6 +872,7 @@ void CancelMultiTurnMoves(u8 battler)
 
     gDisableStructs[battler].rolloutTimer = 0;
     gDisableStructs[battler].furyCutterCounter = 0;
+    gDisableStructs[battler].payDayCounter = 0;
 }
 
 bool8 WasUnableToUseMove(u8 battler)
@@ -4242,6 +4243,7 @@ u8 ItemBattleEffects(u8 caseID, u8 battlerId, bool8 moveTurn)
 void ClearFuryCutterDestinyBondGrudge(u8 battlerId)
 {
     gDisableStructs[battlerId].furyCutterCounter = 0;
+    gDisableStructs[battlerId].payDayCounter = 0;
     gBattleMons[battlerId].status2 &= ~STATUS2_DESTINY_BOND;
     gStatuses3[battlerId] &= ~STATUS3_GRUDGE;
 }
