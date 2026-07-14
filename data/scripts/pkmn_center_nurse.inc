@@ -10,6 +10,9 @@ Common_EventScript_PkmnCenterNurse::
 	@ birthday today, remind the player to send wishes (dialogue only).
 	specialvar VAR_RESULT, BufferPartyBirthdayTrainerName
 	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_FriendBirthday
+	@ Spooky Day (31/10, National Dex required) — an eerie greeting.
+	specialvar VAR_RESULT, IsSpookyDayToday
+	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_SpookyDay
 	specialvar VAR_RESULT, CountPlayerTrainerStars
 	goto_if_eq VAR_RESULT, 4, EventScript_PkmnCenterNurse_GoldCard
 	@ If short dialog option is enabled, skip the yes/no question
@@ -166,4 +169,8 @@ EventScript_PkmnCenterNurse_BirthdayDone::
 
 EventScript_PkmnCenterNurse_FriendBirthday::
 	msgbox gText_NurseFriendBirthday, MSGBOX_DEFAULT
+	return
+
+EventScript_PkmnCenterNurse_SpookyDay::
+	msgbox gText_NurseSpookyDay, MSGBOX_DEFAULT
 	return

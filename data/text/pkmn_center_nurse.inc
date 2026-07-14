@@ -69,3 +69,11 @@ gText_NurseFriendBirthday::
 	.string "TRAINER {STR_VAR_1}'s birthday!\p"
 	.string "You should wish {STR_VAR_1} a\n"
 	.string "happy birthday!$"
+
+gText_NurseSpookyDay::
+	.string "…Oh! Did you feel that chill?\p"
+	.string "They say that on this night,\n"
+	.string "GHOST POKéMON wander much closer\l"
+	.string "to people than they usually do…\p"
+	.string "Do be careful out there tonight.\n"
+	.string "Heehee…$"

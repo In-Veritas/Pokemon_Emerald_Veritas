@@ -476,6 +476,13 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 * Not on the list? A member of the **Lilycove Pokémon Trainer Fan Club** keeps a birthday chart and will record yours: a single-number spinner picks the month (1-12), then the day (with proper 28/30/31-day months); his record-mixing fan dialogue stays intact afterwards
 * Carrying a **friend's traded Pokémon on their birthday**? The nurse recognizes its original Trainer and reminds you to wish them a happy birthday (a gentle nudge — no music or perks)
 
+#### Spooky Day (31/10)
+
+* On **October 31**, Hoenn gets spooky — special calendar dates (unlike birthdays) require the **National Pokédex**
+* Pokémon Center nurses have an eerie greeting: *"…Oh! Did you feel that chill?"*
+* **Mt. Pyre crawls with ghosts**: half of all land encounters there (every floor, exterior and summit) become GASTLY, HAUNTER, DUSKULL, SHUPPET, or MISDREAVUS at the local level
+* The day's **mass outbreak is guaranteed and always one of those five ghosts** — species and fitting movesets swap onto whatever route the outbreak roll picks, at that route's level
+
 #### Follower Transform RNG Fix
 
 * The follower system rolled the global RNG **every frame** for any following Pokémon while checking for the Ditto/Mew transform gimmick — the species check now comes first, so the RNG stream only advances when a Ditto or Mew is actually following

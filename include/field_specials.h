@@ -41,6 +41,8 @@ bool8 TrySetupDateNotSetReminder(void);
 bool8 IsCalendarDateSet(void);
 void GetVirtualDate(u8 *month, u8 *day);
 u16 IsPlayerBirthdayToday(void);
+u16 IsSpookyDayToday(void);
+u16 GetRandomSpookySpecies(void);
 void IsSelectedPartyMonShiny(void);
 void CreateCookieZigzagoon(void);
 void SetCookieTradeOverworldToOfferedShiny(void);

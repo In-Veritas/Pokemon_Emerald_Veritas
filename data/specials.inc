@@ -571,3 +571,4 @@ gSpecials::
 	def_special FanClub_GetBirthdayAskState
 	def_special FanClub_StartBirthdayEntry
 	def_special BufferPartyBirthdayTrainerName
+	def_special IsSpookyDayToday

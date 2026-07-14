@@ -5,6 +5,8 @@
 #include "fieldmap.h"
 #include "random.h"
 #include "field_player_avatar.h"
+#include "field_specials.h"
+#include "constants/region_map_sections.h"
 #include "event_data.h"
 #include "safari_zone.h"
 #include "overworld.h"
@@ -816,6 +818,15 @@ static bool8 TryGenerateWildMon(const struct WildPokemonInfo *wildMonInfo, u8 ar
         return FALSE;
     if (gMapHeader.mapLayoutId != LAYOUT_BATTLE_FRONTIER_BATTLE_PIKE_ROOM_WILD_MONS && flags & WILD_CHECK_KEEN_EYE && !IsAbilityAllowingEncounter(level))
         return FALSE;
+
+    // Spooky Day (31/10): Mt. Pyre crawls with ghosts — half of all land
+    // encounters become one of the visiting spirits, at the rolled level.
+    if (area == WILD_AREA_LAND && gMapHeader.regionMapSectionId == MAPSEC_MT_PYRE
+     && IsSpookyDayToday() && (Random() & 1))
+    {
+        CreateWildMon(GetRandomSpookySpecies(), level);
+        return TRUE;
+    }
 
     CreateWildMon(wildMonInfo->wildPokemon[wildMonIndex].species, level);
     return TRUE;

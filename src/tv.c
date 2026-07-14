@@ -1840,10 +1840,28 @@ static void InterviewAfter_Dummy(void)
     TVShow *show = &gSaveBlock1Ptr->tvShows[sCurTVShowSlot];
 }
 
+// Spooky Day (31/10): the day's outbreak is always one of the visiting
+// GHOST Pokémon. Species and moves swap in over the normally rolled
+// entry; the route and level are kept so the outbreak fits the local
+// level curve.
+static const struct
+{
+    u16 species;
+    u16 moves[MAX_MON_MOVES];
+} sSpookyOutbreaks[] =
+{
+    {SPECIES_GASTLY,     {MOVE_SPITE, MOVE_CURSE, MOVE_NIGHT_SHADE, MOVE_HYPNOSIS}},
+    {SPECIES_HAUNTER,    {MOVE_SPITE, MOVE_CURSE, MOVE_NIGHT_SHADE, MOVE_CONFUSE_RAY}},
+    {SPECIES_DUSKULL,    {MOVE_NIGHT_SHADE, MOVE_DISABLE, MOVE_FORESIGHT, MOVE_ASTONISH}},
+    {SPECIES_SHUPPET,    {MOVE_KNOCK_OFF, MOVE_SCREECH, MOVE_NIGHT_SHADE, MOVE_CURSE}},
+    {SPECIES_MISDREAVUS, {MOVE_SPITE, MOVE_ASTONISH, MOVE_CONFUSE_RAY, MOVE_PSYBEAM}},
+};
+
 static void TryStartRandomMassOutbreak(void)
 {
     u8 i;
     u16 outbreakIdx;
+    u16 spookyIdx;
     TVShow *show;
 
     if (FlagGet(FLAG_SYS_GAME_CLEAR))
@@ -1853,7 +1871,8 @@ static void TryStartRandomMassOutbreak(void)
             if (gSaveBlock1Ptr->tvShows[i].common.kind == TVSHOW_MASS_OUTBREAK)
                 return;
         }
-        if (!rbernoulli(1, 200))
+        // A ghost outbreak is guaranteed on Spooky Day.
+        if (IsSpookyDayToday() || !rbernoulli(1, 200))
         {
             sCurTVShowSlot = FindFirstEmptyNormalTVShowSlot(gSaveBlock1Ptr->tvShows);
             if (sCurTVShowSlot != -1)
@@ -1871,6 +1890,15 @@ static void TryStartRandomMassOutbreak(void)
                 show->massOutbreak.moves[1] = sPokeOutbreakSpeciesList[outbreakIdx].moves[1];
                 show->massOutbreak.moves[2] = sPokeOutbreakSpeciesList[outbreakIdx].moves[2];
                 show->massOutbreak.moves[3] = sPokeOutbreakSpeciesList[outbreakIdx].moves[3];
+                if (IsSpookyDayToday())
+                {
+                    spookyIdx = Random() % ARRAY_COUNT(sSpookyOutbreaks);
+                    show->massOutbreak.species = sSpookyOutbreaks[spookyIdx].species;
+                    show->massOutbreak.moves[0] = sSpookyOutbreaks[spookyIdx].moves[0];
+                    show->massOutbreak.moves[1] = sSpookyOutbreaks[spookyIdx].moves[1];
+                    show->massOutbreak.moves[2] = sSpookyOutbreaks[spookyIdx].moves[2];
+                    show->massOutbreak.moves[3] = sSpookyOutbreaks[spookyIdx].moves[3];
+                }
                 show->massOutbreak.locationMapNum = sPokeOutbreakSpeciesList[outbreakIdx].location;
                 show->massOutbreak.locationMapGroup = 0;
                 show->massOutbreak.unused4 = 0;

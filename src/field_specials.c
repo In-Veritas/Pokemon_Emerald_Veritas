@@ -5746,3 +5746,37 @@ u16 FanClub_GetBirthdayAskState(void)
 #undef tDay
 #undef tWindowId
 
+// ============================================================
+// Special calendar dates
+// ============================================================
+// Unlike birthdays, special dates only activate once the National
+// Pokédex has been unlocked.
+
+// Spooky Day — October 31. Nurses get an eerie greeting, Mt. Pyre
+// crawls with ghosts, and the day's mass outbreak is always a GHOST
+// Pokémon (see wild_encounter.c and tv.c).
+u16 IsSpookyDayToday(void)
+{
+    u8 month, day;
+
+    if (!IsCalendarDateSet() || !IsNationalPokedexEnabled())
+        return FALSE;
+    GetVirtualDate(&month, &day);
+    return month == 10 && day == 31;
+}
+
+// The visiting spirits of Spooky Day.
+static const u16 sSpookySpecies[] =
+{
+    SPECIES_GASTLY,
+    SPECIES_HAUNTER,
+    SPECIES_DUSKULL,
+    SPECIES_SHUPPET,
+    SPECIES_MISDREAVUS,
+};
+
+u16 GetRandomSpookySpecies(void)
+{
+    return sSpookySpecies[Random() % ARRAY_COUNT(sSpookySpecies)];
+}
+
