@@ -870,7 +870,7 @@ static void GiveVoltTackleIfLightBall(struct Pokemon *mon, struct DayCare *dayca
 // Mew x legendary pairs breed at the legendary-pair rate, and any legendary
 // egg (not just Latios/Latias) hatches on the slow LEGENDARY_PAIR_EGG_CYCLES
 // schedule.
-static bool8 IsSpeciesLegendary(u16 species)
+bool8 IsSpeciesLegendary(u16 species)
 {
     switch (species)
     {

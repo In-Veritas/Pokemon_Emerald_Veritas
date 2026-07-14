@@ -7095,6 +7095,9 @@ const u32 *GetMonFrontSpritePal(struct Pokemon *mon)
     u16 species = GetMonData(mon, MON_DATA_SPECIES_OR_EGG, 0);
     u32 otId = GetMonData(mon, MON_DATA_OT_ID, 0);
     u32 personality = GetMonData(mon, MON_DATA_PERSONALITY, 0);
+    // Veritas: legendary eggs use a blue-purple-spotted shell palette.
+    if (species == SPECIES_EGG && IsSpeciesLegendary(GetMonData(mon, MON_DATA_SPECIES, 0)))
+        return gMonPalette_EggLegendary;
     return GetMonSpritePalFromSpeciesAndPersonality(species, otId, personality);
 }
 
@@ -7112,11 +7115,17 @@ const u32 *GetMonSpritePalFromSpeciesAndPersonality(u16 species, u32 otId, u32 p
         return gMonPaletteTable[species].data;
 }
 
+static const struct CompressedSpritePalette sEggLegendaryPalette = {gMonPalette_EggLegendary, SPECIES_EGG};
+
 const struct CompressedSpritePalette *GetMonSpritePalStruct(struct Pokemon *mon)
 {
     u16 species = GetMonData(mon, MON_DATA_SPECIES_OR_EGG, 0);
     u32 otId = GetMonData(mon, MON_DATA_OT_ID, 0);
     u32 personality = GetMonData(mon, MON_DATA_PERSONALITY, 0);
+    // Veritas: legendary eggs use the blue-purple-spotted shell palette
+    // (same tag as the normal egg — only one egg front-pic shows at a time).
+    if (species == SPECIES_EGG && IsSpeciesLegendary(GetMonData(mon, MON_DATA_SPECIES, 0)))
+        return &sEggLegendaryPalette;
     return GetMonSpritePalStructFromOtIdPersonality(species, otId, personality);
 }
 

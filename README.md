@@ -523,6 +523,7 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 * **Mew can breed with ANY Pokémon — legendaries included.** Mew acts as a wildcard parent (a super-Ditto): the egg always comes from the partner's line (e.g. Mew + Salamence → Bagon egg, Mew + Groudon → Groudon egg)
 * All normal breeding rules still apply — IV inheritance (including the guaranteed 31-IV pass-down), nature, egg moves, incense babies
 * **Legendary eggs hatch on the slow schedule** (~100k+ steps), same as Latios/Latias pair eggs
+* Legendary eggs also **look distinct** — the shell's green spots are recolored a **blue-purple** so you can tell a legendary egg apart at a glance
 * Odds: Mew + legendary produces eggs at the same very rare ~1%-per-cycle rate as the Latios/Latias pair; Mew + regular Pokémon breeds at low compatibility
 * Mew + Mew yields a Mew egg; Mew + Ditto remains incompatible (two wildcards, nothing to inherit)
 

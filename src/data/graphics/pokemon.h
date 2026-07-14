@@ -3513,6 +3513,9 @@ const u8 gMonFootprint_Chimecho[] = INCBIN_U8("graphics/pokemon/chimecho/footpri
 
 const u32 gMonStillFrontPic_Egg[] = INCBIN_U32("graphics/pokemon/egg/front.4bpp.lz");
 const u32 gMonPalette_Egg[] = INCBIN_U32("graphics/pokemon/egg/normal.gbapal.lz");
+// Veritas: legendary eggs use this variant — the green shell spots become
+// blueish-purple. Applied in GetMonFrontSpritePal / GetMonSpritePalStruct.
+const u32 gMonPalette_EggLegendary[] = INCBIN_U32("graphics/pokemon/egg/normal_legendary.gbapal.lz");
 
 const u32 gMonStillFrontPic_UnownB[] = INCBIN_U32("graphics/pokemon/unown/b/front.4bpp.lz");
 const u32 gMonBackPic_UnownB[] = INCBIN_U32("graphics/pokemon/unown/b/back.4bpp.lz");

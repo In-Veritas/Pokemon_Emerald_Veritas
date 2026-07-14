@@ -13,6 +13,7 @@ struct RecordMixingDaycareMail
 u8 *GetMonNickname2(struct Pokemon *mon, u8 *dest);
 u8 *GetBoxMonNickname(struct BoxPokemon *mon, u8 *dest);
 u8 CountPokemonInDaycare(struct DayCare *daycare);
+bool8 IsSpeciesLegendary(u16 species);
 void InitDaycareMailRecordMixing(struct DayCare *daycare, struct RecordMixingDaycareMail *mixMail);
 void StoreSelectedPokemonInDaycare(void);
 u16 TakePokemonFromDaycare(void);
