@@ -563,6 +563,10 @@ The vanilla Enigma Berry was an inert e-Reader item with no effect on a fresh sa
 * Self-inflicted effects don't trigger: Outrage / Petal Dance / Thrash / Chatter end-of-streak self-confusion, Overheat / Draco Meteor / Close Combat / Superpower self-stat-drops, and non-Ghost Curse's self-Speed-drop are all excluded.
 * Single-use, like the other gen-3 berries — consumed on trigger.
 
+#### Quick Claw Nerf
+
+* QUICK CLAW now triggers **12%** of the time, down from the vanilla 20%
+
 #### Metal Powder Enhancement
 
 * Metal Powder now also doubles **Speed** for Ditto (in addition to Defense)
