@@ -237,6 +237,9 @@ LittlerootTown_MaysHouse_2F_Movement_PlayerWatchMayEast:
 
 RivalsHouse_2F_EventScript_Rival::
 	lockall
+	@ Birthday greeting from the rival (any story state).
+	specialvar VAR_RESULT, IsPlayerBirthdayToday
+	goto_if_eq VAR_RESULT, TRUE, RivalsHouse_2F_EventScript_RivalBirthday
 	goto_if_set FLAG_MET_RIVAL_LILYCOVE, RivalsHouse_2F_EventScript_RivalPostLilycove
 	checkplayergender
 	goto_if_eq VAR_RESULT, MALE, RivalsHouse_2F_EventScript_May
@@ -404,3 +407,18 @@ RivalsHouse_2F_Text_BrendanWhereShouldIGoNext:
 	.string "Hey, {PLAYER}, if I see you while I'm out\n"
 	.string "catching POKéMON, I can pitch you a\l"
 	.string "battle if you'd like.$"
+
+RivalsHouse_2F_EventScript_RivalBirthday::
+	applymovement VAR_LAST_TALKED, Common_Movement_FacePlayer
+	waitmovement 0
+	msgbox RivalsHouse_2F_Text_RivalBirthday, MSGBOX_DEFAULT
+	releaseall
+	end
+
+RivalsHouse_2F_Text_RivalBirthday:
+	.string "{PLAYER}! I heard it's your\n"
+	.string "birthday today!\p"
+	.string "Happy birthday!!\p"
+	.string "Don't think I'll go easy on you\n"
+	.string "just because it's your special\l"
+	.string "day, though!$"

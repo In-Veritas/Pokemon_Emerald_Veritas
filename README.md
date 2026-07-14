@@ -462,10 +462,12 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 #### Birthdays
 
 * The game now tracks a **calendar date** (day/month only — the year is deliberately ignored). Set it by checking the clock in your room and pressing **START**: after confirming the time, a date picker follows (D-pad to adjust, A to confirm)
-* **Existing saves**: after updating, the game reminds you once per session to set the date until you do. New games set the date during the intro clock setup
-* On a player's birthday (matched by save name, case-insensitive): every Pokémon Center nurse wishes you a happy birthday and hints that trainers often see shimmering Pokémon on their special day…
+* **Existing saves**: on the first load after updating, the game offers to **set the date on the spot** — and reminds you that you can change it any time at the room clock
+* On a player's birthday (matched by save name, case-insensitive): every Pokémon Center nurse wishes you a happy birthday — and the **May rival theme** starts playing until you leave the Center. Until you've claimed your present, she also hints that your family must be waiting…
+* **Mom has a one-time birthday gift: a SHINY CHARM.** May and Professor Birch have birthday greetings of their own
 * Birthday perks, all day: **double EXP**, **double EVs**, and **two bonus shiny rolls** on every Pokémon generated (wild, gifts, eggs — even trainers' Pokémon can shimmer)
-* Registered birthdays: NIJI 14/09 · AILES 14/08 · GABS 16/10 · PURPLE 14/05 · ALHYA 02/10 · LUNA 27/07 · MAPU 22/08 — new names are a one-line table entry
+* Birthdays arm **once per 364 days** on the real day counter, so re-dialing the calendar can't repeat the perks — and a fresh save can always celebrate its first one
+* Registered birthdays: NIJI 14/09 · AILES 14/08 · GABS 16/10 · PURPLE 14/05 · ALHYA 02/10 · LUNA 27/07 · MAPU 22/08 · ANIA 27/07 — new names are a one-line table entry
 
 #### Follower Transform RNG Fix
 

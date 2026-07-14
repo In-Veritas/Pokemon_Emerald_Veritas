@@ -148,6 +148,14 @@ EventScript_PkmnCenterNurse_PlayerTurn::
 	release
 	end
 
+@ Birthday: the May rival theme starts the moment she says it and keeps
+@ playing until the player leaves the room (save_song FALSE, so any map
+@ change loads that map's music normally). The family hint plays until
+@ Mom's one-time Shiny Charm gift has been claimed.
 EventScript_PkmnCenterNurse_Birthday::
+	playbgm MUS_ENCOUNTER_MAY, FALSE
 	msgbox gText_NurseHappyBirthday, MSGBOX_DEFAULT
+	goto_if_set FLAG_RECEIVED_BIRTHDAY_SHINY_CHARM, EventScript_PkmnCenterNurse_BirthdayDone
+	msgbox gText_NurseBirthdayFamilyHint, MSGBOX_DEFAULT
+EventScript_PkmnCenterNurse_BirthdayDone::
 	return

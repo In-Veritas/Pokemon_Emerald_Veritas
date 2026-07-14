@@ -567,3 +567,4 @@ gSpecials::
 	def_special UpdateRoute117WandererFlags
 	def_special TournamentPrize_DoCodeEntry
 	def_special IsPlayerBirthdayToday
+	def_special DateSetFromScript

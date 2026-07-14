@@ -329,6 +329,9 @@ PlayersHouse_1F_Movement_MomReturnToSeatFemale:
 PlayersHouse_1F_EventScript_Mom::
 	lock
 	faceplayer
+	@ Birthday: Mom has a one-time Shiny Charm gift, then a warm greeting.
+	specialvar VAR_RESULT, IsPlayerBirthdayToday
+	goto_if_eq VAR_RESULT, TRUE, PlayersHouse_1F_EventScript_MomBirthday
 	goto_if_eq VAR_LITTLEROOT_HOUSES_STATE_MAY, 4, PlayersHouse_1F_EventScript_DontPushYourselfTooHard
 	goto_if_eq VAR_LITTLEROOT_HOUSES_STATE_BRENDAN, 4, PlayersHouse_1F_EventScript_DontPushYourselfTooHard
 	goto_if_set FLAG_HAS_MATCH_CALL, PlayersHouse_1F_EventScript_TryRegisterMom
@@ -702,3 +705,44 @@ PlayersHouse_1F_Movement_PlayerApproachTVForLatiFemale:
 EventScript_RunningShoesManual::
 	msgbox PlayersHouse_1F_Text_RunningShoesManual, MSGBOX_SIGN
 	end
+
+PlayersHouse_1F_EventScript_MomBirthday::
+	goto_if_set FLAG_RECEIVED_BIRTHDAY_SHINY_CHARM, PlayersHouse_1F_EventScript_MomBirthdayAgain
+	msgbox PlayersHouse_1F_Text_MomBirthdayGift, MSGBOX_DEFAULT
+	giveitem ITEM_SHINY_CHARM
+	goto_if_eq VAR_RESULT, FALSE, PlayersHouse_1F_EventScript_MomBirthdayBagFull
+	setflag FLAG_RECEIVED_BIRTHDAY_SHINY_CHARM
+	msgbox PlayersHouse_1F_Text_MomBirthdayEnjoy, MSGBOX_DEFAULT
+	release
+	end
+
+PlayersHouse_1F_EventScript_MomBirthdayAgain::
+	msgbox PlayersHouse_1F_Text_MomBirthdayAgain, MSGBOX_DEFAULT
+	release
+	end
+
+PlayersHouse_1F_EventScript_MomBirthdayBagFull::
+	msgbox PlayersHouse_1F_Text_MomBirthdayBagFull, MSGBOX_DEFAULT
+	release
+	end
+
+PlayersHouse_1F_Text_MomBirthdayGift:
+	.string "Oh, sweetheart! Happy birthday!\p"
+	.string "I can't believe how fast you're\n"
+	.string "growing up…\p"
+	.string "Here, I've been saving this for\n"
+	.string "your special day!$"
+
+PlayersHouse_1F_Text_MomBirthdayEnjoy:
+	.string "They say it brings out the shine\n"
+	.string "in POKéMON!\p"
+	.string "Go on now, have a wonderful day!$"
+
+PlayersHouse_1F_Text_MomBirthdayAgain:
+	.string "Happy birthday again, dear!\p"
+	.string "Have a wonderful day out there!$"
+
+PlayersHouse_1F_Text_MomBirthdayBagFull:
+	.string "Oh my, your BAG is stuffed full!\p"
+	.string "Come back for your present after\n"
+	.string "you make some room, okay?$"

@@ -565,6 +565,10 @@ LittlerootTown_ProfessorBirchsLab_EventScript_Birch::
 	faceplayer
 	goto_if_eq VAR_DEX_UPGRADE_JOHTO_STARTER_STATE, 5, LittlerootTown_ProfessorBirchsLab_EventScript_CanHaveAnyOneOfRarePokemon
 	goto_if_eq VAR_DEX_UPGRADE_JOHTO_STARTER_STATE, 2, LittlerootTown_ProfessorBirchsLab_EventScript_GrassyPatchWaiting
+	@ Birthday greeting (after the Johto-starter claim states so it can't
+	@ block them).
+	specialvar VAR_RESULT, IsPlayerBirthdayToday
+	goto_if_eq VAR_RESULT, TRUE, LittlerootTown_ProfessorBirchsLab_EventScript_BirchBirthday
 	goto_if_unset FLAG_HAS_MATCH_CALL, LittlerootTown_ProfessorBirchsLab_EventScript_TryRatePokedexOrRegister
 	goto_if_unset FLAG_ENABLE_PROF_BIRCH_MATCH_CALL, EventScript_RegisterProfBirch
 	goto LittlerootTown_ProfessorBirchsLab_EventScript_TryRatePokedexOrRegister
@@ -2120,3 +2124,16 @@ LittlerootTown_ProfessorBirchsLab_Text_GotGiftMon:
 	.string "Take good care of {STR_VAR_2}!\p"
 	.string "I have a feeling you'll both take\n"
 	.string "a shine to each other.$"
+
+LittlerootTown_ProfessorBirchsLab_EventScript_BirchBirthday::
+	msgbox LittlerootTown_ProfessorBirchsLab_Text_BirchBirthday, MSGBOX_DEFAULT
+	release
+	end
+
+LittlerootTown_ProfessorBirchsLab_Text_BirchBirthday:
+	.string "Oh, {PLAYER}! Happy birthday!\p"
+	.string "You know, in my research, POKéMON\n"
+	.string "often show astonishing vigor on\l"
+	.string "their TRAINER's birthday.\p"
+	.string "Some even seem to… sparkle!\p"
+	.string "Go enjoy the day together!$"

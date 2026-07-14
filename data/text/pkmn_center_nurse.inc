@@ -57,3 +57,8 @@ gText_NurseHappyBirthday::
 	.string "lucky on their birthdays…\p"
 	.string "Many report seeing shimmering\n"
 	.string "POKéMON on their special day!$"
+
+gText_NurseBirthdayFamilyHint::
+	.string "By the way… on such a special\n"
+	.string "day, your family must be waiting\l"
+	.string "to celebrate with you!$"

@@ -8,6 +8,7 @@
 #include "graphics.h"
 #include "main.h"
 #include "menu.h"
+#include "overworld.h"
 #include "palette.h"
 #include "rtc.h"
 #include "scanline_effect.h"
@@ -34,6 +35,8 @@ static void Task_SetDate_Init(u8 taskId);
 static void Task_SetDate_HandleInput(u8 taskId);
 static void Task_SetDate_HandleConfirmInput(u8 taskId);
 static void PrintDateSetText(u8 taskId);
+static void CB2_StartDateSetOnly(void);
+static void Task_DateOnly_WaitFadeIn(u8 taskId);
 static void Task_ViewClock_WaitFadeIn(u8 taskId);
 static void Task_ViewClock_HandleInput(u8 taskId);
 static void Task_ViewClock_FadeOut(u8 taskId);
@@ -796,6 +799,71 @@ static void CB2_WallClock(void)
     BuildOamBuffer();
     DoScheduledBgTilemapCopiesToVram();
     UpdatePaletteFade();
+}
+
+// Standalone date picker over the clock backdrop, launched from scripts
+// (the date-not-set reminder). The time itself is untouched; confirming
+// exits back to the waiting script via Task_SetClock_Exit.
+static void CB2_StartDateSetOnly(void)
+{
+    u8 taskId;
+    u8 spriteId;
+    u8 angle1;
+    u8 angle2;
+
+    LoadWallClockGraphics();
+    LZ77UnCompVram(gWallClockView_Tilemap, (u16 *)BG_SCREEN_ADDR(7));
+
+    taskId = CreateTask(Task_DateOnly_WaitFadeIn, 0);
+    InitClockWithRtc(taskId);
+    if (gTasks[taskId].tPeriod == PERIOD_AM)
+    {
+        angle1 = 45;
+        angle2 = 90;
+    }
+    else
+    {
+        angle1 = 90;
+        angle2 = 135;
+    }
+
+    spriteId = CreateSprite(&sSpriteTemplate_MinuteHand, 120, 80, 1);
+    gSprites[spriteId].sTaskId = taskId;
+    gSprites[spriteId].oam.affineMode = ST_OAM_AFFINE_NORMAL;
+    gSprites[spriteId].oam.matrixNum = 0;
+
+    spriteId = CreateSprite(&sSpriteTemplate_HourHand, 120, 80, 0);
+    gSprites[spriteId].sTaskId = taskId;
+    gSprites[spriteId].oam.affineMode = ST_OAM_AFFINE_NORMAL;
+    gSprites[spriteId].oam.matrixNum = 1;
+
+    spriteId = CreateSprite(&sSpriteTemplate_PM, 120, 80, 2);
+    gSprites[spriteId].sTaskId = taskId;
+    gSprites[spriteId].data[1] = angle1;
+
+    spriteId = CreateSprite(&sSpriteTemplate_AM, 120, 80, 2);
+    gSprites[spriteId].sTaskId = taskId;
+    gSprites[spriteId].data[1] = angle2;
+
+    WallClockInit();
+
+    AddTextPrinterParameterized(WIN_BUTTON_LABEL, FONT_NORMAL, gText_Confirm3, 0, 1, 0, NULL);
+    PutWindowTilemap(WIN_BUTTON_LABEL);
+    ScheduleBgCopyTilemapToVram(2);
+}
+
+static void Task_DateOnly_WaitFadeIn(u8 taskId)
+{
+    if (!gPaletteFade.active)
+        gTasks[taskId].func = Task_SetDate_Init;
+}
+
+// Script special: open the standalone date picker (used by the
+// date-not-set reminder so the date can be set on the spot).
+void DateSetFromScript(void)
+{
+    gMain.savedCallback = CB2_ReturnToFieldContinueScriptPlayMapMusic;
+    SetMainCallback2(CB2_StartDateSetOnly);
 }
 
 static void Task_SetClock_WaitFadeIn(u8 taskId)

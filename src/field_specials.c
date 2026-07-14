@@ -5388,6 +5388,7 @@ static const u8 sBdayName_Alhyia[] = _("ALHYIA");
 static const u8 sBdayName_Alhia[]  = _("ALHIA");
 static const u8 sBdayName_Luna[]   = _("LUNA");   // 27/07
 static const u8 sBdayName_Mapu[]   = _("MAPU");   // 22/08
+static const u8 sBdayName_Ania[]   = _("ANIA");   // 27/07
 
 static const struct
 {
@@ -5406,6 +5407,7 @@ static const struct
     {sBdayName_Alhia,  10,  2},
     {sBdayName_Luna,    7, 27},
     {sBdayName_Mapu,    8, 22},
+    {sBdayName_Ania,    7, 27},
 };
 
 // Case-insensitive player-name compare in the game charset.
@@ -5463,22 +5465,70 @@ void GetVirtualDate(u8 *month, u8 *day)
     *day = d + 1;
 }
 
+// Returns TRUE and writes out the player's birthday if one is known:
+// hardcoded names take priority, then the Fan-Club-registered custom
+// birthday (VAR_PLAYER_BIRTHDAY, (month << 8) | day, 0 = unset).
+static bool8 GetPlayerBirthdayDate(u8 *bMonth, u8 *bDay)
+{
+    u32 i;
+    u16 custom;
+
+    for (i = 0; i < ARRAY_COUNT(sPlayerBirthdays); i++)
+    {
+        if (BirthdayNameMatches(gSaveBlock2Ptr->playerName, sPlayerBirthdays[i].name))
+        {
+            *bMonth = sPlayerBirthdays[i].month;
+            *bDay = sPlayerBirthdays[i].day;
+            return TRUE;
+        }
+    }
+    custom = VarGet(VAR_PLAYER_BIRTHDAY);
+    if (custom != 0)
+    {
+        *bMonth = (custom >> 8) & 0xFF;
+        *bDay = custom & 0xFF;
+        return TRUE;
+    }
+    return FALSE;
+}
+
 // TRUE on the player's declared birthday (year ignored). Drives the
-// Pokémon Center nurses' greeting, doubled EXP/EVs, and bonus shiny
-// rolls. Also exposed as a script special for the nurse scripts.
+// Pokémon Center nurses' greeting, Mom's gift, doubled EXP/EVs, and
+// bonus shiny rolls. Also exposed as a script special.
+//
+// Anti-abuse latch: a birthday arms at most once every 364 real days of
+// the RTC day counter, so re-dialing the calendar date can't repeat the
+// perks. VAR_LAST_BIRTHDAY_DAYCOUNT stores (day counter + 1) of the day
+// it last armed; 0 = never armed, so a fresh save can always trigger.
+// It stays TRUE for the whole day it armed on, and re-arms if the day
+// counter ever goes backward (title-screen RTC reset).
 u16 IsPlayerBirthdayToday(void)
 {
-    u8 month, day;
-    u32 i;
+    u8 month, day, bMonth, bDay;
+    u16 stored, d;
 
     if (!IsCalendarDateSet())
         return FALSE;
-    GetVirtualDate(&month, &day);
-    for (i = 0; i < ARRAY_COUNT(sPlayerBirthdays); i++)
+    if (!GetPlayerBirthdayDate(&bMonth, &bDay))
+        return FALSE;
+    GetVirtualDate(&month, &day); // also refreshes gLocalTime
+    if (month != bMonth || day != bDay)
+        return FALSE;
+
+    d = (u16)gLocalTime.days;
+    stored = VarGet(VAR_LAST_BIRTHDAY_DAYCOUNT);
+    if (stored != 0 && (u16)(d + 1) == stored)
+        return TRUE; // the day it armed on — active all day
+    if (stored != 0 && (u16)(d + 1) < stored)
     {
-        if (sPlayerBirthdays[i].month == month && sPlayerBirthdays[i].day == day
-         && BirthdayNameMatches(gSaveBlock2Ptr->playerName, sPlayerBirthdays[i].name))
-            return TRUE;
+        // Day counter went backward (RTC reset) — re-arm cleanly.
+        VarSet(VAR_LAST_BIRTHDAY_DAYCOUNT, 0);
+        stored = 0;
+    }
+    if (stored == 0 || d >= (u16)(stored - 1 + 364))
+    {
+        VarSet(VAR_LAST_BIRTHDAY_DAYCOUNT, d + 1);
+        return TRUE;
     }
     return FALSE;
 }
@@ -5498,4 +5548,3 @@ bool8 TrySetupDateNotSetReminder(void)
     sShownDateReminder = TRUE;
     return TRUE;
 }
-
