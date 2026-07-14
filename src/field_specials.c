@@ -5548,3 +5548,152 @@ bool8 TrySetupDateNotSetReminder(void)
     sShownDateReminder = TRUE;
     return TRUE;
 }
+
+// ============================================================
+// Fan Club birthday registration (custom birthdays)
+// ============================================================
+// A Lilycove Fan Club member records a birthday for players whose save
+// name isn't in the hardcoded list. Stored in VAR_PLAYER_BIRTHDAY as
+// (month << 8) | day (0 = unset) and honored by IsPlayerBirthdayToday()
+// with the same once-per-364-days latch. UI: a single-number spinner
+// window in the top-left corner (clear of the bottom message box) —
+// Up/Down changes the number, A confirms the month then the day, B goes
+// back / cancels.
+
+#define BDAY_SPINNER_PHASE_MONTH 0
+#define BDAY_SPINNER_PHASE_DAY   1
+
+static const struct WindowTemplate sBirthdaySpinnerWinTemplate =
+{
+    .bg = 0,
+    .tilemapLeft = 1,
+    .tilemapTop = 1,
+    .width = 4,
+    .height = 2,
+    .paletteNum = 15,
+    .baseBlock = 8,
+};
+
+#define tPhase    data[0]
+#define tMonth    data[1]
+#define tDay      data[2]
+#define tWindowId data[3]
+
+static void PrintBirthdaySpinnerValue(u8 windowId, s32 value)
+{
+    u8 text[4];
+    s32 xPos;
+
+    ConvertIntToDecimalStringN(text, value, STR_CONV_MODE_LEADING_ZEROS, 2);
+    FillWindowPixelBuffer(windowId, PIXEL_FILL(1));
+    xPos = GetStringCenterAlignXOffset(FONT_NORMAL, text, 32);
+    AddTextPrinterParameterized(windowId, FONT_NORMAL, text, xPos, 1, TEXT_SKIP_DRAW, NULL);
+    CopyWindowToVram(windowId, COPYWIN_FULL);
+}
+
+static void Task_BirthdaySpinner(u8 taskId)
+{
+    s16 *data = gTasks[taskId].data;
+    s32 max;
+
+    if (tPhase == BDAY_SPINNER_PHASE_MONTH)
+        max = 12;
+    else
+        max = sCalendarMonthLengths[tMonth - 1];
+
+    if (JOY_NEW(A_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        if (tPhase == BDAY_SPINNER_PHASE_MONTH)
+        {
+            // Month locked in — clamp the day for short months (28/30).
+            if (tDay > sCalendarMonthLengths[tMonth - 1])
+                tDay = sCalendarMonthLengths[tMonth - 1];
+            tPhase = BDAY_SPINNER_PHASE_DAY;
+            PrintBirthdaySpinnerValue(tWindowId, tDay);
+        }
+        else
+        {
+            VarSet(VAR_PLAYER_BIRTHDAY, ((u16)tMonth << 8) | (u8)tDay);
+            // Buffer "DD/MM" for the confirmation message.
+            ConvertIntToDecimalStringN(gStringVar1, tDay, STR_CONV_MODE_LEADING_ZEROS, 2);
+            gStringVar1[2] = CHAR_SLASH;
+            ConvertIntToDecimalStringN(&gStringVar1[3], tMonth, STR_CONV_MODE_LEADING_ZEROS, 2);
+            gSpecialVar_Result = TRUE;
+            ClearStdWindowAndFrameToTransparent(tWindowId, TRUE);
+            RemoveWindow(tWindowId);
+            ScriptContext_Enable();
+            DestroyTask(taskId);
+        }
+    }
+    else if (JOY_NEW(B_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        if (tPhase == BDAY_SPINNER_PHASE_DAY)
+        {
+            tPhase = BDAY_SPINNER_PHASE_MONTH;
+            PrintBirthdaySpinnerValue(tWindowId, tMonth);
+        }
+        else
+        {
+            gSpecialVar_Result = FALSE;
+            ClearStdWindowAndFrameToTransparent(tWindowId, TRUE);
+            RemoveWindow(tWindowId);
+            ScriptContext_Enable();
+            DestroyTask(taskId);
+        }
+    }
+    else if (JOY_REPEAT(DPAD_UP))
+    {
+        if (tPhase == BDAY_SPINNER_PHASE_MONTH)
+            tMonth = (tMonth % 12) + 1;
+        else
+            tDay = (tDay % max) + 1;
+        PrintBirthdaySpinnerValue(tWindowId, (tPhase == BDAY_SPINNER_PHASE_MONTH) ? tMonth : tDay);
+    }
+    else if (JOY_REPEAT(DPAD_DOWN))
+    {
+        if (tPhase == BDAY_SPINNER_PHASE_MONTH)
+            tMonth = (tMonth + 10) % 12 + 1;
+        else
+            tDay = (tDay + max - 2) % max + 1;
+        PrintBirthdaySpinnerValue(tWindowId, (tPhase == BDAY_SPINNER_PHASE_MONTH) ? tMonth : tDay);
+    }
+}
+
+// Special. Opens the spinner; the waiting script resumes with
+// VAR_RESULT = 1 (stored, "DD/MM" buffered in STR_VAR_1) or 0 (cancelled).
+void FanClub_StartBirthdayEntry(void)
+{
+    u8 taskId = CreateTask(Task_BirthdaySpinner, 80);
+    u16 custom = VarGet(VAR_PLAYER_BIRTHDAY);
+
+    gTasks[taskId].tPhase = BDAY_SPINNER_PHASE_MONTH;
+    gTasks[taskId].tMonth = (custom != 0) ? ((custom >> 8) & 0xFF) : 1;
+    gTasks[taskId].tDay = (custom != 0) ? (custom & 0xFF) : 1;
+    gTasks[taskId].tWindowId = AddWindow(&sBirthdaySpinnerWinTemplate);
+    SetStandardWindowBorderStyle(gTasks[taskId].tWindowId, FALSE);
+    PrintBirthdaySpinnerValue(gTasks[taskId].tWindowId, gTasks[taskId].tMonth);
+}
+
+// Special. 1 = offer registration (no hardcoded birthday, none stored),
+// 2 = player is on the hardcoded chart, 0 = custom already registered.
+u16 FanClub_GetBirthdayAskState(void)
+{
+    u32 i;
+
+    for (i = 0; i < ARRAY_COUNT(sPlayerBirthdays); i++)
+    {
+        if (BirthdayNameMatches(gSaveBlock2Ptr->playerName, sPlayerBirthdays[i].name))
+            return 2;
+    }
+    if (VarGet(VAR_PLAYER_BIRTHDAY) != 0)
+        return 0;
+    return 1;
+}
+
+#undef tPhase
+#undef tMonth
+#undef tDay
+#undef tWindowId
+

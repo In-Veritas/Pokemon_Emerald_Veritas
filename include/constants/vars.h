@@ -115,7 +115,7 @@
 #define VAR_EVER_GRANDE_CITY_STATE                       0x405F
 #define VAR_ROUTE101_STATE                               0x4060
 #define VAR_LAST_BIRTHDAY_DAYCOUNT                       0x4061 // (day counter + 1) when the birthday perks last armed; 0 = never — see IsPlayerBirthdayToday (was unused VAR_ROUTE102_STATE)
-#define VAR_ROUTE103_STATE                               0x4062 // Unused Var
+#define VAR_PLAYER_BIRTHDAY                              0x4062 // Fan-Club-registered custom birthday, (month << 8) | day, 0 = unset (was unused VAR_ROUTE103_STATE)
 #define VAR_ROUTE104_STATE                               0x4063
 #define VAR_SURF_MON_SLOT                                0x4064 // Replaced unused 'VAR_ROUTE105_STATE' for Surfing Overworlds
 #define VAR_FREEZE_SURF_BLOB                             0x4065 // Replaced unused 'VAR_ROUTE106_STATE' for Surfing Overworlds - Set on surf init to stop blob overlay being offset incorrectly

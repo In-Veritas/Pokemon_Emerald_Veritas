@@ -568,3 +568,5 @@ gSpecials::
 	def_special TournamentPrize_DoCodeEntry
 	def_special IsPlayerBirthdayToday
 	def_special DateSetFromScript
+	def_special FanClub_GetBirthdayAskState
+	def_special FanClub_StartBirthdayEntry

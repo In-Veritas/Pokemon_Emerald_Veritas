@@ -468,6 +468,7 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 * Birthday perks, all day: **double EXP**, **double EVs**, and **two bonus shiny rolls** on every Pokémon generated (wild, gifts, eggs — even trainers' Pokémon can shimmer)
 * Birthdays arm **once per 364 days** on the real day counter, so re-dialing the calendar can't repeat the perks — and a fresh save can always celebrate its first one
 * Registered birthdays: NIJI 14/09 · AILES 14/08 · GABS 16/10 · PURPLE 14/05 · ALHYA 02/10 · LUNA 27/07 · MAPU 22/08 · ANIA 27/07 — new names are a one-line table entry
+* Not on the list? A member of the **Lilycove Pokémon Trainer Fan Club** keeps a birthday chart and will record yours: a single-number spinner picks the month (1-12), then the day (with proper 28/30/31-day months); his record-mixing fan dialogue stays intact afterwards
 
 #### Follower Transform RNG Fix
 

@@ -200,6 +200,13 @@ LilycoveCity_PokemonTrainerFanClub_EventScript_SetFanMemberPositionsForFirstFanM
 LilycoveCity_PokemonTrainerFanClub_EventScript_Man::
 	lock
 	faceplayer
+	@ Birthday chart keeper: offers to register a custom birthday for
+	@ players whose name isn't on the hardcoded list. Once registered (or
+	@ if hardcoded) he goes back to his normal fan-club dialogue, so the
+	@ record-mixing chatter below is never lost.
+	specialvar VAR_RESULT, FanClub_GetBirthdayAskState
+	goto_if_eq VAR_RESULT, 1, FanClub_EventScript_OfferBirthday
+	call_if_eq VAR_RESULT, 2, FanClub_EventScript_BragBirthday
 	setvar VAR_0x8004, FANCLUB_MEMBER6
 	special BufferFanClubTrainerName
 	goto_if_eq VAR_LILYCOVE_FAN_CLUB_STATE, 0, LilycoveCity_PokemonTrainerFanClub_EventScript_ManPlayerNotChampion
@@ -818,3 +825,54 @@ LilycoveCity_PokemonTrainerFanClub_Text_YourePowerfulButNotTrueStrength:
 	.string "True strength is…!\n"
 	.string "… …\p"
 	.string "Actually, I have no idea, either.$"
+
+@ Birthday chart keeper (see FanClub_GetBirthdayAskState /
+@ FanClub_StartBirthdayEntry in field_specials.c). The spinner window
+@ shows a single number in the top-left corner: Up/Down to change,
+@ A confirms the month (1-12) then the day (1-28/30/31), B goes back.
+FanClub_EventScript_BragBirthday::
+	msgbox FanClub_Text_BirthdayOnMyChart, MSGBOX_DEFAULT
+	return
+
+FanClub_EventScript_OfferBirthday::
+	msgbox FanClub_Text_TellMeYourBirthday, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, FanClub_EventScript_BirthdayDeclined
+	message FanClub_Text_PickMonthThenDay
+	waitmessage
+	special FanClub_StartBirthdayEntry
+	waitstate
+	goto_if_eq VAR_RESULT, FALSE, FanClub_EventScript_BirthdayDeclined
+	msgbox FanClub_Text_BirthdayNoted, MSGBOX_DEFAULT
+	release
+	end
+
+FanClub_EventScript_BirthdayDeclined::
+	closemessage
+	msgbox FanClub_Text_BirthdayMaybeLater, MSGBOX_DEFAULT
+	release
+	end
+
+FanClub_Text_BirthdayOnMyChart:
+	.string "Oh, I don't need to ask YOUR\n"
+	.string "birthday!\p"
+	.string "A star like you is already on my\n"
+	.string "birthday chart!$"
+
+FanClub_Text_TellMeYourBirthday:
+	.string "I keep a chart of TRAINERS'\n"
+	.string "birthdays as a hobby!\p"
+	.string "Would you tell me yours?$"
+
+FanClub_Text_PickMonthThenDay:
+	.string "Pick the month, then the day!\p"
+	.string "Up and down to change the number,\n"
+	.string "A to confirm, B to go back.$"
+
+FanClub_Text_BirthdayNoted:
+	.string "{STR_VAR_1}… Got it!\p"
+	.string "I'll be cheering extra hard for\n"
+	.string "you on your special day!$"
+
+FanClub_Text_BirthdayMaybeLater:
+	.string "Aww… Well, come tell me any\n"
+	.string "time!$"
