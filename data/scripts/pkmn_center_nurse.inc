@@ -6,6 +6,10 @@ Common_EventScript_PkmnCenterNurse::
 	@ happy birthday on their declared birthday (see IsPlayerBirthdayToday).
 	specialvar VAR_RESULT, IsPlayerBirthdayToday
 	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_Birthday
+	@ Friend's birthday — if a carried Pokémon's original TRAINER has their
+	@ birthday today, remind the player to send wishes (dialogue only).
+	specialvar VAR_RESULT, BufferPartyBirthdayTrainerName
+	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_FriendBirthday
 	specialvar VAR_RESULT, CountPlayerTrainerStars
 	goto_if_eq VAR_RESULT, 4, EventScript_PkmnCenterNurse_GoldCard
 	@ If short dialog option is enabled, skip the yes/no question
@@ -158,4 +162,8 @@ EventScript_PkmnCenterNurse_Birthday::
 	goto_if_set FLAG_RECEIVED_BIRTHDAY_SHINY_CHARM, EventScript_PkmnCenterNurse_BirthdayDone
 	msgbox gText_NurseBirthdayFamilyHint, MSGBOX_DEFAULT
 EventScript_PkmnCenterNurse_BirthdayDone::
+	return
+
+EventScript_PkmnCenterNurse_FriendBirthday::
+	msgbox gText_NurseFriendBirthday, MSGBOX_DEFAULT
 	return

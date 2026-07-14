@@ -5549,6 +5549,41 @@ bool8 TrySetupDateNotSetReminder(void)
     return TRUE;
 }
 
+// If today is a hardcoded friend's birthday and the player carries a
+// Pokémon originally caught by that friend (OT name match), buffer the
+// mon's stored OT name into STR_VAR_1 for the nurse's reminder and
+// return TRUE. Entries matching the player's own name are skipped —
+// their own greeting handles those. No latch: it's only dialogue.
+u16 BufferPartyBirthdayTrainerName(void)
+{
+    u8 month, day;
+    u8 otName[PLAYER_NAME_LENGTH + 1];
+    u32 i, j;
+
+    if (!IsCalendarDateSet())
+        return FALSE;
+    GetVirtualDate(&month, &day);
+    for (i = 0; i < ARRAY_COUNT(sPlayerBirthdays); i++)
+    {
+        if (sPlayerBirthdays[i].month != month || sPlayerBirthdays[i].day != day)
+            continue;
+        if (BirthdayNameMatches(gSaveBlock2Ptr->playerName, sPlayerBirthdays[i].name))
+            continue;
+        for (j = 0; j < gPlayerPartyCount; j++)
+        {
+            if (GetMonData(&gPlayerParty[j], MON_DATA_IS_EGG, NULL))
+                continue;
+            GetMonData(&gPlayerParty[j], MON_DATA_OT_NAME, otName);
+            if (BirthdayNameMatches(otName, sPlayerBirthdays[i].name))
+            {
+                StringCopy(gStringVar1, otName);
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
 // ============================================================
 // Fan Club birthday registration (custom birthdays)
 // ============================================================

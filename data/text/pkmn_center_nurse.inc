@@ -62,3 +62,10 @@ gText_NurseBirthdayFamilyHint::
 	.string "By the way… on such a special\n"
 	.string "day, your family must be waiting\l"
 	.string "to celebrate with you!$"
+
+gText_NurseFriendBirthday::
+	.string "Oh? That POKéMON of yours…\p"
+	.string "If I'm not mistaken, today is its\n"
+	.string "TRAINER {STR_VAR_1}'s birthday!\p"
+	.string "You should wish {STR_VAR_1} a\n"
+	.string "happy birthday!$"

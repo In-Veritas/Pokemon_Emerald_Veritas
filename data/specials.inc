@@ -570,3 +570,4 @@ gSpecials::
 	def_special DateSetFromScript
 	def_special FanClub_GetBirthdayAskState
 	def_special FanClub_StartBirthdayEntry
+	def_special BufferPartyBirthdayTrainerName

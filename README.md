@@ -469,6 +469,7 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 * Birthdays arm **once per 364 days** on the real day counter, so re-dialing the calendar can't repeat the perks — and a fresh save can always celebrate its first one
 * Registered birthdays: NIJI 14/09 · AILES 14/08 · GABS 16/10 · PURPLE 14/05 · ALHYA 02/10 · LUNA 27/07 · MAPU 22/08 · ANIA 27/07 — new names are a one-line table entry
 * Not on the list? A member of the **Lilycove Pokémon Trainer Fan Club** keeps a birthday chart and will record yours: a single-number spinner picks the month (1-12), then the day (with proper 28/30/31-day months); his record-mixing fan dialogue stays intact afterwards
+* Carrying a **friend's traded Pokémon on their birthday**? The nurse recognizes its original Trainer and reminds you to wish them a happy birthday (a gentle nudge — no music or perks)
 
 #### Follower Transform RNG Fix
 
