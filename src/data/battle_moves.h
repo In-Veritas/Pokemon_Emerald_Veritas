@@ -4592,7 +4592,7 @@ const struct BattleMove gBattleMoves[MOVES_COUNT] =
     [MOVE_DOOM_DESIRE] =
     {
         .effect = EFFECT_FUTURE_SIGHT,
-        .power = 150,
+        .power = 160,
         .type = TYPE_STEEL,
         .accuracy = 100,
         .pp = 5,
