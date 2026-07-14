@@ -3,6 +3,7 @@
 #include "clock.h"
 #include "decompress.h"
 #include "event_data.h"
+#include "field_specials.h"
 #include "gpu_regs.h"
 #include "graphics.h"
 #include "main.h"
@@ -11,6 +12,7 @@
 #include "rtc.h"
 #include "scanline_effect.h"
 #include "sound.h"
+#include "string_util.h"
 #include "strings.h"
 #include "task.h"
 #include "text.h"
@@ -28,6 +30,10 @@ static void Task_SetClock_AskConfirm(u8 taskId);
 static void Task_SetClock_HandleConfirmInput(u8 taskId);
 static void Task_SetClock_Confirmed(u8 taskId);
 static void Task_SetClock_Exit(u8 taskId);
+static void Task_SetDate_Init(u8 taskId);
+static void Task_SetDate_HandleInput(u8 taskId);
+static void Task_SetDate_HandleConfirmInput(u8 taskId);
+static void PrintDateSetText(u8 taskId);
 static void Task_ViewClock_WaitFadeIn(u8 taskId);
 static void Task_ViewClock_HandleInput(u8 taskId);
 static void Task_ViewClock_FadeOut(u8 taskId);
@@ -50,6 +56,10 @@ static void SpriteCB_AMIndicator(struct Sprite *sprite);
 #define tMoveDir         data[4]
 #define tPeriod          data[5]
 #define tMoveSpeed       data[6]
+// Date picker fields (Task_SetDate_*)
+#define dDay             data[7]
+#define dMonth           data[8]
+#define dField           data[9]
 
 #define GFXTAG_WALL_CLOCK_HAND   0x1000
 #define PALTAG_WALL_CLOCK_MALE   0x1000
@@ -73,6 +83,12 @@ enum {
 
 static const u32 sHand_Gfx[] = INCBIN_U32("graphics/wallclock/hand.4bpp.lz");
 static const u16 sTextPrompt_Pal[] = INCBIN_U16("graphics/wallclock/text_prompt.gbapal"); // for "Cancel" or "Confirm"
+
+// Date picker (runs after the time is confirmed). Kept in sync with the
+// virtual calendar in field_specials.c (fixed 365-day year, Feb = 28).
+static const u8 sDatePickerMonthLengths[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+static const u8 sText_TodayIs[] = _("Today is: ");
+static const u8 sText_IsThisTheCorrectDate[] = _("Is this the correct date?");
 
 static const struct WindowTemplate sWindowTemplates[] =
 {
@@ -911,8 +927,133 @@ static void Task_SetClock_Confirmed(u8 taskId)
             }
         }
     }
-    BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
-    gTasks[taskId].func = Task_SetClock_Exit;
+    // Time confirmed — continue into the date picker (the date drives the
+    // birthday system; see field_specials.c). The picker fades out and
+    // exits through Task_SetClock_Exit when done.
+    ClearStdWindowAndFrameToTransparent(WIN_MSG, FALSE);
+    ClearWindowTilemap(WIN_MSG);
+    gTasks[taskId].func = Task_SetDate_Init;
+}
+
+static void Task_SetDate_Init(u8 taskId)
+{
+    u8 month, day;
+
+    if (IsCalendarDateSet())
+    {
+        GetVirtualDate(&month, &day);
+    }
+    else
+    {
+        month = 1;
+        day = 1;
+    }
+    gTasks[taskId].dDay = day;
+    gTasks[taskId].dMonth = month;
+    gTasks[taskId].dField = 0;
+    DrawStdFrameWithCustomTileAndPalette(WIN_MSG, FALSE, 0x250, 0x0d);
+    PrintDateSetText(taskId);
+    gTasks[taskId].func = Task_SetDate_HandleInput;
+}
+
+// One line: "Today is: (14) / 09" — parentheses mark the selected field.
+static void PrintDateSetText(u8 taskId)
+{
+    u8 text[24];
+    u8 *ptr;
+
+    FillWindowPixelBuffer(WIN_MSG, PIXEL_FILL(1));
+    ptr = StringCopy(text, sText_TodayIs);
+    if (gTasks[taskId].dField == 0)
+        *ptr++ = CHAR_LEFT_PAREN;
+    ptr = ConvertIntToDecimalStringN(ptr, gTasks[taskId].dDay, STR_CONV_MODE_LEADING_ZEROS, 2);
+    if (gTasks[taskId].dField == 0)
+        *ptr++ = CHAR_RIGHT_PAREN;
+    *ptr++ = CHAR_SPACE;
+    *ptr++ = CHAR_SLASH;
+    *ptr++ = CHAR_SPACE;
+    if (gTasks[taskId].dField == 1)
+        *ptr++ = CHAR_LEFT_PAREN;
+    ptr = ConvertIntToDecimalStringN(ptr, gTasks[taskId].dMonth, STR_CONV_MODE_LEADING_ZEROS, 2);
+    if (gTasks[taskId].dField == 1)
+        *ptr++ = CHAR_RIGHT_PAREN;
+    *ptr = EOS;
+    AddTextPrinterParameterized(WIN_MSG, FONT_NORMAL, text, 0, 1, TEXT_SKIP_DRAW, NULL);
+    PutWindowTilemap(WIN_MSG);
+    CopyWindowToVram(WIN_MSG, COPYWIN_FULL);
+}
+
+static void Task_SetDate_HandleInput(u8 taskId)
+{
+    u8 maxDay = sDatePickerMonthLengths[gTasks[taskId].dMonth - 1];
+
+    if (JOY_NEW(A_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        FillWindowPixelBuffer(WIN_MSG, PIXEL_FILL(1));
+        AddTextPrinterParameterized(WIN_MSG, FONT_NORMAL, sText_IsThisTheCorrectDate, 0, 1, TEXT_SKIP_DRAW, NULL);
+        CopyWindowToVram(WIN_MSG, COPYWIN_FULL);
+        CreateYesNoMenu(&sWindowTemplate_ConfirmYesNo, 0x250, 0x0d, 1);
+        gTasks[taskId].func = Task_SetDate_HandleConfirmInput;
+    }
+    else if (JOY_NEW(DPAD_LEFT | DPAD_RIGHT))
+    {
+        PlaySE(SE_SELECT);
+        gTasks[taskId].dField ^= 1;
+        PrintDateSetText(taskId);
+    }
+    else if (JOY_REPEAT(DPAD_UP))
+    {
+        if (gTasks[taskId].dField == 0)
+        {
+            gTasks[taskId].dDay = (gTasks[taskId].dDay % maxDay) + 1;
+        }
+        else
+        {
+            gTasks[taskId].dMonth = (gTasks[taskId].dMonth % 12) + 1;
+            if (gTasks[taskId].dDay > sDatePickerMonthLengths[gTasks[taskId].dMonth - 1])
+                gTasks[taskId].dDay = sDatePickerMonthLengths[gTasks[taskId].dMonth - 1];
+        }
+        PrintDateSetText(taskId);
+    }
+    else if (JOY_REPEAT(DPAD_DOWN))
+    {
+        if (gTasks[taskId].dField == 0)
+        {
+            gTasks[taskId].dDay = (gTasks[taskId].dDay + maxDay - 2) % maxDay + 1;
+        }
+        else
+        {
+            gTasks[taskId].dMonth = (gTasks[taskId].dMonth + 10) % 12 + 1;
+            if (gTasks[taskId].dDay > sDatePickerMonthLengths[gTasks[taskId].dMonth - 1])
+                gTasks[taskId].dDay = sDatePickerMonthLengths[gTasks[taskId].dMonth - 1];
+        }
+        PrintDateSetText(taskId);
+    }
+}
+
+static void Task_SetDate_HandleConfirmInput(u8 taskId)
+{
+    switch (Menu_ProcessInputNoWrapClearOnChoose())
+    {
+    case 0: // YES
+        PlaySE(SE_SELECT);
+        VarSet(VAR_CALENDAR_BASE, ((u16)gTasks[taskId].dMonth << 8) | (u8)gTasks[taskId].dDay);
+        RtcCalcLocalTime();
+        VarSet(VAR_CALENDAR_BASE_DAYCOUNT, (u16)gLocalTime.days);
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
+        gTasks[taskId].func = Task_SetClock_Exit;
+        break;
+    case 1: // NO
+    case MENU_B_PRESSED:
+        PlaySE(SE_SELECT);
+        ClearStdWindowAndFrameToTransparent(WIN_MSG, FALSE);
+        ClearWindowTilemap(WIN_MSG);
+        DrawStdFrameWithCustomTileAndPalette(WIN_MSG, FALSE, 0x250, 0x0d);
+        PrintDateSetText(taskId);
+        gTasks[taskId].func = Task_SetDate_HandleInput;
+        break;
+    }
 }
 
 static void Task_SetClock_Exit(u8 taskId)

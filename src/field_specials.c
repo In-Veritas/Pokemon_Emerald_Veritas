@@ -5362,3 +5362,140 @@ void TournamentPrize_DoCodeEntry(void)
     gStringVar2[0] = EOS;
     DoNamingScreen(NAMING_SCREEN_WALDA, gStringVar2, 0, 0, 0, CB2_HandleTournamentCode);
 }
+
+// ============================================================
+// Virtual calendar + player birthdays
+// ============================================================
+// The RTC in this hack tracks a day COUNTER, not a calendar, so the
+// calendar date is player-declared: the date picker at the end of the
+// wall-clock set flow (press START while checking the room clock) stores
+// (month << 8 | day) in VAR_CALENDAR_BASE plus the local day counter at
+// that moment in VAR_CALENDAR_BASE_DAYCOUNT. The current date is the base
+// advanced by elapsed days, cycling a fixed 365-day year (Feb = 28; the
+// year itself is deliberately not tracked — only the date matters).
+
+static const u8 sCalendarMonthLengths[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+// Player birthdays, matched case-insensitively against the save's player
+// name (same idea as the Purple/Alhya name gifts). Dates are day/month.
+static const u8 sBdayName_Niji[]   = _("NIJI");   // 14/09
+static const u8 sBdayName_Ailes[]  = _("AILES");  // 14/08
+static const u8 sBdayName_Gabs[]   = _("GABS");   // 16/10
+static const u8 sBdayName_Purple[] = _("PURPLE"); // 14/05
+static const u8 sBdayName_Alhya[]  = _("ALHYA");  // 02/10 (accepted misspellings below)
+static const u8 sBdayName_Alhyha[] = _("ALHYHA");
+static const u8 sBdayName_Alhyia[] = _("ALHYIA");
+static const u8 sBdayName_Alhia[]  = _("ALHIA");
+static const u8 sBdayName_Luna[]   = _("LUNA");   // 27/07
+static const u8 sBdayName_Mapu[]   = _("MAPU");   // 22/08
+
+static const struct
+{
+    const u8 *name;
+    u8 month;
+    u8 day;
+} sPlayerBirthdays[] =
+{
+    {sBdayName_Niji,    9, 14},
+    {sBdayName_Ailes,   8, 14},
+    {sBdayName_Gabs,   10, 16},
+    {sBdayName_Purple,  5, 14},
+    {sBdayName_Alhya,  10,  2},
+    {sBdayName_Alhyha, 10,  2},
+    {sBdayName_Alhyia, 10,  2},
+    {sBdayName_Alhia,  10,  2},
+    {sBdayName_Luna,    7, 27},
+    {sBdayName_Mapu,    8, 22},
+};
+
+// Case-insensitive player-name compare in the game charset.
+static bool8 BirthdayNameMatches(const u8 *a, const u8 *b)
+{
+    s32 i;
+
+    for (i = 0; i <= PLAYER_NAME_LENGTH; i++)
+    {
+        u8 ca = a[i];
+        u8 cb = b[i];
+
+        if (ca >= CHAR_a && ca <= CHAR_z)
+            ca -= CHAR_a - CHAR_A;
+        if (cb >= CHAR_a && cb <= CHAR_z)
+            cb -= CHAR_a - CHAR_A;
+        if (ca != cb)
+            return FALSE;
+        if (ca == EOS)
+            return TRUE;
+    }
+    return TRUE;
+}
+
+bool8 IsCalendarDateSet(void)
+{
+    return VarGet(VAR_CALENDAR_BASE) != 0;
+}
+
+// Current virtual month/day (1-based). month/day are 0 if no date is set.
+void GetVirtualDate(u8 *month, u8 *day)
+{
+    u16 base = VarGet(VAR_CALENDAR_BASE);
+    s32 m, d, elapsed;
+
+    if (base == 0)
+    {
+        *month = 0;
+        *day = 0;
+        return;
+    }
+    m = ((base >> 8) & 0xFF) - 1; // 0-11
+    d = (base & 0xFF) - 1;        // 0-based day within month
+    RtcCalcLocalTime();
+    elapsed = gLocalTime.days - (s16)VarGet(VAR_CALENDAR_BASE_DAYCOUNT);
+    if (elapsed < 0)
+        elapsed = 0;
+    d += elapsed % 365;
+    while (d >= sCalendarMonthLengths[m])
+    {
+        d -= sCalendarMonthLengths[m];
+        m = (m + 1) % 12;
+    }
+    *month = m + 1;
+    *day = d + 1;
+}
+
+// TRUE on the player's declared birthday (year ignored). Drives the
+// Pokémon Center nurses' greeting, doubled EXP/EVs, and bonus shiny
+// rolls. Also exposed as a script special for the nurse scripts.
+u16 IsPlayerBirthdayToday(void)
+{
+    u8 month, day;
+    u32 i;
+
+    if (!IsCalendarDateSet())
+        return FALSE;
+    GetVirtualDate(&month, &day);
+    for (i = 0; i < ARRAY_COUNT(sPlayerBirthdays); i++)
+    {
+        if (sPlayerBirthdays[i].month == month && sPlayerBirthdays[i].day == day
+         && BirthdayNameMatches(gSaveBlock2Ptr->playerName, sPlayerBirthdays[i].name))
+            return TRUE;
+    }
+    return FALSE;
+}
+
+// Shown once per boot after this update, until the player sets a date:
+// existing saves have a time but no calendar date. New games set the date
+// as part of the intro wall-clock flow, so they're gated out via
+// FLAG_SET_WALL_CLOCK.
+static EWRAM_DATA bool8 sShownDateReminder = FALSE;
+
+bool8 TrySetupDateNotSetReminder(void)
+{
+    if (sShownDateReminder || IsCalendarDateSet())
+        return FALSE;
+    if (!FlagGet(FLAG_SET_WALL_CLOCK))
+        return FALSE;
+    sShownDateReminder = TRUE;
+    return TRUE;
+}
+

@@ -49,3 +49,11 @@ gText_ThankYouForWaiting::
 
 gText_WeHopeToSeeYouAgain2::
 	.string "We hope to see you again!$"
+
+gText_NurseHappyBirthday::
+	.string "Oh! Today is your birthday,\n"
+	.string "isn't it? Happy birthday!\p"
+	.string "You know, TRAINERS often get\n"
+	.string "lucky on their birthdays…\p"
+	.string "Many report seeing shimmering\n"
+	.string "POKéMON on their special day!$"

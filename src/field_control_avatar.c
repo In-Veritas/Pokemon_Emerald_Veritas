@@ -192,6 +192,12 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
         return TRUE;
     }
 
+    if (TrySetupDateNotSetReminder())
+    {
+        ScriptContext_SetupScript(EventScript_DateNotSetReminder);
+        return TRUE;
+    }
+
     if (input->pressedBButton && TrySetupDiveEmergeScript() == TRUE)
         return TRUE;
     if (input->tookStep)

@@ -2,6 +2,10 @@ Common_EventScript_PkmnCenterNurse::
 	lock
 	faceplayer
 	setvar VAR_0x8004, 0
+	@ Birthday greeting — every Pokémon Center nurse wishes the player a
+	@ happy birthday on their declared birthday (see IsPlayerBirthdayToday).
+	specialvar VAR_RESULT, IsPlayerBirthdayToday
+	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_Birthday
 	specialvar VAR_RESULT, CountPlayerTrainerStars
 	goto_if_eq VAR_RESULT, 4, EventScript_PkmnCenterNurse_GoldCard
 	@ If short dialog option is enabled, skip the yes/no question
@@ -143,3 +147,7 @@ EventScript_PkmnCenterNurse_PlayerTurn::
 	waitmovement 0
 	release
 	end
+
+EventScript_PkmnCenterNurse_Birthday::
+	msgbox gText_NurseHappyBirthday, MSGBOX_DEFAULT
+	return

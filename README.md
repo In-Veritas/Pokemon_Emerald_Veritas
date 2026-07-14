@@ -459,6 +459,14 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 * The wild Zigzagoon and Azumarill roaming near the daycare now rotate on a daily schedule: each day shows **both**, **only Zigzagoon**, **only Azumarill**, or **neither** (¼ of days each)
 * 3 out of 4 days have at most one wanderer out — Route 117 is the densest map in the game, so this eases the sprite load that was causing framerate dips
 
+#### Birthdays
+
+* The game now tracks a **calendar date** (day/month only — the year is deliberately ignored). Set it by checking the clock in your room and pressing **START**: after confirming the time, a date picker follows (D-pad to adjust, A to confirm)
+* **Existing saves**: after updating, the game reminds you once per session to set the date until you do. New games set the date during the intro clock setup
+* On a player's birthday (matched by save name, case-insensitive): every Pokémon Center nurse wishes you a happy birthday and hints that trainers often see shimmering Pokémon on their special day…
+* Birthday perks, all day: **double EXP**, **double EVs**, and **two bonus shiny rolls** on every Pokémon generated (wild, gifts, eggs — even trainers' Pokémon can shimmer)
+* Registered birthdays: NIJI 14/09 · AILES 14/08 · GABS 16/10 · PURPLE 14/05 · ALHYA 02/10 · LUNA 27/07 · MAPU 22/08 — new names are a one-line table entry
+
 #### Follower Transform RNG Fix
 
 * The follower system rolled the global RNG **every frame** for any following Pokémon while checking for the Ditto/Mew transform gimmick — the species check now comes first, so the RNG stream only advances when a Ditto or Mew is actually following

@@ -108,8 +108,8 @@
 #define VAR_SLATEPORT_CITY_STATE                         0x4058
 #define VAR_MAUVILLE_CITY_STATE                          0x4059
 #define VAR_RUSTBORO_CITY_STATE                          0x405A
-#define VAR_FORTREE_CITY_STATE                           0x405B // Unused Var
-#define VAR_LILYCOVE_CITY_STATE                          0x405C // Unused Var
+#define VAR_CALENDAR_BASE                                0x405B // Player-set calendar date: (month << 8) | day, 0 = not set (was unused VAR_FORTREE_CITY_STATE)
+#define VAR_CALENDAR_BASE_DAYCOUNT                       0x405C // gLocalTime.days at the moment VAR_CALENDAR_BASE was set (was unused VAR_LILYCOVE_CITY_STATE)
 #define VAR_MOSSDEEP_CITY_STATE                          0x405D
 #define VAR_SOOTOPOLIS_CITY_STATE                        0x405E
 #define VAR_EVER_GRANDE_CITY_STATE                       0x405F

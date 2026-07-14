@@ -2308,6 +2308,10 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
                 // +1 roll during Shiny Day PokeNews event
                 if (IsPokeNewsActive(POKENEWS_SHINY_DAY))
                     maxRolls++;
+                // +2 rolls on the player's birthday — trainers really do
+                // see shimmering Pokémon on their special day.
+                if (IsPlayerBirthdayToday())
+                    maxRolls += 2;
                 // Re-roll until shiny or out of attempts
                 // If hasFixedPersonality (e.g. Synchronize), preserve the nature
                 if (hasFixedPersonality)
@@ -6384,6 +6388,11 @@ void MonGainEVs(struct Pokemon *mon, u16 defeatedSpecies)
             multiplier = 2;
         else
             multiplier = 1;
+
+        // Birthday bonus: double EVs on the player's declared birthday
+        // (stacks with Pokérus and Macho Brace).
+        if (IsPlayerBirthdayToday())
+            multiplier *= 2;
 
         switch (i)
         {

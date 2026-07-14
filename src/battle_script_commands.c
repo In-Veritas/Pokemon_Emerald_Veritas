@@ -3500,6 +3500,10 @@ static void Cmd_getexp(void)
 
             calculatedExp = gSpeciesInfo[gBattleMons[gBattlerFainted].species].expYield * gBattleMons[gBattlerFainted].level / 7;
 
+            // Birthday bonus: double EXP on the player's declared birthday.
+            if (IsPlayerBirthdayToday())
+                calculatedExp *= 2;
+
             // Lucky Egg stack with diminishing returns. Each successive egg
             // contributes half as much bonus as the previous one, so the
             // total multiplier asymptotes at 2.0x:
