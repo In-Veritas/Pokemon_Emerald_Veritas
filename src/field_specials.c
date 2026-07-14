@@ -2420,8 +2420,18 @@ void ShowScrollableMultichoice(void)
         task->tTaskId = taskId;
         break;
     case SCROLL_MULTI_BF_MOVE_TUTOR_1:
-    case SCROLL_MULTI_BF_MOVE_TUTOR_2:
     case SCROLL_MULTI_BF_MOVE_TUTOR_1_FREE:
+        // Tutor 1 gained HEADBUTT (11 moves + Exit).
+        task->tMaxItemsOnScreen = MAX_SCROLL_MULTI_ON_SCREEN;
+        task->tNumItems = 12;
+        task->tLeft = 15;
+        task->tTop = 1;
+        task->tWidth = 14;
+        task->tHeight = 12;
+        task->tKeepOpenAfterSelect = FALSE;
+        task->tTaskId = taskId;
+        break;
+    case SCROLL_MULTI_BF_MOVE_TUTOR_2:
     case SCROLL_MULTI_BF_MOVE_TUTOR_2_FREE:
         task->tMaxItemsOnScreen = MAX_SCROLL_MULTI_ON_SCREEN;
         task->tNumItems = 11;
@@ -2618,6 +2628,7 @@ static const u8 *const sScrollableMultichoiceOptions[][MAX_SCROLL_MULTI_LENGTH] 
         gText_CounterCost,
         gText_ThunderWaveCost,
         gText_SwordsDanceCost,
+        gText_HeadbuttCost,
         gText_Exit
     },
     [SCROLL_MULTI_BF_MOVE_TUTOR_2] =
@@ -2666,6 +2677,7 @@ static const u8 *const sScrollableMultichoiceOptions[][MAX_SCROLL_MULTI_LENGTH] 
         gText_CounterFree,
         gText_ThunderWaveFree,
         gText_SwordsDanceFree,
+        gText_HeadbuttFree,
         gText_Exit
     },
     [SCROLL_MULTI_BF_MOVE_TUTOR_2_FREE] =
@@ -3223,7 +3235,8 @@ static const u16 sBattleFrontier_TutorMoves1[] =
     MOVE_ROCK_SLIDE,
     MOVE_COUNTER,
     MOVE_THUNDER_WAVE,
-    MOVE_SWORDS_DANCE
+    MOVE_SWORDS_DANCE,
+    MOVE_HEADBUTT
 };
 
 static const u16 sBattleFrontier_TutorMoves2[] =
@@ -3286,6 +3299,7 @@ static void ShowBattleFrontierTutorMoveDescription(u8 menu, u16 selection)
         BattleFrontier_Lounge7_Text_CounterDesc,
         BattleFrontier_Lounge7_Text_ThunderWaveDesc,
         BattleFrontier_Lounge7_Text_SwordsDanceDesc,
+        BattleFrontier_Lounge7_Text_HeadbuttDesc,
         gText_Exit,
     };
 

@@ -386,6 +386,11 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * Egg Move Tutors (Fallarbor Town and Artisan Cave) now charge a **Nugget** or **Pearl** per move taught
 * Works like the Move Relearner's Heart Scale payment — bring either item to learn an egg move
 
+#### Battle Frontier Tutor: Headbutt
+
+* The **left Battle Frontier move tutor** (Lounge 7) now also offers **HEADBUTT for 48 BP** (free once all Silver Symbols are collected, like the rest of his list)
+* Compatibility is deliberately exclusive: only **JIRACHI** can learn it — a nod to the Wishmaker event
+
 #### Morph Powder
 
 * A new item that changes a Pokémon's displayed gender

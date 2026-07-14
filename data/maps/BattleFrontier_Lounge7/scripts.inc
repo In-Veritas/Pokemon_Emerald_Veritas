@@ -84,7 +84,8 @@ BattleFrontier_Lounge7_EventScript_ShowLeftTutorMoves::
 	case 7, BattleFrontier_Lounge7_EventScript_Counter
 	case 8, BattleFrontier_Lounge7_EventScript_ThunderWave
 	case 9, BattleFrontier_Lounge7_EventScript_SwordsDance
-	case 10, BattleFrontier_Lounge7_EventScript_ExitTutorMoveSelect
+	case 10, BattleFrontier_Lounge7_EventScript_Headbutt
+	case 11, BattleFrontier_Lounge7_EventScript_ExitTutorMoveSelect
 	case MULTI_B_PRESSED, BattleFrontier_Lounge7_EventScript_ExitTutorMoveSelect
 	end
 
@@ -135,6 +136,11 @@ BattleFrontier_Lounge7_EventScript_ThunderWave::
 
 BattleFrontier_Lounge7_EventScript_SwordsDance::
 	setvar VAR_0x8008, 12
+	goto BattleFrontier_Lounge7_EventScript_ConfirmMoveSelection
+	end
+
+BattleFrontier_Lounge7_EventScript_Headbutt::
+	setvar VAR_0x8008, 48
 	goto BattleFrontier_Lounge7_EventScript_ConfirmMoveSelection
 	end
 
@@ -497,6 +503,13 @@ BattleFrontier_Lounge7_Text_LadiesWereStrongAndBeautiful:
 	.string "But… For some reason, I can't help\n"
 	.string "but feel this…\p"
 	.string "Time is so cruel…$"
+
+BattleFrontier_Lounge7_Text_HeadbuttDesc::
+	.string "An attack that
+"
+	.string "may make the foe
+"
+	.string "flinch.$"
 
 BattleFrontier_Lounge7_Text_SoftboiledDesc::
 	.string "Recovers up to\n"
