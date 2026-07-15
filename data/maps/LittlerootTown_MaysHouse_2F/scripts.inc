@@ -472,12 +472,12 @@ RivalsHouse_2F_EventScript_RivalGiftDayDone::
 
 RivalsHouse_2F_Text_RivalGiftDayIntro:
 	.string "{PLAYER}! Perfect timing.\p"
-	.string "For GIFT DAY I caught something\n"
-	.string "special. A shiny DELIBIRD, and\l"
-	.string "get this, it knows AEROBLAST!\p"
-	.string "I'll trade it to you, but only\n"
-	.string "for a shiny of your own. Fair's\l"
-	.string "fair!\p"
+	.string "Look what SANTA left me for GIFT\n"
+	.string "DAY! A shiny DELIBIRD, and get\l"
+	.string "this, it knows AEROBLAST!\p"
+	.string "Its tag says SANTY. I'll trade\n"
+	.string "it to you, but only for a shiny\l"
+	.string "of your own. Fair's fair!\p"
 	.string "Got a shiny POKéMON to trade?$"
 
 RivalsHouse_2F_Text_RivalGiftDayThanks:

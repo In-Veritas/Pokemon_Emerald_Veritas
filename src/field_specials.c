@@ -5085,28 +5085,26 @@ void CreateCookieZigzagoon(void)
     CalculateMonStats(&gEnemyParty[0]);
 }
 
-// Veritas: builds gEnemyParty[0] as the rival's Gift Day present — a shiny,
-// perfect-IV, level 12 DELIBIRD that knows AEROBLAST (off its learnset, so
-// the moves are written directly here, like CreateCookieZigzagoon). The trade
-// scene (DoInGameTradeScene) reads gEnemyParty[0] and swaps it for the shiny
-// the player offered. The OT is the rival — the opposite of the player's
-// gender — so the gift registers as a genuine traded Pokémon.
+// Veritas: builds gEnemyParty[0] as the Gift Day present the rival trades over —
+// SANTY, a shiny, perfect-IV, level 12 DELIBIRD that knows AEROBLAST (off its
+// learnset, so the moves are written directly here, like CreateCookieZigzagoon).
+// The trade scene (DoInGameTradeScene) reads gEnemyParty[0] and swaps it for the
+// shiny the player offered. Its OT is SANTA, so it registers as a traded Pokémon.
 void CreateGiftDelibird(void)
 {
-    static const u8 sOtNameMale[] = _("May");        // player male  -> rival is May
-    static const u8 sOtNameFemale[] = _("Brendan");  // player female -> rival is Brendan
+    static const u8 sNickname[] = _("Santy");
+    static const u8 sOtName[] = _("SANTA");
     static const u16 sMoves[MAX_MON_MOVES] = {
         MOVE_AEROBLAST, MOVE_PRESENT, MOVE_POWDER_SNOW, MOVE_AURORA_BEAM,
     };
-    const u32 otId = 25125; // festive preset OT id (12/25)
+    const u32 otId = 25120; // festive preset OT id
     u32 personality;
     u16 lo;
     u16 hi;
     u8 i;
     u8 ivVal = MAX_PER_STAT_IVS;
     u8 metLocation = METLOC_IN_GAME_TRADE;
-    u8 playerIsMale = (gSaveBlock2Ptr->playerGender == MALE);
-    u8 otGender;
+    u8 otGender = MALE; // SANTA
     u8 pp;
     u16 move;
 
@@ -5116,8 +5114,6 @@ void CreateGiftDelibird(void)
     lo = Random();
     hi = ((u16)otId ^ (u16)(otId >> 16)) ^ lo ^ (u16)(Random() & (SHINY_ODDS - 1));
     personality = ((u32)hi << 16) | lo;
-
-    otGender = playerIsMale ? FEMALE : MALE;
 
     CreateMon(&gEnemyParty[0], SPECIES_DELIBIRD, 12, USE_RANDOM_IVS,
               TRUE, personality, OT_ID_PRESET, otId);
@@ -5130,7 +5126,8 @@ void CreateGiftDelibird(void)
     SetMonData(&gEnemyParty[0], MON_DATA_SPATK_IV, &ivVal);
     SetMonData(&gEnemyParty[0], MON_DATA_SPDEF_IV, &ivVal);
 
-    SetMonData(&gEnemyParty[0], MON_DATA_OT_NAME, playerIsMale ? sOtNameMale : sOtNameFemale);
+    SetMonData(&gEnemyParty[0], MON_DATA_NICKNAME, sNickname);
+    SetMonData(&gEnemyParty[0], MON_DATA_OT_NAME, sOtName);
     SetMonData(&gEnemyParty[0], MON_DATA_OT_GENDER, &otGender);
     SetMonData(&gEnemyParty[0], MON_DATA_MET_LOCATION, &metLocation);
 
