@@ -505,10 +505,8 @@ BattleFrontier_Lounge7_Text_LadiesWereStrongAndBeautiful:
 	.string "Time is so cruel…$"
 
 BattleFrontier_Lounge7_Text_HeadbuttDesc::
-	.string "An attack that
-"
-	.string "may make the foe
-"
+	.string "An attack that\n"
+	.string "may make the foe\n"
 	.string "flinch.$"
 
 BattleFrontier_Lounge7_Text_SoftboiledDesc::
