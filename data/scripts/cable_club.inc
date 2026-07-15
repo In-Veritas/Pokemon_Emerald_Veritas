@@ -274,8 +274,7 @@ CableClub_EventScript_SelectCableClubRoom::
 	switch VAR_RESULT
 	case 0, CableClub_EventScript_TradeCenter
 	case 1, CableClub_EventScript_Colosseum
-	case 2, CableClub_EventScript_TournamentPrize
-	case 3, CableClub_EventScript_AbortLink
+	case 2, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -285,8 +284,7 @@ CableClub_EventScript_CableClubUnlockedRecordCorner::
 	case 0, CableClub_EventScript_TradeCenter
 	case 1, CableClub_EventScript_Colosseum
 	case 2, CableClub_EventScript_RecordCorner
-	case 3, CableClub_EventScript_TournamentPrize
-	case 4, CableClub_EventScript_AbortLink
+	case 3, CableClub_EventScript_AbortLink
 	case MULTI_B_PRESSED, CableClub_EventScript_AbortLink
 	end
 
@@ -305,7 +303,7 @@ CableClub_EventScript_TournamentPrize::
 	case 1, CableClub_EventScript_TournamentPrizeGive
 	case 2, CableClub_EventScript_TournamentPrizeAlreadyUsed
 	case 3, CableClub_EventScript_TournamentPrizeNoRoom
-	case 4, CableClub_EventScript_SelectCableClubRoom
+	case 4, CableClub_EventScript_WirelessClubDesk
 	end
 
 @ VAR_0x8006 = tournament (0 = none), VAR_0x8007 = 1/2/3 placement or 4 for a
@@ -325,47 +323,47 @@ CableClub_EventScript_TournamentPrizeGive::
 CableClub_EventScript_TournamentPrizeGeneric::
 	msgbox CableClub_Text_TournamentPrizeWinner, MSGBOX_DEFAULT
 	giveitem VAR_0x8004, VAR_0x8005
-	goto CableClub_EventScript_SelectCableClubRoom
+	goto CableClub_EventScript_WirelessClubDesk
 	end
 
 CableClub_EventScript_TournamentPrizeFirst::
 	msgbox CableClub_Text_TournamentPrizeFirst, MSGBOX_DEFAULT
 	giveitem VAR_0x8004, VAR_0x8005
-	goto CableClub_EventScript_SelectCableClubRoom
+	goto CableClub_EventScript_WirelessClubDesk
 	end
 
 CableClub_EventScript_TournamentPrizeSecond::
 	msgbox CableClub_Text_TournamentPrizeSecond, MSGBOX_DEFAULT
 	giveitem VAR_0x8004, VAR_0x8005
-	goto CableClub_EventScript_SelectCableClubRoom
+	goto CableClub_EventScript_WirelessClubDesk
 	end
 
 CableClub_EventScript_TournamentPrizeThird::
 	msgbox CableClub_Text_TournamentPrizeThird, MSGBOX_DEFAULT
 	giveitem VAR_0x8004, VAR_0x8005
-	goto CableClub_EventScript_SelectCableClubRoom
+	goto CableClub_EventScript_WirelessClubDesk
 	end
 
 @ The entrant didn't place, so the clerk thanks them for turning up.
 CableClub_EventScript_TournamentPrizeParticipation::
 	msgbox CableClub_Text_TournamentPrizeParticipation, MSGBOX_DEFAULT
 	giveitem VAR_0x8004, VAR_0x8005
-	goto CableClub_EventScript_SelectCableClubRoom
+	goto CableClub_EventScript_WirelessClubDesk
 	end
 
 CableClub_EventScript_TournamentPrizeInvalid::
 	msgbox CableClub_Text_TournamentPrizeInvalid, MSGBOX_DEFAULT
-	goto CableClub_EventScript_SelectCableClubRoom
+	goto CableClub_EventScript_WirelessClubDesk
 	end
 
 CableClub_EventScript_TournamentPrizeAlreadyUsed::
 	msgbox CableClub_Text_TournamentPrizeAlreadyUsed, MSGBOX_DEFAULT
-	goto CableClub_EventScript_SelectCableClubRoom
+	goto CableClub_EventScript_WirelessClubDesk
 	end
 
 CableClub_EventScript_TournamentPrizeNoRoom::
 	msgbox CableClub_Text_TournamentPrizeNoRoom, MSGBOX_DEFAULT
-	goto CableClub_EventScript_SelectCableClubRoom
+	goto CableClub_EventScript_WirelessClubDesk
 	end
 
 CableClub_EventScript_Colosseum::
@@ -1181,20 +1179,35 @@ CableClub_EventScript_UnionRoomAdapterNotConnected::
 	release
 	return
 
+@ The desk nearest the 2F stairs. As well as explaining the Wireless Club, she
+@ is the one who redeems TOURNAMENT PRIZE codes (see the prize scripts above).
 CableClub_EventScript_WirelessClubAttendant::
 	lock
 	faceplayer
 	goto_if_unset FLAG_SYS_POKEDEX_GET, CableClub_EventScript_WirelessClubAdjustements
-	msgbox CableClub_Text_AskAboutLinking, MSGBOX_YESNO
-	goto_if_eq VAR_RESULT, NO, CableClub_EventScript_DontAskAboutLinking
+	goto CableClub_EventScript_WirelessClubDesk
+	end
+
+CableClub_EventScript_WirelessClubDesk::
+	message CableClub_Text_WirelessClubWhichService
+	waitmessage
+	multichoice 0, 0, MULTI_WIRELESS_CLUB_DESK, FALSE
+	switch VAR_RESULT
+	case 0, CableClub_EventScript_WirelessClubInfo
+	case 1, CableClub_EventScript_TournamentPrize
+	case 2, CableClub_EventScript_DontAskAboutLinking
+	case MULTI_B_PRESSED, CableClub_EventScript_DontAskAboutLinking
+	end
+
+CableClub_EventScript_WirelessClubInfo::
 	msgbox CableClub_Text_ExplainWirelessClub, MSGBOX_DEFAULT
-	release
-	return
+	goto CableClub_EventScript_WirelessClubDesk
+	end
 
 CableClub_EventScript_DontAskAboutLinking::
 	msgbox CableClub_Text_HopeYouEnjoyWirelessSystem, MSGBOX_DEFAULT
 	release
-	return
+	end
 
 CableClub_EventScript_DirectCornerAttendant::
 	lock

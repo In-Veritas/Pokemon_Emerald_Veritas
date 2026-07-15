@@ -522,7 +522,6 @@ static const struct MenuAction MultichoiceList_CableClubNoRecordMix[] =
 {
     {gText_TradeCenter},
     {gText_Colosseum},
-    {gText_TournamentPrize},
     {gText_Exit},
 };
 
@@ -531,6 +530,14 @@ static const struct MenuAction MultichoiceList_CableClubWithRecordMix[] =
     {gText_TradeCenter},
     {gText_Colosseum},
     {gText_RecordCorner},
+    {gText_Exit},
+};
+
+// The Wireless Club lady (the desk nearest the 2F stairs) also redeems
+// tournament prize codes — see CableClub_EventScript_WirelessClubAttendant.
+static const struct MenuAction MultichoiceList_WirelessClubDesk[] =
+{
+    {gText_Information},
     {gText_TournamentPrize},
     {gText_Exit},
 };
@@ -928,6 +935,7 @@ static const struct MultichoiceListStruct sMultichoiceLists[] =
     [MULTI_SHARDS_RYBG]                = MULTICHOICE(MultichoiceList_ShardsRYBG),
     [MULTI_TOURNEY_WITH_RECORD]        = MULTICHOICE(MultichoiceList_TourneyWithRecord),
     [MULTI_CABLE_CLUB_NO_RECORD_MIX]   = MULTICHOICE(MultichoiceList_CableClubNoRecordMix),
+    [MULTI_WIRELESS_CLUB_DESK]         = MULTICHOICE(MultichoiceList_WirelessClubDesk),
     [MULTI_WIRELESS_NO_RECORD_BERRY]   = MULTICHOICE(MultichoiceList_LinkServicesNoRecordBerry),
     [MULTI_CABLE_CLUB_WITH_RECORD_MIX] = MULTICHOICE(MultichoiceList_CableClubWithRecordMix),
     [MULTI_WIRELESS_NO_BERRY]          = MULTICHOICE(MultichoiceList_LinkServicesNoBerry),

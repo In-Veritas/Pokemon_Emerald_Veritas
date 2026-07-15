@@ -521,6 +521,11 @@ CableClub_Text_TournamentPrizeNoRoom:
 	.string "Please make room, then come back\n"
 	.string "with your code.$"
 
+CableClub_Text_WirelessClubWhichService:
+	.string "Welcome to the POKéMON CENTER's\n"
+	.string "2F service desk!\p"
+	.string "How may I help you today?$"
+
 CableClub_Text_TournamentPrizeFirst:
 	.string "That's a winning code!\p"
 	.string "CHAMPION of the {STR_VAR_1}\n"
