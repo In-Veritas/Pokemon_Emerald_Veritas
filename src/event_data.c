@@ -137,9 +137,10 @@ void ClearMysteryGiftVars(void)
     VarSet(VAR_SE_VOLUME, 0);
     VarSet(VAR_PLAYER_STYLE, 0);
     VarSet(VAR_OUTFIT_CONDITIONS, 0);
-    // VAR_DELIVERY_DAY_LAST (ex GIFT_UNUSED_6) is deliberately NOT
-    // cleared here — it's the Delivery Day once-per-month purchase latch.
-    VarSet(VAR_GIFT_UNUSED_7, 0);
+    // VAR_DELIVERY_DAY_LAST (ex GIFT_UNUSED_6) and VAR_SAVE_ANNIV_ARMED
+    // (ex GIFT_UNUSED_7) are deliberately NOT cleared here — they are
+    // persistent calendar latches (Delivery Day purchase / save-anniversary
+    // cooldown), not Mystery Gift state, and must survive a gift clear.
 }
 
 void DisableResetRTC(void)
