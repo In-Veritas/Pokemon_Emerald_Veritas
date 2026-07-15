@@ -1397,6 +1397,19 @@ static void NamingScreen_CreatePlayerIcon(void)
 {
     u16 gfxId;
     u8 spriteId;
+    u16 savedStyle;
+
+    // A new game hasn't chosen a clothing style yet, but VAR_PLAYER_STYLE still
+    // holds the previous save's value here — NewGameInitData (which zeroes it)
+    // runs only after this naming screen. Without suppressing it,
+    // CreateObjectGraphicsSprite -> LoadObjectEventPalette recolors the player's
+    // overworld sprite with the old save's style; that recolor is authored for
+    // the Emerald palette layout, so on the RS/classic sprite it comes out as
+    // garbage (the purple the player sees, which clears once the game starts).
+    // Force the default style for just this palette load, then restore the var
+    // so nothing else is disturbed (0 == PLAYER_STYLE_NONE).
+    savedStyle = VarGet(VAR_PLAYER_STYLE);
+    VarSet(VAR_PLAYER_STYLE, 0);
 
     // Use the player's avatar graphics (respects selected look style),
     // sNamingScreen->monSpecies holds gender for NAMING_SCREEN_PLAYER.
@@ -1404,6 +1417,8 @@ static void NamingScreen_CreatePlayerIcon(void)
     spriteId = CreateObjectGraphicsSprite(gfxId, SpriteCallbackDummy, 56, 37, 0);
     gSprites[spriteId].oam.priority = 3;
     StartSpriteAnim(&gSprites[spriteId], ANIM_STD_GO_SOUTH);
+
+    VarSet(VAR_PLAYER_STYLE, savedStyle);
 }
 
 static void NamingScreen_CreatePCIcon(void)
