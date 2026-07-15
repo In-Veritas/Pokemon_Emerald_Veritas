@@ -22,6 +22,9 @@ Common_EventScript_PkmnCenterNurse::
 	@ Luvdisc Day (14/02) — announce the romance.
 	specialvar VAR_RESULT, IsLuvdiscDayToday
 	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_LuvdiscDay
+	@ Gift Day (25/12) — explain the cold snap and send the player to Birch.
+	specialvar VAR_RESULT, IsGiftDayToday
+	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_GiftDay
 	@ Delivery Day (1st of the month) — point at the Slateport market.
 	specialvar VAR_RESULT, IsDeliveryDayToday
 	call_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_DeliveryDay
@@ -193,6 +196,10 @@ EventScript_PkmnCenterNurse_HoennDay::
 
 EventScript_PkmnCenterNurse_LuvdiscDay::
 	msgbox gText_NurseLuvdiscDay, MSGBOX_DEFAULT
+	return
+
+EventScript_PkmnCenterNurse_GiftDay::
+	msgbox gText_NurseGiftDay, MSGBOX_DEFAULT
 	return
 
 EventScript_PkmnCenterNurse_DeliveryDay::

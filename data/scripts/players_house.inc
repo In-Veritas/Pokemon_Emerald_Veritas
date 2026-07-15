@@ -338,6 +338,9 @@ PlayersHouse_1F_EventScript_Mom::
 	@ Luvdisc Day — Mom teases about sweethearts.
 	specialvar VAR_RESULT, IsLuvdiscDayToday
 	goto_if_eq VAR_RESULT, TRUE, PlayersHouse_1F_EventScript_MomLuvdisc
+	@ Gift Day — Mom has a one-time RARE CANDY to keep your team going.
+	specialvar VAR_RESULT, IsGiftDayToday
+	goto_if_eq VAR_RESULT, TRUE, PlayersHouse_1F_EventScript_MomGiftDay
 	goto_if_eq VAR_LITTLEROOT_HOUSES_STATE_MAY, 4, PlayersHouse_1F_EventScript_DontPushYourselfTooHard
 	goto_if_eq VAR_LITTLEROOT_HOUSES_STATE_BRENDAN, 4, PlayersHouse_1F_EventScript_DontPushYourselfTooHard
 	goto_if_set FLAG_HAS_MATCH_CALL, PlayersHouse_1F_EventScript_TryRegisterMom
@@ -731,6 +734,47 @@ PlayersHouse_1F_EventScript_MomBirthdayBagFull::
 	msgbox PlayersHouse_1F_Text_MomBirthdayBagFull, MSGBOX_DEFAULT
 	release
 	end
+
+PlayersHouse_1F_EventScript_MomGiftDay::
+	goto_if_set FLAG_RECEIVED_GIFT_DAY_RARE_CANDY, PlayersHouse_1F_EventScript_MomGiftDayAgain
+	msgbox PlayersHouse_1F_Text_MomGiftDayGift, MSGBOX_DEFAULT
+	giveitem ITEM_RARE_CANDY
+	goto_if_eq VAR_RESULT, FALSE, PlayersHouse_1F_EventScript_MomGiftDayBagFull
+	setflag FLAG_RECEIVED_GIFT_DAY_RARE_CANDY
+	msgbox PlayersHouse_1F_Text_MomGiftDayEnjoy, MSGBOX_DEFAULT
+	release
+	end
+
+PlayersHouse_1F_EventScript_MomGiftDayAgain::
+	msgbox PlayersHouse_1F_Text_MomGiftDayAgain, MSGBOX_DEFAULT
+	release
+	end
+
+PlayersHouse_1F_EventScript_MomGiftDayBagFull::
+	msgbox PlayersHouse_1F_Text_MomGiftDayBagFull, MSGBOX_DEFAULT
+	release
+	end
+
+PlayersHouse_1F_Text_MomGiftDayGift:
+	.string "Oh, happy GIFT DAY, sweetheart!\p"
+	.string "It's freezing out there, so I\n"
+	.string "saved a little something to keep\l"
+	.string "your POKéMON going strong.\p"
+	.string "Here you are!$"
+
+PlayersHouse_1F_Text_MomGiftDayEnjoy:
+	.string "A RARE CANDY! Don't tell your\n"
+	.string "father I spoil you so.\p"
+	.string "Now bundle up out there!$"
+
+PlayersHouse_1F_Text_MomGiftDayAgain:
+	.string "Happy GIFT DAY again, dear!\p"
+	.string "Stay warm out there, alright?$"
+
+PlayersHouse_1F_Text_MomGiftDayBagFull:
+	.string "Oh my, your BAG is stuffed full!\p"
+	.string "Come back for your treat once\n"
+	.string "you've made a little room.$"
 
 PlayersHouse_1F_Text_MomBirthdayGift:
 	.string "Oh, sweetheart! Happy birthday!\p"

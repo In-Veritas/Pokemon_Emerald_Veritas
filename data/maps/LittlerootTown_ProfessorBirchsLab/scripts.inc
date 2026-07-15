@@ -575,6 +575,10 @@ LittlerootTown_ProfessorBirchsLab_EventScript_Birch::
 	@ Luvdisc Day — Birch shares a cheerful research tidbit.
 	specialvar VAR_RESULT, IsLuvdiscDayToday
 	goto_if_eq VAR_RESULT, TRUE, LittlerootTown_ProfessorBirchsLab_EventScript_BirchLuvdisc
+	@ Gift Day — Birch explains the cold snap, gives a NEVERMELTICE, and
+	@ points the player to Mom and the rival.
+	specialvar VAR_RESULT, IsGiftDayToday
+	goto_if_eq VAR_RESULT, TRUE, LittlerootTown_ProfessorBirchsLab_EventScript_BirchGiftDay
 	goto_if_unset FLAG_HAS_MATCH_CALL, LittlerootTown_ProfessorBirchsLab_EventScript_TryRatePokedexOrRegister
 	goto_if_unset FLAG_ENABLE_PROF_BIRCH_MATCH_CALL, EventScript_RegisterProfBirch
 	goto LittlerootTown_ProfessorBirchsLab_EventScript_TryRatePokedexOrRegister
@@ -2143,6 +2147,60 @@ LittlerootTown_ProfessorBirchsLab_Text_BirchBirthday:
 	.string "their TRAINER's birthday.\p"
 	.string "Some even seem to… sparkle!\p"
 	.string "Go enjoy the day together!$"
+
+LittlerootTown_ProfessorBirchsLab_EventScript_BirchGiftDay::
+	goto_if_set FLAG_RECEIVED_GIFT_DAY_NEVERMELTICE, LittlerootTown_ProfessorBirchsLab_EventScript_BirchGiftDayAgain
+	msgbox LittlerootTown_ProfessorBirchsLab_Text_BirchGiftDayIntro, MSGBOX_DEFAULT
+	giveitem ITEM_NEVER_MELT_ICE
+	goto_if_eq VAR_RESULT, FALSE, LittlerootTown_ProfessorBirchsLab_EventScript_BirchGiftDayBagFull
+	setflag FLAG_RECEIVED_GIFT_DAY_NEVERMELTICE
+	msgbox LittlerootTown_ProfessorBirchsLab_Text_BirchGiftDayHint, MSGBOX_DEFAULT
+	release
+	end
+
+LittlerootTown_ProfessorBirchsLab_EventScript_BirchGiftDayAgain::
+	msgbox LittlerootTown_ProfessorBirchsLab_Text_BirchGiftDayAgain, MSGBOX_DEFAULT
+	release
+	end
+
+LittlerootTown_ProfessorBirchsLab_EventScript_BirchGiftDayBagFull::
+	msgbox LittlerootTown_ProfessorBirchsLab_Text_BirchGiftDayBagFull, MSGBOX_DEFAULT
+	release
+	end
+
+LittlerootTown_ProfessorBirchsLab_Text_BirchGiftDayIntro:
+	.string "{PLAYER}! Happy GIFT DAY!\p"
+	.string "Fascinating, isn't it? The\n"
+	.string "temperature has dipped just a\l"
+	.string "touch today.\p"
+	.string "Too slight for us to notice…\n"
+	.string "but the ICE POKéMON certainly\l"
+	.string "have! They're out all across\l"
+	.string "Hoenn while the chill lasts.\p"
+	.string "Oh! I found this out in the\n"
+	.string "frost. A curious little thing.\l"
+	.string "You should have it!$"
+
+LittlerootTown_ProfessorBirchsLab_Text_BirchGiftDayHint:
+	.string "A NEVERMELTICE! It never so much\n"
+	.string "as drips. Remarkable, really.\p"
+	.string "You should head home, too. Your\n"
+	.string "mother mentioned a little GIFT\l"
+	.string "DAY surprise for you.\p"
+	.string "And your rival was after you,\n"
+	.string "something about a special trade,\l"
+	.string "today only!$"
+
+LittlerootTown_ProfessorBirchsLab_Text_BirchGiftDayAgain:
+	.string "Enjoying GIFT DAY, {PLAYER}?\p"
+	.string "Don't forget: your mother has a\n"
+	.string "surprise at home, and your rival\l"
+	.string "wants a trade, today only!$"
+
+LittlerootTown_ProfessorBirchsLab_Text_BirchGiftDayBagFull:
+	.string "Hmm, your BAG is full! Make a\n"
+	.string "little room and I'll hand you my\l"
+	.string "frosty find.$"
 
 LittlerootTown_ProfessorBirchsLab_EventScript_BirchSaveAnniv::
 	buffernumberstring STR_VAR_1, VAR_RESULT

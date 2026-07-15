@@ -94,6 +94,18 @@ gText_NurseLuvdiscDay::
 	.string "warmer than usual today.\l"
 	.string "How romantic!$"
 
+gText_NurseGiftDay::
+	.string "Happy GIFT DAY!\p"
+	.string "Have you felt the chill? It's so\n"
+	.string "faint you'd hardly notice it…\p"
+	.string "But it's plenty for the ICE\n"
+	.string "POKéMON! They're slipping out\l"
+	.string "all across the region today.\p"
+	.string "They say the cold makes for\n"
+	.string "lucky training, too. PROF. BIRCH\l"
+	.string "was thrilled. Go see him to\l"
+	.string "hear the rest!$"
+
 gText_NurseDeliveryDay::
 	.string "Oh, it's the first of the month!\p"
 	.string "The monthly DELIVERY has arrived\n"

@@ -246,6 +246,9 @@ RivalsHouse_2F_EventScript_Rival::
 	@ Luvdisc Day — the rival gets a little flustered.
 	specialvar VAR_RESULT, IsLuvdiscDayToday
 	goto_if_eq VAR_RESULT, TRUE, RivalsHouse_2F_EventScript_RivalLuvdisc
+	@ Gift Day — one-day trade: any shiny for a shiny AEROBLAST DELIBIRD.
+	specialvar VAR_RESULT, IsGiftDayToday
+	goto_if_eq VAR_RESULT, TRUE, RivalsHouse_2F_EventScript_RivalGiftDay
 	goto_if_set FLAG_MET_RIVAL_LILYCOVE, RivalsHouse_2F_EventScript_RivalPostLilycove
 	checkplayergender
 	goto_if_eq VAR_RESULT, MALE, RivalsHouse_2F_EventScript_May
@@ -428,6 +431,75 @@ RivalsHouse_2F_Text_RivalBirthday:
 	.string "Don't think I'll go easy on you\n"
 	.string "just because it's your special\l"
 	.string "day, though!$"
+
+@ Gift Day: a one-time trade — the player gives up any shiny and receives
+@ the rival's shiny, perfect-IV, Aeroblast DELIBIRD (see CreateGiftDelibird).
+@ Mirrors the Battle Frontier Cookie trade's shiny-gated ChoosePartyMon flow.
+RivalsHouse_2F_EventScript_RivalGiftDay::
+	applymovement VAR_LAST_TALKED, Common_Movement_FacePlayer
+	waitmovement 0
+	goto_if_set FLAG_RECEIVED_GIFT_DAY_DELIBIRD, RivalsHouse_2F_EventScript_RivalGiftDayDone
+	msgbox RivalsHouse_2F_Text_RivalGiftDayIntro, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, RivalsHouse_2F_EventScript_RivalGiftDayDecline
+	special ChoosePartyMon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, RivalsHouse_2F_EventScript_RivalGiftDayDecline
+	specialvar VAR_RESULT, IsSelectedPartyMonShiny
+	goto_if_eq VAR_RESULT, FALSE, RivalsHouse_2F_EventScript_RivalGiftDayNotShiny
+	copyvar VAR_0x8005, VAR_0x8004
+	special CreateGiftDelibird
+	special DoInGameTradeScene
+	waitstate
+	msgbox RivalsHouse_2F_Text_RivalGiftDayThanks, MSGBOX_DEFAULT
+	setflag FLAG_RECEIVED_GIFT_DAY_DELIBIRD
+	releaseall
+	end
+
+RivalsHouse_2F_EventScript_RivalGiftDayDecline::
+	msgbox RivalsHouse_2F_Text_RivalGiftDayDecline, MSGBOX_DEFAULT
+	releaseall
+	end
+
+RivalsHouse_2F_EventScript_RivalGiftDayNotShiny::
+	msgbox RivalsHouse_2F_Text_RivalGiftDayNotShiny, MSGBOX_DEFAULT
+	releaseall
+	end
+
+RivalsHouse_2F_EventScript_RivalGiftDayDone::
+	msgbox RivalsHouse_2F_Text_RivalGiftDayDone, MSGBOX_DEFAULT
+	releaseall
+	end
+
+RivalsHouse_2F_Text_RivalGiftDayIntro:
+	.string "{PLAYER}! Perfect timing.\p"
+	.string "For GIFT DAY I caught something\n"
+	.string "special. A shiny DELIBIRD, and\l"
+	.string "get this, it knows AEROBLAST!\p"
+	.string "I'll trade it to you, but only\n"
+	.string "for a shiny of your own. Fair's\l"
+	.string "fair!\p"
+	.string "Got a shiny POKéMON to trade?$"
+
+RivalsHouse_2F_Text_RivalGiftDayThanks:
+	.string "Ha, a deal's a deal! Take good\n"
+	.string "care of that DELIBIRD.\p"
+	.string "It's one of a kind, you know.\n"
+	.string "Happy GIFT DAY, {PLAYER}!$"
+
+RivalsHouse_2F_Text_RivalGiftDayDecline:
+	.string "No shiny to spare? No worries.\p"
+	.string "The offer's only good today,\n"
+	.string "though, so don't wait too long!$"
+
+RivalsHouse_2F_Text_RivalGiftDayNotShiny:
+	.string "Hey now, that one's not shiny!\p"
+	.string "It's shiny-for-shiny or nothing.\n"
+	.string "Those are the rules!$"
+
+RivalsHouse_2F_Text_RivalGiftDayDone:
+	.string "That shiny DELIBIRD treating you\n"
+	.string "well? Told you it was special.\p"
+	.string "Happy GIFT DAY, {PLAYER}!$"
 
 RivalsHouse_2F_EventScript_RivalSaveAnniv::
 	applymovement VAR_LAST_TALKED, Common_Movement_FacePlayer

@@ -1299,9 +1299,9 @@
 #define FLAG_HIDE_ROUTE117_AZUMARILL                                0x4E5 // Route 117 wanderer day rotation (was FLAG_UNUSED_0x4E5)
 #define FLAG_RECEIVED_BIRTHDAY_SHINY_CHARM                          0x4E6 // Mom's one-time birthday Shiny Charm gift (was FLAG_UNUSED_0x4E6)
 #define FLAG_SAVE_ANNIV_ELIGIBLE                                    0x4E7 // Set at new game; consumed when the intro sets the date to record the save anniversary. Absent on existing saves so they never get a save birthday.
-#define FLAG_UNUSED_0x4E8                                           0x4E8 // Unused Flag
-#define FLAG_UNUSED_0x4E9                                           0x4E9 // Unused Flag
-#define FLAG_UNUSED_0x4EA                                           0x4EA // Unused Flag
+#define FLAG_RECEIVED_GIFT_DAY_RARE_CANDY                          0x4E8 // Mom's one-time Gift Day (25/12) Rare Candy (was FLAG_UNUSED_0x4E8)
+#define FLAG_RECEIVED_GIFT_DAY_NEVERMELTICE                        0x4E9 // Prof Birch's one-time Gift Day NeverMeltIce (was FLAG_UNUSED_0x4E9)
+#define FLAG_RECEIVED_GIFT_DAY_DELIBIRD                            0x4EA // Rival's one-time Gift Day shiny -> shiny Delibird trade (was FLAG_UNUSED_0x4EA)
 #define FLAG_UNUSED_0x4EB                                           0x4EB // Unused Flag
 #define FLAG_UNUSED_0x4EC                                           0x4EC // Unused Flag
 #define FLAG_UNUSED_0x4ED                                           0x4ED // Unused Flag
