@@ -369,7 +369,7 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 <details>
 <summary><b>👻 Southern Island superboss (endgame spoilers)</b></summary>
 
-* The post-Veritas Southern Island encounter is a two-part endgame gauntlet: **Trainer Veritas** (fought to the **VS Legendary** theme), then the **Shadow Lugia** boss (fought to the FRLG **VS Champion** theme).
+* The post-Veritas Southern Island encounter is a two-part endgame gauntlet: **Trainer Veritas** (fought to the Gen 2 **VS Legendary Beast** theme — Suicune/Entei/Raikou), then the **Shadow Lugia** boss (fought to the FRLG **VS Champion** theme).
 * Shadow Lugia is catchable — but its **dark energy shatters a thrown Master Ball** (the ball is lost, with a custom message). Only the Master Ball is rejected; every other Poké Ball works normally, so you have to weaken it and catch it the honest way rather than one-shot it with a Master Ball.
 
 </details>
