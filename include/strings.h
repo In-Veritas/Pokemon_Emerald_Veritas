@@ -834,6 +834,7 @@ extern const u8 gText_PpUpCost[];
 extern const u8 gText_PpMaxCost[];
 extern const u8 gText_RareCandyCost[];
 extern const u8 gText_AbilityCapsuleCost[];
+extern const u8 gText_GoldenCapCost[];
 
 extern const u8 gText_LeftoversCost[];
 extern const u8 gText_WhiteHerbCost[];

@@ -34,6 +34,7 @@ static const u16 sFrontierExchangeCorner_Vitamins[] =
     ITEM_PP_UP,
     ITEM_RARE_CANDY,
     ITEM_ABILITY_CAPSULE,
+    ITEM_GOLDEN_CAP,
     ITEM_LIST_END
 };
 
@@ -49,6 +50,7 @@ static const u16 sFrontierExchangeCorner_Vitamins_SilverSymbols[] =
     ITEM_PP_MAX,
     ITEM_RARE_CANDY,
     ITEM_ABILITY_CAPSULE,
+    ITEM_GOLDEN_CAP,
     ITEM_LIST_END
 };
 
@@ -127,6 +129,7 @@ static const u8 *const sFrontierExchangeCorner_VitaminsDescriptions[] =
     BattleFrontier_ExchangeServiceCorner_Text_PPUpDesc,
     BattleFrontier_ExchangeServiceCorner_Text_RareCandyDesc,
     BattleFrontier_ExchangeServiceCorner_Text_AbilityCapsuleDesc,
+    BattleFrontier_ExchangeServiceCorner_Text_GoldenCapDesc,
     gText_Exit
 };
 
@@ -142,6 +145,7 @@ static const u8 *const sFrontierExchangeCorner_VitaminsDescriptions_SilverSymbol
     BattleFrontier_ExchangeServiceCorner_Text_PPMaxDesc,
     BattleFrontier_ExchangeServiceCorner_Text_RareCandyDesc,
     BattleFrontier_ExchangeServiceCorner_Text_AbilityCapsuleDesc,
+    BattleFrontier_ExchangeServiceCorner_Text_GoldenCapDesc,
     gText_Exit
 };
 

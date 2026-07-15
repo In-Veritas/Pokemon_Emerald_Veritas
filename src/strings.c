@@ -1306,6 +1306,7 @@ const u8 gText_PpUpCost[] = _("PP UP{CLEAR_TO 0x64}1BP");
 const u8 gText_PpMaxCost[] = _("PP MAX{CLEAR_TO 0x64}3BP");
 const u8 gText_RareCandyCost[] = _("RARE CANDY{CLEAR_TO 0x64}1BP");
 const u8 gText_AbilityCapsuleCost[] = _("ABILITY CAPSULE{CLEAR_TO 0x64}4BP");
+const u8 gText_GoldenCapCost[] = _("GOLDEN CAP{CLEAR_TO 0x64}128BP");
 const u8 gText_LeftoversCost[] = _("LEFTOVERS{CLEAR_TO 0x5E}12BP");
 const u8 gText_WhiteHerbCost[] = _("WHITE HERB{CLEAR_TO 0x5E}12BP");
 const u8 gText_QuickClawCost[] = _("QUICK CLAW{CLEAR_TO 0x5E}12BP");

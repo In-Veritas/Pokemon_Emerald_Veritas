@@ -416,7 +416,7 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * Used from the bag on a party Pokémon; asks for confirmation, then recalculates stats immediately
 * Has no effect on eggs or Pokémon whose IVs are already perfect (and isn't consumed)
 * Uses the Nugget icon with a slightly brighter gold palette, in an unused item slot — no save structure changes
-* Not yet distributed in-game — available via the debug menu for testing; place it in shops/events as desired
+* Purchasable at the **Battle Frontier** BP exchange (the vitamin/enhancement clerk) for **128 BP**
 
 #### Wild Held Item Changes
 

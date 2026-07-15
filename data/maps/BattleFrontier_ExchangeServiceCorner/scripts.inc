@@ -266,7 +266,8 @@ BattleFrontier_ExchangeServiceCorner_EventScript_ChooseVitamin::
 	case 6, BattleFrontier_ExchangeServiceCorner_EventScript_PPUp
 	case 7, BattleFrontier_ExchangeServiceCorner_EventScript_RareCandy
 	case 8, BattleFrontier_ExchangeServiceCorner_EventScript_AbilityCapsule
-	case 9, BattleFrontier_ExchangeServiceCorner_EventScript_ClerkGoodbye
+	case 9, BattleFrontier_ExchangeServiceCorner_EventScript_GoldenCap
+	case 10, BattleFrontier_ExchangeServiceCorner_EventScript_ClerkGoodbye
 	case MULTI_B_PRESSED, BattleFrontier_ExchangeServiceCorner_EventScript_ClerkGoodbye
 	end
 
@@ -287,7 +288,8 @@ BattleFrontier_ExchangeServiceCorner_EventScript_ChooseVitamin_SilverSymbols::
 	case 7, BattleFrontier_ExchangeServiceCorner_EventScript_PPMax
 	case 8, BattleFrontier_ExchangeServiceCorner_EventScript_RareCandy
 	case 9, BattleFrontier_ExchangeServiceCorner_EventScript_AbilityCapsule
-	case 10, BattleFrontier_ExchangeServiceCorner_EventScript_ClerkGoodbye
+	case 10, BattleFrontier_ExchangeServiceCorner_EventScript_GoldenCap
+	case 11, BattleFrontier_ExchangeServiceCorner_EventScript_ClerkGoodbye
 	case MULTI_B_PRESSED, BattleFrontier_ExchangeServiceCorner_EventScript_ClerkGoodbye
 	end
 
@@ -368,6 +370,13 @@ BattleFrontier_ExchangeServiceCorner_EventScript_AbilityCapsule::
 	goto_if_eq VAR_RESULT, NO, BattleFrontier_ExchangeServiceCorner_EventScript_ChooseVitamin
 	setvar VAR_0x8008, 4
 	setvar VAR_0x8009, ITEM_ABILITY_CAPSULE
+	goto BattleFrontier_ExchangeServiceCorner_EventScript_TryPurchasePrize
+
+BattleFrontier_ExchangeServiceCorner_EventScript_GoldenCap::
+	msgbox BattleFrontier_ExchangeServiceCorner_Text_ConfirmGoldenCap, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, BattleFrontier_ExchangeServiceCorner_EventScript_ChooseVitamin
+	setvar VAR_0x8008, 128
+	setvar VAR_0x8009, ITEM_GOLDEN_CAP
 	goto BattleFrontier_ExchangeServiceCorner_EventScript_TryPurchasePrize
 	end
 
@@ -803,6 +812,10 @@ BattleFrontier_ExchangeServiceCorner_Text_ConfirmAbilityCapsule:
 	.string "You've chosen the ABILITY CAPSULE.\n"
 	.string "Is that correct?$"
 
+BattleFrontier_ExchangeServiceCorner_Text_ConfirmGoldenCap:
+	.string "You've chosen the GOLDEN CAP.\n"
+	.string "Is that correct?$"
+
 BattleFrontier_ExchangeServiceCorner_Text_ConfirmBrightpowder:
 	.string "You've chosen the BRIGHTPOWDER.\n"
 	.string "Is that correct?$"
@@ -1057,6 +1070,10 @@ BattleFrontier_ExchangeServiceCorner_Text_RareCandyDesc::
 BattleFrontier_ExchangeServiceCorner_Text_AbilityCapsuleDesc::
 	.string "A capsule that allows a POKéMON with\n"
 	.string "two abilities to switch their ability.$"
+
+BattleFrontier_ExchangeServiceCorner_Text_GoldenCapDesc::
+	.string "Draws out a POKéMON's full inner\n"
+	.string "potential, maxing all of its IVs.$"
 
 BattleFrontier_ExchangeServiceCorner_Text_LeftoversDesc::
 	.string "A hold item that gradually restores\n"
