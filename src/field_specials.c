@@ -4979,15 +4979,18 @@ bool8 TrySetupAlhyaApology(void)
 // The Beauty NPC accepts ANY shiny in trade rather than a fixed species,
 // so the script asks this special after ChoosePartyMon and branches on
 // the result. VAR_0x8004 holds the chosen party slot.
-void IsSelectedPartyMonShiny(void)
+//
+// MUST return its result: this codebase's ScrCmd_specialvar does
+// `*var = gSpecials[...]()` (SpecialFunc is u16 (*)(void)) — it stores the
+// RETURN VALUE, not gSpecialVar_Result. A void version left VAR_RESULT holding
+// a garbage register value (usually non-zero), so the "not shiny" branch never
+// fired and non-shiny mons passed the Cookie / Delibird trade gate.
+u16 IsSelectedPartyMonShiny(void)
 {
     struct Pokemon *mon;
 
     if (gSpecialVar_0x8004 >= PARTY_SIZE)
-    {
-        gSpecialVar_Result = FALSE;
-        return;
-    }
+        return FALSE;
 
     // Reject eggs (a shiny egg reads shiny but looks like an egg) and empty
     // slots (which read OT id / personality 0, and GET_SHINY_VALUE(0, 0) == 0
@@ -4996,12 +4999,9 @@ void IsSelectedPartyMonShiny(void)
     mon = &gPlayerParty[gSpecialVar_0x8004];
     if (GetMonData(mon, MON_DATA_SPECIES, NULL) == SPECIES_NONE
      || GetMonData(mon, MON_DATA_IS_EGG, NULL))
-    {
-        gSpecialVar_Result = FALSE;
-        return;
-    }
+        return FALSE;
 
-    gSpecialVar_Result = IsMonShiny(mon);
+    return IsMonShiny(mon);
 }
 
 // Veritas: builds gEnemyParty[0] as Cookie — the Beauty NPC's shiny
@@ -5186,7 +5186,9 @@ void PrepareTradeFloatingMonGreeting(void)
 // mon is Cookie (Gabriel's Zigzagoon) — in which case the Slateport
 // Name Rater refuses to rename it. Checked AFTER the egg check and
 // BEFORE the regular "fine name, want to change it?" prompt.
-void IsSelectedMonGabrielsCookie(void)
+// MUST return its result (see IsSelectedPartyMonShiny) — invoked via specialvar,
+// which stores the return value, not gSpecialVar_Result.
+u16 IsSelectedMonGabrielsCookie(void)
 {
     static const u8 sCookieName[] = _("Cookie");
     static const u8 sGabrielName[] = _("Gabriel");
@@ -5195,21 +5197,15 @@ void IsSelectedMonGabrielsCookie(void)
     u16 species;
 
     if (gSpecialVar_0x8004 >= PARTY_SIZE)
-    {
-        gSpecialVar_Result = FALSE;
-        return;
-    }
+        return FALSE;
 
     species = GetMonData(&gPlayerParty[gSpecialVar_0x8004], MON_DATA_SPECIES, NULL);
     if (species != SPECIES_ZIGZAGOON)
-    {
-        gSpecialVar_Result = FALSE;
-        return;
-    }
+        return FALSE;
     GetMonData(&gPlayerParty[gSpecialVar_0x8004], MON_DATA_NICKNAME, nickname);
     GetMonData(&gPlayerParty[gSpecialVar_0x8004], MON_DATA_OT_NAME, otName);
-    gSpecialVar_Result = (StringCompare(nickname, sCookieName) == 0
-                       && StringCompare(otName, sGabrielName) == 0);
+    return (StringCompare(nickname, sCookieName) == 0
+         && StringCompare(otName, sGabrielName) == 0);
 }
 
 void CreateBossLugia(void)

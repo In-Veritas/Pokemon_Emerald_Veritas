@@ -56,10 +56,10 @@ void RecordSaveAnniversaryIfEligible(void);
 bool8 IsAnySpecialDateToday(void);
 void DeliveryDay_GetTodaysOffer(void);
 void DeliveryDay_TryPurchase(void);
-void IsSelectedPartyMonShiny(void);
+u16 IsSelectedPartyMonShiny(void);
 void CreateCookieZigzagoon(void);
 void SetCookieTradeOverworldToOfferedShiny(void);
 void PrepareTradeFloatingMonGreeting(void);
-void IsSelectedMonGabrielsCookie(void);
+u16 IsSelectedMonGabrielsCookie(void);
 
 #endif // GUARD_FIELD_SPECIALS_H
