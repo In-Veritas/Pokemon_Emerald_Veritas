@@ -441,6 +441,7 @@ static const u8 sText_QuickLearnerActivated[] = _("{B_DEF_NAME_WITH_PREFIX}'s {B
 static const u8 sText_MysticTempoActivated[] = _("{B_ATK_NAME_WITH_PREFIX}'s {B_ATK_ABILITY}\nsharply boosted its {B_BUFF1}!");
 static const u8 sText_AirLockActivates[] = _("The effects of the weather\ndisappeared.");
 static const u8 sText_AirLockBlockedWeather[] = _("{B_BUFF1}'s {B_BUFF2} eliminated\nthe weather's effects!");
+static const u8 sText_ShadowLugiaBrokeBall[] = _("The POKéMON's dark energy\nshattered the MASTER BALL!");
 
 const u8 * const gStatNamesTable[NUM_BATTLE_STATS] =
 {
@@ -906,7 +907,8 @@ const u8 * const gBattleStringsTable[BATTLESTRINGS_COUNT - BATTLESTRINGS_TABLE_S
     [STRINGID_QUICKLEARNERACTIVATED - BATTLESTRINGS_TABLE_START] = sText_QuickLearnerActivated,
     [STRINGID_MYSTICTEMPOACTIVATED - BATTLESTRINGS_TABLE_START] = sText_MysticTempoActivated,
     [STRINGID_AIRLOCKACTIVATES - BATTLESTRINGS_TABLE_START] = sText_AirLockActivates,
-    [STRINGID_AIRLOCKBLOCKEDWEATHER - BATTLESTRINGS_TABLE_START] = sText_AirLockBlockedWeather
+    [STRINGID_AIRLOCKBLOCKEDWEATHER - BATTLESTRINGS_TABLE_START] = sText_AirLockBlockedWeather,
+    [STRINGID_SHADOWLUGIABROKEBALL - BATTLESTRINGS_TABLE_START] = sText_ShadowLugiaBrokeBall
 };
 
 const u16 gMissStringIds[] =

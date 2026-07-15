@@ -366,6 +366,14 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * Team consists of six Lv80 Pokémon: Typhlosion, Breloom, Scizor, Gardevoir, Tyranitar, and a shiny Latios
 * Defeating Exclsior warps directly to the Hall of Fame
 
+<details>
+<summary><b>👻 Southern Island superboss (endgame spoilers)</b></summary>
+
+* The post-Veritas Southern Island encounter is a two-part endgame gauntlet: **Trainer Veritas** (fought to the **VS Legendary** theme), then the **Shadow Lugia** boss (fought to the FRLG **VS Champion** theme).
+* Shadow Lugia is catchable — but its **dark energy shatters a thrown Master Ball** (the ball is lost, with a custom message). Only the Master Ball is rejected; every other Poké Ball works normally, so you have to weaken it and catch it the honest way rather than one-shot it with a Master Ball.
+
+</details>
+
 #### Secret Base VS Cutscene
 
 * Secret base battles now show a VS mugshot transition (like Elite Four and Champion battles)

@@ -146,6 +146,10 @@ SouthernIsland_Interior_EventScript_Exclsior::
 	msgbox SouthernIsland_Interior_Text_Exclsior_ImCurious, MSGBOX_YESNO
 	compare VAR_RESULT, NO
 	goto_if_eq SouthernIsland_Interior_EventScript_Exclsior_NoBattle
+	@ Veritas fights to the VS Legendary theme. The battle uses NO_MUSIC, so
+	@ it inherits whatever is playing — start the legendary theme first, and
+	@ restore the map's music afterward (ExclsiorPostBattle / on loss reload).
+	playbgm MUS_RG_VS_LEGEND, FALSE
 	trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_NO_MUSIC, TRAINER_EXCLSIOR, 0, SouthernIsland_Interior_Text_ExclsiorIntro, SouthernIsland_Interior_Text_ExclsiorDefeated, SouthernIsland_Interior_EventScript_ExclsiorPostBattle
 	end
 
@@ -156,6 +160,7 @@ SouthernIsland_Interior_EventScript_Exclsior_NoBattle::
 	end
 
 SouthernIsland_Interior_EventScript_ExclsiorPostBattle::
+	fadedefaultbgm
 	msgbox SouthernIsland_Interior_Text_ExclsiorPostBattle, MSGBOX_DEFAULT
 	setflag FLAG_DEFEATED_EXCLSIOR
 	fadescreenswapbuffers FADE_TO_BLACK

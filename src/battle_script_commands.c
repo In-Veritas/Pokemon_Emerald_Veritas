@@ -10263,7 +10263,19 @@ static void Cmd_handleballthrow(void)
     gActiveBattler = gBattlerAttacker;
     gBattlerTarget = BATTLE_OPPOSITE(gBattlerAttacker);
 
-    if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
+    // Veritas: a Master Ball can't capture the Shadow Lugia boss — its dark
+    // energy shatters the ball (which is lost). Only the boss Lugia (the
+    // game's sole Lugia, a legendary encounter) is affected; regular Poké
+    // Balls still work, so it stays catchable the honest way.
+    if (gLastUsedItem == ITEM_MASTER_BALL
+     && (gBattleTypeFlags & BATTLE_TYPE_LEGENDARY)
+     && gBattleMons[gBattlerTarget].species == SPECIES_LUGIA)
+    {
+        BtlController_EmitBallThrowAnim(BUFFER_A, BALL_TRAINER_BLOCK);
+        MarkBattlerForControllerExec(gActiveBattler);
+        gBattlescriptCurrInstr = BattleScript_ShadowLugiaBallReject;
+    }
+    else if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
     {
         BtlController_EmitBallThrowAnim(BUFFER_A, BALL_TRAINER_BLOCK);
         MarkBattlerForControllerExec(gActiveBattler);

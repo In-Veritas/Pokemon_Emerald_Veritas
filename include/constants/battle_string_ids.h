@@ -389,8 +389,9 @@
 #define STRINGID_MYSTICTEMPOACTIVATED       389
 #define STRINGID_AIRLOCKACTIVATES           390
 #define STRINGID_AIRLOCKBLOCKEDWEATHER      391 // Veritas: weather move (Sunny Day etc.) failed because Air Lock/Cloud Nine is on the field
+#define STRINGID_SHADOWLUGIABROKEBALL       392 // Veritas: the Shadow Lugia boss shatters a Master Ball with its Dark Energy
 
-#define BATTLESTRINGS_COUNT                 392
+#define BATTLESTRINGS_COUNT                 393
 
 // This is the string id that gBattleStringsTable starts with.
 // String ids before this (e.g. STRINGID_INTROMSG) are not in the table,
