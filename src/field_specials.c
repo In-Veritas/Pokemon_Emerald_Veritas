@@ -5085,6 +5085,66 @@ void CreateCookieZigzagoon(void)
     CalculateMonStats(&gEnemyParty[0]);
 }
 
+// Veritas: builds gEnemyParty[0] as the rival's Gift Day present — a shiny,
+// perfect-IV, level 12 DELIBIRD that knows AEROBLAST (off its learnset, so
+// the moves are written directly here, like CreateCookieZigzagoon). The trade
+// scene (DoInGameTradeScene) reads gEnemyParty[0] and swaps it for the shiny
+// the player offered. The OT is the rival — the opposite of the player's
+// gender — so the gift registers as a genuine traded Pokémon.
+void CreateGiftDelibird(void)
+{
+    static const u8 sOtNameMale[] = _("May");        // player male  -> rival is May
+    static const u8 sOtNameFemale[] = _("Brendan");  // player female -> rival is Brendan
+    static const u16 sMoves[MAX_MON_MOVES] = {
+        MOVE_AEROBLAST, MOVE_PRESENT, MOVE_POWDER_SNOW, MOVE_AURORA_BEAM,
+    };
+    const u32 otId = 25125; // festive preset OT id (12/25)
+    u32 personality;
+    u16 lo;
+    u16 hi;
+    u8 i;
+    u8 ivVal = MAX_PER_STAT_IVS;
+    u8 metLocation = METLOC_IN_GAME_TRADE;
+    u8 playerIsMale = (gSaveBlock2Ptr->playerGender == MALE);
+    u8 otGender;
+    u8 pp;
+    u16 move;
+
+    // Force a shiny PID against the preset OT — build the high half so
+    // HIHALF ^ LOHALF ^ HIHALF_OT ^ LOHALF_OT < SHINY_ODDS (the standard
+    // rebuild trick; no gender/nature constraint, so a single pass suffices).
+    lo = Random();
+    hi = ((u16)otId ^ (u16)(otId >> 16)) ^ lo ^ (u16)(Random() & (SHINY_ODDS - 1));
+    personality = ((u32)hi << 16) | lo;
+
+    otGender = playerIsMale ? FEMALE : MALE;
+
+    CreateMon(&gEnemyParty[0], SPECIES_DELIBIRD, 12, USE_RANDOM_IVS,
+              TRUE, personality, OT_ID_PRESET, otId);
+
+    // Perfect IVs across the board.
+    SetMonData(&gEnemyParty[0], MON_DATA_HP_IV, &ivVal);
+    SetMonData(&gEnemyParty[0], MON_DATA_ATK_IV, &ivVal);
+    SetMonData(&gEnemyParty[0], MON_DATA_DEF_IV, &ivVal);
+    SetMonData(&gEnemyParty[0], MON_DATA_SPEED_IV, &ivVal);
+    SetMonData(&gEnemyParty[0], MON_DATA_SPATK_IV, &ivVal);
+    SetMonData(&gEnemyParty[0], MON_DATA_SPDEF_IV, &ivVal);
+
+    SetMonData(&gEnemyParty[0], MON_DATA_OT_NAME, playerIsMale ? sOtNameMale : sOtNameFemale);
+    SetMonData(&gEnemyParty[0], MON_DATA_OT_GENDER, &otGender);
+    SetMonData(&gEnemyParty[0], MON_DATA_MET_LOCATION, &metLocation);
+
+    for (i = 0; i < MAX_MON_MOVES; i++)
+    {
+        move = sMoves[i];
+        SetMonData(&gEnemyParty[0], MON_DATA_MOVE1 + i, &move);
+        pp = gBattleMoves[move].pp;
+        SetMonData(&gEnemyParty[0], MON_DATA_PP1 + i, &pp);
+    }
+
+    CalculateMonStats(&gEnemyParty[0]);
+}
+
 // Veritas: capture the offered Pokémon's species into VAR_OBJ_GFX_ID_1
 // (with the shiny overworld tag), so the floating sprite next to the
 // Beauty trader becomes the shiny species the player just gave up.
@@ -5934,6 +5994,17 @@ u16 IsLuvdiscDayToday(void)
     return IsSpecialCalendarDate(2, 14);
 }
 
+// Gift Day — December 25. A cold snap draws ICE Pokémon out across every
+// route, every berry tree yields double, and the day grants double EXP/EVs
+// /shiny odds. The nurse explains the chill and points to Prof Birch, who
+// hands out a NEVERMELTICE and sends the player to Mom (a RARE CANDY) and
+// the rival (a one-day shiny → shiny DELIBIRD trade). See wild_encounter.c,
+// pokemon.c, battle_script_commands.c, berry.c and the house/lab scripts.
+u16 IsGiftDayToday(void)
+{
+    return IsSpecialCalendarDate(12, 25);
+}
+
 // Delivery Day — the 1st of every month. The Slateport market's Energy
 // Guru stocks one special item, one purchase per month.
 u16 IsDeliveryDayToday(void)
@@ -5952,7 +6023,7 @@ u16 IsDeliveryDayToday(void)
 bool8 IsAnySpecialDateToday(void)
 {
     return IsSpookyDayToday() || IsHoennDayToday() || IsTrickDayToday()
-        || IsLuvdiscDayToday() || IsDeliveryDayToday();
+        || IsLuvdiscDayToday() || IsGiftDayToday() || IsDeliveryDayToday();
 }
 
 // TRUE for species in the (expanded) Hoenn regional dex.
@@ -6054,5 +6125,33 @@ static const u16 sSpookySpecies[] =
 u16 GetRandomSpookySpecies(void)
 {
     return sSpookySpecies[Random() % ARRAY_COUNT(sSpookySpecies)];
+}
+
+// Gift Day's cold snap. Ocean surf turns up cold-water dwellers; land grass
+// (and rock smash) turns up the mountain/ice crowd; DELIBIRD roams both, so
+// it sits in each pool for its "basically everywhere" feel.
+static const u16 sGiftDayWaterSpecies[] =
+{
+    SPECIES_LAPRAS,
+    SPECIES_SPHEAL,
+    SPECIES_SHELLDER,
+    SPECIES_DELIBIRD,
+};
+
+static const u16 sGiftDayLandSpecies[] =
+{
+    SPECIES_SWINUB,
+    SPECIES_SNEASEL,
+    SPECIES_SNORUNT,
+    SPECIES_SMOOCHUM,
+    SPECIES_JYNX,
+    SPECIES_DELIBIRD,
+};
+
+u16 GetRandomGiftDaySpecies(bool8 isWater)
+{
+    if (isWater)
+        return sGiftDayWaterSpecies[Random() % ARRAY_COUNT(sGiftDayWaterSpecies)];
+    return sGiftDayLandSpecies[Random() % ARRAY_COUNT(sGiftDayLandSpecies)];
 }
 

@@ -853,6 +853,16 @@ static bool8 TryGenerateWildMon(const struct WildPokemonInfo *wildMonInfo, u8 ar
         return TRUE;
     }
 
+    // Gift Day (25/12): a cold snap draws ICE Pokémon out everywhere — half of
+    // land grass, water surf, and rock-smash encounters. Surf turns up cold-sea
+    // dwellers (Lapras/Spheal/Shellder); land turns up the mountain crowd
+    // (Swinub/Sneasel/Snorunt/Smoochum/Jynx); DELIBIRD roams both.
+    if (IsGiftDayToday() && (Random() & 1))
+    {
+        CreateWildMon(GetRandomGiftDaySpecies(area == WILD_AREA_WATER), level);
+        return TRUE;
+    }
+
     CreateWildMon(wildMonInfo->wildPokemon[wildMonIndex].species, level);
     return TRUE;
 }

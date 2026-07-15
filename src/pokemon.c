@@ -2318,6 +2318,10 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
                 // Hoenn Day: Hoenn natives shine twice as often.
                 if (IsHoennDayToday() && IsHoennNativeSpecies(species))
                     maxRolls++;
+                // Gift Day: a lucky, snowy morning — every Pokémon shines
+                // twice as often.
+                if (IsGiftDayToday())
+                    maxRolls++;
                 // Re-roll until shiny or out of attempts
                 // If hasFixedPersonality (e.g. Synchronize), preserve the nature
                 if (hasFixedPersonality)
@@ -6395,9 +6399,9 @@ void MonGainEVs(struct Pokemon *mon, u16 defeatedSpecies)
         else
             multiplier = 1;
 
-        // Birthday / save-anniversary bonus: double EVs (stacks with
-        // Pokérus and Macho Brace).
-        if (IsPlayerBirthdayToday() || IsSaveAnniversaryToday())
+        // Birthday / save-anniversary / Gift Day bonus: double EVs (stacks
+        // with Pokérus and Macho Brace).
+        if (IsPlayerBirthdayToday() || IsSaveAnniversaryToday() || IsGiftDayToday())
             multiplier *= 2;
 
         // Hoenn Day: Hoenn natives yield double EVs.

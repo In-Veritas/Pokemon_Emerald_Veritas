@@ -3521,8 +3521,8 @@ static void Cmd_getexp(void)
 
             calculatedExp = gSpeciesInfo[gBattleMons[gBattlerFainted].species].expYield * gBattleMons[gBattlerFainted].level / 7;
 
-            // Birthday / save-anniversary bonus: double EXP.
-            if (IsPlayerBirthdayToday() || IsSaveAnniversaryToday())
+            // Birthday / save-anniversary / Gift Day bonus: double EXP.
+            if (IsPlayerBirthdayToday() || IsSaveAnniversaryToday() || IsGiftDayToday())
                 calculatedExp *= 2;
 
             // Hoenn Day: defeating Hoenn natives grants double EXP.

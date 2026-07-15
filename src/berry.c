@@ -4,6 +4,7 @@
 #include "event_object_movement.h"
 #include "event_scripts.h"
 #include "field_control_avatar.h"
+#include "field_specials.h"
 #include "fieldmap.h"
 #include "item.h"
 #include "item_menu.h"
@@ -1244,7 +1245,19 @@ static u8 CalcBerryYield(struct BerryTree *tree)
 
 static u8 GetBerryCountByBerryTreeId(u8 id)
 {
-    return gSaveBlock1Ptr->berryTrees[id].berryYield;
+    u32 count = gSaveBlock1Ptr->berryTrees[id].berryYield;
+
+    // Gift Day (25/12): every berry tree hands over double (clamped to a u8).
+    // Routing the doubling through here keeps the harvest count string
+    // (ObjectEventInteractionGetBerryCountString) and the bag add
+    // (ObjectEventInteractionPickBerryTree) in agreement.
+    if (IsGiftDayToday())
+    {
+        count *= 2;
+        if (count > 255)
+            count = 255;
+    }
+    return count;
 }
 
 static u16 GetStageDurationByBerryType(u8 berry)

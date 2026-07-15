@@ -274,6 +274,9 @@ gSpecials::
 	def_special SetCookieTradeOverworldToOfferedShiny
 	def_special PrepareTradeFloatingMonGreeting
 	def_special IsSelectedMonGabrielsCookie
+	@ Veritas: Gift Day (25/12).
+	def_special IsGiftDayToday
+	def_special CreateGiftDelibird
 	def_special GetWeekCount
 	def_special RetrieveLotteryNumber
 	def_special PickLotteryCornerTicket
