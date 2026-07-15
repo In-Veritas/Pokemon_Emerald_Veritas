@@ -492,6 +492,7 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 | Spooky Day (Oct 31) | **Duskull + Shuppet** |
 | Hoenn Day (Nov 21) | **Torchic + Mudkip** |
 | Trick Day (Apr 1) | **Ditto + Kecleon** |
+| Gift Day (Dec 25) | **Snorunt + Spheal** |
 | any day, ~1% | one of the pair is **Mew** — stable for the whole day, can't be re-rolled by re-entering, and forced into view |
 
 On a themed or Mew day both wanderers are always out (the daily rotation is set aside so you actually see them).
@@ -522,6 +523,8 @@ On a themed or Mew day both wanderers are always out (the daily rotation is set 
 **Luvdisc Day — February 14.** The nurse announces the romance. **Luvdisc swarm every ocean route (50% of surf encounters), each holding a Heart Scale.** Eggs develop **twice as fast** and daycare compatibility **doubles**. Mom, Professor Birch, your rival, and the **younger Gym Leaders** (Roxanne, Brawly, Flannery, Winona — flirty depending on your gender) all have special dialogue.
 
 **Trick Day — April 1.** **50% of all wild encounters, anywhere, are secretly Ditto** — with **double shiny odds** on those Ditto. No warning; the grass just lies to you.
+
+**Gift Day — December 25.** A faint cold snap settles over Hoenn — too slight to feel, but enough to draw the **Ice Pokémon out everywhere: ~50% of land, surf, and rock-smash encounters** become ice types. Ocean surf turns up **Lapras, Spheal, Shellder**; land grass turns up **Swinub, Sneasel, Snorunt, Smoochum, Jynx**; and **Delibird roams almost anywhere**. The whole day grants **double EXP, EVs, and shiny odds**, and **every berry tree yields double**. The nurse explains the chill and sends you to **Prof. Birch**, who hands you a **NeverMeltIce** he found in the frost and points you home to **Mom (a one-time Rare Candy)** and to your **rival**, who runs a **one-day trade only**: hand over **any shiny Pokémon** and receive a **shiny, perfect-IV, level-12 Delibird that knows Aeroblast** (its own exclusive move — not added to the species' learnset).
 
 **Delivery Day — the 1st of every month.** The Slateport market's Energy Guru stocks **one special item, one purchase per month** (rotates monthly: Leftovers, PP Max, King's Rock, Metal Coat, Scope Lens, Focus Band, Deep Sea Tooth/Scale, Lucky Egg, Moon/Sun Stone, Star Piece). The nurse points you to it.
 

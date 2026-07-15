@@ -5285,6 +5285,7 @@ void UpdateRoute117WandererFlags(void)
     else if (IsSpookyDayToday())    { s0 = SPECIES_DUSKULL; s1 = SPECIES_SHUPPET; }
     else if (IsHoennDayToday())     { s0 = SPECIES_TORCHIC; s1 = SPECIES_MUDKIP;  }
     else if (IsTrickDayToday())     { s0 = SPECIES_DITTO;   s1 = SPECIES_KECLEON; }
+    else if (IsGiftDayToday())      { s0 = SPECIES_SNORUNT; s1 = SPECIES_SPHEAL;  }
     else                              themed = FALSE;
 
     // ~1% per day that one wanderer is MEW. Hashed off the day count so it is
