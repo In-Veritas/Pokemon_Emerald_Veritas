@@ -5177,16 +5177,64 @@ void SetVarToMultiplayerId(void)
     gSpecialVar_0x8005 = GetMultiplayerId();
 }
 
-// Route 117's wild wanderers (Zigzagoon / Azumarill) rotate by day:
-// day & 3 == 0 -> both, 1 -> Zigzagoon only, 2 -> Azumarill only, 3 -> neither.
+// Route 117's garden wanderers (normally Zigzagoon / Azumarill) rotate by day:
+// day & 3 == 0 -> both, 1 -> slot 0 only, 2 -> slot 1 only, 3 -> neither.
 // 3 out of 4 days show one or none, easing object load on this dense map.
-// Called from Route117_OnLoad — ON_LOAD runs on warps, connection crossings
-// AND continue-save (ON_TRANSITION would miss continue and leave the flags
-// stale). VAR_DAYS is fresh in all of those paths because DoTimeBasedEvents
-// runs earlier in each load sequence.
+//
+// The two objects use OBJ_EVENT_GFX_VAR_2 / VAR_3 (Route117 map.json), so their
+// species is whatever VAR_OBJ_GFX_ID_2 / _3 hold when they spawn. On the fixed
+// special calendar dates BOTH wanderers become a thematic pair; every day also
+// carries a deterministic ~1% chance that one of the pair is MEW. On any of
+// those days both are forced visible so the theme / Mew is actually seen;
+// otherwise the pair stays Zigzagoon + Azumarill under the normal day rotation.
+//
+// Called from Route117_OnLoad — ON_LOAD runs on warps, connection crossings AND
+// continue-save (ON_TRANSITION would miss continue and leave the state stale),
+// and runs before the objects spawn, so both the hide flags and the gfx vars are
+// fresh on every entry path. VAR_DAYS is current in all of them because
+// DoTimeBasedEvents runs earlier in each load sequence.
 void UpdateRoute117WandererFlags(void)
 {
-    u16 daySel = VarGet(VAR_DAYS) & 3;
+    u16 days = VarGet(VAR_DAYS);
+    u16 daySel = days & 3;
+    u16 s0 = SPECIES_ZIGZAGOON;
+    u16 s1 = SPECIES_AZUMARILL;
+    bool8 themed = TRUE;
+    bool8 mewDay;
+    u32 hash;
+
+    // Thematic pair on the fixed special calendar dates.
+    if (IsLuvdiscDayToday())        { s0 = SPECIES_LUVDISC; s1 = SPECIES_LUVDISC; }
+    else if (IsSpookyDayToday())    { s0 = SPECIES_DUSKULL; s1 = SPECIES_SHUPPET; }
+    else if (IsHoennDayToday())     { s0 = SPECIES_TORCHIC; s1 = SPECIES_MUDKIP;  }
+    else if (IsTrickDayToday())     { s0 = SPECIES_DITTO;   s1 = SPECIES_KECLEON; }
+    else                              themed = FALSE;
+
+    // ~1% per day that one wanderer is MEW. Hashed off the day count so it is
+    // stable for the whole day and cannot be re-rolled by re-entering the map.
+    // (days + 1 avoids the degenerate hash == 0 case making day 0 a guaranteed
+    // Mew day.)
+    hash = (u32)(days + 1) * 2654435761u;
+    mewDay = ((hash >> 8) % 100u) == 0;
+    if (mewDay)
+    {
+        if ((hash >> 3) & 1)
+            s1 = SPECIES_MEW;
+        else
+            s0 = SPECIES_MEW;
+    }
+
+    VarSet(VAR_OBJ_GFX_ID_2, OBJ_EVENT_GFX_MON_BASE + s0);
+    VarSet(VAR_OBJ_GFX_ID_3, OBJ_EVENT_GFX_MON_BASE + s1);
+
+    // A themed pair or a Mew is worth always showing both; otherwise keep the
+    // normal day rotation that thins this dense map.
+    if (themed || mewDay)
+    {
+        FlagClear(FLAG_HIDE_ROUTE117_ZIGZAGOON);
+        FlagClear(FLAG_HIDE_ROUTE117_AZUMARILL);
+        return;
+    }
 
     if (daySel == 0 || daySel == 1)
         FlagClear(FLAG_HIDE_ROUTE117_ZIGZAGOON);

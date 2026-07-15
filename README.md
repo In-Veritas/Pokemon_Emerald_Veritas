@@ -481,6 +481,22 @@ See `docs/MINIGAMES_REWARDS.md` for full reward tables and details.
 
 * The wild Zigzagoon and Azumarill roaming near the daycare now rotate on a daily schedule: each day shows **both**, **only Zigzagoon**, **only Azumarill**, or **neither** (¼ of days each)
 * 3 out of 4 days have at most one wanderer out — Route 117 is the densest map in the game, so this eases the sprite load that was causing framerate dips
+* On the **secret calendar dates** (see below) the pair is **re-themed to match the day** and both come out to play; and on **any** day there's a rare **~1% chance one of them is a mythical stand-in** — worth a second glance before you pass the daycare
+
+<details>
+<summary><b>🌸 Themed garden wanderers (spoilers)</b></summary>
+
+| Day | Wandering pair near the daycare |
+| --- | --- |
+| Luvdisc Day (Feb 14) | two **Luvdisc** |
+| Spooky Day (Oct 31) | **Duskull + Shuppet** |
+| Hoenn Day (Nov 21) | **Torchic + Mudkip** |
+| Trick Day (Apr 1) | **Ditto + Kecleon** |
+| any day, ~1% | one of the pair is **Mew** — stable for the whole day, can't be re-rolled by re-entering, and forced into view |
+
+On a themed or Mew day both wanderers are always out (the daily rotation is set aside so you actually see them).
+
+</details>
 
 #### Birthdays
 
