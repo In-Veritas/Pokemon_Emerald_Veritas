@@ -5322,37 +5322,43 @@ void UpdateRoute117WandererFlags(void)
 // Tournament prize codes
 // ============================================================
 // Redeemed at the Cable Club attendant (TOURNAMENT PRIZE menu option).
-// Codes are generated offline with tools/make_prize_code.py and bind
-// (visible trainer ID, prize ID, tournament, placement, salt), so a code
-// only works on the winner's save, and each prize ID redeems once per
-// save (bitmask in VAR_TOURNEY_PRIZES_REDEEMED). Code format: 8 chars
-// from a 32-letter alphabet — [0] = prize ID, [1] = (tournament ID << 2)
-// | placement, [2..7] = a 30-bit keyed MAC over all of it. Tournament ID
-// 0 keeps the generic congratulations; 1+ makes the clerk name the
-// tournament and placement. To add prizes or tournaments, extend
-// sTournamentPrizes / sTournamentNames below. To invalidate ALL
-// outstanding codes, change the salts here and in the tool, then rebuild.
+// Codes are generated offline with tools/make_prize_code.py.
+//
+// The code carries the whole prize — slot, item, amount, tournament and
+// placement — so awarding a new item never needs a code change or a rebuild.
+// The winner's visible trainer ID is NOT stored in the code: it keys both the
+// payload whitening and the MAC, so a code only verifies on the save it was
+// issued to. Each slot (1-15) redeems once per save (bitmask in
+// VAR_TOURNEY_PRIZES_REDEEMED) — the slot is what makes a code single-use now
+// that the item is arbitrary.
+//
+// Format: 11 characters from a 32-letter alphabet (5 bits each = 55 bits).
+//   chars [0..4]  = 25-bit payload, XOR-whitened with a trainer-ID keystream:
+//                     bits 0-1   placement  (0-3 = 1st/2nd/3rd/participation)
+//                     bits 2-4   tournament (0-7, 0 = generic)
+//                     bits 5-11  quantity   (1-99)
+//                     bits 12-20 item id    (1..ITEMS_COUNT-1)
+//                     bits 21-24 slot       (1-15)
+//   chars [5..10] = 30-bit keyed MAC over the payload + trainer ID.
+//
+// The whitening hides what a code grants and makes the same prize look totally
+// different per trainer; the MAC is what actually blocks forgery. This is
+// client-side verification though — the salts ship inside the ROM, so a player
+// who disassembles it can mint codes. It stops casual guessing and code
+// sharing, not a determined reverse engineer.
+//
+// To add tournaments, extend sTournamentNames. To invalidate ALL outstanding
+// codes, change the salts here and in the tool, then rebuild.
 
-#define TOURNEY_CODE_LENGTH 8
-#define TOURNEY_PRIZE_COUNT 16
+#define TOURNEY_CODE_LENGTH 11
+#define TOURNEY_SLOT_COUNT 16 // slots 1-15; one bit each in VAR_TOURNEY_PRIZES_REDEEMED
+#define TOURNEY_MAX_QUANTITY 99
 #define TOURNEY_SALT_1 0x56455249 // "VERI" — must match tools/make_prize_code.py
 #define TOURNEY_SALT_2 0x54415321 // "TAS!"
+#define TOURNEY_SALT_3 0x504B4D4E // "PKMN" — payload whitening key
 
-static const struct
-{
-    u16 itemId;
-    u8 quantity;
-} sTournamentPrizes[TOURNEY_PRIZE_COUNT] =
-{
-    [1] = {ITEM_GOLDEN_CAP, 1},
-    [2] = {ITEM_MASTER_BALL, 1},
-    [3] = {ITEM_RARE_CANDY, 5},
-    [4] = {ITEM_SHINY_CHARM, 1},
-    // IDs 5-15 are open — add tournament prizes here.
-};
-
-// Tournament IDs for code char [1] bits 2-4. ID 0 = no specific
-// tournament (generic congratulations). IDs 3-7 are open.
+// Tournament IDs for payload bits 2-4. ID 0 = no specific tournament (generic
+// congratulations). IDs 3-7 are open.
 static const u8 sTourneyName_MagmaVsAqua[]    = _("MAGMA VS AQUA");
 static const u8 sTourneyName_SouthernIsland[] = _("SOUTHERN ISLAND");
 static const u8 *const sTournamentNames[8] =
@@ -5360,18 +5366,6 @@ static const u8 *const sTournamentNames[8] =
     NULL,
     sTourneyName_MagmaVsAqua,
     sTourneyName_SouthernIsland,
-};
-
-// Placement for code char [1] bits 0-1.
-static const u8 sTourneyPlace_First[]  = _("first place");
-static const u8 sTourneyPlace_Second[] = _("second place");
-static const u8 sTourneyPlace_Third[]  = _("third place");
-static const u8 *const sTourneyPlacements[4] =
-{
-    sTourneyPlace_First,
-    sTourneyPlace_Second,
-    sTourneyPlace_Third,
-    sTourneyPlace_First, // reserved
 };
 
 // 32-character code alphabet (no I, O, 0 or 1 — too easy to misread).
@@ -5422,8 +5416,8 @@ static s32 TourneyCharToIndex(u8 c)
 static u16 RedeemTournamentCode(const u8 *code)
 {
     s32 idx[TOURNEY_CODE_LENGTH];
-    u32 h1, mac;
-    u32 prizeId, payload, tournamentId, placement;
+    u32 h1, mac, enc, payload, mask;
+    u32 slot, tournamentId, placement;
     u16 tid, redeemed, itemId, quantity;
     s32 i;
 
@@ -5439,48 +5433,57 @@ static u16 RedeemTournamentCode(const u8 *code)
     if (code[TOURNEY_CODE_LENGTH] != EOS)
         return TOURNEY_CODE_INVALID;
 
-    prizeId = idx[0];
-    if (prizeId == 0 || prizeId >= TOURNEY_PRIZE_COUNT)
-        return TOURNEY_CODE_INVALID;
-    itemId = sTournamentPrizes[prizeId].itemId;
-    quantity = sTournamentPrizes[prizeId].quantity;
-    if (itemId == ITEM_NONE)
-        return TOURNEY_CODE_INVALID;
-
-    payload = idx[1]; // (tournament ID << 2) | placement
-    tournamentId = payload >> 2;
-    placement = payload & 3;
-    if (tournamentId != 0 && sTournamentNames[tournamentId] == NULL)
-        return TOURNEY_CODE_INVALID;
-
-    // Visible trainer ID — the 5-digit number on the Trainer Card.
+    // Visible trainer ID — the 5-digit number on the Trainer Card. Never stored
+    // in the code; it keys both the whitening and the MAC, which is what binds
+    // a code to this save.
     tid = gSaveBlock2Ptr->playerTrainerId[0] | (gSaveBlock2Ptr->playerTrainerId[1] << 8);
-    h1 = TourneyMix(TOURNEY_SALT_1 ^ ((u32)tid << 12) ^ (prizeId << 7) ^ payload ^ TOURNEY_SALT_2);
 
+    enc = 0;
+    for (i = 0; i < 5; i++)
+        enc |= (u32)idx[i] << (5 * i);
     mac = 0;
-    for (i = 2; i <= 7; i++)
-        mac |= (u32)idx[i] << (5 * (i - 2));
+    for (i = 0; i < 6; i++)
+        mac |= (u32)idx[5 + i] << (5 * i);
+
+    mask = TourneyMix(TOURNEY_SALT_3 ^ ((u32)tid * 0x2545F491)) & 0x01FFFFFF;
+    payload = enc ^ mask;
+
+    h1 = TourneyMix(TourneyMix(TOURNEY_SALT_1 ^ payload) ^ ((u32)tid << 8) ^ TOURNEY_SALT_2);
     if (mac != (h1 & 0x3FFFFFFF))
         return TOURNEY_CODE_INVALID;
 
+    placement    = payload & 3;
+    tournamentId = (payload >> 2) & 7;
+    quantity     = (payload >> 5) & 0x7F;
+    itemId       = (payload >> 12) & 0x1FF;
+    slot         = (payload >> 21) & 0xF;
+
+    if (slot == 0 || slot >= TOURNEY_SLOT_COUNT)
+        return TOURNEY_CODE_INVALID;
+    if (itemId == ITEM_NONE || itemId >= ITEMS_COUNT)
+        return TOURNEY_CODE_INVALID;
+    if (quantity == 0 || quantity > TOURNEY_MAX_QUANTITY)
+        return TOURNEY_CODE_INVALID;
+    if (tournamentId != 0 && sTournamentNames[tournamentId] == NULL)
+        return TOURNEY_CODE_INVALID;
+
     redeemed = VarGet(VAR_TOURNEY_PRIZES_REDEEMED);
-    if (redeemed & (1 << prizeId))
+    if (redeemed & (1 << slot))
         return TOURNEY_CODE_ALREADY_USED;
 
     if (!CheckBagHasSpace(itemId, quantity))
         return TOURNEY_CODE_NO_BAG_SPACE;
 
-    VarSet(VAR_TOURNEY_PRIZES_REDEEMED, redeemed | (1 << prizeId));
+    VarSet(VAR_TOURNEY_PRIZES_REDEEMED, redeemed | (1 << slot));
     gSpecialVar_0x8004 = itemId;
     gSpecialVar_0x8005 = quantity;
-    // 0 = generic congratulations; 1+ = clerk names tournament + placement
-    // (buffered here so the script's msgbox can use {STR_VAR_1}/{STR_VAR_2}).
+    // 0 = no tournament (generic congratulations); 1+ = the clerk names the
+    // tournament (STR_VAR_1) and 0x8007 selects the dialog:
+    // 1/2/3 = first/second/third place, 4 = took part.
     gSpecialVar_0x8006 = tournamentId;
+    gSpecialVar_0x8007 = placement + 1;
     if (tournamentId != 0)
-    {
         StringCopy(gStringVar1, sTournamentNames[tournamentId]);
-        StringCopy(gStringVar2, sTourneyPlacements[placement]);
-    }
     return TOURNEY_CODE_OK;
 }
 

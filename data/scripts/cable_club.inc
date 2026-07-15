@@ -307,18 +307,47 @@ CableClub_EventScript_TournamentPrize::
 	case 4, CableClub_EventScript_SelectCableClubRoom
 	end
 
+@ VAR_0x8006 = tournament (0 = none), VAR_0x8007 = 1/2/3 placement or 4 for a
+@ participation code; STR_VAR_1 = tournament name. All set by
+@ RedeemTournamentCode. Item + amount come from the code itself (0x8004/0x8005).
 CableClub_EventScript_TournamentPrizeGive::
-	goto_if_ne VAR_0x8006, 0, CableClub_EventScript_TournamentPrizePlacement
+	goto_if_eq VAR_0x8006, 0, CableClub_EventScript_TournamentPrizeGeneric
+	switch VAR_0x8007
+	case 1, CableClub_EventScript_TournamentPrizeFirst
+	case 2, CableClub_EventScript_TournamentPrizeSecond
+	case 3, CableClub_EventScript_TournamentPrizeThird
+	case 4, CableClub_EventScript_TournamentPrizeParticipation
+	goto CableClub_EventScript_TournamentPrizeGeneric
+	end
+
+@ No tournament attached — just a plain "you won something" line.
+CableClub_EventScript_TournamentPrizeGeneric::
 	msgbox CableClub_Text_TournamentPrizeWinner, MSGBOX_DEFAULT
 	giveitem VAR_0x8004, VAR_0x8005
 	goto CableClub_EventScript_SelectCableClubRoom
 	end
 
-@ Tournament-specific congratulations: STR_VAR_1 = tournament name,
-@ STR_VAR_2 = placement ("first place"/"second place"/"third place"),
-@ both buffered by RedeemTournamentCode.
-CableClub_EventScript_TournamentPrizePlacement::
-	msgbox CableClub_Text_TournamentPrizePlacement, MSGBOX_DEFAULT
+CableClub_EventScript_TournamentPrizeFirst::
+	msgbox CableClub_Text_TournamentPrizeFirst, MSGBOX_DEFAULT
+	giveitem VAR_0x8004, VAR_0x8005
+	goto CableClub_EventScript_SelectCableClubRoom
+	end
+
+CableClub_EventScript_TournamentPrizeSecond::
+	msgbox CableClub_Text_TournamentPrizeSecond, MSGBOX_DEFAULT
+	giveitem VAR_0x8004, VAR_0x8005
+	goto CableClub_EventScript_SelectCableClubRoom
+	end
+
+CableClub_EventScript_TournamentPrizeThird::
+	msgbox CableClub_Text_TournamentPrizeThird, MSGBOX_DEFAULT
+	giveitem VAR_0x8004, VAR_0x8005
+	goto CableClub_EventScript_SelectCableClubRoom
+	end
+
+@ The entrant didn't place, so the clerk thanks them for turning up.
+CableClub_EventScript_TournamentPrizeParticipation::
+	msgbox CableClub_Text_TournamentPrizeParticipation, MSGBOX_DEFAULT
 	giveitem VAR_0x8004, VAR_0x8005
 	goto CableClub_EventScript_SelectCableClubRoom
 	end

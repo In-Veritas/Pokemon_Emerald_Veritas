@@ -521,8 +521,31 @@ CableClub_Text_TournamentPrizeNoRoom:
 	.string "Please make room, then come back\n"
 	.string "with your code.$"
 
-CableClub_Text_TournamentPrizePlacement:
+CableClub_Text_TournamentPrizeFirst:
 	.string "That's a winning code!\p"
-	.string "Congratulations on taking\n"
-	.string "{STR_VAR_2} in the\l"
-	.string "{STR_VAR_1} Tournament!$"
+	.string "CHAMPION of the {STR_VAR_1}\n"
+	.string "Tournament! First place!\p"
+	.string "Nobody could touch you out\n"
+	.string "there. Wear it proudly!$"
+
+CableClub_Text_TournamentPrizeSecond:
+	.string "That's a winning code!\p"
+	.string "Second place in the\n"
+	.string "{STR_VAR_1} Tournament!\p"
+	.string "So close to the top. That's\n"
+	.string "a TRAINER to watch!$"
+
+CableClub_Text_TournamentPrizeThird:
+	.string "That's a winning code!\p"
+	.string "Third place in the\n"
+	.string "{STR_VAR_1} Tournament!\p"
+	.string "You battled your way onto the\n"
+	.string "podium. Well earned!$"
+
+CableClub_Text_TournamentPrizeParticipation:
+	.string "That's a valid code!\p"
+	.string "Thank you for taking part in\n"
+	.string "the {STR_VAR_1} Tournament!\p"
+	.string "Every TRAINER who steps up\n"
+	.string "deserves something for it.\l"
+	.string "Here you go!$"

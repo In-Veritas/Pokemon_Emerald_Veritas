@@ -2,51 +2,75 @@
 """Generate a Tournament Prize code for Pokemon Emerald Veritas.
 
 Usage:
-    python tools/make_prize_code.py <trainer_id> <prize_id> [tournament_id] [placement]
+    python tools/make_prize_code.py <trainer_id> <slot> <item> <amount>
+                                    [tournament_id] [placement]
 
     trainer_id     The 5-digit ID shown on the winner's TRAINER CARD (0-65535).
-    prize_id       1-15 — indexes sTournamentPrizes in src/field_specials.c.
-                   Currently defined: 1 = GOLDEN CAP, 2 = MASTER BALL,
-                   3 = RARE CANDY x5, 4 = SHINY CHARM. IDs 5-15 are open.
+                   It is NOT stored in the code: it keys the payload whitening
+                   and the MAC, so the code only verifies on that winner's save.
+    slot           1-15. The once-per-save key — each slot can be redeemed once
+                   per save (bitmask in VAR_TOURNEY_PRIZES_REDEEMED). Use one
+                   slot per prize category, e.g. 1 = winner's prize,
+                   5 = participation prize. Reusing a slot for a second prize
+                   means that winner can only ever claim one of them.
+    item           Item name or number: RARE_CANDY, ITEM_RARE_CANDY or 68.
+                   Names are read live from include/constants/items.h.
+    amount         1-99.
     tournament_id  Optional, 0-7 (default 0 = generic congratulations).
                    1 = MAGMA VS AQUA, 2 = SOUTHERN ISLAND. IDs 3-7 open —
                    see sTournamentNames in src/field_specials.c.
-    placement      Optional, 1 / 2 / 3 for first / second / third place
-                   (default 1). Only shown when tournament_id != 0.
+    placement      Optional, 1 / 2 / 3 for first / second / third place, or 4
+                   for a participation code. Default 1. Each gets its own clerk
+                   dialog. Only used when tournament_id != 0.
 
-The winner redeems the code at the Cable Club attendant (first desk in any
-Pokemon Center 2F) via the TOURNAMENT PRIZE menu option. Codes are bound to
-the trainer ID, so they only work on the winner's save, and each prize ID
-can be redeemed once per save. With a tournament set, the clerk
-congratulates the winner on their placement in that tournament by name.
+Examples:
+    python tools/make_prize_code.py 39594 4 SHINY_CHARM 1 1 1
+    python tools/make_prize_code.py 33082 5 RARE_CANDY 2 2 4
 
-Every generated code is also appended to tools/tournament_codes.txt, giving a
-permanent record of which code was issued to which trainer and what it grants.
+Every generated code is appended to tools/tournament_codes.txt, giving a
+permanent record of which code was issued to whom and what it grants.
 
-The algorithm and constants below MUST stay in sync with
-RedeemTournamentCode() in src/field_specials.c. Changing the salts (in both
-places) and rebuilding invalidates every code generated before the change.
+Code format (must stay in sync with RedeemTournamentCode in
+src/field_specials.c): 11 characters, 5 bits each = 55 bits.
+    chars [0..4]  25-bit payload, XOR-whitened with a trainer-ID keystream:
+                    bits 0-1   placement  (0-3)
+                    bits 2-4   tournament (0-7)
+                    bits 5-11  amount     (1-99)
+                    bits 12-20 item id    (1..ITEMS_COUNT-1)
+                    bits 21-24 slot       (1-15)
+    chars [5..10] 30-bit keyed MAC over the payload + trainer ID.
+
+The whitening hides what a code grants; the MAC is what blocks forgery. This is
+client-side verification — the salts ship in the ROM, so a player who
+disassembles it can mint codes. Changing the salts (here AND in
+field_specials.c) then rebuilding invalidates every code ever issued.
 """
 import datetime
 import os
+import re
 import sys
 
 ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # no I, O, 0, 1
 SALT_1 = 0x56455249  # "VERI" — must match TOURNEY_SALT_1 in field_specials.c
 SALT_2 = 0x54415321  # "TAS!" — must match TOURNEY_SALT_2
+SALT_3 = 0x504B4D4E  # "PKMN" — must match TOURNEY_SALT_3 (payload whitening)
 MASK = 0xFFFFFFFF
+MASK25 = 0x01FFFFFF  # payload width
+MASK30 = 0x3FFFFFFF  # MAC width
 
 TOURNAMENTS = {0: "(none)", 1: "MAGMA VS AQUA", 2: "SOUTHERN ISLAND"}
-PLACES = {1: "first place", 2: "second place", 3: "third place"}
 
-# Mirrors sTournamentPrizes in src/field_specials.c — keep in sync when adding
-# prizes there. Only used for the human-readable description in the log.
-PRIZES = {
-    1: "GOLDEN CAP",
-    2: "MASTER BALL",
-    3: "RARE CANDY x5",
-    4: "SHINY CHARM",
-}
+# Placement 4 = participation: the clerk thanks the entrant for taking part
+# instead of naming a placement. Rides in the same 2 placement bits as 1-3.
+PARTICIPATION = 4
+PLACES = {1: "first place", 2: "second place", 3: "third place",
+          PARTICIPATION: "participation"}
+
+MAX_AMOUNT = 99
+MAX_SLOT = 15
+
+REPO_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
+ITEMS_H = os.path.join(REPO_ROOT, "include", "constants", "items.h")
 
 # Running ledger of every code this tool has produced. Kept next to the script
 # so the path does not depend on the current working directory.
@@ -58,15 +82,16 @@ Pokemon Emerald Veritas - Tournament Prize Codes
 ================================================
 Every code generated by tools/make_prize_code.py is appended below.
 
-A code only works on the trainer ID it was issued to, and each prize ID can be
-redeemed once per save. Winners redeem at the Cable Club attendant (Pokemon
-Center 2F, first desk) via the TOURNAMENT PRIZE menu option.
+A code only works on the trainer ID it was issued to. Each SLOT (1-15) can be
+redeemed once per save, so two codes sharing a slot are mutually exclusive for
+that winner. Winners redeem at the Cable Club attendant (Pokemon Center 2F,
+first desk) via the TOURNAMENT PRIZE menu option.
 
-Changing TOURNEY_SALT_1 / TOURNEY_SALT_2 (in src/field_specials.c and in the
-tool) invalidates every code listed here.
+Changing TOURNEY_SALT_1 / 2 / 3 (in src/field_specials.c and in the tool)
+invalidates every code listed here.
 
-DATE              CODE      TRAINER  PRIZE          AWARDED FOR
-------------------------------------------------------------------------------
+DATE              CODE         TRAINER  SLOT  PRIZE               AWARDED FOR
+--------------------------------------------------------------------------------
 """
 
 
@@ -80,63 +105,129 @@ def mix(x):
     return x
 
 
-def make_code(trainer_id, prize_id, tournament_id=0, placement=1):
+def load_items():
+    """Parse include/constants/items.h into {NAME: id} plus ITEMS_COUNT."""
+    names = {}
+    count = None
+    with open(ITEMS_H, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            m = re.match(r"\s*#define\s+ITEM_([A-Z0-9_]+)\s+(\d+)\b", line)
+            if m:
+                names[m.group(1)] = int(m.group(2))
+                continue
+            m = re.match(r"\s*#define\s+ITEMS_COUNT\s+(\d+)\b", line)
+            if m:
+                count = int(m.group(1))
+    if count is None:
+        raise ValueError("could not find ITEMS_COUNT in %s" % ITEMS_H)
+    return names, count
+
+
+def resolve_item(token, names):
+    """Accept an item number, ITEM_RARE_CANDY, RARE_CANDY or 'rare candy'."""
+    if token.isdigit():
+        return int(token)
+    key = token.strip().upper().replace(" ", "_").replace("-", "_")
+    if key.startswith("ITEM_"):
+        key = key[len("ITEM_"):]
+    if key not in names:
+        raise ValueError("unknown item %r — use a name from "
+                         "include/constants/items.h (e.g. RARE_CANDY) "
+                         "or its number" % token)
+    return names[key]
+
+
+def item_label(item_id, names, amount):
+    for name, value in names.items():
+        if value == item_id:
+            label = name.replace("_", " ")
+            break
+    else:
+        label = "item #%d" % item_id
+    return label if amount == 1 else "%s x%d" % (label, amount)
+
+
+def make_code(trainer_id, slot, item_id, amount, tournament_id=0, placement=1,
+              items_count=None):
     if not 0 <= trainer_id <= 0xFFFF:
         raise ValueError("trainer_id must be 0-65535 (the 5-digit card ID)")
-    if not 1 <= prize_id <= 15:
-        raise ValueError("prize_id must be 1-15")
+    if not 1 <= slot <= MAX_SLOT:
+        raise ValueError("slot must be 1-%d" % MAX_SLOT)
+    if item_id <= 0 or (items_count is not None and item_id >= items_count):
+        raise ValueError("item id must be 1-%d" % ((items_count or 512) - 1))
+    if not 1 <= amount <= MAX_AMOUNT:
+        raise ValueError("amount must be 1-%d" % MAX_AMOUNT)
     if not 0 <= tournament_id <= 7:
         raise ValueError("tournament_id must be 0-7")
-    if not 1 <= placement <= 3:
-        raise ValueError("placement must be 1, 2 or 3")
-    payload = (tournament_id << 2) | (placement - 1)
-    h1 = mix(SALT_1 ^ ((trainer_id & 0xFFFF) << 12) ^ (prize_id << 7) ^ payload ^ SALT_2)
-    code = ALPHABET[prize_id] + ALPHABET[payload]
+    if not 1 <= placement <= 4:
+        raise ValueError("placement must be 1-3 (first/second/third) "
+                         "or 4 (participation)")
+
+    payload = (((slot & 0xF) << 21)
+               | ((item_id & 0x1FF) << 12)
+               | ((amount & 0x7F) << 5)
+               | ((tournament_id & 0x7) << 2)
+               | ((placement - 1) & 0x3))
+
+    tid = trainer_id & 0xFFFF
+    mac = mix(mix(SALT_1 ^ payload) ^ (tid << 8) ^ SALT_2) & MASK30
+    enc = payload ^ (mix(SALT_3 ^ ((tid * 0x2545F491) & MASK)) & MASK25)
+
+    code = ""
+    for i in range(5):
+        code += ALPHABET[(enc >> (5 * i)) & 31]
     for i in range(6):
-        code += ALPHABET[(h1 >> (5 * i)) & 31]
+        code += ALPHABET[(mac >> (5 * i)) & 31]
     return code
-
-
-def prize_name(prize_id):
-    return PRIZES.get(prize_id, "prize #%d" % prize_id)
 
 
 def describe_award(tournament_id, placement):
     """Human-readable reason a code was issued."""
     if not tournament_id:
         return "generic congratulations"
-    return "{} in {}".format(
-        PLACES[placement],
-        TOURNAMENTS.get(tournament_id, "tournament #%d" % tournament_id))
+    name = TOURNAMENTS.get(tournament_id, "tournament #%d" % tournament_id)
+    if placement == PARTICIPATION:
+        return "participation in %s" % name
+    return "%s in %s" % (PLACES[placement], name)
 
 
-def log_code(code, trainer_id, prize_id, tournament_id, placement):
+def log_code(code, trainer_id, slot, prize, tournament_id, placement):
     """Append the code, who it is for, and what it grants to the ledger."""
     new_file = not os.path.exists(LOG_PATH)
     with open(LOG_PATH, "a", encoding="utf-8") as f:
         if new_file:
             f.write(LOG_HEADER)
-        f.write("{:<16}  {:<8}  {:<7}  {:<14} {}\n".format(
+        f.write("{:<16}  {:<11}  {:<7}  {:<4}  {:<18}  {}\n".format(
             datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             code,
             "{:05d}".format(trainer_id),
-            prize_name(prize_id),
+            slot,
+            prize,
             describe_award(tournament_id, placement)))
 
 
 def main():
-    if len(sys.argv) < 3 or len(sys.argv) > 5:
+    if len(sys.argv) < 5 or len(sys.argv) > 7:
         print(__doc__)
         sys.exit(1)
+    names, items_count = load_items()
     trainer_id = int(sys.argv[1])
-    prize_id = int(sys.argv[2])
-    tournament_id = int(sys.argv[3]) if len(sys.argv) > 3 else 0
-    placement = int(sys.argv[4]) if len(sys.argv) > 4 else 1
-    code = make_code(trainer_id, prize_id, tournament_id, placement)
-    log_code(code, trainer_id, prize_id, tournament_id, placement)
+    slot = int(sys.argv[2])
+    item_id = resolve_item(sys.argv[3], names)
+    amount = int(sys.argv[4])
+    tournament_id = int(sys.argv[5]) if len(sys.argv) > 5 else 0
+    placement = int(sys.argv[6]) if len(sys.argv) > 6 else 1
+
+    code = make_code(trainer_id, slot, item_id, amount, tournament_id,
+                     placement, items_count)
+    prize = item_label(item_id, names, amount)
+    log_code(code, trainer_id, slot, prize, tournament_id, placement)
+
     print("Trainer ID : {:05d}".format(trainer_id))
-    print("Prize ID   : {} ({})".format(prize_id, prize_name(prize_id)))
-    print("Tournament : {}".format(TOURNAMENTS.get(tournament_id, "#%d" % tournament_id)))
+    print("Slot       : {} (redeemable once per save)".format(slot))
+    print("Prize      : {} (item #{})".format(prize, item_id))
+    print("Tournament : {}".format(TOURNAMENTS.get(tournament_id,
+                                                   "#%d" % tournament_id)))
     if tournament_id:
         print("Placement  : {}".format(PLACES[placement]))
     print("Prize code : {}".format(code))
