@@ -7090,6 +7090,11 @@ static void Task_PlayMapChosenOrBattleBGM(u8 taskId)
 
 #undef tSongId
 
+// Veritas: the legendary-egg shell palette is declared in graphics.h, which
+// pokemon.c does not include; declare it locally where the two egg-pal
+// helpers below use it.
+extern const u32 gMonPalette_EggLegendary[];
+
 const u32 *GetMonFrontSpritePal(struct Pokemon *mon)
 {
     u16 species = GetMonData(mon, MON_DATA_SPECIES_OR_EGG, 0);
