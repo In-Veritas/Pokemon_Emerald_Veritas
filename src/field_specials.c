@@ -4981,10 +4981,27 @@ bool8 TrySetupAlhyaApology(void)
 // the result. VAR_0x8004 holds the chosen party slot.
 void IsSelectedPartyMonShiny(void)
 {
+    struct Pokemon *mon;
+
     if (gSpecialVar_0x8004 >= PARTY_SIZE)
+    {
         gSpecialVar_Result = FALSE;
-    else
-        gSpecialVar_Result = IsMonShiny(&gPlayerParty[gSpecialVar_0x8004]);
+        return;
+    }
+
+    // Reject eggs (a shiny egg reads shiny but looks like an egg) and empty
+    // slots (which read OT id / personality 0, and GET_SHINY_VALUE(0, 0) == 0
+    // would count as a false shiny). Only a real, hatched, visibly shiny mon
+    // is a valid offer.
+    mon = &gPlayerParty[gSpecialVar_0x8004];
+    if (GetMonData(mon, MON_DATA_SPECIES, NULL) == SPECIES_NONE
+     || GetMonData(mon, MON_DATA_IS_EGG, NULL))
+    {
+        gSpecialVar_Result = FALSE;
+        return;
+    }
+
+    gSpecialVar_Result = IsMonShiny(mon);
 }
 
 // Veritas: builds gEnemyParty[0] as Cookie — the Beauty NPC's shiny
