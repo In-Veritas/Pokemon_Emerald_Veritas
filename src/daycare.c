@@ -1101,13 +1101,13 @@ static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
     {
         u32 eggCycles;
         u8 toSub = GetEggCyclesToSubtract();
+        u16 eggSpecies;
+        bool32 slowHatch;
+        bool32 skipThisTick;
 
         // Luvdisc Day (14/02): eggs develop twice as fast.
         if (IsLuvdiscDayToday())
             toSub *= 2;
-        u16 eggSpecies;
-        bool32 slowHatch;
-        bool32 skipThisTick;
 
         // Flip the slow-hatch parity toggle every time the 256-step boundary
         // is crossed. Legendary eggs decrement only when the toggle is 0,
