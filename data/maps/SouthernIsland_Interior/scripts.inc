@@ -146,11 +146,9 @@ SouthernIsland_Interior_EventScript_Exclsior::
 	msgbox SouthernIsland_Interior_Text_Exclsior_ImCurious, MSGBOX_YESNO
 	compare VAR_RESULT, NO
 	goto_if_eq SouthernIsland_Interior_EventScript_Exclsior_NoBattle
-	@ Veritas fights to the Gen 2 VS Legendary Beast theme (Suicune/Entei/
-	@ Raikou — MUS_C_VS_LEGEND_BEAST / MUS_SUIKUN). The battle uses NO_MUSIC,
-	@ so it inherits whatever is playing — start the theme first, and restore
-	@ the map's music afterward (ExclsiorPostBattle / on loss reload).
-	playbgm MUS_C_VS_LEGEND_BEAST, FALSE
+	@ Music note: this battle uses NO_MUSIC, but GetBattleBGM() hardcodes
+	@ MUS_C_VS_LEGEND_BEAST (the Gen 2 VS Legendary Beast theme) for
+	@ TRAINER_EXCLSIOR, so the fight already plays it — no override needed.
 	trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_NO_MUSIC, TRAINER_EXCLSIOR, 0, SouthernIsland_Interior_Text_ExclsiorIntro, SouthernIsland_Interior_Text_ExclsiorDefeated, SouthernIsland_Interior_EventScript_ExclsiorPostBattle
 	end
 
@@ -161,7 +159,6 @@ SouthernIsland_Interior_EventScript_Exclsior_NoBattle::
 	end
 
 SouthernIsland_Interior_EventScript_ExclsiorPostBattle::
-	fadedefaultbgm
 	msgbox SouthernIsland_Interior_Text_ExclsiorPostBattle, MSGBOX_DEFAULT
 	setflag FLAG_DEFEATED_EXCLSIOR
 	fadescreenswapbuffers FADE_TO_BLACK
