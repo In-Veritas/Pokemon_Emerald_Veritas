@@ -539,5 +539,5 @@ RivalsHouse_2F_Text_RivalLuvdisc:
 	.string "O-oh! {PLAYER}! It's LUVDISC\n"
 	.string "Day, you know…\p"
 	.string "N-not that I was thinking about\n"
-	.string "anyone in particular! I just—\p"
+	.string "anyone in particular! I just…\p"
 	.string "…U-um! Forget I said anything!$"

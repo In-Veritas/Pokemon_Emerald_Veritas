@@ -109,7 +109,7 @@ gText_NurseGiftDay::
 gText_NurseDeliveryDay::
 	.string "Oh, it's the first of the month!\p"
 	.string "The monthly DELIVERY has arrived\n"
-	.string "at the SLATEPORT market—\l"
+	.string "at the SLATEPORT market…\l"
 	.string "one special item, first come,\l"
 	.string "first served!$"
 

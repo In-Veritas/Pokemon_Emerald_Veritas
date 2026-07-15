@@ -484,5 +484,5 @@ LavaridgeTown_Gym_1F_Text_FlanneryLuvdisc:
 	.string "way back to me on LUVDISC Day!\p"
 	.string "My grandfather always said a bold\n"
 	.string "TRAINER makes a bold sweetheart…\p"
-	.string "Careful, {PLAYER}—I burn HOT!\n"
+	.string "Careful, {PLAYER}… I burn HOT!\n"
 	.string "Hee hee!$"
