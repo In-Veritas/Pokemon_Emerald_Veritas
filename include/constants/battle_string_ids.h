@@ -389,7 +389,7 @@
 #define STRINGID_MYSTICTEMPOACTIVATED       389
 #define STRINGID_AIRLOCKACTIVATES           390
 #define STRINGID_AIRLOCKBLOCKEDWEATHER      391 // Veritas: weather move (Sunny Day etc.) failed because Air Lock/Cloud Nine is on the field
-#define STRINGID_SHADOWLUGIABROKEBALL       392 // Veritas: the Shadow Lugia boss shatters a Master Ball with its Dark Energy
+#define STRINGID_SHADOWLUGIABROKEBALL       392 // Veritas: the Shadow Lugia boss shatters a thrown ball ({B_LAST_ITEM}) with its Dark Energy
 
 #define BATTLESTRINGS_COUNT                 393
 

@@ -110,9 +110,10 @@ BattleScript_TrainerBallBlock::
 	waitmessage B_WAIT_TIME_LONG
 	finishaction
 
-@ Veritas: the Shadow Lugia boss shatters a thrown Master Ball with its
-@ dark energy. The ball was already removed from the bag on use and is not
-@ refunded, so it is lost, and the turn ends (like the trainer-ball block).
+@ Veritas: the Shadow Lugia boss shatters a thrown ball with its dark
+@ energy (Master Ball always, other balls 10% — see Cmd_handleballthrow).
+@ The ball was already removed from the bag on use and is not refunded, so
+@ it is lost, and the turn ends (like the trainer-ball block).
 BattleScript_ShadowLugiaBallReject::
 	waitmessage B_WAIT_TIME_LONG
 	printstring STRINGID_SHADOWLUGIABROKEBALL

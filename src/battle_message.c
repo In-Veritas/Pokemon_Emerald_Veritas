@@ -441,7 +441,7 @@ static const u8 sText_QuickLearnerActivated[] = _("{B_DEF_NAME_WITH_PREFIX}'s {B
 static const u8 sText_MysticTempoActivated[] = _("{B_ATK_NAME_WITH_PREFIX}'s {B_ATK_ABILITY}\nsharply boosted its {B_BUFF1}!");
 static const u8 sText_AirLockActivates[] = _("The effects of the weather\ndisappeared.");
 static const u8 sText_AirLockBlockedWeather[] = _("{B_BUFF1}'s {B_BUFF2} eliminated\nthe weather's effects!");
-static const u8 sText_ShadowLugiaBrokeBall[] = _("The POKéMON's dark energy\nshattered the MASTER BALL!");
+static const u8 sText_ShadowLugiaBrokeBall[] = _("The POKéMON's dark energy\nshattered the {B_LAST_ITEM}!");
 
 const u8 * const gStatNamesTable[NUM_BATTLE_STATS] =
 {
