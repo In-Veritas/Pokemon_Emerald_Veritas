@@ -74,6 +74,7 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 * **Berry Crush**: Berry Powder output **doubled** for every berry type.
 * **Pokémon Jump**: Expanded prize pool unlocked by score tiers — Lucky Egg, Leftovers, Focus Band, Scope Lens, King's Rock, Up-Grade, PP Max, and **Master Ball at 20,000+ points**.
 * **Dodrio Berry Picking**: No longer requires a Dodrio in your party. **All players** receive prizes (not just the winner), and rarity odds improve with more players. Prize pool includes rare berries, Nugget, Rare Candy, PP Up/Max, and Master Ball.
+* **Dodrio start-up hang fixed**: the game no longer freezes after the 3-2-1 countdown with the music still playing. (A protocol flaw inherited from vanilla: the leader waited *silently* for everyone's "ready" signal, but the wireless packet reader can only see incoming packets on frames where the leader itself transmitted — so the ready signals were unreadable and each player waited on the others forever. The leader now broadcasts while it waits, and players re-send "ready" until the game truly starts.)
 * See [`docs/MINIGAMES_REWARDS.md`](docs/MINIGAMES_REWARDS.md) for the full reward tables.
 
 #### Link Battle VS Cutscene with Multiplayer Mugshots

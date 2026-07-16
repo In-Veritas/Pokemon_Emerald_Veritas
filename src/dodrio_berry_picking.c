@@ -1631,6 +1631,29 @@ static void SendLinkData_Leader(void)
 {
     switch (sGame->funcId)
     {
+    case FUNC_WAIT_START:
+        // Veritas: broadcast the (still-initial) game state while waiting for
+        // the members' ready packets. Every packet reader in this file gates
+        // on gRecvCmds[0][0] — the LEADER'S OWN slot, filled from the
+        // leader's own gSendCmd (MoveSendCmdToRecv in link_rfu_2.c) — so
+        // member packets are only readable in frames where the leader itself
+        // sent one. Vanilla sends nothing here, which keeps that gate closed
+        // and leaves the leader deaf to the single READY each member sends:
+        // the countdown ends and everyone waits forever (the long-standing
+        // "stuck after the countdown" hang). Members still in FUNC_WAIT_START
+        // have no GAME_STATE recv case, so this broadcast is ignored until
+        // they advance — and its content is the zero-initialized pre-game
+        // state they would receive on the first play frame anyway.
+        SendPacket_GameState(&sGame->player,
+                             &sGame->players[0].comm,
+                             &sGame->players[1].comm,
+                             &sGame->players[2].comm,
+                             &sGame->players[3].comm,
+                             &sGame->players[4].comm,
+                             sGame->numGraySquares,
+                             sGame->berriesFalling,
+                             sGame->allReadyToEnd);
+        break;
     case FUNC_PLAY_GAME:
         SendPacket_GameState(&sGame->player,
                              &sGame->players[0].comm,
@@ -1699,6 +1722,23 @@ static void SendLinkData_Member(void)
         if (sGame->player.comm.pickState != PICK_NONE)
         {
             SendPacket_PickState(sGame->player.comm.pickState);
+        }
+        else
+        {
+            // Veritas: keep re-sending ready on idle frames instead of
+            // sending nothing. The single vanilla READY send is losable
+            // twice over: Rfu_SendPacket silently no-ops when gSendCmd is
+            // still occupied (e.g. residual countdown-barrier traffic on
+            // that exact frame), and even a delivered packet is unreadable
+            // by a leader whose own slot-0 gate is closed that frame.
+            // Members advance locally (vanilla), so without retransmission
+            // the leader can miss a member forever and the game never
+            // starts. Once the leader IS playing, stray READY packets fail
+            // RecvPacket_PickState's id check and read as "no input" —
+            // identical to the vanilla empty frame — so this retransmit is
+            // free. Same shape as Pokémon Jump, whose members broadcast
+            // their state every frame.
+            SendPacket_ReadyToStart(TRUE);
         }
         break;
     case FUNC_WAIT_END_GAME:
