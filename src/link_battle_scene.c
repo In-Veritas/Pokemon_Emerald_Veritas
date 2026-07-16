@@ -9,24 +9,50 @@
 #include "constants/flags.h"
 #include "constants/trainers.h"
 
-// Per-player broadcast pipeline for cable-club link battles. Originally
-// shared by three features (terrain picker, RS-style multi-battle sprites,
-// mugshot cutscene BG selection); the terrain picker was removed because
-// it was buggy and confusing. The pipeline still carries:
-//   filler[1] (0x45) = magic byte 0xA5 (presence marker)
+// Per-player broadcast pipeline for cable-club link battles, shared by
+// three features: the battle scene (terrain) picker, RS-style multi-battle
+// sprites, and the mugshot cutscene BG selection. Each player's data rides
+// in the trainer-card block exchange:
+//   filler[0] (0x44) = scene pick (LINK_SCENE_OPT_* index, or LINK_SCENE_RANDOM)
+//   filler[1] (0x45) = magic byte 0xA5 (presence marker for ALL fields)
 //   filler[2] (0x46) = player style flag: 1 if FLAG_PLAYER_STYLE_RS set, else 0
 //   filler[3] (0x47) = local RTC entropy low byte
 //   filler[4] (0x48) = local RTC entropy high byte
-// All four live inside the 100-byte SendBlockRequest(BLOCK_REQ_SIZE_100)
+// All five live inside the 100-byte SendBlockRequest(BLOCK_REQ_SIZE_100)
 // window used by the cable club, so peers receive them via gBlockRecvBuffer.
+//
+// The scene picker: each player picks a terrain (or RANDOM) before the
+// linkup; picks are broadcast, and every machine deterministically resolves
+// the same winner (see ResolveAndGetTerrain). The resolved terrain overrides
+// gBattleTerrain at battle init (battle_main.c) AND battle_bg.c falls
+// through to the per-terrain art for link battles when a scene was
+// negotiated — the missing half that made the original picker look broken.
 //
 // Why a fixed offset inside the trainer card instead of a struct field:
 // TrainerCard is a save struct and any change to its size is forbidden
 // (CLAUDE.md absolute rule). The card itself has 8 bytes of filler at
 // offset 0x44 that nothing reads (verified via grep — zero references).
+#define SCENE_BLOCK_OFFSET 0x44
 #define STYLE_BLOCK_OFFSET 0x46
 #define RTC_BLOCK_OFFSET   0x47
 
+// Terrains exposed to the picker. Order matches the multichoice option
+// indices in script_menu.c (sLinkBattleSceneNames).
+static const u8 sPickableTerrains[] = {
+    BATTLE_TERRAIN_PLAIN,
+    BATTLE_TERRAIN_GRASS,
+    BATTLE_TERRAIN_SAND,
+    BATTLE_TERRAIN_WATER,
+    BATTLE_TERRAIN_CAVE,
+    BATTLE_TERRAIN_MOUNTAIN,
+    BATTLE_TERRAIN_BUILDING,
+};
+
+EWRAM_DATA static u8 sLocalScenePick = LINK_SCENE_NONE;
+EWRAM_DATA static u8 sFinalLinkScene = LINK_SCENE_NONE;
+EWRAM_DATA static bool8 sFinalSceneResolved = FALSE;
+
+EWRAM_DATA static u8 sCachedScenePicks[MAX_RFU_PLAYERS] = {0};
 EWRAM_DATA static u8 sCachedStyleFlags[MAX_RFU_PLAYERS] = {0};
 EWRAM_DATA static u16 sCachedRtcSnapshots[MAX_RFU_PLAYERS] = {0};
 EWRAM_DATA static bool8 sCachedDataValid[MAX_RFU_PLAYERS] = {0};
@@ -35,12 +61,24 @@ void LinkBattleScene_Reset(void)
 {
     u8 i;
 
+    sLocalScenePick = LINK_SCENE_NONE;
+    sFinalLinkScene = LINK_SCENE_NONE;
+    sFinalSceneResolved = FALSE;
     for (i = 0; i < MAX_RFU_PLAYERS; i++)
     {
+        sCachedScenePicks[i] = LINK_SCENE_NONE;
         sCachedStyleFlags[i] = 0;
         sCachedRtcSnapshots[i] = 0;
         sCachedDataValid[i] = FALSE;
     }
+}
+
+void LinkBattleScene_StoreLocalPick(u8 pick)
+{
+    sLocalScenePick = pick;
+    // Pick changed, drop any cached resolution from a prior session.
+    sFinalSceneResolved = FALSE;
+    sFinalLinkScene = LINK_SCENE_NONE;
 }
 
 // Called by Task_LinkupAwaitTrainerCardData (src/cable_club.c) right after
@@ -63,6 +101,7 @@ void LinkBattleScene_StashPeerData(void)
         recv = (const u8 *)gBlockRecvBuffer[i];
         if (recv[STYLE_BLOCK_OFFSET - 1] == 0xA5)
         {
+            sCachedScenePicks[i] = recv[SCENE_BLOCK_OFFSET];
             sCachedStyleFlags[i] = recv[STYLE_BLOCK_OFFSET];
             sCachedRtcSnapshots[i] = ((u16)recv[RTC_BLOCK_OFFSET + 1] << 8) | recv[RTC_BLOCK_OFFSET];
             sCachedDataValid[i] = TRUE;
@@ -85,6 +124,7 @@ void LinkBattleScene_FillSendBuffer(void)
 {
     u16 rtcSnapshot;
 
+    gBlockSendBuffer[SCENE_BLOCK_OFFSET] = sLocalScenePick;
     // Magic byte at offset 0x45 so receivers can distinguish "data present"
     // from garbage left in the buffer by older clients.
     gBlockSendBuffer[STYLE_BLOCK_OFFSET - 1] = 0xA5;
@@ -165,17 +205,71 @@ u32 LinkBattleScene_GetSyncSeed(void)
         if (sCachedDataValid[i])
         {
             seed ^= (u32)gLinkPlayers[i].trainerId << ((i & 1) ? 0 : 16);
+            seed ^= (u32)sCachedScenePicks[i] << ((i * 7) & 0x1F);
             seed ^= (u32)sCachedRtcSnapshots[i] << ((i * 11) & 0x1F);
         }
     }
     return seed;
 }
 
-// The terrain picker was removed (was buggy / confusing). Always return
-// LINK_SCENE_NONE so the mugshot's BG-palette picker falls through to the
-// PLAIN-row default pair (see LinkBattleSceneToBgPairIdx in battle_transition.c)
-// and battle_main keeps the map-derived gBattleTerrain.
+// Returns LINK_SCENE_NONE if the player didn't pick (option disabled or
+// non-cable-club battle), otherwise the broadcast pick value. Reads from
+// the EWRAM stash populated by LinkBattleScene_StashPeerData — NOT from
+// gBlockRecvBuffer directly, since that buffer gets overwritten by later
+// block exchanges (notably the wireless lobby's gLocalLinkPlayer broadcast).
+static u8 ResolveOnePick(u8 pick, u32 seed)
+{
+    u8 idx;
+
+    if (pick == LINK_SCENE_RANDOM)
+    {
+        idx = seed % ARRAY_COUNT(sPickableTerrains);
+        return sPickableTerrains[idx];
+    }
+    if (pick < ARRAY_COUNT(sPickableTerrains))
+        return sPickableTerrains[pick];
+    return LINK_SCENE_NONE;
+}
+
+// Deterministically resolve every peer's broadcast pick to one final
+// terrain, identical on every machine. Iterates over the stash directly
+// (sCachedDataValid) — by the time this runs at battle init the cable
+// lobby link is gone (SetCloseLinkCallback fires before CB2_InitBattle),
+// so GetLinkPlayerCount would be 0 and we'd bail on a perfectly-good
+// stash. The stash was populated during the lobby; here we just trust it.
 u8 LinkBattleScene_ResolveAndGetTerrain(void)
 {
-    return LINK_SCENE_NONE;
+    u8 picks[MAX_RFU_PLAYERS];
+    u8 numValidPicks = 0;
+    u8 i;
+    u8 pick;
+    u32 seed;
+    u8 chosenIdx;
+
+    if (sFinalSceneResolved)
+        return sFinalLinkScene;
+
+    for (i = 0; i < MAX_RFU_PLAYERS; i++)
+    {
+        if (!sCachedDataValid[i])
+            continue;
+        pick = sCachedScenePicks[i];
+        if (pick != LINK_SCENE_NONE)
+            picks[numValidPicks++] = pick;
+    }
+
+    if (numValidPicks == 0)
+        return LINK_SCENE_NONE;
+
+    seed = LinkBattleScene_GetSyncSeed();
+    // Defensive: GetSyncSeed could theoretically return 0 if every
+    // valid peer's trainer id and RTC bytes XOR to zero. Fall back to
+    // local trainer id so chosenIdx isn't always 0 % N = 0.
+    if (seed == 0)
+        seed = gSaveBlock2Ptr->playerTrainerId[0]
+             | ((u32)gSaveBlock2Ptr->playerTrainerId[1] << 8);
+    chosenIdx = seed % numValidPicks;
+    sFinalLinkScene = ResolveOnePick(picks[chosenIdx], seed >> 4);
+    sFinalSceneResolved = TRUE;
+    return sFinalLinkScene;
 }

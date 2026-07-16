@@ -55,6 +55,12 @@ The reason Veritas exists. Vanilla Emerald has a *lot* of multiplayer content (l
 * Two extra unlockable tracks specific to Veritas: **"Shadow"** (FRLG Champion theme, unlocks at 150 Kanto Pokédex entries caught) and **"VS Friends"** (FRLG Gym Leader theme, unlocks at 10 link battle wins).
 * Selection menu scrolls when more options are unlocked than fit on screen.
 
+#### Battle Scene Selection
+
+* Right before a Cable Club link battle, each player also **picks the battlefield scene**: Standard, Grass, Sand, Water, Cave, Mountain, Building, or **Random**. One player's pick wins — chosen deterministically from everyone's trainer IDs and clocks — and **every machine shows the same field**.
+* Works for wired and wireless Cable Club battles alike (Singles / Doubles / Multi and all Lv50 modes). Trades, Berry Crush, the Record Corner and the wireless minigames never see the prompt.
+* Fully applied in-battle: the chosen field also survives opening the Bag or Party mid-battle (the background reloader honors it too).
+
 #### Secret Base Battles — Single OR Double
 
 * When you challenge a secret base trainer, you're prompted to pick **Single Battle** or **Double Battle** instead of always being forced into single. Double mode is gated on having at least 2 usable Pokémon.

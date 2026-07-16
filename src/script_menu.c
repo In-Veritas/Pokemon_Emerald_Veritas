@@ -2,6 +2,7 @@
 #include "main.h"
 #include "debug.h"
 #include "event_data.h"
+#include "link_battle_scene.h"
 #include "field_effect.h"
 #include "field_specials.h"
 #include "item.h"
@@ -804,6 +805,168 @@ void SetRandomLinkBattleMusic(void)
     }
 
     VarSet(VAR_LINK_BATTLE_MUSIC, unlockedMusic[Random() % count]);
+}
+
+// =================================================================
+// Link Battle Scene picker (mirrors the music picker above).
+// Each player picks a scene; the pick is stored locally and broadcast
+// during the trainer-card link exchange. Final terrain is resolved
+// deterministically across all peers — see src/link_battle_scene.c.
+// =================================================================
+
+#define LINK_SCENE_MAX_VISIBLE 8
+
+// Picker option indices (must stay in sync with sPickableTerrains in
+// link_battle_scene.c — both arrays use the same index).
+enum
+{
+    LINK_SCENE_OPT_STANDARD,
+    LINK_SCENE_OPT_GRASS,
+    LINK_SCENE_OPT_SAND,
+    LINK_SCENE_OPT_WATER,
+    LINK_SCENE_OPT_CAVE,
+    LINK_SCENE_OPT_MOUNTAIN,
+    LINK_SCENE_OPT_BUILDING,
+    LINK_SCENE_OPT_RANDOM,
+    LINK_SCENE_OPT_COUNT,
+};
+
+static const u8 sText_LinkScene_Standard[] = _("STANDARD");
+static const u8 sText_LinkScene_Grass[]    = _("GRASS");
+static const u8 sText_LinkScene_Sand[]     = _("SAND");
+static const u8 sText_LinkScene_Water[]    = _("WATER");
+static const u8 sText_LinkScene_Cave[]     = _("CAVE");
+static const u8 sText_LinkScene_Mountain[] = _("MOUNTAIN");
+static const u8 sText_LinkScene_Building[] = _("BUILDING");
+static const u8 sText_LinkScene_Random[]   = _("RANDOM");
+
+static const u8 *const sLinkBattleSceneNames[LINK_SCENE_OPT_COUNT] =
+{
+    [LINK_SCENE_OPT_STANDARD] = sText_LinkScene_Standard,
+    [LINK_SCENE_OPT_GRASS]    = sText_LinkScene_Grass,
+    [LINK_SCENE_OPT_SAND]     = sText_LinkScene_Sand,
+    [LINK_SCENE_OPT_WATER]    = sText_LinkScene_Water,
+    [LINK_SCENE_OPT_CAVE]     = sText_LinkScene_Cave,
+    [LINK_SCENE_OPT_MOUNTAIN] = sText_LinkScene_Mountain,
+    [LINK_SCENE_OPT_BUILDING] = sText_LinkScene_Building,
+    [LINK_SCENE_OPT_RANDOM]   = sText_LinkScene_Random,
+};
+
+static EWRAM_DATA struct ListMenuItem sLinkSceneListItems[LINK_SCENE_OPT_COUNT] = {0};
+static EWRAM_DATA u8 sLinkSceneListTaskId = 0;
+static EWRAM_DATA u8 sLinkSceneWindowId = 0;
+
+static void Task_HandleLinkSceneListInput(u8 taskId);
+
+static void CreateLinkBattleSceneMultichoice(void)
+{
+    u32 pixelWidth = 0;
+    u8 width;
+    u8 maxShowed;
+    u8 i;
+    struct ListMenuTemplate menuTemplate;
+
+    for (i = 0; i < LINK_SCENE_OPT_COUNT; i++)
+    {
+        sLinkSceneListItems[i].name = sLinkBattleSceneNames[i];
+        sLinkSceneListItems[i].id = i;
+        pixelWidth = DisplayTextAndGetWidth(sLinkBattleSceneNames[i], pixelWidth);
+    }
+
+    maxShowed = (LINK_SCENE_OPT_COUNT > LINK_SCENE_MAX_VISIBLE) ? LINK_SCENE_MAX_VISIBLE : LINK_SCENE_OPT_COUNT;
+    width = ConvertPixelWidthToTileWidth(pixelWidth);
+    sLinkSceneWindowId = CreateWindowFromRect(0, 0, width, maxShowed * 2);
+    SetStandardWindowBorderStyle(sLinkSceneWindowId, FALSE);
+
+    menuTemplate.items = sLinkSceneListItems;
+    menuTemplate.moveCursorFunc = ListMenuDefaultCursorMoveFunc;
+    menuTemplate.itemPrintFunc = NULL;
+    menuTemplate.totalItems = LINK_SCENE_OPT_COUNT;
+    menuTemplate.maxShowed = maxShowed;
+    menuTemplate.windowId = sLinkSceneWindowId;
+    menuTemplate.header_X = 0;
+    menuTemplate.item_X = 8;
+    menuTemplate.cursor_X = 0;
+    menuTemplate.upText_Y = 1;
+    menuTemplate.cursorPal = 2;
+    menuTemplate.fillValue = 1;
+    menuTemplate.cursorShadowPal = 3;
+    menuTemplate.lettersSpacing = 0;
+    menuTemplate.itemVerticalPadding = 0;
+    menuTemplate.scrollMultiple = LIST_NO_MULTIPLE_SCROLL;
+    menuTemplate.fontId = FONT_NORMAL;
+    menuTemplate.cursorKind = CURSOR_BLACK_ARROW;
+
+    sLinkSceneListTaskId = ListMenuInit(&menuTemplate, 0, 0);
+    CopyWindowToVram(sLinkSceneWindowId, COPYWIN_FULL);
+    sProcessInputDelay = 6;
+    CreateTask(Task_HandleLinkSceneListInput, 80);
+}
+
+static void Task_HandleLinkSceneListInput(u8 taskId)
+{
+    s32 input;
+
+    if (gPaletteFade.active)
+        return;
+
+    if (sProcessInputDelay)
+    {
+        sProcessInputDelay--;
+        return;
+    }
+
+    input = ListMenu_ProcessInput(sLinkSceneListTaskId);
+
+    if (input != LIST_NOTHING_CHOSEN)
+    {
+        u8 pick;
+        PlaySE(SE_SELECT);
+        if (input == LIST_CANCEL)
+        {
+            gSpecialVar_Result = MULTI_B_PRESSED;
+            // Aborted picker — default to STANDARD so the link still works.
+            pick = LINK_SCENE_OPT_STANDARD;
+        }
+        else
+        {
+            gSpecialVar_Result = input;
+            if (input == LINK_SCENE_OPT_RANDOM)
+                pick = LINK_SCENE_RANDOM;
+            else
+                pick = (u8)input;
+        }
+        // Store immediately. Same race that hits the music picker hits this
+        // one: if we wait for a follow-up `special` to read VAR_RESULT after
+        // ScriptContext_Enable, any incidental write to VAR_RESULT in the
+        // window between teardown and the next special call clobbers the
+        // pick — sLocalScenePick stays at LINK_SCENE_NONE / STANDARD and
+        // every link battle silently uses the default terrain.
+        LinkBattleScene_StoreLocalPick(pick);
+
+        DestroyListMenuTask(sLinkSceneListTaskId, NULL, NULL);
+        ClearToTransparentAndRemoveWindow(sLinkSceneWindowId);
+        ClearDialogWindowAndFrameToTransparent(0, TRUE);
+        DestroyTask(taskId);
+        ScriptContext_Enable();
+    }
+}
+
+void ScriptMenu_OpenLinkBattleScenePicker(void)
+{
+    if (FuncIsActiveTask(Task_HandleLinkSceneListInput) == TRUE)
+        return;
+    gSpecialVar_Result = 0xFF;
+    CreateLinkBattleSceneMultichoice();
+}
+
+// No-op: Task_HandleLinkSceneListInput stores the pick directly via
+// LinkBattleScene_StoreLocalPick before script execution resumes, closing
+// the same race window that previously bit the music picker. Kept as a
+// stub so the cable_club.inc script flow that calls this `special`
+// continues to work unchanged.
+void ScriptMenu_GetLinkBattleSceneSelection(void)
+{
 }
 
 #define tState       data[0]

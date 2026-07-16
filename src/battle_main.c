@@ -25,6 +25,7 @@
 #include "international_string_util.h"
 #include "item.h"
 #include "link.h"
+#include "link_battle_scene.h"
 #include "link_rfu.h"
 #include "load_save.h"
 #include "main.h"
@@ -696,6 +697,17 @@ static void CB2_InitBattleInternal(void)
 
     if (gBattleTypeFlags & BATTLE_TYPE_RECORDED)
         gBattleTerrain = BATTLE_TERRAIN_BUILDING;
+
+    // Cable-club link battles can override the terrain with a scene that
+    // every player picked and resolved deterministically (identical on all
+    // machines — see src/link_battle_scene.c). battle_bg.c falls through to
+    // the per-terrain art for link battles when this override is active.
+    if (gBattleTypeFlags & BATTLE_TYPE_LINK)
+    {
+        u8 linkScene = LinkBattleScene_ResolveAndGetTerrain();
+        if (linkScene != LINK_SCENE_NONE)
+            gBattleTerrain = linkScene;
+    }
 
     InitBattleBgsVideo();
     LoadBattleTextboxAndBackground();
