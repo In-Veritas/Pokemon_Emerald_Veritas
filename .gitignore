@@ -62,3 +62,6 @@ prefabs.json
 # Claude Code
 .claude/
 summary.md
+# Emerald Composer build droppings (the generated app itself IS committed)
+tools/emerald_composer/selftest.mid
+tools/emerald_composer/selftest.s
