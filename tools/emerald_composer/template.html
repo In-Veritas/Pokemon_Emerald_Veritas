@@ -184,6 +184,22 @@
   <button onclick="this.closest('dialog').close()">Close</button>
 </dialog>
 
+<dialog id="dlgTemplates">
+  <h2>Game song templates</h2>
+  <p>Open a real song from the game as a starting point — every note, instrument, tempo and loop
+     point comes straight from the ROM's own music files. Edit it, or just study how it's built.</p>
+  <div id="tplList"></div>
+  <p style="color:var(--dim)">Opening a template replaces your current project (autosave keeps the last one for this session).</p>
+  <button onclick="this.closest('dialog').close()">Close</button>
+</dialog>
+<style>
+  #tplList .tpl { display:flex; align-items:center; gap:12px; border:1px solid var(--line);
+                  border-radius:6px; padding:8px 12px; margin:6px 0; }
+  #tplList .tpl b { min-width:150px; }
+  #tplList .tpl .meta { color:var(--dim); font-size:12px; flex:1; }
+  #tplList .tpl button { flex:none; }
+</style>
+
 <dialog id="dlgAbout">
   <h2>Emerald Composer</h2>
   <p>A song editor for Pok&#233;mon Emerald Veritas that plays the game's <b>actual soundfont</b>:
@@ -246,18 +262,51 @@ let DATA = null;
   }
 })();
 
-function prettySample(label) { return String(label).replace(/^DirectSoundWaveData_/, "").replace(/_/g, " "); }
+/* General MIDI program names — these soundbanks follow the GM slot layout,
+   so the slot number doubles as the instrument's intended role. The label
+   shows the GM role AND the real sample behind it (source prefixes like
+   "sc88pro" stripped), so you always know which instrument is which. */
+const GM_NAMES = [
+  "Grand Piano","Bright Piano","Electric Grand","Honky-tonk Piano","Electric Piano 1","Electric Piano 2","Harpsichord","Clavinet",
+  "Celesta","Glockenspiel","Music Box","Vibraphone","Marimba","Xylophone","Tubular Bells","Dulcimer",
+  "Drawbar Organ","Percussive Organ","Rock Organ","Church Organ","Reed Organ","Accordion","Harmonica","Tango Accordion",
+  "Nylon Guitar","Steel Guitar","Jazz Guitar","Clean Guitar","Muted Guitar","Overdrive Guitar","Distortion Guitar","Guitar Harmonics",
+  "Acoustic Bass","Finger Bass","Pick Bass","Fretless Bass","Slap Bass 1","Slap Bass 2","Synth Bass 1","Synth Bass 2",
+  "Violin","Viola","Cello","Contrabass","Tremolo Strings","Pizzicato Strings","Harp","Timpani",
+  "Strings 1","Strings 2","Synth Strings 1","Synth Strings 2","Choir Aahs","Voice Oohs","Synth Voice","Orchestra Hit",
+  "Trumpet","Trombone","Tuba","Muted Trumpet","French Horn","Brass Section","Synth Brass 1","Synth Brass 2",
+  "Soprano Sax","Alto Sax","Tenor Sax","Baritone Sax","Oboe","English Horn","Bassoon","Clarinet",
+  "Piccolo","Flute","Recorder","Pan Flute","Blown Bottle","Shakuhachi","Whistle","Ocarina",
+  "Square Lead","Saw Lead","Calliope Lead","Chiff Lead","Charang Lead","Voice Lead","Fifths Lead","Bass+Lead",
+  "New Age Pad","Warm Pad","Polysynth Pad","Choir Pad","Bowed Pad","Metallic Pad","Halo Pad","Sweep Pad",
+  "Rain FX","Soundtrack FX","Crystal FX","Atmosphere FX","Brightness FX","Goblins FX","Echoes FX","Sci-Fi FX",
+  "Sitar","Banjo","Shamisen","Koto","Kalimba","Bagpipe","Fiddle","Shanai",
+  "Tinkle Bell","Agogo","Steel Drums","Woodblock","Taiko Drum","Melodic Tom","Synth Drum","Reverse Cymbal",
+  "Fret Noise","Breath Noise","Seashore","Bird Tweet","Telephone","Helicopter","Applause","Gunshot",
+];
+const SAMPLE_SOURCE_RX = /^(sc\d+pro|sc\d+|sd\d+|jv\d+|trinity|unknown|classical|ethnic flavours?|heart of asia|dance drums?|drum and percussion|percussion|orchestral?|emerald|rs)\s+/;
+function prettySample(label) {
+  let s = String(label).replace(/^DirectSoundWaveData_/, "").replace(/_/g, " ");
+  s = s.replace(SAMPLE_SOURCE_RX, "").replace(SAMPLE_SOURCE_RX, "");
+  return s || String(label);
+}
 function voiceLabel(v, idx) {
   const n = ("00" + idx).slice(-3) + " ";
+  const gm = GM_NAMES[idx & 0x7F] || "";
   if (!v || v.t === "none") return n + "(empty)";
   switch (v.t) {
-    case "ds": case "dsn": return n + prettySample(v.smp) + (v.t === "dsn" ? " *" : "");
-    case "sq1": return n + "square wave " + ["12.5","25","50","75"][v.duty & 3] + "%";
-    case "sq2": return n + "square wave 2 " + ["12.5","25","50","75"][v.duty & 3] + "%";
-    case "wave": return n + "GB wave " + String(v.wav).replace(/^ProgrammableWaveData_/, "");
-    case "noise": return n + "noise " + (v.period ? "(sharp)" : "(soft)");
-    case "ks": return n + "multi-sample " + v.grp;
-    case "ksall": return n + "DRUM KIT " + v.grp;
+    case "ds": case "dsn": {
+      const smp = prettySample(v.smp);
+      /* show the GM role, plus the real sample when it adds information */
+      const dup = smp.toLowerCase().split(" ").some(w => w.length > 3 && gm.toLowerCase().indexOf(w) >= 0);
+      return n + (dup ? smp : gm + " · " + smp) + (v.t === "dsn" ? " (fixed)" : "");
+    }
+    case "sq1": return n + gm + " (GB square " + ["12.5","25","50","75"][v.duty & 3] + "%)";
+    case "sq2": return n + gm + " (GB square " + ["12.5","25","50","75"][v.duty & 3] + "%)";
+    case "wave": return n + gm + " (GB wave)";
+    case "noise": return n + gm + " (GB noise)";
+    case "ks": return n + gm + " (multi-sample)";
+    case "ksall": return n + "DRUM KIT 🥁";
   }
   return n + v.t;
 }
@@ -681,6 +730,7 @@ function buildMenus() {
   };
   M("mFile", [
     { label: "New project", run: cmdNew },
+    { label: "Game song templates...", key: "edit real songs", run: openTemplates },
     { label: "Open project...", run: () => $("fileLoad").click() },
     { label: "Save project", key: "downloads .json", run: saveProject },
     "-",
@@ -734,6 +784,34 @@ function buildMenus() {
   window.addEventListener("click", closeMenus);
 }
 function closeMenus() { document.querySelectorAll(".menu.open").forEach(m => m.classList.remove("open")); }
+
+/* templates */
+function openTemplates() {
+  const host = $("tplList"); host.innerHTML = "";
+  const list = (DATA && DATA.templates) || [];
+  if (!list.length) {
+    host.textContent = "No templates were embedded - re-run tools/emerald_composer/build.py.";
+  }
+  list.forEach(tpl => {
+    const row = document.createElement("div"); row.className = "tpl";
+    const b = document.createElement("b"); b.textContent = tpl.name;
+    const meta = document.createElement("span"); meta.className = "meta";
+    const nn = tpl.song.tracks.reduce((a, t) => a + t.notes.length, 0);
+    meta.textContent = tpl.id + " - " + tpl.song.tracks.length + " tracks, " + nn
+                     + " notes, " + tpl.song.bpm + " BPM, bank " + tpl.song.vg.replace("voicegroup", "");
+    const btn = document.createElement("button"); btn.textContent = "Open";
+    btn.onclick = () => {
+      if (!confirm("Open '" + tpl.name + "'? Your current project is replaced.")) return;
+      $("dlgTemplates").close();
+      loadProject(JSON.stringify({ app: "emerald-composer", v: 1,
+                                   song: JSON.parse(JSON.stringify(tpl.song)) }));
+      setMsg("template loaded: " + tpl.name + " - press Space to hear it", "ok");
+    };
+    row.append(b, meta, btn);
+    host.appendChild(row);
+  });
+  $("dlgTemplates").showModal();
+}
 
 /* menu commands */
 function cmdNew() {
@@ -843,7 +921,10 @@ function rebuildHeaders() {
       vs.appendChild(o);
     });
     vs.value = t.voice;
-    vs.onchange = () => { t.voice = +vs.value; };
+    vs.title = voiceLabel(voices[t.voice], t.voice);
+    vs.onchange = () => { t.voice = +vs.value; vs.title = voiceLabel(voices[t.voice], t.voice);
+                          if (i === curTrack) { refreshDrumMode(); drawAll(); }
+                          $("editorTag").textContent = editorTagText(); };
     vs.onclick = e => e.stopPropagation();
     const r3 = document.createElement("div"); r3.className = "r3";
     const vl = document.createElement("span"); vl.textContent = "vol";
@@ -858,7 +939,12 @@ function rebuildHeaders() {
     d.append(r1, vs, r3);
     host.appendChild(d);
   });
-  $("editorTag").textContent = "editing: " + song.tracks[curTrack].name;
+  refreshDrumMode();
+  $("editorTag").textContent = editorTagText();
+}
+function editorTagText() {
+  const t = song.tracks[curTrack];
+  return "editing: " + t.name + " — " + voiceLabel(currentVoices()[t.voice], t.voice);
 }
 function selectTrack(i) {
   if (curTrack !== i) { curTrack = i; selection.clear(); rebuildHeaders(); drawAll(); }
@@ -868,7 +954,29 @@ function selectTrack(i) {
 let pxTick = 32 / PPQN * 3;      /* zoom: pixels per tick (slider drives it) */
 let scrollX = 0;                  /* shared by lanes + roll (synced views)   */
 let rollScrollY = 46 * 13;
-const RULER = 24, LANE_H = 56, KEYW = 56;
+const RULER = 24, LANE_H = 56;
+let KEYW = 56;                    /* widens when a drum kit is selected      */
+let drumKeyNames = null;          /* [128] sample name per key, or null      */
+function refreshDrumMode() {
+  drumKeyNames = null; KEYW = 56;
+  if (!DATA) return;
+  const trk = song.tracks[curTrack]; if (!trk) return;
+  const v = currentVoices()[trk.voice];
+  if (!v || v.t !== "ksall") return;
+  const names = new Array(128).fill("");
+  let any = false;
+  for (let k = 0; k < 128; k++) {
+    const r = resolveVoiceForKey(v, k, 0);
+    if (r && r.v) {
+      const sv = r.v;
+      names[k] = (sv.t === "ds" || sv.t === "dsn") ? prettySample(sv.smp)
+               : sv.t === "noise" ? "noise" : sv.t === "wave" ? "GB wave"
+               : sv.t === "sq1" || sv.t === "sq2" ? "GB square" : "";
+      if (names[k]) any = true;
+    }
+  }
+  if (any) { drumKeyNames = names; KEYW = 150; }
+}
 function gridTicks() { return +$("inGrid").value; }
 function tickToX(t) { return t * pxTick - scrollX; }
 function xToTick(x) { return Math.max(0, (x + scrollX) / pxTick); }
@@ -1016,14 +1124,32 @@ function drawRoll() {
   rc.save(); rc.translate(KEYW, 0);
   drawRulerAndPlayhead(rc, W - KEYW, H, RULER);
   rc.restore();
-  /* piano keys */
+  /* piano keys — or, on a drum-kit track, the name of the sample per key */
   rc.fillStyle = "#10141a"; rc.fillRect(0, 0, KEYW, H);
-  for (let k = 0; k <= 127; k++) {
-    const y = keyToY(k);
-    if (y + rowH < RULER || y > H) continue;
-    rc.fillStyle = isBlack(k) ? "#222" : "#e8e8e8";
-    rc.fillRect(0, y + 1, KEYW - 8, rowH - 2);
-    if (k % 12 === 0) { rc.fillStyle = "#4cc06a"; rc.font = "10px sans-serif"; rc.fillText(keyName(k), KEYW - 30, y + rowH - 3); }
+  if (drumKeyNames) {
+    for (let k = 0; k <= 127; k++) {
+      const y = keyToY(k);
+      if (y + rowH < RULER || y > H) continue;
+      const nm = drumKeyNames[k];
+      rc.fillStyle = nm ? (k % 2 ? "#1a2029" : "#1e2531") : "#12151b";
+      rc.fillRect(0, y + 1, KEYW - 6, rowH - 2);
+      rc.font = "9px sans-serif";
+      if (nm) {
+        rc.fillStyle = "#cfd8e4";
+        rc.fillText(k + " " + nm, 4, y + rowH - 3, KEYW - 12);
+      } else {
+        rc.fillStyle = "#3c4657";
+        rc.fillText(String(k), 4, y + rowH - 3);
+      }
+    }
+  } else {
+    for (let k = 0; k <= 127; k++) {
+      const y = keyToY(k);
+      if (y + rowH < RULER || y > H) continue;
+      rc.fillStyle = isBlack(k) ? "#222" : "#e8e8e8";
+      rc.fillRect(0, y + 1, KEYW - 8, rowH - 2);
+      if (k % 12 === 0) { rc.fillStyle = "#4cc06a"; rc.font = "10px sans-serif"; rc.fillText(keyName(k), KEYW - 30, y + rowH - 3); }
+    }
   }
   rc.fillStyle = "#1d2430"; rc.fillRect(0, 0, KEYW, RULER);
   updateStatus();
@@ -1168,7 +1294,7 @@ $("inBpm").onchange = () => { song.bpm = clamp(+$("inBpm").value || 120, 20, 300
 $("inBars").onchange = () => { song.bars = clamp(+$("inBars").value || 16, 1, 256); drawAll(); };
 $("inLoopOn").onchange = () => { song.loopOn = $("inLoopOn").checked; drawAll(); };
 $("inLoopBar").onchange = () => { song.loopBar = clamp(+$("inLoopBar").value || 1, 1, song.bars); drawAll(); };
-$("inVg").onchange = () => { song.vg = $("inVg").value; rebuildHeaders(); };
+$("inVg").onchange = () => { song.vg = $("inVg").value; rebuildHeaders(); drawAll(); };
 $("inZoom").oninput = () => { pxTick = (+$("inZoom").value) * 3 / PPQN; drawAll(); };
 const fileInput = document.createElement("input");
 fileInput.type = "file"; fileInput.accept = ".json,.emerald.json"; fileInput.id = "fileLoad";

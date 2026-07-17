@@ -293,6 +293,185 @@ def parse_songs_mk():
 
 
 # --------------------------------------------------------------------------
+# Game-song templates: parse a curated set of the repo's own MIDIs into
+# composer projects (notes rescaled to 24 PPQN exactly like mid2agb does),
+# so the user can open real in-game songs and edit them.
+# --------------------------------------------------------------------------
+TEMPLATE_SONGS = [
+    ("mus_littleroot", "Littleroot Town"),
+    ("mus_route101", "Route 101"),
+    ("mus_oldale", "Oldale Town"),
+    ("mus_petalburg", "Petalburg City"),
+    ("mus_rustboro", "Rustboro City"),
+    ("mus_slateport", "Slateport City"),
+    ("mus_verdanturf", "Verdanturf Town"),
+    ("mus_surf", "Surfing"),
+    ("mus_cycling", "Cycling"),
+    ("mus_vs_wild", "Wild Battle"),
+]
+
+
+def read_vlq_at(b, i):
+    v = 0
+    while True:
+        c = b[i]
+        i += 1
+        v = (v << 7) | (c & 0x7F)
+        if not c & 0x80:
+            return v, i
+
+
+def smf_events(body):
+    """Decode one MTrk body -> [(tick, kind, ...)]; handles running status."""
+    i = 0
+    t = 0
+    run = None
+    out = []
+    while i < len(body):
+        dt, i = read_vlq_at(body, i)
+        t += dt
+        b = body[i]
+        if b & 0x80:
+            st = b
+            i += 1
+            if st < 0xF0:
+                run = st
+        else:
+            if run is None:
+                raise ValueError("running status without status byte")
+            st = run
+        if st == 0xFF:
+            mt = body[i]
+            i += 1
+            ln, i = read_vlq_at(body, i)
+            out.append((t, "meta", mt, bytes(body[i:i + ln])))
+            i += ln
+            if mt == 0x2F:
+                break
+        elif st in (0xF0, 0xF7):
+            ln, i = read_vlq_at(body, i)
+            i += ln
+        else:
+            hi = st & 0xF0
+            if hi in (0xC0, 0xD0):
+                out.append((t, "ch", st, body[i], 0))
+                i += 1
+            else:
+                out.append((t, "ch", st, body[i], body[i + 1]))
+                i += 2
+    return out
+
+
+def midi_to_song(path, vg_name):
+    """Parse an SMF into the composer's song dict (24 PPQN)."""
+    d = open(path, "rb").read()
+    if d[0:4] != b"MThd":
+        raise ValueError("not a MIDI")
+    fmt, ntrk, div = struct.unpack(">HHH", d[8:14])
+    if div & 0x8000:
+        raise ValueError("SMPTE timebase unsupported")
+    pos = 14
+    bodies = []
+    for _ in range(ntrk):
+        if d[pos:pos + 4] != b"MTrk":
+            raise ValueError("bad track chunk")
+        ln = struct.unpack(">I", d[pos + 4:pos + 8])[0]
+        bodies.append(d[pos + 8:pos + 8 + ln])
+        pos += 8 + ln
+    sc = lambda x: max(0, round(x * 24.0 / div))
+
+    bpm = 120
+    loop_tick = None
+    tracks = []
+    for body in bodies:
+        evs = smf_events(body)
+        name = None
+        prog = None
+        vol = None
+        pan = None
+        notes = []
+        open_notes = {}
+        for ev in evs:
+            if ev[1] == "meta":
+                t, _, mt, data = ev
+                if mt == 0x51 and len(data) == 3 and bpm == 120:
+                    mpqn = (data[0] << 16) | (data[1] << 8) | data[2]
+                    if mpqn:
+                        bpm = max(20, min(300, round(60000000.0 / mpqn)))
+                elif mt == 0x03 and name is None:
+                    name = data.decode("latin-1").strip() or None
+                elif 0x01 <= mt <= 0x07 and data.strip() == b"[" and loop_tick is None:
+                    loop_tick = sc(t)
+                continue
+            t, _, st, p1, p2 = ev
+            hi = st & 0xF0
+            key = (st & 0x0F, p1)
+            if hi == 0x90 and p2 > 0:
+                open_notes.setdefault(key, []).append((t, p2))
+            elif hi == 0x80 or (hi == 0x90 and p2 == 0):
+                if open_notes.get(key):
+                    t0, vel = open_notes[key].pop(0)
+                    notes.append({"t": sc(t0), "k": p1,
+                                  "d": max(1, sc(t) - sc(t0)),
+                                  "v": max(1, min(127, vel))})
+            elif hi == 0xC0 and prog is None:
+                prog = p1
+            elif hi == 0xB0 and p1 == 7 and vol is None:
+                vol = p2
+            elif hi == 0xB0 and p1 == 10 and pan is None:
+                pan = p2
+        if notes:
+            notes.sort(key=lambda n: n["t"])
+            tracks.append({
+                "name": (name or "Track %d" % (len(tracks) + 1))[:24],
+                "voice": (prog or 0) & 0x7F,
+                "vol": vol if vol is not None else 100,
+                "pan": (pan - 64) if pan is not None else 0,
+                "mute": False, "solo": False, "notes": notes,
+            })
+    tracks = tracks[:16]
+    if not tracks:
+        raise ValueError("no note tracks")
+    end = max(n["t"] + n["d"] for tr in tracks for n in tr["notes"])
+    bars = max(8, min(256, -(-end // 96)))
+    song = {"ppqn": 24, "bpm": bpm, "bars": bars, "vg": vg_name,
+            "loopOn": loop_tick is not None,
+            "loopBar": max(1, min(bars, (loop_tick or 0) // 96 + 1)),
+            "tracks": tracks}
+    return song
+
+
+def build_templates(usage, voicegroups):
+    song2g = {}
+    for g, songs in usage.items():
+        for s in songs:
+            song2g[s] = g
+    out = []
+    for mus, pretty in TEMPLATE_SONGS:
+        path = repo("sound", "songs", "midi", mus + ".mid")
+        if not os.path.exists(path):
+            print("  template skip: %s.mid not found" % mus)
+            continue
+        if mus not in song2g:
+            print("  template skip: %s has no songs.mk rule" % mus)
+            continue
+        vg = "voicegroup%03d" % song2g[mus]
+        if vg not in voicegroups:
+            print("  template skip: %s uses missing %s" % (mus, vg))
+            continue
+        try:
+            song = midi_to_song(path, vg)
+        except (ValueError, IndexError, struct.error) as e:
+            print("  template skip: %s (%s)" % (mus, e))
+            continue
+        nn = sum(len(t["notes"]) for t in song["tracks"])
+        print("  template: %-16s %2d tracks %5d notes  bpm %d  %s"
+              % (mus, len(song["tracks"]), nn, song["bpm"], vg))
+        out.append({"id": mus, "name": pretty, "song": song})
+    return out
+
+
+# --------------------------------------------------------------------------
 # Self-test: emit a .mid with the exact byte layout the app's JS exporter
 # uses, then run tools/mid2agb on it to prove the format is accepted.
 # --------------------------------------------------------------------------
@@ -438,6 +617,8 @@ def main():
         print("  warning: %d referenced samples have no data: %s"
               % (len(unresolved), ", ".join(unresolved[:6])))
 
+    templates = build_templates(usage, voicegroups)
+
     data = {
         "meta": {
             "generated": "build.py",
@@ -448,6 +629,7 @@ def main():
         "waves": waves,
         "keysplits": keysplits,
         "voicegroups": voicegroups,
+        "templates": templates,
     }
     blob = json.dumps(data, separators=(",", ":")).replace("</", "<\\/")
     tag = ('<script id="emerald-data" type="application/json">%s</script>'
