@@ -167,6 +167,7 @@ never nags about something already done.
 | Friend's base | `MatchCall_Mixed_SecretBaseM/F` | registered trainer | an occupied `secretBases[1..14]` slot | (data-driven) |
 | Rival met someone | `MatchCall_Mixed_RivalMet` | **Brendan / May** | any mixed-in trainer exists | (data-driven) |
 | Rival's crush | `MatchCall_Mixed_RivalCrush` | **Brendan / May** | met trainer's gender is known and opposite the rival's, **1/3 of the time** | (data-driven) |
+| Norman | `MatchCall_Norman_*` (8) | **Norman** | always (he installs Match Call himself) | never |
 
 #### Notes on the record-mixing calls
 
@@ -217,6 +218,28 @@ Anabel quiet and intuitive, Tucker playing to the crowd, Spenser laughing
 about bonds over numbers, Greta spoiling for a scrap, Noland impressed you
 did it with rentals, Lucy managing four short sentences, Brandon booming
 about ruins.
+
+#### Norman
+
+A family B caller with an 8-entry pool, picked uniformly, so **half his calls
+are battle advice** and the rest split between checking in and teasing the
+player about the rival. His own name is baked into every line, so
+`{STR_VAR_1}` carries the **rival's** name instead (harmless in the texts that
+don't reference it).
+
+The four tips were checked against this repo's battle code rather than
+written from general Gen 3 knowledge:
+
+| Tip | Claim | Verified at |
+|---|---|---|
+| `Tip_RapidSpin` | clears Spikes, Leech Seed and binding moves, **and leaves the user faster** | `BattleScript_RapidSpinAway` — this repo adds a `+1 SPE` stage that vanilla doesn't have |
+| `Tip_RestTalk` | Rest full-heals but sleeps 2 turns; Sleep Talk attacks through it | `EFFECT_REST` / `EFFECT_SLEEP_TALK`, both stock |
+| `Tip_SpikesPhaze` | Spikes stack to **3** layers, each hurting more; Roar/Whirlwind force switch-ins into them | `Cmd_trysetspikes` caps at 3; damage is `maxHP / ((5 - layers) * 2)` = 1/8, 1/6, 1/4 |
+| `Tip_SubPunch` | Substitute costs 1/4 max HP, absorbs the hit and blocks status; Focus Punch behind it can't be flinched | stock Gen 3 behaviour |
+
+No tip mentions Stealth Rock or Toxic Spikes — **neither move exists in this
+repo** (`MOVE_STEALTH_ROCK` / `MOVE_TOXIC_SPIKES` are undefined), so Spikes is
+the only entry hazard and the Rapid Spin tip says exactly that.
 
 #### A real flag clash found while doing this
 
@@ -328,13 +351,13 @@ Current tuning:
 | Stage | Windows/hr | x chance | x caller found | **Calls/hr** |
 |---|---|---|---|---|
 | Vanilla, under 5 badges | 6 | 0.30 | ~0.03 | **~0.05** (one per ~20 h) |
-| Veritas, early game | 6 | 0.50 | ~0.56 | **~1.7** |
+| Veritas, early game | 6 | 0.50 | ~0.59 | **~1.8** |
 | Veritas, mid game | 6 | 0.50 | ~0.61 | **~1.8** |
-| Veritas, postgame (all callers unlocked) | 6 | 0.50 | ~0.72 | **~2.2** |
-| Veritas, postgame + Lightning Rod lead | 6 | 0.75 | ~0.72 | **~3.2** |
+| Veritas, postgame (all callers unlocked) | 6 | 0.50 | ~0.74 | **~2.2** |
+| Veritas, postgame + Lightning Rod lead | 6 | 0.75 | ~0.74 | **~3.3** |
 
 "Caller found" is the chance `SelectMatchCallTrainer` returns TRUE: the family
-B rolls in sequence (~0.41 postgame with everything unlocked, ~0.09 early),
+B rolls in sequence (~0.46 postgame with everything unlocked, ~0.17 early),
 then the vanilla rematch check, then the 1/2 casual fallback.
 
 Vanilla's ~0.03 is the odds that a randomly picked registered trainer happens

@@ -125,6 +125,7 @@ enum
     SPECIAL_CALL_STEVEN,
     SPECIAL_CALL_RIVAL_WEATHER, // "the Weather Institute needs trainers"
     SPECIAL_CALL_RIVAL_MIXED,   // "I met someone from far away…"
+    SPECIAL_CALL_NORMAN,        // Dad: checking in, teasing, battle advice
     SPECIAL_CALL_COUNT,
 };
 
@@ -1182,6 +1183,24 @@ static const struct MatchCallText sMatchCallMixedSecretBaseTexts[2] =
 static const struct MatchCallText sMatchCallQuestFashionistaText =
     { .text = MatchCall_Quest_Fashionista, .stringVarFuncIds = STRS_NORMAL_MSG };
 
+// Norman picks uniformly from this pool, so half his calls are battle advice
+// and the rest split between checking in and teasing the player about the
+// rival. Every entry gets the rival's name in gStringVar1 whether it uses it
+// or not. The tips are verified against this repo's battle code -- note
+// Rapid Spin here also raises the user's Speed (see BattleScript_RapidSpinAway),
+// which the tip mentions.
+static const u8 *const sMatchCallNormanTexts[] =
+{
+    MatchCall_Norman_HowAreYou1,
+    MatchCall_Norman_HowAreYou2,
+    MatchCall_Norman_Couple1,
+    MatchCall_Norman_Couple2,
+    MatchCall_Norman_Tip_RapidSpin,
+    MatchCall_Norman_Tip_RestTalk,
+    MatchCall_Norman_Tip_SpikesPhaze,
+    MatchCall_Norman_Tip_SubPunch,
+};
+
 // The four Fashionista NPCs, one per Pokemon Center 1F. The call names
 // whichever city it picks so the player knows where to go.
 static const u16 sFashionistaCityMapSecs[] =
@@ -1253,6 +1272,8 @@ static const u8 *const sSpecialCallTexts[SPECIAL_CALL_COUNT] =
     [SPECIAL_CALL_STEVEN]         = MatchCall_Leisure_Steven1,
     [SPECIAL_CALL_RIVAL_WEATHER]  = MatchCall_Quest_WeatherResearch,
     [SPECIAL_CALL_RIVAL_MIXED]    = MatchCall_Mixed_RivalMet,
+    // Placeholder: BuildSpecialCallString picks from sMatchCallNormanTexts.
+    [SPECIAL_CALL_NORMAN]         = MatchCall_Norman_HowAreYou1,
 };
 
 // Second variant for the leisure callers, picked by a coin flip.
@@ -2185,6 +2206,14 @@ static bool32 TrySelectSpecialCall(void)
         return TRUE;
     }
 
+    // Dad. Available from the moment the PokeNav has Match Call, since he
+    // hands it over himself in Petalburg.
+    if ((Random() % 12) == 0)
+    {
+        sMatchCallState.specialCallId = SPECIAL_CALL_NORMAN;
+        return TRUE;
+    }
+
     if (GetGameStat(GAME_STAT_ENTERED_HOF) != 0 && (Random() % 20) == 0)
     {
         sMatchCallState.specialCallId = SPECIAL_CALL_HEART_WALLACE;
@@ -2278,6 +2307,12 @@ static void BuildSpecialCallString(u8 *str)
         break;
     case SPECIAL_CALL_RIVAL_WEATHER:
         PopulateRivalName(gStringVar1);
+        break;
+    case SPECIAL_CALL_NORMAN:
+        // {STR_VAR_1} is the rival, not the caller: Norman's own name is
+        // baked into every one of his lines.
+        PopulateRivalName(gStringVar1);
+        text = sMatchCallNormanTexts[Random() % ARRAY_COUNT(sMatchCallNormanTexts)];
         break;
     case SPECIAL_CALL_RIVAL_MIXED:
         PopulateRivalName(gStringVar1);

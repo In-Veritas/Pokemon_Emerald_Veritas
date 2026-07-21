@@ -3525,12 +3525,18 @@ MatchCall_Mixed_RivalMet::
 
 MatchCall_Mixed_RivalCrush::
 	.string "{STR_VAR_1} here!\p"
-	.string "So, um. I met a TRAINER today.\n"
-	.string "{STR_VAR_2}, from somewhere far\l"
-	.string "away.\p"
-	.string "We battled and I lost and it\n"
-	.string "was… it was fine. It was good.\p"
-	.string "…Anyway! That's all. Bye!$"
+	.string "So I met a TRAINER today.\n"
+	.string "{STR_VAR_2}, from really far away.\p"
+	.string "We battled. I lost.\p"
+	.string "And I didn't even mind losing?\n"
+	.string "Who doesn't mind losing?\p"
+	.string "I've thought about them all day,\n"
+	.string "{PLAYER}. All day.\p"
+	.string "Do you think they'd mix records\n"
+	.string "with me again? Would that be\l"
+	.string "weird? That'd be weird.\p"
+	.string "…Don't you DARE tell anyone I\n"
+	.string "said any of this!$"
 
 @ --- Fashionista outfit hint. Stops once every outfit is unlocked. ---
 MatchCall_Quest_Fashionista::
@@ -3542,3 +3548,96 @@ MatchCall_Quest_Fashionista::
 	.string "Show one of them the right\n"
 	.string "POKéMON and they'll dress you\l"
 	.string "up too. Go on, treat yourself!$"
+
+@ ===================================================================
+@ Norman. Family B caller, so his name is baked in; {STR_VAR_1} is
+@ always the rival's name (harmless in the texts that don't use it).
+@ ===================================================================
+
+@ --- Checking in ---
+MatchCall_Norman_HowAreYou1::
+	.string "{PLAYER}? It's your father.\p"
+	.string "I won't keep you. I only wanted\n"
+	.string "to ask how you've been.\p"
+	.string "Not how you're battling.\n"
+	.string "How you've been.\p"
+	.string "…Your mother says I should ask\n"
+	.string "that more often. She's right.$"
+
+MatchCall_Norman_HowAreYou2::
+	.string "NORMAN here.\p"
+	.string "The GYM is quiet today, so I\n"
+	.string "found myself thinking about you.\p"
+	.string "You've grown into a far better\n"
+	.string "TRAINER than I was at your age.\p"
+	.string "I don't say that lightly.\n"
+	.string "Take care of yourself out there.$"
+
+@ --- Dad being funny, allegedly ---
+MatchCall_Norman_Couple1::
+	.string "{PLAYER}? Your father.\p"
+	.string "I hear you and {STR_VAR_1} have\n"
+	.string "been travelling together again.\p"
+	.string "Very close together, your mother\n"
+	.string "tells me.\p"
+	.string "Should I be having a word with\n"
+	.string "PROF. BIRCH about wedding plans?\p"
+	.string "…That was a joke. I am told I\n"
+	.string "should say when it's a joke.$"
+
+MatchCall_Norman_Couple2::
+	.string "NORMAN speaking.\p"
+	.string "Your mother has asked me, and I\n"
+	.string "quote, to stop teasing you about\l"
+	.string "{STR_VAR_1}.\p"
+	.string "So I will not mention it.\p"
+	.string "I will simply note that BIRCH\n"
+	.string "and I have already discussed\l"
+	.string "seating arrangements.\p"
+	.string "Good luck out there!$"
+
+@ --- Competitive tips. Verified against this repo's battle code. ---
+MatchCall_Norman_Tip_RapidSpin::
+	.string "NORMAN here. A GYM LEADER'S\n"
+	.string "advice, if you'll take it.\p"
+	.string "SPIKES will bleed your team dry\n"
+	.string "every time you switch in.\p"
+	.string "RAPID SPIN sweeps them away, and\n"
+	.string "tears off LEECH SEED and any\l"
+	.string "binding move at the same time.\p"
+	.string "It even leaves the spinner a\n"
+	.string "step faster afterward.\p"
+	.string "Never travel without one.$"
+
+MatchCall_Norman_Tip_RestTalk::
+	.string "It's NORMAN.\p"
+	.string "A wall that cannot heal is only\n"
+	.string "a slow loss.\p"
+	.string "REST restores every last point,\n"
+	.string "but leaves you asleep for two\l"
+	.string "turns. That's the price.\p"
+	.string "Unless you carry SLEEP TALK.\n"
+	.string "Then you keep attacking right\l"
+	.string "through the nap.\p"
+	.string "My SLAKING sends its regards.$"
+
+MatchCall_Norman_Tip_SpikesPhaze::
+	.string "NORMAN here.\p"
+	.string "Here's how you win a long game.\p"
+	.string "Lay SPIKES. Up to three layers,\n"
+	.string "and each one bites harder.\p"
+	.string "Then ROAR or WHIRLWIND to drag\n"
+	.string "out whatever they were hiding.\p"
+	.string "They take the damage on the way\n"
+	.string "in, every single time.\p"
+	.string "Patience wins matches, {PLAYER}.$"
+
+MatchCall_Norman_Tip_SubPunch::
+	.string "It's your father.\p"
+	.string "One more, then I'll let you go.\p"
+	.string "SUBSTITUTE costs you a quarter\n"
+	.string "of your HP, but the doll takes\l"
+	.string "the hit and blocks status too.\p"
+	.string "Behind it, FOCUS PUNCH will\n"
+	.string "never be flinched out of.\p"
+	.string "Frightening, in the right hands.$"

@@ -539,13 +539,16 @@ They'll also read you the news: **Gen 2-style mass outbreak reports** naming the
 
 Trainers pass on **hints for things you haven't done yet** — and stop the moment you finish them, so nothing ever nags. The Weather Institute recruiting trainers for the strange readings it can't explain; the Lilycove Museum owner handing out a boat ticket to somewhere that isn't on any map; a **Fashionista** in a Pokémon Center who'll dress you up if you show her the right Pokémon; and, once the postgame opens, quiet rumours about **water that runs too clean, thunder with no clouds, footsteps near Mt. Chimney, three great birds, a wishing stone, and an island that isn't there most days**.
 
-If you've **mixed records** with anyone, the network gets busier still: trainers report **spotting your friends out on the routes**, tell you **what someone just caught**, and let slip **where a friend built their Secret Base**. Your rival calls about the out-of-region trainers they keep bumping into — and occasionally gets a little flustered about one of them.
+If you've **mixed records** with anyone, the network gets busier still: trainers report **spotting your friends out on the routes**, tell you **what someone just caught**, and let slip **where a friend built their Secret Base**. Your rival calls about the out-of-region trainers they keep bumping into — and occasionally gets *very* flustered about one of them.
+
+And your **dad** rings too: asking how you've actually been, teasing you and your rival about wedding seating arrangements, and handing out real competitive advice — spinning away Spikes, Rest + Sleep Talk, stacking hazards behind Roar, Substitute into Focus Punch.
 
 And some callers aren't on your rematch list at all:
 
 | Caller | When |
 |---|---|
 | **Mom** | any time — she just wants to know you're eating |
+| **Norman** | any time — checking in, dispensing genuinely good battle advice, and making dad jokes about you and your rival |
 | **Prof. Birch** | once you have the Pokédex |
 | **Brendan / May** | any time; and in the postgame, a quieter one about missing how often you used to run into each other |
 | **Steven** | after Meteor Falls; and in the postgame, about how far you've come since Granite Cave |
