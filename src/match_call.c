@@ -4,6 +4,7 @@
 #include "battle_setup.h"
 #include "bg.h"
 #include "data.h"
+#include "daycare.h"
 #include "event_data.h"
 #include "event_object_movement.h"
 #include "field_player_avatar.h"
@@ -30,6 +31,8 @@
 #include "constants/abilities.h"
 #include "constants/battle_frontier.h"
 #include "constants/event_objects.h"
+#include "constants/game_stat.h"
+#include "constants/opponents.h"
 #include "constants/region_map_sections.h"
 #include "constants/songs.h"
 #include "constants/trainers.h"
@@ -98,6 +101,42 @@ enum
     FORCED_CALL_NONE,     // vanilla behavior
     FORCED_CALL_BIRTHDAY, // first call on the player's birthday: a birthday wish
     FORCED_CALL_CASUAL,   // fallback call: random tip or idle chatter
+    FORCED_CALL_SPECIAL,  // a fixed caller (Mom, Steven, a Frontier Brain, ...)
+};
+
+// Veritas "family B" callers: people who are NOT in the rematch table, so
+// they have no matchCallId. Their name is baked into the message text (or
+// written straight into gStringVar1) and the whole vanilla
+// GetTrainerMatchCallId path is bypassed -- that function loops forever on
+// a trainerId it doesn't know about.
+enum
+{
+    SPECIAL_CALL_VERITAS,
+    SPECIAL_CALL_HEART_RIVAL,
+    SPECIAL_CALL_HEART_STEVEN,
+    SPECIAL_CALL_HEART_WALLACE,
+    SPECIAL_CALL_FRONTIER_BRAIN,
+    SPECIAL_CALL_MOM,
+    SPECIAL_CALL_BIRCH,
+    SPECIAL_CALL_RIVAL,
+    SPECIAL_CALL_STEVEN,
+    SPECIAL_CALL_COUNT,
+};
+
+// Veritas "family A" casual calls: the caller IS a registered rematch
+// trainer, so {STR_VAR_1} is filled by the normal PopulateTrainerName path
+// and only the extra vars (if any) are written by hand.
+enum
+{
+    CASUAL_CHATTER,      // vanilla battle/general chatter
+    CASUAL_ABILITY_TIP,
+    CASUAL_GENERAL_TIP,
+    CASUAL_LORE_SOUTHERN,
+    CASUAL_LORE_DRAGON,
+    CASUAL_OUTBREAK,
+    CASUAL_TIME_OF_DAY,
+    CASUAL_RARE_CATCH,
+    CASUAL_COUNT,
 };
 
 struct MatchCallState
@@ -107,6 +146,8 @@ struct MatchCallState
     u8 stepCounter;
     bool8 triggeredFromScript;
     u8 forcedCallType;
+    u8 specialCallId;
+    bool8 veritasCallActive; // the call in progress ends with a cry, not a goodbye
     u16 frozenRtcChecks;
 };
 
@@ -177,6 +218,13 @@ static void PopulateSpeciesFromTrainerLocation(int, u8 *);
 static void PopulateSpeciesFromTrainerParty(int, u8 *);
 static void PopulateBattleFrontierFacilityName(int, u8 *);
 static void PopulateBattleFrontierStreak(int, u8 *);
+// Veritas
+static bool32 TrySelectSpecialCall(void);
+static void BuildSpecialCallString(u8 *);
+static const struct MatchCallText *SelectCasualMatchCallText(int, u8 *);
+static bool32 TryPopulateOutbreakVars(bool8 *);
+static bool32 TryPopulateRareCatchVars(bool8 *);
+static bool32 PlayerHasAnyFrontierStreak(void);
 
 #define TEXT_ID(topic, id) (((topic) << 8) | ((id) & 0xFF))
 
@@ -1033,18 +1081,91 @@ static const struct MatchCallText sMatchCallBirthdayTexts[] =
     { .text = MatchCall_BirthdayText3, .stringVarFuncIds = STRS_NORMAL_MSG },
 };
 
-static const struct MatchCallText sMatchCallTipTexts[] =
+// One tip per ability that actually changes something in the OVERWORLD in
+// this repo. Flame Body / Magma Armor (egg hatching) and Pickup are
+// battle-only here, so they deliberately have no tip.
+static const struct MatchCallText sMatchCallAbilityTipTexts[] =
 {
-    { .text = MatchCall_TipText1,  .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_TipText2,  .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_TipText3,  .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_TipText4,  .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_TipText5,  .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_TipText6,  .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_TipText7,  .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_TipText8,  .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_TipText9,  .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_TipText10, .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_LightningRod,  .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_Synchronize,   .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_CuteCharm,     .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_MagnetPull,    .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_EncounterRate, .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_KeenEye,       .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_Hustle,        .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_SuctionCups,   .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_CompoundEyes,  .stringVarFuncIds = STRS_NORMAL_MSG },
+};
+
+static const struct MatchCallText sMatchCallGeneralTipTexts[] =
+{
+    { .text = MatchCall_Tip_FanClubBirthday, .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Tip_Pokerus,         .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Tip_TradedExp,       .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Tip_SecretBase,      .stringVarFuncIds = STRS_NORMAL_MSG },
+};
+
+// Late night (22:00-03:59) vs early morning (04:00-06:59).
+static const struct MatchCallText sMatchCallLateNightTexts[] =
+{
+    { .text = MatchCall_Time_LateNight1, .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Time_LateNight2, .stringVarFuncIds = STRS_NORMAL_MSG },
+};
+
+static const struct MatchCallText sMatchCallEarlyMorningTexts[] =
+{
+    { .text = MatchCall_Time_EarlyMorning1, .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Time_EarlyMorning2, .stringVarFuncIds = STRS_NORMAL_MSG },
+};
+
+// The extra vars in these are filled by hand before BuildMatchCallString,
+// so the func ids only ask for the caller's name.
+static const struct MatchCallText sMatchCallLoreSouthernIslandText =
+    { .text = MatchCall_Lore_SouthernIsland, .stringVarFuncIds = STRS_NORMAL_MSG };
+static const struct MatchCallText sMatchCallLoreDragonLadyText =
+    { .text = MatchCall_Lore_DragonLady, .stringVarFuncIds = STRS_NORMAL_MSG };
+static const struct MatchCallText sMatchCallOutbreakText =
+    { .text = MatchCall_Rare_Outbreak, .stringVarFuncIds = STRS_NORMAL_MSG };
+static const struct MatchCallText sMatchCallOutbreakNationalText =
+    { .text = MatchCall_Rare_OutbreakNational, .stringVarFuncIds = STRS_NORMAL_MSG };
+static const struct MatchCallText sMatchCallRareCatchLegendaryText =
+    { .text = MatchCall_RareCatch_Legendary, .stringVarFuncIds = STRS_NORMAL_MSG };
+static const struct MatchCallText sMatchCallRareCatchShinyText =
+    { .text = MatchCall_RareCatch_Shiny, .stringVarFuncIds = STRS_NORMAL_MSG };
+
+// Family B. Indexed by SPECIAL_CALL_*; the caller's name is either baked
+// into the text or written into gStringVar1 by BuildSpecialCallString.
+static const u8 *const sSpecialCallTexts[SPECIAL_CALL_COUNT] =
+{
+    [SPECIAL_CALL_VERITAS]        = MatchCall_Veritas,
+    [SPECIAL_CALL_HEART_RIVAL]    = MatchCall_Heart_Rival,
+    [SPECIAL_CALL_HEART_STEVEN]   = MatchCall_Heart_Steven,
+    [SPECIAL_CALL_HEART_WALLACE]  = MatchCall_Heart_Wallace,
+    [SPECIAL_CALL_FRONTIER_BRAIN] = MatchCall_Frontier_Brain,
+    [SPECIAL_CALL_MOM]            = MatchCall_Leisure_Mom1,
+    [SPECIAL_CALL_BIRCH]          = MatchCall_Leisure_Birch1,
+    [SPECIAL_CALL_RIVAL]          = MatchCall_Leisure_Rival1,
+    [SPECIAL_CALL_STEVEN]         = MatchCall_Leisure_Steven1,
+};
+
+// Second variant for the leisure callers, picked by a coin flip.
+static const u8 *const sSpecialCallTextsAlt[SPECIAL_CALL_COUNT] =
+{
+    [SPECIAL_CALL_MOM]    = MatchCall_Leisure_Mom2,
+    [SPECIAL_CALL_BIRCH]  = MatchCall_Leisure_Birch2,
+    [SPECIAL_CALL_RIVAL]  = MatchCall_Leisure_Rival2,
+    [SPECIAL_CALL_STEVEN] = MatchCall_Leisure_Steven2,
+};
+
+static const u16 sFrontierBrainTrainerIds[NUM_FRONTIER_FACILITIES] =
+{
+    [FRONTIER_FACILITY_TOWER]   = TRAINER_ANABEL,
+    [FRONTIER_FACILITY_DOME]    = TRAINER_TUCKER,
+    [FRONTIER_FACILITY_PALACE]  = TRAINER_SPENSER,
+    [FRONTIER_FACILITY_ARENA]   = TRAINER_GRETA,
+    [MATCH_CALL_PIKE]           = TRAINER_LUCY,
+    [MATCH_CALL_FACTORY]        = TRAINER_NOLAND,
+    [FRONTIER_FACILITY_PYRAMID] = TRAINER_BRANDON,
 };
 
 static const struct MatchCallText *const sMatchCallGeneralTopics[] =
@@ -1120,7 +1241,10 @@ static bool32 CheckMatchCallChance(void)
     if (!GetMonData(&gPlayerParty[0], MON_DATA_SANITY_IS_EGG) && GetMonAbility(&gPlayerParty[0]) == ABILITY_LIGHTNING_ROD)
         callChance = 2;
 
-    if (Random() % 10 < callChance * 3)
+    // Veritas: vanilla was 30% (60% with Lightning Rod). Now that a failed
+    // rematch pick can still become a call, that same 30% produces far more
+    // ringing than vanilla did, so the base roll is trimmed to 25%/50%.
+    if (Random() % 20 < callChance * 5)
         return TRUE;
     else
         return FALSE;
@@ -1163,11 +1287,20 @@ static bool32 SelectMatchCallTrainer(void)
     u32 numRegistered = GetNumRegisteredNPCs();
 
     sMatchCallState.forcedCallType = FORCED_CALL_NONE;
+    sMatchCallState.triggeredFromScript = FALSE;
+
+    // Veritas: family B callers aren't in the rematch table, so they're
+    // offered first and don't need any registered trainer to exist.
+    if (TrySelectSpecialCall())
+    {
+        sMatchCallState.forcedCallType = FORCED_CALL_SPECIAL;
+        return TRUE;
+    }
+
     if (numRegistered == 0)
         return FALSE;
 
     sMatchCallState.trainerId = GetActiveMatchCallTrainerId(Random() % numRegistered);
-    sMatchCallState.triggeredFromScript = FALSE;
     if (sMatchCallState.trainerId == REMATCH_TABLE_ENTRIES)
         return FALSE;
 
@@ -1189,9 +1322,9 @@ static bool32 SelectMatchCallTrainer(void)
     // Veritas: vanilla dropped the call entirely here, which is why players
     // barely got any -- before 5 badges ShouldTrainerRequestBattle is always
     // FALSE, so a call required a rematch-ready trainer on the CURRENT map.
-    // Instead, half of these failed picks become casual calls: idle chatter
-    // or a random gameplay tip (see SelectMatchCallMessage).
-    if (Random() % 2)
+    // Instead, a third of these failed picks become casual calls: idle
+    // chatter, a tip, a rumour, a sighting (see SelectCasualMatchCallText).
+    if (Random() % 3 == 0)
     {
         sMatchCallState.forcedCallType = FORCED_CALL_CASUAL;
         return TRUE;
@@ -1235,13 +1368,15 @@ static u32 GetActiveMatchCallTrainerId(u32 activeMatchCallId)
     - Every 10th step
     - Every 10 minutes (Veritas: if the cart's RTC is frozen, which would
       jam this gate forever, the wait is emulated with steps instead)
-    - 1/3 of the time (2/3 with a lead Lightning Rod Pokémon; always, for
-      the once-per-day birthday call)
+    - 1/4 of the time (1/2 with a lead Lightning Rod Pokémon; always, for
+      the once-per-day birthday call). Vanilla was 3/10 and 3/5.
     - If in a valid outdoor map (not Safari Zone, not underwater, not Mt Chimney with Team Magma, not Sootopolis with legendaries)
-    - If an eligible trainer is selected. Veritas: on the player's birthday
-      the pick always succeeds (birthday wish); otherwise half of the picks
-      that fail vanilla's rematch gate become casual tip/chatter calls
-      instead of silently dropping.
+    - If a caller is selected. Veritas: a fixed caller who isn't in the
+      rematch table (Mom, Steven, a Frontier Brain, Veritas himself) is
+      offered first; then, on the player's birthday, the pick always
+      succeeds; otherwise a third of the picks that fail vanilla's rematch
+      gate become casual calls instead of silently dropping.
+      See docs/POKENAV_CALLS.md.
 */
 bool32 TryStartMatchCall(void)
 {
@@ -1292,6 +1427,7 @@ static const u32 sPokenavIcon_Gfx[] = INCBIN_U32("graphics/pokenav/match_call/na
 static const u8 sText_PokenavCallEllipsis[] = _("………………\p");
 
 #define tState      data[0]
+#define tCryState   data[1] // Veritas: only used by his mystery call
 #define tWindowId   data[2]
 #define tIconTaskId data[5]
 
@@ -1423,6 +1559,34 @@ static bool32 MatchCall_PrintIntro(u8 taskId)
 static bool32 MatchCall_PrintMessage(u8 taskId)
 {
     s16 *data = gTasks[taskId].data;
+
+    // Veritas: his call signs off with a cry rather than a goodbye. Once the
+    // last line has printed the cry starts on its own and the line drops as
+    // soon as it finishes -- no button press, so it can't be skipped past.
+    if (sMatchCallState.veritasCallActive)
+    {
+        if (RunMatchCallTextPrinter(tWindowId))
+            return FALSE;
+
+        switch (tCryState)
+        {
+        case 0:
+            PlayCry_Normal(SPECIES_LUGIA, 0);
+            tCryState = 1;
+            return FALSE;
+        case 1:
+            if (IsCryFinished())
+                tCryState = 2;
+            return FALSE;
+        default:
+            sMatchCallState.veritasCallActive = FALSE;
+            FillWindowPixelBuffer(tWindowId, PIXEL_FILL(8));
+            CopyWindowToVram(tWindowId, COPYWIN_GFX);
+            PlaySE(SE_POKENAV_HANG_UP);
+            return TRUE;
+        }
+    }
+
     if (!RunMatchCallTextPrinter(tWindowId) && !IsSEPlaying() && JOY_NEW(A_BUTTON | B_BUTTON))
     {
         FillWindowPixelBuffer(tWindowId, PIXEL_FILL(8));
@@ -1598,13 +1762,23 @@ bool32 SelectMatchCallMessage(int trainerId, u8 *str)
     const struct MatchCallText *matchCallText;
     bool32 newRematchRequest = FALSE;
 
-    matchCallId = GetTrainerMatchCallId(trainerId);
     sBattleFrontierStreakInfo.facilityId = 0;
+
+    // Veritas: a family B caller has no entry in sMatchCallTrainers, so this
+    // MUST come before GetTrainerMatchCallId -- that function scans the
+    // table with no bound and never returns for an unknown trainerId.
+    if (sMatchCallState.forcedCallType == FORCED_CALL_SPECIAL)
+    {
+        sMatchCallState.forcedCallType = FORCED_CALL_NONE;
+        BuildSpecialCallString(str);
+        return FALSE;
+    }
+
+    matchCallId = GetTrainerMatchCallId(trainerId);
 
     // Veritas: forced call types decided at trigger time (see
     // SelectMatchCallTrainer). Birthday wish: once per birthday, latched by
-    // a daily flag that auto-clears at midnight. Casual: a random gameplay
-    // tip half the time, otherwise the trainer's normal idle chatter.
+    // a daily flag that auto-clears at midnight.
     if (sMatchCallState.forcedCallType == FORCED_CALL_BIRTHDAY)
     {
         sMatchCallState.forcedCallType = FORCED_CALL_NONE;
@@ -1616,12 +1790,7 @@ bool32 SelectMatchCallMessage(int trainerId, u8 *str)
     if (sMatchCallState.forcedCallType == FORCED_CALL_CASUAL)
     {
         sMatchCallState.forcedCallType = FORCED_CALL_NONE;
-        if (Random() % 2)
-            matchCallText = &sMatchCallTipTexts[Random() % ARRAY_COUNT(sMatchCallTipTexts)];
-        else if (Random() % 3)
-            matchCallText = GetBattleMatchCallText(matchCallId, str);
-        else
-            matchCallText = GetGeneralMatchCallText(matchCallId, str);
+        matchCallText = SelectCasualMatchCallText(matchCallId, str);
         BuildMatchCallString(matchCallId, matchCallText, str);
         return FALSE;
     }
@@ -1655,6 +1824,293 @@ bool32 SelectMatchCallMessage(int trainerId, u8 *str)
 
     BuildMatchCallString(matchCallId, matchCallText, str);
     return newRematchRequest;
+}
+
+// ===========================================================================
+// Veritas PokeNav calls. Full write-up in docs/POKENAV_CALLS.md.
+// ===========================================================================
+
+static bool32 PlayerHasAnyFrontierStreak(void)
+{
+    u32 topic;
+    int i;
+
+    for (i = 0; i < NUM_FRONTIER_FACILITIES; i++)
+    {
+        if (GetFrontierStreakInfo(i, &topic) > 1)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+// Family B: callers with no rematch-table entry. Each gets its own roll and
+// falls through to the next on a miss, rarest first.
+static bool32 TrySelectSpecialCall(void)
+{
+    if (FlagGet(FLAG_DEFEATED_EXCLSIOR)
+     && !FlagGet(FLAG_DAILY_VERITAS_MATCH_CALL)
+     && (Random() % 12) == 0)
+    {
+        sMatchCallState.specialCallId = SPECIAL_CALL_VERITAS;
+        return TRUE;
+    }
+
+    if (FlagGet(FLAG_IS_CHAMPION) && (Random() % 24) == 0)
+    {
+        if (Random() % 2)
+            sMatchCallState.specialCallId = SPECIAL_CALL_HEART_RIVAL;
+        else
+            sMatchCallState.specialCallId = SPECIAL_CALL_HEART_STEVEN;
+        return TRUE;
+    }
+
+    if (GetGameStat(GAME_STAT_ENTERED_HOF) != 0 && (Random() % 20) == 0)
+    {
+        sMatchCallState.specialCallId = SPECIAL_CALL_HEART_WALLACE;
+        return TRUE;
+    }
+
+    if (PlayerHasAnyFrontierStreak() && (Random() % 16) == 0)
+    {
+        sMatchCallState.specialCallId = SPECIAL_CALL_FRONTIER_BRAIN;
+        return TRUE;
+    }
+
+    if ((Random() % 8) == 0)
+    {
+        switch (Random() % 4)
+        {
+        case 0:
+            sMatchCallState.specialCallId = SPECIAL_CALL_MOM;
+            return TRUE;
+        case 1:
+            if (FlagGet(FLAG_SYS_POKEDEX_GET))
+            {
+                sMatchCallState.specialCallId = SPECIAL_CALL_BIRCH;
+                return TRUE;
+            }
+            break;
+        case 2:
+            sMatchCallState.specialCallId = SPECIAL_CALL_RIVAL;
+            return TRUE;
+        case 3:
+            if (FlagGet(FLAG_DEFEATED_METEOR_FALLS_STEVEN) || FlagGet(FLAG_IS_CHAMPION))
+            {
+                sMatchCallState.specialCallId = SPECIAL_CALL_STEVEN;
+                return TRUE;
+            }
+            break;
+        }
+    }
+
+    return FALSE;
+}
+
+// The first party slot that isn't empty and isn't an egg, or 0 if the whole
+// party is eggs (a Hall of Fame team can't be, so this is just a guard).
+static u8 GetFirstNonEggPartyIndex(void)
+{
+    u8 i;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL)
+         && !GetMonData(&gPlayerParty[i], MON_DATA_IS_EGG, NULL))
+            return i;
+    }
+
+    return 0;
+}
+
+static void BuildSpecialCallString(u8 *str)
+{
+    const u8 *text;
+    u16 streak, best;
+    u32 topic;
+    int i, bestId;
+
+    text = sSpecialCallTexts[sMatchCallState.specialCallId];
+    if (sSpecialCallTextsAlt[sMatchCallState.specialCallId] != NULL && (Random() % 2))
+        text = sSpecialCallTextsAlt[sMatchCallState.specialCallId];
+
+    switch (sMatchCallState.specialCallId)
+    {
+    case SPECIAL_CALL_VERITAS:
+        // Latched so the mystery call is a once-a-day event, not a rerun.
+        FlagSet(FLAG_DAILY_VERITAS_MATCH_CALL);
+        sMatchCallState.veritasCallActive = TRUE;
+        break;
+    case SPECIAL_CALL_HEART_RIVAL:
+    case SPECIAL_CALL_RIVAL:
+        if (gSaveBlock2Ptr->playerGender == MALE)
+            StringCopy(gStringVar1, gTrainers[TRAINER_MAY_ROUTE_103_TREECKO].trainerName);
+        else
+            StringCopy(gStringVar1, gTrainers[TRAINER_BRENDAN_ROUTE_103_TREECKO].trainerName);
+        break;
+    case SPECIAL_CALL_HEART_WALLACE:
+        // Reading the actual Hall of Fame means pulling flash sectors 28-29
+        // into gDecompressionBuffer, which is not something to do in the
+        // middle of the overworld. The lead Pokemon plus the HOF entry count
+        // give the same "he remembers your run" beat for free.
+        StringCopy(gStringVar2, gSpeciesNames[GetMonData(&gPlayerParty[GetFirstNonEggPartyIndex()], MON_DATA_SPECIES, NULL)]);
+        ConvertIntToDecimalStringN(gStringVar3, GetGameStat(GAME_STAT_ENTERED_HOF), STR_CONV_MODE_LEFT_ALIGN, 5);
+        break;
+    case SPECIAL_CALL_FRONTIER_BRAIN:
+        best = 0;
+        bestId = 0;
+        for (i = 0; i < NUM_FRONTIER_FACILITIES; i++)
+        {
+            streak = GetFrontierStreakInfo(i, &topic);
+            if (streak > best)
+            {
+                best = streak;
+                bestId = i;
+            }
+        }
+        sBattleFrontierStreakInfo.facilityId = bestId;
+        sBattleFrontierStreakInfo.streak = best;
+        StringCopy(gStringVar1, gTrainers[sFrontierBrainTrainerIds[bestId]].trainerName);
+        ConvertIntToDecimalStringN(gStringVar2, best, STR_CONV_MODE_LEFT_ALIGN, 4);
+        break;
+    }
+
+    StringExpandPlaceholders(str, text);
+}
+
+// Writes {STR_VAR_2} (species) and {STR_VAR_3} (place) for an outbreak call.
+static bool32 TryPopulateOutbreakVars(bool8 *useNationalVariant)
+{
+    const struct MapHeader *header;
+    u16 species = gSaveBlock1Ptr->outbreakPokemonSpecies;
+
+    *useNationalVariant = FALSE;
+    if (gSaveBlock1Ptr->outbreakDaysLeft == 0 || species == SPECIES_NONE)
+        return FALSE;
+
+    // Never name a Pokemon the player's Pokedex can't even list yet: if it
+    // has no Hoenn number and the National Dex is still locked, stay quiet.
+    if (NationalToHoennOrder(SpeciesToNationalPokedexNum(species)) == 0)
+    {
+        if (!IsNationalPokedexEnabled())
+            return FALSE;
+
+        *useNationalVariant = TRUE;
+    }
+
+    header = Overworld_GetMapHeaderByGroupAndId(gSaveBlock1Ptr->outbreakLocationMapGroup,
+                                                gSaveBlock1Ptr->outbreakLocationMapNum);
+    if (header == NULL)
+        return FALSE;
+
+    StringCopy(gStringVar2, gSpeciesNames[species]);
+    GetMapName(gStringVar3, header->regionMapSectionId, 0);
+    return TRUE;
+}
+
+// Writes {STR_VAR_2} (species) and {STR_VAR_3} (OT) for the "I saw your
+// catch on TV" call. Shinies win ties because they're the rarer sight.
+static bool32 TryPopulateRareCatchVars(bool8 *wasShiny)
+{
+    u8 slots[PARTY_SIZE];
+    u8 shiny[PARTY_SIZE];
+    u8 otName[PLAYER_NAME_LENGTH + 1];
+    u8 count = 0;
+    u8 i, pick;
+    u16 species;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL);
+        if (species == SPECIES_NONE || GetMonData(&gPlayerParty[i], MON_DATA_IS_EGG, NULL))
+            continue;
+
+        if (IsMonShiny(&gPlayerParty[i]))
+            shiny[count] = TRUE;
+        else if (IsSpeciesLegendary(species))
+            shiny[count] = FALSE;
+        else
+            continue;
+
+        slots[count] = i;
+        count++;
+    }
+
+    if (count == 0)
+        return FALSE;
+
+    pick = Random() % count;
+    *wasShiny = shiny[pick];
+    species = GetMonData(&gPlayerParty[slots[pick]], MON_DATA_SPECIES, NULL);
+    GetMonData(&gPlayerParty[slots[pick]], MON_DATA_OT_NAME, otName);
+    StringCopy(gStringVar2, gSpeciesNames[species]);
+    StringCopy(gStringVar3, otName);
+    return TRUE;
+}
+
+// Family A: the caller is a registered rematch trainer, so {STR_VAR_1} is
+// filled by the normal PopulateTrainerName path. Categories that don't pass
+// their gate simply aren't offered.
+static const struct MatchCallText *SelectCasualMatchCallText(int matchCallId, u8 *str)
+{
+    u8 candidates[CASUAL_COUNT + 2];
+    u8 count = 0;
+    bool8 useNationalVariant = FALSE;
+    bool8 catchWasShiny = FALSE;
+    u8 hours;
+
+    RtcCalcLocalTime();
+    hours = gLocalTime.hours;
+
+    // Vanilla chatter is weighted double so the new material stays a garnish
+    // rather than replacing the trainers' own voices.
+    candidates[count++] = CASUAL_CHATTER;
+    candidates[count++] = CASUAL_CHATTER;
+    candidates[count++] = CASUAL_ABILITY_TIP;
+    candidates[count++] = CASUAL_GENERAL_TIP;
+    candidates[count++] = CASUAL_LORE_SOUTHERN;
+
+    if (FlagGet(FLAG_DEFEATED_RAYQUAZA))
+        candidates[count++] = CASUAL_LORE_DRAGON;
+
+    if (hours >= 22 || hours < 7)
+        candidates[count++] = CASUAL_TIME_OF_DAY;
+
+    if (TryPopulateOutbreakVars(&useNationalVariant))
+        candidates[count++] = CASUAL_OUTBREAK;
+
+    if (!FlagGet(FLAG_DAILY_RARE_CATCH_MATCH_CALL) && TryPopulateRareCatchVars(&catchWasShiny))
+        candidates[count++] = CASUAL_RARE_CATCH;
+
+    switch (candidates[Random() % count])
+    {
+    case CASUAL_ABILITY_TIP:
+        return &sMatchCallAbilityTipTexts[Random() % ARRAY_COUNT(sMatchCallAbilityTipTexts)];
+    case CASUAL_GENERAL_TIP:
+        return &sMatchCallGeneralTipTexts[Random() % ARRAY_COUNT(sMatchCallGeneralTipTexts)];
+    case CASUAL_LORE_SOUTHERN:
+        return &sMatchCallLoreSouthernIslandText;
+    case CASUAL_LORE_DRAGON:
+        return &sMatchCallLoreDragonLadyText;
+    case CASUAL_TIME_OF_DAY:
+        if (hours >= 22 || hours < 4)
+            return &sMatchCallLateNightTexts[Random() % ARRAY_COUNT(sMatchCallLateNightTexts)];
+        return &sMatchCallEarlyMorningTexts[Random() % ARRAY_COUNT(sMatchCallEarlyMorningTexts)];
+    case CASUAL_OUTBREAK:
+        if (useNationalVariant)
+            return &sMatchCallOutbreakNationalText;
+        return &sMatchCallOutbreakText;
+    case CASUAL_RARE_CATCH:
+        FlagSet(FLAG_DAILY_RARE_CATCH_MATCH_CALL);
+        if (catchWasShiny)
+            return &sMatchCallRareCatchShinyText;
+        return &sMatchCallRareCatchLegendaryText;
+    case CASUAL_CHATTER:
+    default:
+        if (Random() % 3)
+            return GetBattleMatchCallText(matchCallId, str);
+        return GetGeneralMatchCallText(matchCallId, str);
+    }
 }
 
 static int GetTrainerMatchCallId(int trainerId)

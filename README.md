@@ -521,11 +521,31 @@ On a themed or Mew day both wanderers are always out (the daily rotation is set 
 
 #### PokéNav Calls Actually Happen Now
 
-Call *pacing* is untouched (same every-10th-step check, same 10-minute rhythm, same 30% roll — and the classic easter egg stands: a lead **Lightning Rod** Pokémon doubles the odds). What's fixed is the two reasons calls almost never actually *triggered*:
+Call *rhythm* is untouched (same every-10th-step check, same 10-minute gate — and the classic easter egg stands: a lead **Lightning Rod** Pokémon doubles the odds). What's fixed is the two reasons calls almost never actually *triggered*:
 
-* **The silent drop**: after passing every timer and roll, vanilla still discarded the call unless the randomly-picked trainer was rematch-ready **on the exact route you were standing on** (and before your 5th badge, that was the *only* accepted reason). Half of those discarded picks now go through as **casual calls**: the trainer's idle chatter, their Battle Frontier bragging — or one of ten **gameplay tips** about Veritas features
+* **The silent drop**: after passing every timer and roll, vanilla still discarded the call unless the randomly-picked trainer was rematch-ready **on the exact route you were standing on** (and before your 5th badge, that was the *only* accepted reason). A third of those discarded picks now go through as **casual calls** instead
 * **The dead-clock jam**: on carts with a dead RTC battery (or bootlegs whose clock never ticks), the "have 10 minutes passed?" check could never pass again — the PokéNav literally never rang. The game now detects a frozen clock (~1,200 steps with zero time movement) and paces call opportunities by steps instead
 * Rematch invitations are untouched — they still work exactly like vanilla
+
+Because far more picks now survive, the per-attempt roll was **lowered** from 30% to 25% so the PokéNav rings often, not constantly.
+
+#### Someone Is Always Calling
+
+Registered trainers no longer only ever talk about rematches. They now also share **gameplay tips** — including one for **every ability with an overworld effect** (Synchronize natures, Cute Charm genders, Magnet Pull and Static type bias, Compound Eyes held items, Suction Cups fishing, Keen Eye / Intimidate and Hustle / Vital Spirit / Pressure level bias, and the encounter-rate abilities) — plus **rumours of a very strong trainer out on Southern Island**, and, once Rayquaza has been dealt with, a sighting of **a woman riding a dragon Pokémon flying out to sea**.
+
+They'll also read you the news: **Gen 2-style mass outbreak reports** naming the Pokémon and the route (a Pokémon foreign to Hoenn only gets mentioned once your **National Pokédex** is unlocked), and a call from someone who **saw your shiny or legendary catch on TV** and rang to congratulate you. Call at 3 AM and they'll tell you to get some sleep; call at dawn and they'll be impressed you're up.
+
+And some callers aren't on your rematch list at all:
+
+| Caller | When |
+|---|---|
+| **Mom** | any time — she just wants to know you're eating |
+| **Prof. Birch** | once you have the Pokédex |
+| **Brendan / May** | any time; and in the postgame, a quieter one about missing how often you used to run into each other |
+| **Steven** | after Meteor Falls; and in the postgame, about how far you've come since Granite Cave |
+| **Wallace** | after your first Hall of Fame entry — he remembers your team and counts your visits |
+| **Frontier Brains** | when you have a real win streak going in their facility, quoting the actual number |
+| **???** | rare, and only after a certain island goes quiet |
 
 <details>
 <summary><b>🎉 Secret calendar events (spoilers — dates hidden on purpose!)</b></summary>

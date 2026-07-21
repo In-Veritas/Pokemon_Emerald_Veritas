@@ -2953,8 +2953,12 @@ MatchCall_Text_MrStone11::
 	.string "Hm! You must come visit us at DEVON\n"
 	.string "sometime!$"
 
-@ Veritas: birthday wishes — the first PokeNav call on the player's
-@ birthday becomes one of these (see SelectMatchCallTrainer).
+@ ===================================================================
+@ Veritas PokeNav calls. See docs/POKENAV_CALLS.md for the full system.
+@ {STR_VAR_1} is always the caller's name.
+@ ===================================================================
+
+@ --- Birthday wishes (first call on the player's birthday) ---
 MatchCall_BirthdayText1::
 	.string "This is {STR_VAR_1}!\p"
 	.string "I heard through the grapevine\n"
@@ -2975,59 +2979,83 @@ MatchCall_BirthdayText3::
 	.string "I hope it's a great one!\n"
 	.string "Don't battle TOO hard today!$"
 
-@ Veritas: random tips — casual calls sometimes share a hint about the
-@ game's features instead of the usual chatter.
-MatchCall_TipText1::
+@ --- Ability tips: every ability with a real overworld effect here ---
+MatchCall_AbilityTip_LightningRod::
 	.string "This is {STR_VAR_1}!\p"
-	.string "Did you know? A POKéMON with the\n"
-	.string "LIGHTNING ROD ability up front\p"
-	.string "seems to attract more POKéNAV\n"
-	.string "calls! Strange, but true!$"
+	.string "Say, is that a LIGHTNING ROD\n"
+	.string "POKéMON leading your party?\p"
+	.string "Those seem to pull in POKéNAV\n"
+	.string "calls like mine. Funny, huh?$"
 
-MatchCall_TipText2::
+MatchCall_AbilityTip_Synchronize::
 	.string "{STR_VAR_1} here!\p"
-	.string "Have you set the calendar on the\n"
-	.string "clock in your room?\p"
-	.string "They say special things happen\n"
-	.string "on special dates…$"
+	.string "A breeder told me something\n"
+	.string "clever the other day.\p"
+	.string "Lead with a SYNCHRONIZE POKéMON\n"
+	.string "and wild ones you meet often\l"
+	.string "share its very nature!$"
 
-MatchCall_TipText3::
+MatchCall_AbilityTip_CuteCharm::
 	.string "It's {STR_VAR_1}!\p"
-	.string "The CABLE CLUB now runs Lv50\n"
-	.string "battle modes!\p"
-	.string "You can battle friends fairly no\n"
-	.string "matter how far along you are!$"
+	.string "Ooh, here's a romantic one!\p"
+	.string "Lead with a CUTE CHARM POKéMON\n"
+	.string "and wild ones tend to show up\l"
+	.string "as the opposite gender!$"
 
-MatchCall_TipText4::
+MatchCall_AbilityTip_MagnetPull::
 	.string "This is {STR_VAR_1}!\p"
-	.string "Before a link battle, you can\n"
-	.string "pick the music AND the scenery!\p"
-	.string "Every player picks, and one\n"
-	.string "choice wins. Pretty fancy!$"
+	.string "Hunting a particular type?\p"
+	.string "MAGNET PULL up front draws out\n"
+	.string "STEEL POKéMON, and STATIC pulls\l"
+	.string "in ELECTRIC ones!$"
 
-MatchCall_TipText5::
+MatchCall_AbilityTip_EncounterRate::
 	.string "{STR_VAR_1} here!\p"
-	.string "The wireless minigames pay out\n"
-	.string "real prizes now!\p"
-	.string "I heard someone scored a MASTER\n"
-	.string "BALL playing POKéMON JUMP!$"
+	.string "Tired of tripping over wild\n"
+	.string "POKéMON every other step?\p"
+	.string "STENCH, WHITE SMOKE or SAND VEIL\n"
+	.string "up front keeps them away…\p"
+	.string "while ILLUMINATE and ARENA TRAP\n"
+	.string "bring them running!$"
 
-MatchCall_TipText6::
+MatchCall_AbilityTip_KeenEye::
 	.string "It's {STR_VAR_1}!\p"
-	.string "Won a tournament? The service\n"
-	.string "desk lady on any POKéMON CENTER\l"
-	.string "2F redeems prize codes!\p"
-	.string "Fair play only… codes are locked\n"
-	.string "to the winner's TRAINER CARD!$"
+	.string "Sick of weak wild POKéMON\n"
+	.string "wasting your time?\p"
+	.string "KEEN EYE or INTIMIDATE up front\n"
+	.string "scares off the little ones!$"
 
-MatchCall_TipText7::
+MatchCall_AbilityTip_Hustle::
+	.string "This is {STR_VAR_1}!\p"
+	.string "Want a real challenge out there?\p"
+	.string "HUSTLE, VITAL SPIRIT or PRESSURE\n"
+	.string "in the lead slot draws out\l"
+	.string "stronger wild POKéMON!$"
+
+MatchCall_AbilityTip_SuctionCups::
+	.string "{STR_VAR_1} here!\p"
+	.string "Do the fish keep getting away\n"
+	.string "from you?\p"
+	.string "SUCTION CUPS or STICKY HOLD in\n"
+	.string "the lead makes them bite and\l"
+	.string "stay hooked!$"
+
+MatchCall_AbilityTip_CompoundEyes::
+	.string "It's {STR_VAR_1}!\p"
+	.string "Here's one for the collectors.\p"
+	.string "COMPOUND EYES up front makes\n"
+	.string "wild POKéMON turn up holding\l"
+	.string "items far more often!$"
+
+@ --- General gameplay tips ---
+MatchCall_Tip_FanClubBirthday::
 	.string "This is {STR_VAR_1}!\p"
 	.string "A fellow at the LILYCOVE fan\n"
 	.string "club keeps a birthday chart!\p"
 	.string "Tell him yours and see what\n"
 	.string "happens on the big day!$"
 
-MatchCall_TipText8::
+MatchCall_Tip_Pokerus::
 	.string "{STR_VAR_1} here!\p"
 	.string "If a POKéMON has had the\n"
 	.string "POKéRUS, its training gains\l"
@@ -3035,16 +3063,212 @@ MatchCall_TipText8::
 	.string "Stack a MACHO BRACE on top for\n"
 	.string "monster gains!$"
 
-MatchCall_TipText9::
+MatchCall_Tip_TradedExp::
 	.string "It's {STR_VAR_1}!\p"
 	.string "POKéMON received in trades grow\n"
 	.string "faster than usual!\p"
 	.string "Trading with friends really\n"
 	.string "pays off!$"
 
-MatchCall_TipText10::
+MatchCall_Tip_SecretBase::
 	.string "This is {STR_VAR_1}!\p"
 	.string "Secret base trainers can battle\n"
 	.string "in singles OR doubles now!\p"
 	.string "Mix records with friends and go\n"
 	.string "visit their bases!$"
+
+@ --- Southern Island lore ---
+MatchCall_Lore_SouthernIsland::
+	.string "{STR_VAR_1} here!\p"
+	.string "Have you heard the rumor about\n"
+	.string "SOUTHERN ISLAND?\p"
+	.string "They say a TRAINER out there is\n"
+	.string "stronger than the ELITE FOUR…\l"
+	.string "and that he's been waiting.\p"
+	.string "For someone. Spooky, right?$"
+
+MatchCall_Lore_DragonLady::
+	.string "It's {STR_VAR_1}!\p"
+	.string "You won't believe what flew\n"
+	.string "over my head today!\p"
+	.string "A woman riding a huge DRAGON\n"
+	.string "POKéMON, heading out to sea…\p"
+	.string "Straight for SOUTHERN ISLAND.\n"
+	.string "What is going on out there?$"
+
+@ --- Rare POKéMON sightings (mass outbreak data) ---
+MatchCall_Rare_Outbreak::
+	.string "This is {STR_VAR_1}!\p"
+	.string "Word is that {STR_VAR_2} have\n"
+	.string "been swarming around\l"
+	.string "{STR_VAR_3}!\p"
+	.string "If you want one, now's the time\n"
+	.string "to go looking!$"
+
+MatchCall_Rare_OutbreakNational::
+	.string "{STR_VAR_1} here!\p"
+	.string "Now this is a strange one.\p"
+	.string "{STR_VAR_2} aren't even native\n"
+	.string "to HOENN, but a whole swarm of\l"
+	.string "them turned up at {STR_VAR_3}!\p"
+	.string "A collector like you should\n"
+	.string "hurry over there!$"
+
+@ --- Time of day ---
+MatchCall_Time_LateNight1::
+	.string "This is {STR_VAR_1}…\p"
+	.string "Do you know what time it is?\n"
+	.string "Your POKéMON must be exhausted.\p"
+	.string "Find a POKéMON CENTER and get\n"
+	.string "some rest, would you?$"
+
+MatchCall_Time_LateNight2::
+	.string "{STR_VAR_1} here… yaaawn…\p"
+	.string "Sorry, I saw your light was on.\p"
+	.string "Don't stay up all night\n"
+	.string "training. The wild POKéMON will\l"
+	.string "still be there tomorrow!$"
+
+MatchCall_Time_EarlyMorning1::
+	.string "It's {STR_VAR_1}!\p"
+	.string "Up with the TAILLOW, I see!\p"
+	.string "The early TRAINER catches the\n"
+	.string "rare POKéMON, they say.\l"
+	.string "Have a great morning!$"
+
+MatchCall_Time_EarlyMorning2::
+	.string "{STR_VAR_1} here!\p"
+	.string "Morning! Did you manage to get\n"
+	.string "any sleep at all?\p"
+	.string "A rested TRAINER makes better\n"
+	.string "calls in battle. Take it easy\l"
+	.string "out there today!$"
+
+@ --- Leisure calls: MOM ---
+MatchCall_Leisure_Mom1::
+	.string "{PLAYER}? It's MOM.\p"
+	.string "I'm not checking up on you!\n"
+	.string "Well… maybe a little.\p"
+	.string "Are you eating properly out\n"
+	.string "there? Your father never did.$"
+
+MatchCall_Leisure_Mom2::
+	.string "Hello, dear, it's MOM!\p"
+	.string "The house is so quiet without\n"
+	.string "you thundering down the stairs.\p"
+	.string "Come home and visit when you\n"
+	.string "can. I'll heal your POKéMON!$"
+
+@ --- Leisure calls: PROF. BIRCH ---
+MatchCall_Leisure_Birch1::
+	.string "PROF. BIRCH here!\p"
+	.string "Ah, {PLAYER}! Am I interrupting?\p"
+	.string "I'm in tall grass again, if\n"
+	.string "you can believe it.\p"
+	.string "No POOCHYENA this time, though.\n"
+	.string "Probably.$"
+
+MatchCall_Leisure_Birch2::
+	.string "It's PROF. BIRCH!\p"
+	.string "Your POKéDEX data has been\n"
+	.string "wonderful for my research.\p"
+	.string "Keep filling it in! Every entry\n"
+	.string "tells us something new about\l"
+	.string "this world.$"
+
+@ --- Leisure calls: rival (BRENDAN / MAY) ---
+MatchCall_Leisure_Rival1::
+	.string "{STR_VAR_1} here!\p"
+	.string "Just checking in! No battle,\n"
+	.string "no challenge, I promise.\p"
+	.string "…Unless you WANT one?\n"
+	.string "Ha! Kidding. Mostly.$"
+
+MatchCall_Leisure_Rival2::
+	.string "Hey, it's {STR_VAR_1}!\p"
+	.string "Dad's got me running errands\n"
+	.string "all over HOENN today.\p"
+	.string "Where are you, anyway? Maybe\n"
+	.string "we'll bump into each other!$"
+
+@ --- Leisure calls: STEVEN ---
+MatchCall_Leisure_Steven1::
+	.string "STEVEN here.\p"
+	.string "I'm somewhere underground, as\n"
+	.string "usual. The stone here is…\l"
+	.string "remarkable.\p"
+	.string "I hope your journey is treating\n"
+	.string "you well, {PLAYER}.$"
+
+MatchCall_Leisure_Steven2::
+	.string "This is STEVEN.\p"
+	.string "I found a rather beautiful\n"
+	.string "shard today. It made me think\l"
+	.string "of our first meeting.\p"
+	.string "Rare things find rare people,\n"
+	.string "I suppose.$"
+
+@ --- Postgame heart to hearts ---
+MatchCall_Heart_Rival::
+	.string "{STR_VAR_1} here.\p"
+	.string "Hey… can I say something silly?\p"
+	.string "I kind of miss when we'd run\n"
+	.string "into each other all the time.\p"
+	.string "Everything's so quiet now that\n"
+	.string "you're the CHAMPION.\p"
+	.string "Don't be a stranger, okay?$"
+
+MatchCall_Heart_Steven::
+	.string "STEVEN here.\p"
+	.string "I was thinking about the day we\n"
+	.string "met in GRANITE CAVE.\p"
+	.string "You were just starting out.\n"
+	.string "Look at how far you've come.\p"
+	.string "HOENN is lucky to have you,\n"
+	.string "{PLAYER}.$"
+
+MatchCall_Heart_Wallace::
+	.string "WALLACE speaking.\p"
+	.string "I find myself replaying our\n"
+	.string "battle at the LEAGUE.\p"
+	.string "That {STR_VAR_2} of yours…\n"
+	.string "such presence. Such grace.\p"
+	.string "{STR_VAR_3} times you've stood\n"
+	.string "in that HALL now.\p"
+	.string "The record remembers, and so\n"
+	.string "do I.$"
+
+@ --- Battle Frontier brain, keyed to a real win streak ---
+MatchCall_Frontier_Brain::
+	.string "{STR_VAR_1} here.\p"
+	.string "Your name keeps coming up in\n"
+	.string "my records, challenger.\p"
+	.string "A streak of {STR_VAR_2}.\n"
+	.string "Impressive… but I've seen\l"
+	.string "streaks end at the worst time.\p"
+	.string "Come test it against me.$"
+
+@ --- Congratulations on a rare capture (record mix / party data) ---
+MatchCall_RareCatch_Legendary::
+	.string "This is {STR_VAR_1}!\p"
+	.string "I just saw it on TV!\p"
+	.string "They said {STR_VAR_2} was\n"
+	.string "caught, and they showed the\l"
+	.string "TRAINER'S name: {STR_VAR_3}!\p"
+	.string "A LEGENDARY POKéMON! What a\n"
+	.string "thing to witness!$"
+
+MatchCall_RareCatch_Shiny::
+	.string "{STR_VAR_1} here!\p"
+	.string "Is it true?! The TV said\n"
+	.string "someone found a {STR_VAR_2}\l"
+	.string "with the strangest coloring!\p"
+	.string "A shiny POKéMON! Some people\n"
+	.string "have all the luck!\p"
+	.string "Take good care of it!$"
+
+@ --- The mysterious call (postgame, after Veritas is defeated) ---
+MatchCall_Veritas::
+	.string "………………\p"
+	.string "………………\p"
+	.string "…Thank you once again.$"

@@ -1565,8 +1565,8 @@
 #define FLAG_DAILY_BIRTHDAY_MATCH_CALL              (DAILY_FLAGS_START + 0x0)  // First PokeNav call on the player's birthday is a birthday wish; daily flags auto-clear at midnight (was FLAG_UNUSED_0x920)
 #define FLAG_DAILY_CONTEST_LOBBY_RECEIVED_BERRY     (DAILY_FLAGS_START + 0x1)
 #define FLAG_DAILY_SECRET_BASE                      (DAILY_FLAGS_START + 0x2)
-#define FLAG_UNUSED_0x923                           (DAILY_FLAGS_START + 0x3)  // Unused Flag
-#define FLAG_UNUSED_0x924                           (DAILY_FLAGS_START + 0x4)  // Unused Flag
+#define FLAG_DAILY_VERITAS_MATCH_CALL               (DAILY_FLAGS_START + 0x3)  // Veritas' mysterious PokeNav call fires at most once a day (was FLAG_UNUSED_0x923)
+#define FLAG_DAILY_RARE_CATCH_MATCH_CALL            (DAILY_FLAGS_START + 0x4)  // "I saw your rare catch on TV!" call fires at most once a day (was FLAG_UNUSED_0x924)
 #define FLAG_UNUSED_0x925                           (DAILY_FLAGS_START + 0x5)  // Unused Flag
 #define FLAG_UNUSED_0x926                           (DAILY_FLAGS_START + 0x6)  // Unused Flag
 #define FLAG_UNUSED_0x927                           (DAILY_FLAGS_START + 0x7)  // Unused Flag
