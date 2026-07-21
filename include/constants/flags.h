@@ -1305,7 +1305,7 @@
 #define FLAG_RECEIVED_GIFT_DAY_RARE_CANDY                          0x4E8 // Mom's one-time Gift Day (25/12) Rare Candy (was FLAG_UNUSED_0x4E8)
 #define FLAG_RECEIVED_GIFT_DAY_NEVERMELTICE                        0x4E9 // Prof Birch's one-time Gift Day NeverMeltIce (was FLAG_UNUSED_0x4E9)
 #define FLAG_RECEIVED_GIFT_DAY_DELIBIRD                            0x4EA // Rival's one-time Gift Day shiny -> shiny Delibird trade (was FLAG_UNUSED_0x4EA)
-#define FLAG_UNUSED_0x4EB                                           0x4EB // Unused Flag
+#define FLAG_BERRY_STEP_BASELINE_SET                               0x4EB // Latch: dead-clock berry growth has captured its step baseline (was FLAG_UNUSED_0x4EB)
 #define FLAG_UNUSED_0x4EC                                           0x4EC // Unused Flag
 #define FLAG_UNUSED_0x4ED                                           0x4ED // Unused Flag
 #define FLAG_UNUSED_0x4EE                                           0x4EE // Unused Flag

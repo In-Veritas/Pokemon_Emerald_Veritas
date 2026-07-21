@@ -529,6 +529,10 @@ Call *rhythm* is untouched (same every-10th-step check, same 10-minute gate — 
 
 Tuned to average **about 2 calls per hour** of walking. The 10-minute rhythm caps attempts at six per hour, so the per-attempt roll was raised to 50% (75% with a lead Lightning Rod) to actually hit that.
 
+#### Berries Grow Even With a Dead Clock
+
+Many cartridges — especially bootlegs — have a dead or non-ticking RTC battery, which freezes the in-game clock. Vanilla, that means **planted berries never grow at all**. Now, when the game detects the clock isn't advancing, berry growth switches to counting **your steps** instead of the clock: roughly **12,000 steps per growth stage** for a typical berry (rarer, slower berries take proportionally longer, just as they do on the clock). Plant, walk, come back — they'll have grown. On any cartridge with a working battery nothing changes; the clock still runs berries as normal. See `docs/DEAD_CLOCK_COMPENSATION.md`.
+
 #### Someone Is Always Calling
 
 Registered trainers no longer only ever talk about rematches. They now also share **gameplay tips** — one for **every ability with an overworld effect**: Flame Body and Magma Armor halving egg cycles from any party slot, Pickup, Synchronize natures, Cute Charm genders, Magnet Pull and Static type bias, Compound Eyes held items, Suction Cups fishing, Keen Eye / Intimidate and Hustle / Vital Spirit / Pressure level bias, the encounter-rate abilities, Swarm's ambient cries, and Hyper Cutter's wider Cut. Plus **rumours of a very strong trainer out on Southern Island**, and, once Rayquaza has been dealt with, a sighting of **a woman riding a dragon Pokémon flying out to sea**.
