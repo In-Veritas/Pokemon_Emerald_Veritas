@@ -1699,7 +1699,11 @@ static void ExecuteMatchCall(u8 taskId)
     if (sMatchCallTaskFuncs[tState](taskId))
     {
         tState++;
-        data[1] = 0; // Never read
+        // Vanilla called this "never read". It IS read now: Veritas' call
+        // uses data[1] as tCryState during MatchCall_PrintMessage, and relies
+        // on this line to zero it on the transition INTO that state. Only
+        // runs on a state change, so it can't clobber the cry state mid-run.
+        data[1] = 0;
         if ((u16)tState > 7)
             DestroyTask(taskId);
     }
@@ -2126,29 +2130,39 @@ static bool32 ShouldOfferWeatherInstituteCall(void)
     return FALSE;
 }
 
-// The outfit hint stops once every Fashionista outfit has been unlocked.
-// The flags are contiguous from FLAG_STYLE_UNLOCKED_BRAZIL.
-// NOTE: FLAG_SYS_NO_COLLISION shares a value with the last one
-// (FLAG_STYLE_UNLOCKED_TREECKO, 0x2B5) -- see flags.h. In a debug session
-// with no-collision on, this reads one outfit as already unlocked. Harmless
-// here (it can only end the hint marginally early) but it is a real clash.
+// The outfit unlock flags are contiguous from FLAG_STYLE_UNLOCKED_BRAZIL.
 // PLAYER_STYLE_COUNT lives in src/data/player_styles.h, which isn't meant to
 // be included from here, so the count comes from the flag range instead.
 #define NUM_OUTFIT_UNLOCK_FLAGS (FLAG_STYLE_UNLOCKED_TREECKO - FLAG_STYLE_UNLOCKED_BRAZIL + 1)
 
+// This is a DISCOVERY hint: it tells the player the Fashionistas exist, and
+// stops the moment they unlock their first outfit. It deliberately does NOT
+// wait for all 27 -- STYLE_DARK only unlocks from a link-battle loss (a solo
+// player can never get one) and many others need specific legendaries shown,
+// so "all unlocked" is effectively unreachable and the hint would nag
+// forever. See src/player_styles.c IsPassiveConditionMet / GetStyleUnlockFlag.
+//
+// NOTE: FLAG_SYS_NO_COLLISION shares a value with FLAG_STYLE_UNLOCKED_TREECKO
+// (0x2B5, see flags.h). With debug no-collision on, TREECKO reads as unlocked,
+// so this hint would stop early. Harmless in a retail build; a genuine flag
+// clash worth fixing separately.
 static bool32 ShouldOfferFashionistaCall(void)
 {
     u32 i;
 
     for (i = 0; i < NUM_OUTFIT_UNLOCK_FLAGS; i++)
     {
-        if (!FlagGet(FLAG_STYLE_UNLOCKED_BRAZIL + i))
-            return TRUE;
+        if (FlagGet(FLAG_STYLE_UNLOCKED_BRAZIL + i))
+            return FALSE;
     }
 
-    return FALSE;
+    return TRUE;
 }
 
+// MUST scan the same sources as TryPopulateMixedTrainerForRival (occupied
+// secret bases, then active TVSHOW_TODAYS_RIVAL_TRAINER shows). If this
+// returns TRUE, that populator must be able to write gStringVar2, or the
+// rival's "I met someone" call shows a stale name.
 static bool32 HasAnyRecordMixedTrainer(void)
 {
     u8 i;
@@ -2704,6 +2718,12 @@ static const struct MatchCallText *SelectCasualMatchCallText(int matchCallId, u8
     // hold whichever candidate was tested LAST. Each case below re-populates
     // for the category that actually won. A re-call can't fail: the probe
     // already proved the data is there.
+    //
+    // INVARIANT: if you add a category whose text uses {STR_VAR_2} or
+    // {STR_VAR_3}, its case here MUST re-write those vars, or it will display
+    // whatever the last-probed category left behind. Categories that use only
+    // {STR_VAR_1} (tips, lore, rumours) need no re-population -- BuildMatchCallString
+    // fills var1 for them via STRS_NORMAL_MSG.
     switch (candidates[Random() % count])
     {
     case CASUAL_ABILITY_TIP:

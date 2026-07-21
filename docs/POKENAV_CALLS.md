@@ -153,7 +153,7 @@ never nags about something already done.
 |---|---|---|---|---|
 | Weather Institute research | `MatchCall_Quest_WeatherResearch` | **Brendan / May** | `FLAG_SYS_GAME_CLEAR` and a beast unresolved | all of Suicune/Raikou/Entei caught or beaten |
 | Museum boat ticket | `MatchCall_Quest_MuseumTicket` | registered trainer | `FLAG_IS_CHAMPION` | `FLAG_RECEIVED_MYSTIC_TICKET` |
-| Fashionista outfits | `MatchCall_Quest_Fashionista` | registered trainer | any outfit still locked | all 27 `FLAG_STYLE_UNLOCKED_*` set |
+| Fashionista (discovery) | `MatchCall_Quest_Fashionista` | registered trainer | **no** outfit unlocked yet | the player's first outfit unlock |
 | Suicune / Raikou / Entei | `MatchCall_Legend_Suicune` etc. | registered trainer | `FLAG_SYS_GAME_CLEAR` | that beast caught or beaten |
 | Legendary birds | `MatchCall_Legend_Birds` | registered trainer | `FLAG_BEAT_ALL_3RD_REMATCHES` | **all three** resolved |
 | Mewtwo | `MatchCall_Legend_Mewtwo` | registered trainer | `FLAG_COLLECTED_ALL_SILVER_SYMBOLS` | caught or beaten |
@@ -240,6 +240,18 @@ written from general Gen 3 knowledge:
 No tip mentions Stealth Rock or Toxic Spikes — **neither move exists in this
 repo** (`MOVE_STEALTH_ROCK` / `MOVE_TOXIC_SPIKES` are undefined), so Spikes is
 the only entry hazard and the Rapid Spin tip says exactly that.
+
+#### Why the Fashionista hint stops at the FIRST outfit, not all 27
+
+It is a **discovery** hint -- it exists to tell the player the Fashionista NPCs
+are there, and stops as soon as they unlock any outfit. It deliberately does
+not wait for all 27: `STYLE_DARK` only unlocks from a link-battle loss
+(`GetGameStat(GAME_STAT_LINK_BATTLE_LOSSES) > 0`, `player_styles.c:300`), which
+a solo player can never trigger, and several others need specific legendaries
+shown. "All 27 unlocked" is therefore effectively unreachable, so a gate on it
+would nag forever. The text names no mechanic -- just that a Fashionista makes
+outfits -- so it stays accurate for all four NPCs (two male, two female; the
+line is gender-neutral).
 
 #### A real flag clash found while doing this
 

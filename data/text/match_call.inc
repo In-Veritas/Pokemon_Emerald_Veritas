@@ -3543,11 +3543,10 @@ MatchCall_Quest_Fashionista::
 	.string "{STR_VAR_1} here!\p"
 	.string "You have to see what I'm wearing!\p"
 	.string "There's a FASHIONISTA at the\n"
-	.string "{STR_VAR_2} POKéMON CENTER, and\l"
-	.string "she made me the loveliest outfit.\p"
-	.string "Show one of them the right\n"
-	.string "POKéMON and they'll dress you\l"
-	.string "up too. Go on, treat yourself!$"
+	.string "{STR_VAR_2} POKéMON CENTER who\l"
+	.string "made me the loveliest outfit.\p"
+	.string "They can do the same for you.\n"
+	.string "Go on, treat yourself!$"
 
 @ ===================================================================
 @ Norman. Family B caller, so his name is baked in; {STR_VAR_1} is
