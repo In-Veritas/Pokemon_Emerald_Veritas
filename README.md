@@ -517,6 +517,15 @@ On a themed or Mew day both wanderers are always out (the daily rotation is set 
 * Registered birthdays: NIJI 14/09 · AILES 14/08 · GABS 16/10 · PURPLE 14/05 · ALHYA 02/10 · LUNA 27/07 · MAPU 22/08 · ANIA 27/07 · LUCY 14/03 — new names are a one-line table entry
 * Not on the list? A member of the **Lilycove Pokémon Trainer Fan Club** keeps a birthday chart and will record yours: a single-number spinner picks the month (1-12), then the day (with proper 28/30/31-day months); his record-mixing fan dialogue stays intact afterwards. Already registered? **Talk to him twice** to change it
 * Carrying a **friend's traded Pokémon on their birthday**? The nurse recognizes its original Trainer and reminds you to wish them a happy birthday (a gentle nudge — no music or perks)
+* On your birthday, the **first PokéNav call of the day is a birthday wish** from one of your registered trainers — it comes quickly (the usual call-chance rolls are bypassed) and happens once per birthday
+
+#### PokéNav Calls Actually Happen Now
+
+Vanilla Emerald's trainer calls were nearly extinct by design: one roll every **10 real-time minutes**, a 30% pass chance, and — the real killer — before your 5th badge a call only went through if the randomly-picked trainer was rematch-ready **on the exact route you were standing on**. Most players never saw a casual call at all. Veritas fixes the drought:
+
+* Call opportunities come every **3 minutes** instead of 10 (still every 10th step, still 30% — and the classic easter egg stands: a lead Pokémon with **Lightning Rod** doubles the odds)
+* Picks that would have been silently dropped now have a 50% chance to become **casual calls**: the trainer's idle chatter, their Battle Frontier bragging — or one of ten **gameplay tips** about Veritas features (the room clock calendar, Lv50 cable modes, minigame prizes, the tournament prize desk, and more)
+* Rematch invitations are untouched — they still work exactly like vanilla
 
 <details>
 <summary><b>🎉 Secret calendar events (spoilers — dates hidden on purpose!)</b></summary>

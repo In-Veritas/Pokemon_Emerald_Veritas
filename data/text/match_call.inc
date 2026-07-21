@@ -2952,3 +2952,99 @@ MatchCall_Text_MrStone11::
 	.string "I didn't recognize you right off!\p"
 	.string "Hm! You must come visit us at DEVON\n"
 	.string "sometime!$"
+
+@ Veritas: birthday wishes — the first PokeNav call on the player's
+@ birthday becomes one of these (see SelectMatchCallTrainer).
+MatchCall_BirthdayText1::
+	.string "This is {STR_VAR_1}!\p"
+	.string "I heard through the grapevine\n"
+	.string "that today is your birthday!\p"
+	.string "Happy birthday, {PLAYER}!\n"
+	.string "Have a wonderful day out there!$"
+
+MatchCall_BirthdayText2::
+	.string "{STR_VAR_1} here!\p"
+	.string "Happy birthday, {PLAYER}!\p"
+	.string "Make it a day to remember…\n"
+	.string "and spoil your POKéMON a little!$"
+
+MatchCall_BirthdayText3::
+	.string "It's {STR_VAR_1}!\p"
+	.string "A little BIRD POKéMON told me\n"
+	.string "it's your birthday, {PLAYER}!\p"
+	.string "I hope it's a great one!\n"
+	.string "Don't battle TOO hard today!$"
+
+@ Veritas: random tips — casual calls sometimes share a hint about the
+@ game's features instead of the usual chatter.
+MatchCall_TipText1::
+	.string "This is {STR_VAR_1}!\p"
+	.string "Did you know? A POKéMON with the\n"
+	.string "LIGHTNING ROD ability up front\p"
+	.string "seems to attract more POKéNAV\n"
+	.string "calls! Strange, but true!$"
+
+MatchCall_TipText2::
+	.string "{STR_VAR_1} here!\p"
+	.string "Have you set the calendar on the\n"
+	.string "clock in your room?\p"
+	.string "They say special things happen\n"
+	.string "on special dates…$"
+
+MatchCall_TipText3::
+	.string "It's {STR_VAR_1}!\p"
+	.string "The CABLE CLUB now runs Lv50\n"
+	.string "battle modes!\p"
+	.string "You can battle friends fairly no\n"
+	.string "matter how far along you are!$"
+
+MatchCall_TipText4::
+	.string "This is {STR_VAR_1}!\p"
+	.string "Before a link battle, you can\n"
+	.string "pick the music AND the scenery!\p"
+	.string "Every player picks, and one\n"
+	.string "choice wins. Pretty fancy!$"
+
+MatchCall_TipText5::
+	.string "{STR_VAR_1} here!\p"
+	.string "The wireless minigames pay out\n"
+	.string "real prizes now!\p"
+	.string "I heard someone scored a MASTER\n"
+	.string "BALL playing POKéMON JUMP!$"
+
+MatchCall_TipText6::
+	.string "It's {STR_VAR_1}!\p"
+	.string "Won a tournament? The service\n"
+	.string "desk lady on any POKéMON CENTER\l"
+	.string "2F redeems prize codes!\p"
+	.string "Fair play only… codes are locked\n"
+	.string "to the winner's TRAINER CARD!$"
+
+MatchCall_TipText7::
+	.string "This is {STR_VAR_1}!\p"
+	.string "A fellow at the LILYCOVE fan\n"
+	.string "club keeps a birthday chart!\p"
+	.string "Tell him yours and see what\n"
+	.string "happens on the big day!$"
+
+MatchCall_TipText8::
+	.string "{STR_VAR_1} here!\p"
+	.string "If a POKéMON has had the\n"
+	.string "POKéRUS, its training gains\l"
+	.string "double for good!\p"
+	.string "Stack a MACHO BRACE on top for\n"
+	.string "monster gains!$"
+
+MatchCall_TipText9::
+	.string "It's {STR_VAR_1}!\p"
+	.string "POKéMON received in trades grow\n"
+	.string "faster than usual!\p"
+	.string "Trading with friends really\n"
+	.string "pays off!$"
+
+MatchCall_TipText10::
+	.string "This is {STR_VAR_1}!\p"
+	.string "Secret base trainers can battle\n"
+	.string "in singles OR doubles now!\p"
+	.string "Mix records with friends and go\n"
+	.string "visit their bases!$"

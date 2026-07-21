@@ -7,6 +7,7 @@
 #include "event_data.h"
 #include "event_object_movement.h"
 #include "field_player_avatar.h"
+#include "field_specials.h"
 #include "main.h"
 #include "match_call.h"
 #include "menu.h"
@@ -90,12 +91,22 @@ enum {
     REQ_TOPIC_DIFF_ROUTE,
 };
 
+// Veritas: a call selected at trigger time can be forced into a special
+// message instead of the vanilla rematch/chatter selection.
+enum
+{
+    FORCED_CALL_NONE,     // vanilla behavior
+    FORCED_CALL_BIRTHDAY, // first call on the player's birthday: a birthday wish
+    FORCED_CALL_CASUAL,   // fallback call: random tip or idle chatter
+};
+
 struct MatchCallState
 {
     u32 minutes;
     u16 trainerId;
     u8 stepCounter;
     bool8 triggeredFromScript;
+    u8 forcedCallType;
 };
 
 struct MatchCallTrainerTextInfo
@@ -1012,6 +1023,29 @@ static const struct MatchCallText *const sMatchCallBattleRequestTopics[] =
     [REQ_TOPIC_DIFF_ROUTE - 1] = sMatchCallDifferentRouteBattleRequestTexts,
 };
 
+// Veritas: birthday wishes and gameplay tips. Both use only the caller's
+// name ({STR_VAR_1}); {PLAYER} expands via StringExpandPlaceholders.
+static const struct MatchCallText sMatchCallBirthdayTexts[] =
+{
+    { .text = MatchCall_BirthdayText1, .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_BirthdayText2, .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_BirthdayText3, .stringVarFuncIds = STRS_NORMAL_MSG },
+};
+
+static const struct MatchCallText sMatchCallTipTexts[] =
+{
+    { .text = MatchCall_TipText1,  .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_TipText2,  .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_TipText3,  .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_TipText4,  .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_TipText5,  .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_TipText6,  .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_TipText7,  .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_TipText8,  .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_TipText9,  .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_TipText10, .stringVarFuncIds = STRS_NORMAL_MSG },
+};
+
 static const struct MatchCallText *const sMatchCallGeneralTopics[] =
 {
     [GEN_TOPIC_PERSONAL - 1]      = sMatchCallPersonalizedTexts,
@@ -1029,7 +1063,7 @@ extern const u8 gBirchDexRatingText_OnANationwideBasis[];
 void InitMatchCallCounters(void)
 {
     RtcCalcLocalTime();
-    sMatchCallState.minutes = GetCurrentTotalMinutes(&gLocalTime) + 10;
+    sMatchCallState.minutes = GetCurrentTotalMinutes(&gLocalTime) + 3;
     sMatchCallState.stepCounter = 0;
 }
 
@@ -1043,7 +1077,9 @@ static bool32 UpdateMatchCallMinutesCounter(void)
     int curMinutes;
     RtcCalcLocalTime();
     curMinutes = GetCurrentTotalMinutes(&gLocalTime);
-    if (sMatchCallState.minutes > curMinutes || curMinutes - sMatchCallState.minutes > 9)
+    // Veritas: vanilla only allowed one call roll every 10 real-time
+    // minutes, a huge part of why calls felt nonexistent. Now every 3.
+    if (sMatchCallState.minutes > curMinutes || curMinutes - sMatchCallState.minutes > 2)
     {
         sMatchCallState.minutes = curMinutes;
         return TRUE;
@@ -1055,6 +1091,11 @@ static bool32 UpdateMatchCallMinutesCounter(void)
 static bool32 CheckMatchCallChance(void)
 {
     int callChance = 1;
+
+    // Veritas: never let the birthday call miss its roll.
+    if (IsPlayerBirthdayToday() && !FlagGet(FLAG_DAILY_BIRTHDAY_MATCH_CALL))
+        return TRUE;
+
     if (!GetMonData(&gPlayerParty[0], MON_DATA_SANITY_IS_EGG) && GetMonAbility(&gPlayerParty[0]) == ABILITY_LIGHTNING_ROD)
         callChance = 2;
 
@@ -1099,6 +1140,8 @@ static bool32 SelectMatchCallTrainer(void)
 {
     u32 matchCallId;
     u32 numRegistered = GetNumRegisteredNPCs();
+
+    sMatchCallState.forcedCallType = FORCED_CALL_NONE;
     if (numRegistered == 0)
         return FALSE;
 
@@ -1107,12 +1150,33 @@ static bool32 SelectMatchCallTrainer(void)
     if (sMatchCallState.trainerId == REMATCH_TABLE_ENTRIES)
         return FALSE;
 
-    matchCallId = GetTrainerMatchCallId(sMatchCallState.trainerId);
-    if (!((TrainerIsEligibleForRematch(matchCallId) && GetRematchTrainerLocation(matchCallId) == gMapHeader.regionMapSectionId)
-    || ShouldTrainerRequestBattle(matchCallId)))
-        return FALSE;
+    // Veritas: on the player's birthday, the first call of the day is a
+    // birthday wish from whichever registered trainer got picked. It skips
+    // the rematch-eligibility gate entirely (the daily flag auto-clears at
+    // midnight, so it fires once per birthday).
+    if (IsPlayerBirthdayToday() && !FlagGet(FLAG_DAILY_BIRTHDAY_MATCH_CALL))
+    {
+        sMatchCallState.forcedCallType = FORCED_CALL_BIRTHDAY;
+        return TRUE;
+    }
 
-    return TRUE;
+    matchCallId = GetTrainerMatchCallId(sMatchCallState.trainerId);
+    if ((TrainerIsEligibleForRematch(matchCallId) && GetRematchTrainerLocation(matchCallId) == gMapHeader.regionMapSectionId)
+     || ShouldTrainerRequestBattle(matchCallId))
+        return TRUE;
+
+    // Veritas: vanilla dropped the call entirely here, which is why players
+    // barely got any -- before 5 badges ShouldTrainerRequestBattle is always
+    // FALSE, so a call required a rematch-ready trainer on the CURRENT map.
+    // Instead, half of these failed picks become casual calls: idle chatter
+    // or a random gameplay tip (see SelectMatchCallMessage).
+    if (Random() % 2)
+    {
+        sMatchCallState.forcedCallType = FORCED_CALL_CASUAL;
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 static u32 GetNumRegisteredNPCs(void)
@@ -1148,10 +1212,14 @@ static u32 GetActiveMatchCallTrainerId(u32 activeMatchCallId)
     From the function calls below, a call can only be triggered...
     - If the player has match call
     - Every 10th step
-    - Every 10 minutes
-    - 1/3 of the time (or 2/3 of the time, if the lead party Pokémon has Lightning Rod)
+    - Every 3 minutes (Veritas; vanilla was every 10)
+    - 1/3 of the time (2/3 with a lead Lightning Rod Pokémon; always, for
+      the once-per-day birthday call)
     - If in a valid outdoor map (not Safari Zone, not underwater, not Mt Chimney with Team Magma, not Sootopolis with legendaries)
-    - If an eligible trainer to call the player is selected
+    - If an eligible trainer is selected. Veritas: on the player's birthday
+      the pick always succeeds (birthday wish); otherwise half of the picks
+      that fail vanilla's rematch gate become casual tip/chatter calls
+      instead of silently dropping.
 */
 bool32 TryStartMatchCall(void)
 {
@@ -1510,6 +1578,31 @@ bool32 SelectMatchCallMessage(int trainerId, u8 *str)
 
     matchCallId = GetTrainerMatchCallId(trainerId);
     sBattleFrontierStreakInfo.facilityId = 0;
+
+    // Veritas: forced call types decided at trigger time (see
+    // SelectMatchCallTrainer). Birthday wish: once per birthday, latched by
+    // a daily flag that auto-clears at midnight. Casual: a random gameplay
+    // tip half the time, otherwise the trainer's normal idle chatter.
+    if (sMatchCallState.forcedCallType == FORCED_CALL_BIRTHDAY)
+    {
+        sMatchCallState.forcedCallType = FORCED_CALL_NONE;
+        FlagSet(FLAG_DAILY_BIRTHDAY_MATCH_CALL);
+        matchCallText = &sMatchCallBirthdayTexts[Random() % ARRAY_COUNT(sMatchCallBirthdayTexts)];
+        BuildMatchCallString(matchCallId, matchCallText, str);
+        return FALSE;
+    }
+    if (sMatchCallState.forcedCallType == FORCED_CALL_CASUAL)
+    {
+        sMatchCallState.forcedCallType = FORCED_CALL_NONE;
+        if (Random() % 2)
+            matchCallText = &sMatchCallTipTexts[Random() % ARRAY_COUNT(sMatchCallTipTexts)];
+        else if (Random() % 3)
+            matchCallText = GetBattleMatchCallText(matchCallId, str);
+        else
+            matchCallText = GetGeneralMatchCallText(matchCallId, str);
+        BuildMatchCallString(matchCallId, matchCallText, str);
+        return FALSE;
+    }
 
     // If the player is on the same route as the trainer
     // and they can be rematched, they will always request a battle
