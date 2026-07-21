@@ -3750,7 +3750,7 @@ static void DebugAction_Give_BattleShadow(u8 taskId)
 static void DebugAction_Give_WarpShadow(u8 taskId)
 {
     /* Set flags so the post-Veritas rock interaction triggers Shadow Lugia */
-    FlagSet(FLAG_DEFEATED_EXCLSIOR);
+    FlagSet(FLAG_DEFEATED_VERITAS);
     FlagSet(FLAG_ENABLE_SHIP_SOUTHERN_ISLAND);
     FlagClear(FLAG_DEFEATED_BOSS_LUGIA);
     FlagClear(FLAG_CAUGHT_BOSS_LUGIA);

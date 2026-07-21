@@ -1848,7 +1848,7 @@ static bool32 PlayerHasAnyFrontierStreak(void)
 // falls through to the next on a miss, rarest first.
 static bool32 TrySelectSpecialCall(void)
 {
-    if (FlagGet(FLAG_DEFEATED_EXCLSIOR)
+    if (FlagGet(FLAG_DEFEATED_VERITAS)
      && !FlagGet(FLAG_DAILY_VERITAS_MATCH_CALL)
      && (Random() % 12) == 0)
     {

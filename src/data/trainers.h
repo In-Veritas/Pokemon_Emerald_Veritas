@@ -10645,7 +10645,7 @@ const struct Trainer gTrainers[] = {
         .party = TRAINER_MON(sParty_Phoebe2),
     },
 
-    [TRAINER_EXCLSIOR] = //Actually calls trainer Veritas now
+    [TRAINER_VERITAS] = // Southern Island superboss (was TRAINER_EXCLSIOR)
     {
         .trainerClass = TRAINER_CLASS_RS_PROTAG,
         .encounterMusic_gender = TRAINER_ENCOUNTER_MUSIC_MALE,
@@ -10654,7 +10654,7 @@ const struct Trainer gTrainers[] = {
         .items = {ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE},
         .doubleBattle = TRUE,
         .aiFlags = AI_SCRIPT_CHECK_BAD_MOVE | AI_SCRIPT_TRY_TO_FAINT | AI_SCRIPT_CHECK_VIABILITY | AI_SCRIPT_HP_AWARE | AI_SCRIPT_RISKY | AI_SCRIPT_DOUBLE_BATTLE,
-        //.party = TRAINER_MON(sParty_Exclsior),
+        //.party = TRAINER_MON(sParty_Veritas),
         .party = TRAINER_MON(sParty_Veritas),
     },
 

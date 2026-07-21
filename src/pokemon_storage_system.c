@@ -5123,7 +5123,7 @@ static void AddSpecialCategoriesMenu(void)
     // Other: Always available
     SetMenuText(MENU_OTHER);
     // Secret: Unlocked after defeating Pokemon Trainer Veritas
-    if (FlagGet(FLAG_DEFEATED_EXCLSIOR))
+    if (FlagGet(FLAG_DEFEATED_VERITAS))
         SetMenuText(MENU_SECRET);
 #endif
     AddMenu();

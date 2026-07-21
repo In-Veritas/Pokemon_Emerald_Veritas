@@ -722,8 +722,8 @@ u8 BattleSetup_GetTerrainId(void)
     u16 tileBehavior;
     s16 x, y;
 
-    // Special terrain for Veritas/Exclsior battle
-    if (gTrainerBattleOpponent_A == TRAINER_EXCLSIOR)
+    // Special terrain for the Veritas battle
+    if (gTrainerBattleOpponent_A == TRAINER_VERITAS)
         return BATTLE_TERRAIN_UNDERWATER;
 
     PlayerGetDestCoords(&x, &y);

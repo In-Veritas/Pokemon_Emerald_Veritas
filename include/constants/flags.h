@@ -90,6 +90,9 @@
 #define FLAG_CAUGHT_JIRACHI                                 0x4C // Check for Jirachi Caught, for Rematch
 #define FLAG_DEFEATED_JIRACHI                               0x4D // Check for Jirachi Defeated, for Rematch
 #define FLAG_ENABLE_SHORT_POKECENTER                        0x4E // Flag for enabling short Pokemon Center dialog
+// RESERVED for Exclsior (the person -- author of Emerald Legacy Enhanced).
+// Distinct from Veritas the Southern Island superboss; his Champion's Room
+// cameo is written but currently disabled. Do not fold this into VERITAS.
 #define FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR                    0x4F
 
 // Scripts
@@ -696,7 +699,7 @@
 #define FLAG_CAUGHT_OVERWORLD_SNORLAX                              0x290 // Flag for catching overworld Snorlax
 #define FLAG_DEFEATED_OVERWORLD_SNORLAX                            0x291 // Flag for if overworld Snorlax was defeated
 #define FLAG_CAUGHT_SUDOWOODO                                      0x292 // Flag for whether overworld Sudowoodo was caught to allow it to be caught again
-#define FLAG_DEFEATED_EXCLSIOR                                     0x293 // Flag for Exclsior Dev Battle
+#define FLAG_DEFEATED_VERITAS                                     0x293 // Southern Island superboss Veritas (renamed from FLAG_DEFEATED_EXCLSIOR)
 #define FLAG_DEFEATED_SHINY_LATIAS_OR_LATIOS                       0x294 // Flag for Shiny Lati Defeated
 #define FLAG_CAUGHT_SHINY_LATIAS_OR_LATIOS                         0x295 // Flag for Shiny Lati Caught
 #define FLAG_PLAYER_STYLE_RS                                       0x296 // Player avatar style: 0 = Emerald (default), 1 = Ruby/Sapphire

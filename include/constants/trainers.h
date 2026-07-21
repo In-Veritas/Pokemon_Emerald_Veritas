@@ -290,7 +290,7 @@
 #define RS_FACILITY_CLASSES_COUNT               0x4D
 
 #define TRAINER_CLASS_PKMN_TRAINER_1 0x0  // Used for Legacy Dev Battles
-#define TRAINER_CLASS_PKMN_TRAINER_2 0x1  // Used for Exclsior Legacy Dev Battle
+#define TRAINER_CLASS_PKMN_TRAINER_2 0x1  // Used for the Legacy Dev Battle (Exclsior)
 #define TRAINER_CLASS_HIKER          0x2
 #define TRAINER_CLASS_TEAM_AQUA      0x3
 #define TRAINER_CLASS_PKMN_BREEDER   0x4

@@ -625,7 +625,7 @@ static bool8 IsLinkMusicUnlocked(u8 musicIndex)
     case LINK_MUSIC_VS_CHAMPION:
         return FlagGet(FLAG_IS_CHAMPION);
     case LINK_MUSIC_VS_VERITAS:
-        return FlagGet(FLAG_DEFEATED_EXCLSIOR);
+        return FlagGet(FLAG_DEFEATED_VERITAS);
     case LINK_MUSIC_VS_LEGENDARY:
         return GetSetPokedexFlag(SpeciesToNationalPokedexNum(SPECIES_GROUDON), FLAG_GET_CAUGHT)
             && GetSetPokedexFlag(SpeciesToNationalPokedexNum(SPECIES_KYOGRE), FLAG_GET_CAUGHT)

@@ -6976,7 +6976,7 @@ u16 GetBattleBGM(void)
             trainerClass = TRAINER_CLASS_EXPERT;
         else
             trainerClass = gTrainers[gTrainerBattleOpponent_A].trainerClass;
-        if (gTrainerBattleOpponent_A == TRAINER_EXCLSIOR || gTrainerBattleOpponent_A == TRAINER_CHAMPION_EXCLSIOR)
+        if (gTrainerBattleOpponent_A == TRAINER_VERITAS || gTrainerBattleOpponent_A == TRAINER_CHAMPION_EXCLSIOR)
             return MUS_C_VS_LEGEND_BEAST;
         // Veritas: Frontier-only — legendary opponent wins over every
         // class-based song below (including brain music). Computed here so

@@ -133,7 +133,7 @@ abilities that do change overworld behaviour.
 | Heart-to-heart — Steven | `MatchCall_Heart_Steven` | **Steven** | `FLAG_IS_CHAMPION` |
 | Champion memory | `MatchCall_Heart_Wallace` | **Wallace** | `GAME_STAT_ENTERED_HOF > 0` |
 | Frontier Brain | `MatchCall_Frontier_Brain` | **Anabel/Tucker/Spenser/Greta/Noland/Lucy/Brandon** | any facility streak > 1 |
-| Mystery call | `MatchCall_Veritas` | **Veritas** | `FLAG_DEFEATED_EXCLSIOR`, `FLAG_DAILY_VERITAS_MATCH_CALL` unset |
+| Mystery call | `MatchCall_Veritas` | **Veritas** | `FLAG_DEFEATED_VERITAS`, `FLAG_DAILY_VERITAS_MATCH_CALL` unset |
 
 ### Rarity rolls (family B, evaluated in this order)
 
@@ -180,8 +180,8 @@ when the call ends) so it cannot affect any other call. It uses task slot
 `data[1]` as `tCryState`, which the match-call task zeroes at start and
 otherwise never reads (`data[1] = 0; // Never read`).
 
-The unlock flag is **`FLAG_DEFEATED_EXCLSIOR`** (`0x293`) — note the trainer
-constant is `TRAINER_EXCLSIOR`, not `TRAINER_VERITAS`; "Veritas" is the in-game
+The unlock flag is **`FLAG_DEFEATED_VERITAS`** (`0x293`) — note the trainer
+constant is `TRAINER_VERITAS`, not `TRAINER_VERITAS`; "Veritas" is the in-game
 name only. This is the same flag `pokemon_storage_system.c` and `script_menu.c`
 already test for his unlocks.
 

@@ -1,5 +1,5 @@
 .set LOCALID_LATI, 2
-.set LOCALID_EXCLSIOR, 3
+.set LOCALID_VERITAS, 3
 .set LOCALID_TYPHLOSION, 4
 .set LOCALID_SHINY_LATI, 5
 SouthernIsland_Interior_MapScripts::
@@ -22,7 +22,7 @@ SouthernIsland_Interior_OnTransition:
 	call_if_eq VAR_ROAMER_POKEMON, 0, SouthernIsland_Interior_EventScript_SetUpLatios
 	call_if_ne VAR_ROAMER_POKEMON, 0, SouthernIsland_Interior_EventScript_SetUpLatias
 	call SouthernIsland_Interior_EventScript_SetUpPlayerGfx
-	goto SouthernIsland_Interior_EventScript_CheckExclsior
+	goto SouthernIsland_Interior_EventScript_CheckVeritas
 	end
 
 SouthernIsland_Interior_EventScript_SetUpLatios::
@@ -41,16 +41,16 @@ SouthernIsland_Interior_EventScript_SetUpPlayerGfx::
 	goto_if_eq VAR_RESULT, FEMALE, SouthernIsland_Interior_EventScript_SetMayGfx
 	end
 
-SouthernIsland_Interior_EventScript_CheckExclsior::
-	goto_if_set FLAG_DEFEATED_EXCLSIOR, SouthernIsland_Interior_EventScript_HideExclsior
-	goto_if_unset FLAG_DEFEATED_METEOR_FALLS_STEVEN, SouthernIsland_Interior_EventScript_HideExclsior
-	goto_if_unset FLAG_CAUGHT_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_HideExclsior
-	goto_if_unset FLAG_DEFEATED_ZINNIA, SouthernIsland_Interior_EventScript_HideExclsior
-	@ All 3 requirements met — show Exclsior
+SouthernIsland_Interior_EventScript_CheckVeritas::
+	goto_if_set FLAG_DEFEATED_VERITAS, SouthernIsland_Interior_EventScript_HideVeritas
+	goto_if_unset FLAG_DEFEATED_METEOR_FALLS_STEVEN, SouthernIsland_Interior_EventScript_HideVeritas
+	goto_if_unset FLAG_CAUGHT_LATIAS_OR_LATIOS, SouthernIsland_Interior_EventScript_HideVeritas
+	goto_if_unset FLAG_DEFEATED_ZINNIA, SouthernIsland_Interior_EventScript_HideVeritas
+	@ All 3 requirements met — show Veritas
 	clearflag FLAG_TEMP_10
 	end
 
-SouthernIsland_Interior_EventScript_HideExclsior::
+SouthernIsland_Interior_EventScript_HideVeritas::
 	setflag FLAG_TEMP_10
 	end
 
@@ -139,37 +139,37 @@ SouthernIsland_Interior_EventScript_SetLatiasBattleVars::
 	seteventmon SPECIES_LATIAS, 50, ITEM_SOUL_DEW
 	return
 
-SouthernIsland_Interior_EventScript_Exclsior::
-	goto_if_set FLAG_DEFEATED_EXCLSIOR, SouthernIsland_Interior_Text_ExclsiorPostBattle
+SouthernIsland_Interior_EventScript_Veritas::
+	goto_if_set FLAG_DEFEATED_VERITAS, SouthernIsland_Interior_Text_VeritasPostBattle
 	faceplayer
 	applymovement LOCALID_TYPHLOSION, SouthernIsland_Interior_Movement_WalkSlowDown
-	msgbox SouthernIsland_Interior_Text_Exclsior_ImCurious, MSGBOX_YESNO
+	msgbox SouthernIsland_Interior_Text_Veritas_ImCurious, MSGBOX_YESNO
 	compare VAR_RESULT, NO
-	goto_if_eq SouthernIsland_Interior_EventScript_Exclsior_NoBattle
+	goto_if_eq SouthernIsland_Interior_EventScript_Veritas_NoBattle
 	@ Music note: this battle uses NO_MUSIC, but GetBattleBGM() hardcodes
 	@ MUS_C_VS_LEGEND_BEAST (the Gen 2 VS Legendary Beast theme) for
-	@ TRAINER_EXCLSIOR, so the fight already plays it — no override needed.
-	trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_NO_MUSIC, TRAINER_EXCLSIOR, 0, SouthernIsland_Interior_Text_ExclsiorIntro, SouthernIsland_Interior_Text_ExclsiorDefeated, SouthernIsland_Interior_EventScript_ExclsiorPostBattle
+	@ TRAINER_VERITAS, so the fight already plays it — no override needed.
+	trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_NO_MUSIC, TRAINER_VERITAS, 0, SouthernIsland_Interior_Text_VeritasIntro, SouthernIsland_Interior_Text_VeritasDefeated, SouthernIsland_Interior_EventScript_VeritasPostBattle
 	end
 
-SouthernIsland_Interior_EventScript_Exclsior_NoBattle::
-	msgbox SouthernIsland_Interior_Text_Exclsior_MaybeAnotherTime, MSGBOX_DEFAULT
-	turnobject LOCALID_EXCLSIOR, DIR_NORTH
+SouthernIsland_Interior_EventScript_Veritas_NoBattle::
+	msgbox SouthernIsland_Interior_Text_Veritas_MaybeAnotherTime, MSGBOX_DEFAULT
+	turnobject LOCALID_VERITAS, DIR_NORTH
 	release
 	end
 
-SouthernIsland_Interior_EventScript_ExclsiorPostBattle::
-	msgbox SouthernIsland_Interior_Text_ExclsiorPostBattle, MSGBOX_DEFAULT
-	setflag FLAG_DEFEATED_EXCLSIOR
+SouthernIsland_Interior_EventScript_VeritasPostBattle::
+	msgbox SouthernIsland_Interior_Text_VeritasPostBattle, MSGBOX_DEFAULT
+	setflag FLAG_DEFEATED_VERITAS
 	fadescreenswapbuffers FADE_TO_BLACK
-	removeobject LOCALID_EXCLSIOR
+	removeobject LOCALID_VERITAS
 	removeobject LOCALID_TYPHLOSION
 	fadescreenswapbuffers FADE_FROM_BLACK
 	release
 	end
 
 SouthernIsland_Interior_EventScript_CloserLookAtStone::
-	goto_if_unset FLAG_DEFEATED_EXCLSIOR, SouthernIsland_Interior_EventScript_Sign
+	goto_if_unset FLAG_DEFEATED_VERITAS, SouthernIsland_Interior_EventScript_Sign
 	goto_if_unset FLAG_ENABLE_SHIP_SOUTHERN_ISLAND, SouthernIsland_Interior_EventScript_Sign
 	@ Boss Lugia must be dealt with before anything else
 	goto_if_unset FLAG_DEFEATED_BOSS_LUGIA, SouthernIsland_Interior_EventScript_BossLugiaCheck
@@ -294,7 +294,7 @@ SouthernIsland_Interior_EventScript_ShinyLatiDefeated::
 	goto Common_EventScript_LegendaryFlewAway
 	end
 
-SouthernIsland_Interior_Text_Exclsior_ImCurious:
+SouthernIsland_Interior_Text_Veritas_ImCurious:
 	.string "Hmm.. I wonder what made her come here\p"
 	.string "Sorry.. I was lost in thoughts.\p"
 	.string "Few trainers know of this place..\n"
@@ -308,18 +308,18 @@ SouthernIsland_Interior_Text_Exclsior_ImCurious:
 	.string "Only one way to find out.\p"
 	.string "Are you ready?$"
 
-SouthernIsland_Interior_Text_ExclsiorIntro:
+SouthernIsland_Interior_Text_VeritasIntro:
 	.string "Show me where your friendships\n"
 	.string "led you.$"
 
-SouthernIsland_Interior_Text_ExclsiorDefeated:
+SouthernIsland_Interior_Text_VeritasDefeated:
 	.string "Perhaps I am not... as alone as\n"
 	.string "I thought..$"
 
-SouthernIsland_Interior_Text_Exclsior_MaybeAnotherTime::
+SouthernIsland_Interior_Text_Veritas_MaybeAnotherTime::
 	.string "Take your time, I'll be waiting.$"
 
-SouthernIsland_Interior_Text_ExclsiorPostBattle:
+SouthernIsland_Interior_Text_VeritasPostBattle:
 	.string "Thank you for coming all this way.\p"
 	.string "And for keeping my memory alive...\p"
 	.string "You may want to have a closer look at\n"

@@ -262,7 +262,7 @@ Categories can be locked behind game progress flags. The unlock logic is in `Add
 | Team | Complete Aqua Hideout | `FlagGet(FLAG_HIDE_AQUA_HIDEOUT_B2F_SUBMARINE_SHADOW)` |
 | Contest | Receive Pokéblock Case | `FlagGet(FLAG_RECEIVED_POKEBLOCK_CASE)` |
 | Legends | Catch Latias/Latios | `FlagGet(FLAG_CAUGHT_LATIAS_OR_LATIOS)` |
-| Secret | Defeat Trainer Veritas | `FlagGet(FLAG_DEFEATED_EXCLSIOR)` |
+| Secret | Defeat Trainer Veritas | `FlagGet(FLAG_DEFEATED_VERITAS)` |
 
 ### Adding Unlock Conditions
 
