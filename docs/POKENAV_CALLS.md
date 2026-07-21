@@ -141,7 +141,7 @@ Charm / Quick Learner / Mystic Tempo are battle-only.
 | Heart-to-heart — rival | `MatchCall_Heart_Rival` | **Brendan / May** | `FLAG_IS_CHAMPION` |
 | Heart-to-heart — Steven | `MatchCall_Heart_Steven` | **Steven** | `FLAG_IS_CHAMPION` |
 | Champion memory | `MatchCall_Heart_Wallace` | **Wallace** | `GAME_STAT_ENTERED_HOF > 0` |
-| Frontier Brain | `MatchCall_Frontier_Brain` | **Anabel/Tucker/Spenser/Greta/Noland/Lucy/Brandon** | any facility streak > 1 |
+| Frontier Brain | `MatchCall_Frontier_Anabel` … `_Brandon` (7) | **the Brain of that facility** | **Silver Symbol held** for that facility AND streak > 1 |
 | Mystery call | `MatchCall_Veritas` | **Veritas** | `FLAG_DEFEATED_VERITAS`, `FLAG_DAILY_VERITAS_MATCH_CALL` unset |
 
 ### Wave 2: quest hints, legendary rumours, record mixing
@@ -151,8 +151,7 @@ never nags about something already done.
 
 | Category | Label(s) | Caller | Shown while | Stops when |
 |---|---|---|---|---|
-| Weather Institute (story) | `MatchCall_Quest_WeatherInstitute` | **Brendan / May** | `VAR_WEATHER_INSTITUTE_STATE == 0` | `FLAG_RECEIVED_CASTFORM` |
-| Weather Institute (research) | `MatchCall_Quest_WeatherResearch` | **Brendan / May** | `FLAG_SYS_GAME_CLEAR` and a beast unresolved | all of Suicune/Raikou/Entei caught or beaten |
+| Weather Institute research | `MatchCall_Quest_WeatherResearch` | **Brendan / May** | `FLAG_SYS_GAME_CLEAR` and a beast unresolved | all of Suicune/Raikou/Entei caught or beaten |
 | Museum boat ticket | `MatchCall_Quest_MuseumTicket` | registered trainer | `FLAG_IS_CHAMPION` | `FLAG_RECEIVED_MYSTIC_TICKET` |
 | Fashionista outfits | `MatchCall_Quest_Fashionista` | registered trainer | any outfit still locked | all 27 `FLAG_STYLE_UNLOCKED_*` set |
 | Suicune / Raikou / Entei | `MatchCall_Legend_Suicune` etc. | registered trainer | `FLAG_SYS_GAME_CLEAR` | that beast caught or beaten |
@@ -189,6 +188,35 @@ never nags about something already done.
   bytes with *no* terminator slot, unlike TV show names which are
   `PLAYER_NAME_LENGTH + 1`. `CopyUnterminatedPlayerName()` exists for exactly
   this; a plain `StringCopy` runs off into `trainerId`.
+
+#### The Weather Institute call is the POSTGAME quest
+
+It is deliberately **not** about the Team Aqua takeover during the story. It
+is the research quest the Institute workers give out after the Hall of Fame,
+which sends the player after Suicune, Raikou and Entei. `ShouldOfferWeatherInstituteCall()`
+gates on `FLAG_SYS_GAME_CLEAR`, matching the quest-givers themselves
+(`Route119_WeatherInstitute_1F/2F` scripts both `goto_if_unset FLAG_SYS_GAME_CLEAR`),
+and stops once all three beasts are caught or knocked out.
+
+#### Frontier Brains: Silver Symbol gated, one voice each
+
+A Brain only rings about a facility whose **Silver Symbol the player already
+holds** -- i.e. they have beaten that Brain at least once -- and where the
+streak is worth mentioning (`> 1`). `IsFrontierBrainCallable()` is the test.
+
+> ⚠️ `GetPlayerSymbolCountForFacility()` in `frontier_util.c` cannot be reused
+> here. It computes `FLAG_SYS_TOWER_SILVER + facility * 2` using the **real**
+> `FRONTIER_FACILITY_*` ids, but this file deliberately swaps Pike and Factory
+> (see the comment at the top of `match_call.c`). `sFrontierSilverSymbolFlags[]`
+> is therefore written in this file's swapped index space, matching
+> `sBattleFrontierFacilityNames[]`, `sFrontierBrainTrainerIds[]` and
+> `sFrontierBrainTexts[]`. Lucy must land on Battle Pike, Noland on Factory.
+
+Each Brain has their own line rather than sharing one generic message:
+Anabel quiet and intuitive, Tucker playing to the crowd, Spenser laughing
+about bonds over numbers, Greta spoiling for a scrap, Noland impressed you
+did it with rentals, Lucy managing four short sentences, Brandon booming
+about ruins.
 
 #### A real flag clash found while doing this
 
@@ -284,27 +312,36 @@ anywhere in the tree before being taken.
 
 ## 8. How often does the PokeNav actually ring?
 
+Target: **about 2 calls per hour of walking.**
+
 The binding constraint is the 10-minute gate, which can open at most **6 times
-per hour of walking**. A window that opens and then loses the 25% chance roll
-is *consumed* -- `UpdateMatchCallMinutesCounter` records the timestamp before
-`CheckMatchCallChance` runs -- so the ceiling is 6 attempts/hour regardless.
+per hour**. A window that opens and then loses the chance roll is *consumed* --
+`UpdateMatchCallMinutesCounter` stamps the timestamp before
+`CheckMatchCallChance` runs -- so 6 attempts/hour is a hard ceiling and the
+rolls after it have to be generous to hit the target.
 
-Assuming continuous walking on call-legal outdoor maps:
+Current tuning:
+- `CheckMatchCallChance`: `Random() % 4 < callChance + 1` -- **50%** base,
+  **75%** with a lead Lightning Rod. (Vanilla: 30% / 60%.)
+- casual fallback when the rematch pick fails: **1/2**. (Was 1/3.)
 
-| Stage | Windows/hr | x chance roll | x caller found | **Calls/hr** |
+| Stage | Windows/hr | x chance | x caller found | **Calls/hr** |
 |---|---|---|---|---|
-| Vanilla, under 5 badges | 6 | 0.30 | ~0.03 | **~0.05** (one call per ~20 h) |
-| Veritas, early game | 6 | 0.25 | ~0.44 | **~0.7** |
-| Veritas, postgame (all callers unlocked) | 6 | 0.25 | ~0.62 | **~0.9** |
-| Veritas, postgame + Lightning Rod lead | 6 | 0.50 | ~0.62 | **~1.9** |
+| Vanilla, under 5 badges | 6 | 0.30 | ~0.03 | **~0.05** (one per ~20 h) |
+| Veritas, early game | 6 | 0.50 | ~0.56 | **~1.7** |
+| Veritas, mid game | 6 | 0.50 | ~0.61 | **~1.8** |
+| Veritas, postgame (all callers unlocked) | 6 | 0.50 | ~0.72 | **~2.2** |
+| Veritas, postgame + Lightning Rod lead | 6 | 0.75 | ~0.72 | **~3.2** |
 
 "Caller found" is the chance `SelectMatchCallTrainer` returns TRUE: the family
-B rolls in sequence, then the vanilla rematch check, then the 1/3 casual
-fallback. Vanilla's ~0.03 is the odds that a randomly picked registered
-trainer happens to be rematch-ready *on the player's current map*, which
-before the 5th badge is the only way vanilla accepts a call at all. That
-number is the whole reason for this change.
+B rolls in sequence (~0.41 postgame with everything unlocked, ~0.09 early),
+then the vanilla rematch check, then the 1/2 casual fallback.
 
-Real-world figures are lower than the table: the step counter only advances
-while walking, so time in buildings, battles, menus and cutscenes doesn't
-count toward the next window.
+Vanilla's ~0.03 is the odds that a randomly picked registered trainer happens
+to be rematch-ready *on the player's current map*, which below the 5th badge
+is the only thing vanilla accepts. That number is the whole reason for this
+change.
+
+Real-world figures land under the table: the step counter only advances while
+walking, so time in buildings, battles, menus and cutscenes doesn't count
+toward the next window.

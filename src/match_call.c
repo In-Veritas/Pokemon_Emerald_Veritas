@@ -239,7 +239,6 @@ static bool32 TryPopulateOutbreakVars(bool8 *);
 static bool32 TryPopulateRareCatchVars(bool8 *);
 static bool32 PlayerHasAnyFrontierStreak(void);
 static bool32 ShouldOfferWeatherInstituteCall(void);
-static bool32 IsWeatherInstituteInResearchPhase(void);
 static bool32 HasAnyRecordMixedTrainer(void);
 static bool32 TryPopulateMixedTrainerForRival(u8 *, bool8 *);
 static int SelectLegendRumor(void);
@@ -1245,12 +1244,14 @@ static const u8 *const sSpecialCallTexts[SPECIAL_CALL_COUNT] =
     [SPECIAL_CALL_HEART_RIVAL]    = MatchCall_Heart_Rival,
     [SPECIAL_CALL_HEART_STEVEN]   = MatchCall_Heart_Steven,
     [SPECIAL_CALL_HEART_WALLACE]  = MatchCall_Heart_Wallace,
-    [SPECIAL_CALL_FRONTIER_BRAIN] = MatchCall_Frontier_Brain,
+    // Placeholder: BuildSpecialCallString picks the actual Brain's own line
+    // from sFrontierBrainTexts once it knows which facility.
+    [SPECIAL_CALL_FRONTIER_BRAIN] = MatchCall_Frontier_Anabel,
     [SPECIAL_CALL_MOM]            = MatchCall_Leisure_Mom1,
     [SPECIAL_CALL_BIRCH]          = MatchCall_Leisure_Birch1,
     [SPECIAL_CALL_RIVAL]          = MatchCall_Leisure_Rival1,
     [SPECIAL_CALL_STEVEN]         = MatchCall_Leisure_Steven1,
-    [SPECIAL_CALL_RIVAL_WEATHER]  = MatchCall_Quest_WeatherInstitute,
+    [SPECIAL_CALL_RIVAL_WEATHER]  = MatchCall_Quest_WeatherResearch,
     [SPECIAL_CALL_RIVAL_MIXED]    = MatchCall_Mixed_RivalMet,
 };
 
@@ -1353,6 +1354,11 @@ static const struct SecretBaseLocation sSecretBaseLocations[] =
     { SECRET_BASE_SHRUB4_3,       MAPSEC_ROUTE_119 },
 };
 
+// NOTE: all three tables below are indexed in this FILE'S facility space,
+// where MATCH_CALL_PIKE/MATCH_CALL_FACTORY are deliberately swapped relative
+// to the real FRONTIER_FACILITY_* values (see the comment at the top of this
+// file). They must stay consistent with sBattleFrontierFacilityNames[] and
+// with the index GetFrontierStreakInfo() switches on.
 static const u16 sFrontierBrainTrainerIds[NUM_FRONTIER_FACILITIES] =
 {
     [FRONTIER_FACILITY_TOWER]   = TRAINER_ANABEL,
@@ -1362,6 +1368,32 @@ static const u16 sFrontierBrainTrainerIds[NUM_FRONTIER_FACILITIES] =
     [MATCH_CALL_PIKE]           = TRAINER_LUCY,
     [MATCH_CALL_FACTORY]        = TRAINER_NOLAND,
     [FRONTIER_FACILITY_PYRAMID] = TRAINER_BRANDON,
+};
+
+// A Brain only rings once the player has beaten them for the Silver Symbol.
+// GetPlayerSymbolCountForFacility() can't be reused here: it indexes by the
+// REAL facility id, and this file's ids are swapped for Pike/Factory.
+static const u16 sFrontierSilverSymbolFlags[NUM_FRONTIER_FACILITIES] =
+{
+    [FRONTIER_FACILITY_TOWER]   = FLAG_SYS_TOWER_SILVER,
+    [FRONTIER_FACILITY_DOME]    = FLAG_SYS_DOME_SILVER,
+    [FRONTIER_FACILITY_PALACE]  = FLAG_SYS_PALACE_SILVER,
+    [FRONTIER_FACILITY_ARENA]   = FLAG_SYS_ARENA_SILVER,
+    [MATCH_CALL_PIKE]           = FLAG_SYS_PIKE_SILVER,
+    [MATCH_CALL_FACTORY]        = FLAG_SYS_FACTORY_SILVER,
+    [FRONTIER_FACILITY_PYRAMID] = FLAG_SYS_PYRAMID_SILVER,
+};
+
+// One voice per Brain rather than a shared line.
+static const u8 *const sFrontierBrainTexts[NUM_FRONTIER_FACILITIES] =
+{
+    [FRONTIER_FACILITY_TOWER]   = MatchCall_Frontier_Anabel,
+    [FRONTIER_FACILITY_DOME]    = MatchCall_Frontier_Tucker,
+    [FRONTIER_FACILITY_PALACE]  = MatchCall_Frontier_Spenser,
+    [FRONTIER_FACILITY_ARENA]   = MatchCall_Frontier_Greta,
+    [MATCH_CALL_PIKE]           = MatchCall_Frontier_Lucy,
+    [MATCH_CALL_FACTORY]        = MatchCall_Frontier_Noland,
+    [FRONTIER_FACILITY_PYRAMID] = MatchCall_Frontier_Brandon,
 };
 
 static const struct MatchCallText *const sMatchCallGeneralTopics[] =
@@ -1437,10 +1469,11 @@ static bool32 CheckMatchCallChance(void)
     if (!GetMonData(&gPlayerParty[0], MON_DATA_SANITY_IS_EGG) && GetMonAbility(&gPlayerParty[0]) == ABILITY_LIGHTNING_ROD)
         callChance = 2;
 
-    // Veritas: vanilla was 30% (60% with Lightning Rod). Now that a failed
-    // rematch pick can still become a call, that same 30% produces far more
-    // ringing than vanilla did, so the base roll is trimmed to 25%/50%.
-    if (Random() % 20 < callChance * 5)
+    // Veritas: tuned so the PokeNav averages ~2 calls per hour of walking.
+    // The 10-minute gate caps attempts at 6/hour and a lost roll consumes
+    // the whole window, so this has to be generous: 50% base, 75% with a
+    // lead Lightning Rod (vanilla was 30%/60%).
+    if (Random() % 4 < callChance + 1)
         return TRUE;
     else
         return FALSE;
@@ -1518,9 +1551,9 @@ static bool32 SelectMatchCallTrainer(void)
     // Veritas: vanilla dropped the call entirely here, which is why players
     // barely got any -- before 5 badges ShouldTrainerRequestBattle is always
     // FALSE, so a call required a rematch-ready trainer on the CURRENT map.
-    // Instead, a third of these failed picks become casual calls: idle
-    // chatter, a tip, a rumour, a sighting (see SelectCasualMatchCallText).
-    if (Random() % 3 == 0)
+    // Instead, half of these failed picks become casual calls: idle chatter,
+    // a tip, a rumour, a sighting (see SelectCasualMatchCallText).
+    if (Random() % 2)
     {
         sMatchCallState.forcedCallType = FORCED_CALL_CASUAL;
         return TRUE;
@@ -2026,23 +2059,37 @@ bool32 SelectMatchCallMessage(int trainerId, u8 *str)
 // Veritas PokeNav calls. Full write-up in docs/POKENAV_CALLS.md.
 // ===========================================================================
 
-static bool32 PlayerHasAnyFrontierStreak(void)
+// A Brain is willing to call only about a facility whose Silver Symbol the
+// player already holds AND where they have a streak worth mentioning.
+static bool32 IsFrontierBrainCallable(int facilityId)
 {
     u32 topic;
+
+    if (!FlagGet(sFrontierSilverSymbolFlags[facilityId]))
+        return FALSE;
+
+    return GetFrontierStreakInfo(facilityId, &topic) > 1;
+}
+
+static bool32 PlayerHasAnyFrontierStreak(void)
+{
     int i;
 
     for (i = 0; i < NUM_FRONTIER_FACILITIES; i++)
     {
-        if (GetFrontierStreakInfo(i, &topic) > 1)
+        if (IsFrontierBrainCallable(i))
             return TRUE;
     }
 
     return FALSE;
 }
 
-// TRUE once the player is Champion and at least one of the three roaming
-// beasts the Weather Institute researchers send you after is unresolved.
-static bool32 IsWeatherInstituteInResearchPhase(void)
+// The Weather Institute call is about the POSTGAME research quests -- the
+// three roaming beasts its workers send the player after -- NOT the Team
+// Aqua takeover during the story. The quest-givers themselves are gated on
+// FLAG_SYS_GAME_CLEAR (Route119_WeatherInstitute_1F/2F scripts), so this
+// matches. It stops once all three beasts are caught or knocked out.
+static bool32 ShouldOfferWeatherInstituteCall(void)
 {
     u32 i;
 
@@ -2056,18 +2103,6 @@ static bool32 IsWeatherInstituteInResearchPhase(void)
     }
 
     return FALSE;
-}
-
-// Two eras for the same call. During the story the Institute is under Aqua
-// occupation and wants help; VAR_WEATHER_INSTITUTE_STATE only leaves 0 once
-// Shelly is beaten, and FLAG_RECEIVED_CASTFORM closes the quest out. In the
-// postgame the researchers recruit again for the beast hunts.
-static bool32 ShouldOfferWeatherInstituteCall(void)
-{
-    if (VarGet(VAR_WEATHER_INSTITUTE_STATE) == 0 && !FlagGet(FLAG_RECEIVED_CASTFORM))
-        return TRUE;
-
-    return IsWeatherInstituteInResearchPhase();
 }
 
 // The outfit hint stops once every Fashionista outfit has been unlocked.
@@ -2243,10 +2278,6 @@ static void BuildSpecialCallString(u8 *str)
         break;
     case SPECIAL_CALL_RIVAL_WEATHER:
         PopulateRivalName(gStringVar1);
-        // Same caller, two eras: the Aqua occupation during the story, the
-        // beast-hunt recruitment afterwards.
-        if (IsWeatherInstituteInResearchPhase())
-            text = MatchCall_Quest_WeatherResearch;
         break;
     case SPECIAL_CALL_RIVAL_MIXED:
         PopulateRivalName(gStringVar1);
@@ -2269,19 +2300,31 @@ static void BuildSpecialCallString(u8 *str)
         ConvertIntToDecimalStringN(gStringVar3, GetGameStat(GAME_STAT_ENTERED_HOF), STR_CONV_MODE_LEFT_ALIGN, 5);
         break;
     case SPECIAL_CALL_FRONTIER_BRAIN:
+        // Best streak among only those facilities the player has already
+        // earned the Silver Symbol in, so a Brain never rings about a
+        // facility the player hasn't beaten them in yet.
         best = 0;
-        bestId = 0;
+        bestId = -1;
         for (i = 0; i < NUM_FRONTIER_FACILITIES; i++)
         {
+            if (!IsFrontierBrainCallable(i))
+                continue;
+
             streak = GetFrontierStreakInfo(i, &topic);
-            if (streak > best)
+            if (bestId < 0 || streak > best)
             {
                 best = streak;
                 bestId = i;
             }
         }
+
+        // TrySelectSpecialCall already proved one exists; this is a guard.
+        if (bestId < 0)
+            bestId = FRONTIER_FACILITY_TOWER;
+
         sBattleFrontierStreakInfo.facilityId = bestId;
         sBattleFrontierStreakInfo.streak = best;
+        text = sFrontierBrainTexts[bestId];
         StringCopy(gStringVar1, gTrainers[sFrontierBrainTrainerIds[bestId]].trainerName);
         ConvertIntToDecimalStringN(gStringVar2, best, STR_CONV_MODE_LEFT_ALIGN, 4);
         break;

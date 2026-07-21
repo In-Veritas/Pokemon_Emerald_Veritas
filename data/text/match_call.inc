@@ -3238,15 +3238,71 @@ MatchCall_Heart_Wallace::
 	.string "The record remembers, and so\n"
 	.string "do I.$"
 
-@ --- Battle Frontier brain, keyed to a real win streak ---
-MatchCall_Frontier_Brain::
-	.string "{STR_VAR_1} here.\p"
-	.string "Your name keeps coming up in\n"
-	.string "my records, challenger.\p"
-	.string "A streak of {STR_VAR_2}.\n"
-	.string "Impressive… but I've seen\l"
-	.string "streaks end at the worst time.\p"
-	.string "Come test it against me.$"
+@ --- Frontier Brains. One voice each; they only call once the player holds
+@ --- that facility's Silver Symbol. {STR_VAR_2} is the real win streak.
+MatchCall_Frontier_Anabel::
+	.string "…Hello. It's ANABEL.\p"
+	.string "Forgive me for calling. I had a\n"
+	.string "feeling, and it was about you.\p"
+	.string "{STR_VAR_2} straight wins in the\n"
+	.string "BATTLE TOWER…\p"
+	.string "I can sense your POKéMON even\n"
+	.string "from here. They trust you\l"
+	.string "completely.\p"
+	.string "I should like to feel that again.$"
+
+MatchCall_Frontier_Tucker::
+	.string "TUCKER! The DOME ACE!\p"
+	.string "Don't act surprised, darling.\n"
+	.string "Of course I called!\p"
+	.string "{STR_VAR_2} wins? The crowd has\n"
+	.string "been chanting your name, and I\l"
+	.string "will NOT have that.\p"
+	.string "Come back and let's give them a\n"
+	.string "show they'll never forget!$"
+
+MatchCall_Frontier_Spenser::
+	.string "Gwahahaha! SPENSER here!\p"
+	.string "{STR_VAR_2} in a row, is it?\n"
+	.string "Even the old mountain heard.\p"
+	.string "Numbers, numbers. Bah!\p"
+	.string "It's the bond that wins in my\n"
+	.string "PALACE, youngster. Nothing else.\p"
+	.string "Come and show me yours!$"
+
+MatchCall_Frontier_Greta::
+	.string "Yo! GRETA here!\p"
+	.string "{STR_VAR_2} wins?! Okay, okay,\n"
+	.string "that's actually kinda good!\p"
+	.string "But numbers don't hit back.\n"
+	.string "I do.\p"
+	.string "Get down to the ARENA and show\n"
+	.string "me what you've really got!$"
+
+MatchCall_Frontier_Noland::
+	.string "Hey. NOLAND here.\p"
+	.string "Saw your name on the FACTORY\n"
+	.string "board. {STR_VAR_2} straight.\p"
+	.string "Know what I like about that?\n"
+	.string "You did it with rentals.\p"
+	.string "Anyone can win with their own\n"
+	.string "team. You pulled it out of\l"
+	.string "strangers. That's talent.$"
+
+MatchCall_Frontier_Lucy::
+	.string "…LUCY.\p"
+	.string "{STR_VAR_2} wins.\p"
+	.string "The PIKE doesn't care.\p"
+	.string "…Come anyway.$"
+
+MatchCall_Frontier_Brandon::
+	.string "BRANDON! PYRAMID KING!\p"
+	.string "{STR_VAR_2} victories, greenhorn!\n"
+	.string "I have read the records!\p"
+	.string "But a streak is a soft thing.\n"
+	.string "The PYRAMID is not!\p"
+	.string "Bring that fire to my ruins and\n"
+	.string "we shall see what survives it!$"
 
 @ --- Congratulations on a rare capture (record mix / party data) ---
 MatchCall_RareCatch_Legendary::
@@ -3309,15 +3365,6 @@ MatchCall_AbilityTip_HyperCutter::
 	.string "Saves so much time.$"
 
 @ --- Quest hints. All stop once their quest is finished. ---
-MatchCall_Quest_WeatherInstitute::
-	.string "{STR_VAR_1} here!\p"
-	.string "Have you been up Route 119?\p"
-	.string "The WEATHER INSTITUTE is asking\n"
-	.string "for TRAINERS. Something about\l"
-	.string "needing help urgently.\p"
-	.string "Sounds like more than research\n"
-	.string "trouble, if you ask me…$"
-
 MatchCall_Quest_WeatherResearch::
 	.string "{STR_VAR_1} here!\p"
 	.string "Remember the WEATHER INSTITUTE?\p"
@@ -3489,11 +3536,9 @@ MatchCall_Mixed_RivalCrush::
 MatchCall_Quest_Fashionista::
 	.string "{STR_VAR_1} here!\p"
 	.string "You have to see what I'm wearing!\p"
-	.string "There's a FASHIONISTA at the
-"
+	.string "There's a FASHIONISTA at the\n"
 	.string "{STR_VAR_2} POKéMON CENTER, and\l"
 	.string "she made me the loveliest outfit.\p"
-	.string "Show one of them the right
-"
+	.string "Show one of them the right\n"
 	.string "POKéMON and they'll dress you\l"
 	.string "up too. Go on, treat yourself!$"

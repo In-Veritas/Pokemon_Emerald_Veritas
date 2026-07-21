@@ -527,7 +527,7 @@ Call *rhythm* is untouched (same every-10th-step check, same 10-minute gate — 
 * **The dead-clock jam**: on carts with a dead RTC battery (or bootlegs whose clock never ticks), the "have 10 minutes passed?" check could never pass again — the PokéNav literally never rang. The game now detects a frozen clock (~1,200 steps with zero time movement) and paces call opportunities by steps instead
 * Rematch invitations are untouched — they still work exactly like vanilla
 
-Because far more picks now survive, the per-attempt roll was **lowered** from 30% to 25% so the PokéNav rings often, not constantly.
+Tuned to average **about 2 calls per hour** of walking. The 10-minute rhythm caps attempts at six per hour, so the per-attempt roll was raised to 50% (75% with a lead Lightning Rod) to actually hit that.
 
 #### Someone Is Always Calling
 
@@ -537,7 +537,7 @@ They'll also read you the news: **Gen 2-style mass outbreak reports** naming the
 
 #### Rumours, Errands and Gossip
 
-Trainers pass on **hints for things you haven't done yet** — and stop the moment you finish them, so nothing ever nags. The Weather Institute asking for help (and, later, recruiting for its stranger readings); the Lilycove Museum owner handing out a boat ticket to somewhere that isn't on any map; a **Fashionista** in a Pokémon Center who'll dress you up if you show her the right Pokémon; and, once the postgame opens, quiet rumours about **water that runs too clean, thunder with no clouds, footsteps near Mt. Chimney, three great birds, a wishing stone, and an island that isn't there most days**.
+Trainers pass on **hints for things you haven't done yet** — and stop the moment you finish them, so nothing ever nags. The Weather Institute recruiting trainers for the strange readings it can't explain; the Lilycove Museum owner handing out a boat ticket to somewhere that isn't on any map; a **Fashionista** in a Pokémon Center who'll dress you up if you show her the right Pokémon; and, once the postgame opens, quiet rumours about **water that runs too clean, thunder with no clouds, footsteps near Mt. Chimney, three great birds, a wishing stone, and an island that isn't there most days**.
 
 If you've **mixed records** with anyone, the network gets busier still: trainers report **spotting your friends out on the routes**, tell you **what someone just caught**, and let slip **where a friend built their Secret Base**. Your rival calls about the out-of-region trainers they keep bumping into — and occasionally gets a little flustered about one of them.
 
@@ -550,7 +550,7 @@ And some callers aren't on your rematch list at all:
 | **Brendan / May** | any time; and in the postgame, a quieter one about missing how often you used to run into each other |
 | **Steven** | after Meteor Falls; and in the postgame, about how far you've come since Granite Cave |
 | **Wallace** | after your first Hall of Fame entry — he remembers your team and counts your visits |
-| **Frontier Brains** | when you have a real win streak going in their facility, quoting the actual number |
+| **Frontier Brains** | once you've taken their **Silver Symbol** and have a streak going — each one calls in their own voice, quoting your real number |
 | **???** | rare, and only after a certain island goes quiet |
 
 <details>
