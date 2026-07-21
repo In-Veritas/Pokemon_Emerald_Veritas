@@ -107,6 +107,7 @@ struct MatchCallState
     u8 stepCounter;
     bool8 triggeredFromScript;
     u8 forcedCallType;
+    u16 frozenRtcChecks;
 };
 
 struct MatchCallTrainerTextInfo
@@ -1063,7 +1064,7 @@ extern const u8 gBirchDexRatingText_OnANationwideBasis[];
 void InitMatchCallCounters(void)
 {
     RtcCalcLocalTime();
-    sMatchCallState.minutes = GetCurrentTotalMinutes(&gLocalTime) + 3;
+    sMatchCallState.minutes = GetCurrentTotalMinutes(&gLocalTime) + 10;
     sMatchCallState.stepCounter = 0;
 }
 
@@ -1077,12 +1078,32 @@ static bool32 UpdateMatchCallMinutesCounter(void)
     int curMinutes;
     RtcCalcLocalTime();
     curMinutes = GetCurrentTotalMinutes(&gLocalTime);
-    // Veritas: vanilla only allowed one call roll every 10 real-time
-    // minutes, a huge part of why calls felt nonexistent. Now every 3.
-    if (sMatchCallState.minutes > curMinutes || curMinutes - sMatchCallState.minutes > 2)
+    if (sMatchCallState.minutes > curMinutes || curMinutes - sMatchCallState.minutes > 9)
     {
         sMatchCallState.minutes = curMinutes;
+        sMatchCallState.frozenRtcChecks = 0;
         return TRUE;
+    }
+
+    // Veritas: on carts with a dead RTC battery (or bootlegs whose clock
+    // never ticks), gLocalTime freezes, so the 10-minute gate above jams
+    // shut PERMANENTLY and the PokeNav never rings again. This function
+    // runs once per 10 steps; a working clock always crosses a minute
+    // boundary within ~120 such checks (1200 steps), so zero movement for
+    // that long means the clock is frozen. From then on, emulate the wait
+    // with steps instead: one gate pass per 600 steps. Working-RTC players
+    // are unaffected (their delta goes nonzero long before 120 checks).
+    if (curMinutes == sMatchCallState.minutes)
+    {
+        if (++sMatchCallState.frozenRtcChecks >= 120)
+        {
+            sMatchCallState.frozenRtcChecks = 60;
+            return TRUE;
+        }
+    }
+    else
+    {
+        sMatchCallState.frozenRtcChecks = 0;
     }
 
     return FALSE;
@@ -1212,7 +1233,8 @@ static u32 GetActiveMatchCallTrainerId(u32 activeMatchCallId)
     From the function calls below, a call can only be triggered...
     - If the player has match call
     - Every 10th step
-    - Every 3 minutes (Veritas; vanilla was every 10)
+    - Every 10 minutes (Veritas: if the cart's RTC is frozen, which would
+      jam this gate forever, the wait is emulated with steps instead)
     - 1/3 of the time (2/3 with a lead Lightning Rod Pokémon; always, for
       the once-per-day birthday call)
     - If in a valid outdoor map (not Safari Zone, not underwater, not Mt Chimney with Team Magma, not Sootopolis with legendaries)

@@ -521,10 +521,10 @@ On a themed or Mew day both wanderers are always out (the daily rotation is set 
 
 #### PokéNav Calls Actually Happen Now
 
-Vanilla Emerald's trainer calls were nearly extinct by design: one roll every **10 real-time minutes**, a 30% pass chance, and — the real killer — before your 5th badge a call only went through if the randomly-picked trainer was rematch-ready **on the exact route you were standing on**. Most players never saw a casual call at all. Veritas fixes the drought:
+Call *pacing* is untouched (same every-10th-step check, same 10-minute rhythm, same 30% roll — and the classic easter egg stands: a lead **Lightning Rod** Pokémon doubles the odds). What's fixed is the two reasons calls almost never actually *triggered*:
 
-* Call opportunities come every **3 minutes** instead of 10 (still every 10th step, still 30% — and the classic easter egg stands: a lead Pokémon with **Lightning Rod** doubles the odds)
-* Picks that would have been silently dropped now have a 50% chance to become **casual calls**: the trainer's idle chatter, their Battle Frontier bragging — or one of ten **gameplay tips** about Veritas features (the room clock calendar, Lv50 cable modes, minigame prizes, the tournament prize desk, and more)
+* **The silent drop**: after passing every timer and roll, vanilla still discarded the call unless the randomly-picked trainer was rematch-ready **on the exact route you were standing on** (and before your 5th badge, that was the *only* accepted reason). Half of those discarded picks now go through as **casual calls**: the trainer's idle chatter, their Battle Frontier bragging — or one of ten **gameplay tips** about Veritas features
+* **The dead-clock jam**: on carts with a dead RTC battery (or bootlegs whose clock never ticks), the "have 10 minutes passed?" check could never pass again — the PokéNav literally never rang. The game now detects a frozen clock (~1,200 steps with zero time movement) and paces call opportunities by steps instead
 * Rematch invitations are untouched — they still work exactly like vanilla
 
 <details>
