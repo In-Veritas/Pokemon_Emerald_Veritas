@@ -5,8 +5,8 @@ Breadcrumb trail for review. Everything below is in four files:
 | File | What changed |
 |---|---|
 | `src/match_call.c` | trigger fixes, two new call families, Veritas cry playback |
-| `data/text/match_call.inc` | 39 new `MatchCall_*` text labels (one Veritas block at the end of the file) |
-| `include/strings.h` | 39 matching `extern const u8 …[]` declarations |
+| `data/text/match_call.inc` | 63 new `MatchCall_*` text labels, in two waves at the end of the file |
+| `include/strings.h` | 63 matching `extern const u8 …[]` declarations |
 | `include/constants/flags.h` | two daily flags reclaimed from `FLAG_UNUSED_0x923` / `0x924` |
 
 No save-structure change. No new vars. The three flags used are all inside the
@@ -93,23 +93,32 @@ the next on a miss (rarest first).
 
 ## 3. Everything that was added
 
-### Ability tips — one per ability with a real overworld effect
+### Ability tips - one per ability with a real overworld effect
 
-Verified against *this repo*: Flame Body / Magma Armor (egg hatching) and Pickup
-are battle-only here, so they deliberately have **no** tip. Nine tips cover the
-abilities that do change overworld behaviour.
+**Corrected 2026-07-21.** The first pass claimed Flame Body / Magma Armor and
+Pickup were battle-only in this repo. That was wrong. Both work, and two more
+abilities have overworld effects that were missed entirely. All thirteen tips
+below were verified against the implementation, not against vanilla.
 
-| Label | Abilities named |
-|---|---|
-| `MatchCall_AbilityTip_LightningRod` | Lightning Rod (doubles match-call chance) |
-| `MatchCall_AbilityTip_Synchronize` | Synchronize (wild nature matching) |
-| `MatchCall_AbilityTip_CuteCharm` | Cute Charm (opposite-gender encounters) |
-| `MatchCall_AbilityTip_MagnetPull` | Magnet Pull, Static (type-biased encounters) |
-| `MatchCall_AbilityTip_EncounterRate` | Stench, White Smoke, Sand Veil / Illuminate, Arena Trap |
-| `MatchCall_AbilityTip_KeenEye` | Keen Eye, Intimidate (repel low levels) |
-| `MatchCall_AbilityTip_Hustle` | Hustle, Vital Spirit, Pressure (attract high levels) |
-| `MatchCall_AbilityTip_SuctionCups` | Suction Cups, Sticky Hold (fishing) |
-| `MatchCall_AbilityTip_CompoundEyes` | Compound Eyes (wild held items) |
+| Label | Abilities named | Verified at |
+|---|---|---|
+| `MatchCall_AbilityTip_LightningRod` | Lightning Rod - doubles match-call chance (25% to 50%) | `match_call.c` `CheckMatchCallChance` |
+| `MatchCall_AbilityTip_Synchronize` | Synchronize - wild nature match, **100%**, not "often" | `wild_encounter.c:714` |
+| `MatchCall_AbilityTip_CuteCharm` | Cute Charm - opposite gender, 2/3 chance | `wild_encounter.c:741` |
+| `MatchCall_AbilityTip_MagnetPull` | Magnet Pull (Steel), Static (Electric) - 50%, land; Static also surf | `wild_encounter.c:799-807` |
+| `MatchCall_AbilityTip_EncounterRate` | Stench, White Smoke, Sand Veil (half) / Illuminate, Arena Trap (double) | `wild_encounter.c:925-936` |
+| `MatchCall_AbilityTip_KeenEye` | Keen Eye, Intimidate - 50% to skip encounters 5+ levels below the lead | `wild_encounter.c:1309` |
+| `MatchCall_AbilityTip_Hustle` | Hustle, Vital Spirit, Pressure - 50% max-level spawn | `wild_encounter.c:335` |
+| `MatchCall_AbilityTip_SuctionCups` | Suction Cups, Sticky Hold - fishing bite 50% to 85% | `field_player_avatar.c:1942` |
+| `MatchCall_AbilityTip_CompoundEyes` | Compound Eyes - wild held item odds | `pokemon.c:7289` |
+| `MatchCall_AbilityTip_FlameBody` | **Flame Body, Magma Armor** - egg cycles drop 2 per 256 steps instead of 1. Works from **any party slot**, not just the lead, and the tip says so | `egg_hatch.c:930` |
+| `MatchCall_AbilityTip_Pickup` | **Pickup** - 10% per battle per holder with an empty item slot; better tiers at higher level | `battle_script_commands.c:9955` |
+| `MatchCall_AbilityTip_Swarm` | **Swarm** - halves the ambient wild-cry delay | `overworld.c:1396` |
+| `MatchCall_AbilityTip_HyperCutter` | **Hyper Cutter** - Cut clears 5x5 instead of 3x3 | `fldeff_cut.c:157` |
+
+Deliberately no tip: the Battle Pike status-block abilities (Water Veil,
+Limber, Insomnia, Immunity) are frontier-only, and the repo's custom Baby
+Charm / Quick Learner / Mystic Tempo are battle-only.
 
 ### Everything else
 
@@ -134,6 +143,60 @@ abilities that do change overworld behaviour.
 | Champion memory | `MatchCall_Heart_Wallace` | **Wallace** | `GAME_STAT_ENTERED_HOF > 0` |
 | Frontier Brain | `MatchCall_Frontier_Brain` | **Anabel/Tucker/Spenser/Greta/Noland/Lucy/Brandon** | any facility streak > 1 |
 | Mystery call | `MatchCall_Veritas` | **Veritas** | `FLAG_DEFEATED_VERITAS`, `FLAG_DAILY_VERITAS_MATCH_CALL` unset |
+
+### Wave 2: quest hints, legendary rumours, record mixing
+
+Every hint below stops arriving once its quest is finished, so the PokeNav
+never nags about something already done.
+
+| Category | Label(s) | Caller | Shown while | Stops when |
+|---|---|---|---|---|
+| Weather Institute (story) | `MatchCall_Quest_WeatherInstitute` | **Brendan / May** | `VAR_WEATHER_INSTITUTE_STATE == 0` | `FLAG_RECEIVED_CASTFORM` |
+| Weather Institute (research) | `MatchCall_Quest_WeatherResearch` | **Brendan / May** | `FLAG_SYS_GAME_CLEAR` and a beast unresolved | all of Suicune/Raikou/Entei caught or beaten |
+| Museum boat ticket | `MatchCall_Quest_MuseumTicket` | registered trainer | `FLAG_IS_CHAMPION` | `FLAG_RECEIVED_MYSTIC_TICKET` |
+| Fashionista outfits | `MatchCall_Quest_Fashionista` | registered trainer | any outfit still locked | all 27 `FLAG_STYLE_UNLOCKED_*` set |
+| Suicune / Raikou / Entei | `MatchCall_Legend_Suicune` etc. | registered trainer | `FLAG_SYS_GAME_CLEAR` | that beast caught or beaten |
+| Legendary birds | `MatchCall_Legend_Birds` | registered trainer | `FLAG_BEAT_ALL_3RD_REMATCHES` | **all three** resolved |
+| Mewtwo | `MatchCall_Legend_Mewtwo` | registered trainer | `FLAG_COLLECTED_ALL_SILVER_SYMBOLS` | caught or beaten |
+| Jirachi | `MatchCall_Legend_Jirachi` | registered trainer | `VAR_MOSSDEEP_CITY_STATE == 4` | `FLAG_BATTLED_JIRACHI` |
+| Celebi | `MatchCall_Legend_Celebi` | registered trainer | `FLAG_IS_CHAMPION` | `FLAG_BATTLED_CELEBI` |
+| Deoxys | `MatchCall_Legend_Deoxys` | registered trainer | `FLAG_IS_CHAMPION` | Aurora Ticket received, or Deoxys battled |
+| Ho-Oh / Lugia | `MatchCall_Legend_NavelRock` | registered trainer | `FLAG_IS_CHAMPION` | Mystic Ticket received, or Lugia beaten |
+| Mew | `MatchCall_Legend_Mew` | registered trainer | `FLAG_IS_CHAMPION` | Old Sea Map received, or Mew caught |
+| Trainer sighting | `MatchCall_Mixed_Sighting` | registered trainer | a mixed-in `TVSHOW_TODAYS_RIVAL_TRAINER` or `TVSHOW_BREAKING_NEWS` exists | (data-driven) |
+| Someone's catch | `MatchCall_Mixed_RareCatch` | registered trainer | a mixed-in `TVSHOW_POKEMON_TODAY_CAUGHT` exists | (data-driven) |
+| Friend's base | `MatchCall_Mixed_SecretBaseM/F` | registered trainer | an occupied `secretBases[1..14]` slot | (data-driven) |
+| Rival met someone | `MatchCall_Mixed_RivalMet` | **Brendan / May** | any mixed-in trainer exists | (data-driven) |
+| Rival's crush | `MatchCall_Mixed_RivalCrush` | **Brendan / May** | met trainer's gender is known and opposite the rival's, **1/3 of the time** | (data-driven) |
+
+#### Notes on the record-mixing calls
+
+- **Gender.** Only `struct SecretBase` records the owner's gender; no TV show
+  does (`trendWatcher` aside, which carries nothing else useful). So the
+  crush line and the gendered secret-base line both source from secret bases,
+  and the TV-show-sourced calls stay gender-neutral ("they").
+- **No shiny claim.** Nothing in the mixed data records whether a caught
+  Pokemon was shiny -- there is no TV show for it. `MatchCall_Mixed_RareCatch`
+  therefore only says *what* was caught, never that it was shiny. The player's
+  own shinies are still covered by `MatchCall_RareCatch_Shiny`.
+- **Base locations needed a new table.** `secretBaseId` is all the save
+  stores, and every base interior reports `MAPSEC_SECRET_BASE`, so `GetMapName`
+  cannot name a friend's base route. `sSecretBaseLocations[]` in `match_call.c`
+  is a generated 75-entry `secretBaseId -> MAPSEC` table, extracted from the
+  `secret_base` bg_events in `data/maps/Route*/map.json`. **If base entrances
+  are ever moved or added, regenerate it.**
+- **Unterminated names.** `SecretBase.trainerName` is `PLAYER_NAME_LENGTH`
+  bytes with *no* terminator slot, unlike TV show names which are
+  `PLAYER_NAME_LENGTH + 1`. `CopyUnterminatedPlayerName()` exists for exactly
+  this; a plain `StringCopy` runs off into `trainerId`.
+
+#### A real flag clash found while doing this
+
+`FLAG_SYS_NO_COLLISION` and `FLAG_STYLE_UNLOCKED_TREECKO` are **both 0x2B5**
+(`include/constants/flags.h`). The comment on the former acknowledges it
+("Shares with TREECKO unlock (debug only)"). For the outfit hint this is
+harmless -- with debug no-collision on, the hint can stop one outfit early --
+but it is a genuine collision and worth fixing separately.
 
 ### Rarity rolls (family B, evaluated in this order)
 
@@ -216,3 +279,32 @@ anywhere in the tree before being taken.
 5. Charmap: the new `.inc` block uses `…` and `é` (both in the charmap) and
    contains **no** em/en-dashes. Verified with a UTF-8-aware scan — note that a
    byte-level grep for `—` false-positives on `…` since both start `E2 80`.
+
+---
+
+## 8. How often does the PokeNav actually ring?
+
+The binding constraint is the 10-minute gate, which can open at most **6 times
+per hour of walking**. A window that opens and then loses the 25% chance roll
+is *consumed* -- `UpdateMatchCallMinutesCounter` records the timestamp before
+`CheckMatchCallChance` runs -- so the ceiling is 6 attempts/hour regardless.
+
+Assuming continuous walking on call-legal outdoor maps:
+
+| Stage | Windows/hr | x chance roll | x caller found | **Calls/hr** |
+|---|---|---|---|---|
+| Vanilla, under 5 badges | 6 | 0.30 | ~0.03 | **~0.05** (one call per ~20 h) |
+| Veritas, early game | 6 | 0.25 | ~0.44 | **~0.7** |
+| Veritas, postgame (all callers unlocked) | 6 | 0.25 | ~0.62 | **~0.9** |
+| Veritas, postgame + Lightning Rod lead | 6 | 0.50 | ~0.62 | **~1.9** |
+
+"Caller found" is the chance `SelectMatchCallTrainer` returns TRUE: the family
+B rolls in sequence, then the vanilla rematch check, then the 1/3 casual
+fallback. Vanilla's ~0.03 is the odds that a randomly picked registered
+trainer happens to be rematch-ready *on the player's current map*, which
+before the 5th badge is the only way vanilla accepts a call at all. That
+number is the whole reason for this change.
+
+Real-world figures are lower than the table: the step counter only advances
+while walking, so time in buildings, battles, menus and cutscenes doesn't
+count toward the next window.

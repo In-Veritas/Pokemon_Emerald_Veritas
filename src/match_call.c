@@ -9,6 +9,7 @@
 #include "event_object_movement.h"
 #include "field_player_avatar.h"
 #include "field_specials.h"
+#include "international_string_util.h"
 #include "main.h"
 #include "match_call.h"
 #include "menu.h"
@@ -34,8 +35,10 @@
 #include "constants/game_stat.h"
 #include "constants/opponents.h"
 #include "constants/region_map_sections.h"
+#include "constants/secret_bases.h"
 #include "constants/songs.h"
 #include "constants/trainers.h"
+#include "constants/tv.h"
 
 // In this file only the values normally associated with Battle Pike and Factory are swapped.
 // Note that this is *not* a bug, because they are properly swapped consistently in this file.
@@ -120,6 +123,8 @@ enum
     SPECIAL_CALL_BIRCH,
     SPECIAL_CALL_RIVAL,
     SPECIAL_CALL_STEVEN,
+    SPECIAL_CALL_RIVAL_WEATHER, // "the Weather Institute needs trainers"
+    SPECIAL_CALL_RIVAL_MIXED,   // "I met someone from far away…"
     SPECIAL_CALL_COUNT,
 };
 
@@ -136,6 +141,14 @@ enum
     CASUAL_OUTBREAK,
     CASUAL_TIME_OF_DAY,
     CASUAL_RARE_CATCH,
+    CASUAL_LEGEND_RUMOR,
+    CASUAL_LEGEND_BIRDS,
+    CASUAL_LEGEND_JIRACHI,
+    CASUAL_QUEST_MUSEUM,
+    CASUAL_QUEST_FASHIONISTA,
+    CASUAL_MIXED_SIGHTING,
+    CASUAL_MIXED_CATCH,
+    CASUAL_MIXED_BASE,
     CASUAL_COUNT,
 };
 
@@ -225,6 +238,12 @@ static const struct MatchCallText *SelectCasualMatchCallText(int, u8 *);
 static bool32 TryPopulateOutbreakVars(bool8 *);
 static bool32 TryPopulateRareCatchVars(bool8 *);
 static bool32 PlayerHasAnyFrontierStreak(void);
+static bool32 ShouldOfferWeatherInstituteCall(void);
+static bool32 IsWeatherInstituteInResearchPhase(void);
+static bool32 HasAnyRecordMixedTrainer(void);
+static bool32 TryPopulateMixedTrainerForRival(u8 *, bool8 *);
+static int SelectLegendRumor(void);
+static bool32 ShouldOfferBirdRumor(void);
 
 #define TEXT_ID(topic, id) (((topic) << 8) | ((id) & 0xFF))
 
@@ -1081,9 +1100,15 @@ static const struct MatchCallText sMatchCallBirthdayTexts[] =
     { .text = MatchCall_BirthdayText3, .stringVarFuncIds = STRS_NORMAL_MSG },
 };
 
-// One tip per ability that actually changes something in the OVERWORLD in
-// this repo. Flame Body / Magma Armor (egg hatching) and Pickup are
-// battle-only here, so they deliberately have no tip.
+// One tip per ability that actually changes something outside battle in this
+// repo. Verified against the implementation, not against vanilla:
+//   egg cycles   egg_hatch.c GetEggCyclesToSubtract (any party slot)
+//   pickup       battle_script_commands.c (post-battle, any party slot)
+//   encounters   wild_encounter.c
+//   fishing      field_player_avatar.c
+//   held items   pokemon.c SetWildMonHeldItem
+//   ambient cry  overworld.c
+//   cut radius   fldeff_cut.c
 static const struct MatchCallText sMatchCallAbilityTipTexts[] =
 {
     { .text = MatchCall_AbilityTip_LightningRod,  .stringVarFuncIds = STRS_NORMAL_MSG },
@@ -1095,6 +1120,85 @@ static const struct MatchCallText sMatchCallAbilityTipTexts[] =
     { .text = MatchCall_AbilityTip_Hustle,        .stringVarFuncIds = STRS_NORMAL_MSG },
     { .text = MatchCall_AbilityTip_SuctionCups,   .stringVarFuncIds = STRS_NORMAL_MSG },
     { .text = MatchCall_AbilityTip_CompoundEyes,  .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_FlameBody,     .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_Pickup,        .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_Swarm,         .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_AbilityTip_HyperCutter,   .stringVarFuncIds = STRS_NORMAL_MSG },
+};
+
+// Postgame legendary rumours. Offered only while `gate` is set and NEITHER
+// `done` flag is set, so a rumour stops the moment that hunt is resolved --
+// either by catching it or by knocking it out. For the ticket islands the
+// "done" pair is (ticket received, legendary resolved), because once the
+// player holds the ticket the rumour about how to get one is stale.
+#define MATCH_CALL_NO_FLAG 0xFFFF
+
+struct MatchCallRumor
+{
+    struct MatchCallText text;
+    u16 gate;
+    u16 done1;
+    u16 done2;
+};
+
+#define RUMOR(txt, gate, d1, d2) { { txt, STRS_NORMAL_MSG }, gate, d1, d2 }
+
+static const struct MatchCallRumor sMatchCallLegendRumors[] =
+{
+    RUMOR(MatchCall_Legend_Suicune,   FLAG_SYS_GAME_CLEAR,               FLAG_CAUGHT_SUICUNE,         FLAG_DEFEATED_SUICUNE),
+    RUMOR(MatchCall_Legend_Raikou,    FLAG_SYS_GAME_CLEAR,               FLAG_CAUGHT_RAIKOU,          FLAG_DEFEATED_RAIKOU),
+    RUMOR(MatchCall_Legend_Entei,     FLAG_SYS_GAME_CLEAR,               FLAG_CAUGHT_ENTEI,           FLAG_DEFEATED_ENTEI),
+    RUMOR(MatchCall_Legend_Mewtwo,    FLAG_COLLECTED_ALL_SILVER_SYMBOLS, FLAG_CAUGHT_MEWTWO,          FLAG_DEFEATED_MEWTWO),
+    RUMOR(MatchCall_Legend_Celebi,    FLAG_IS_CHAMPION,                  FLAG_BATTLED_CELEBI,         MATCH_CALL_NO_FLAG),
+    RUMOR(MatchCall_Legend_Deoxys,    FLAG_IS_CHAMPION,                  FLAG_RECEIVED_AURORA_TICKET, FLAG_BATTLED_DEOXYS),
+    RUMOR(MatchCall_Legend_NavelRock, FLAG_IS_CHAMPION,                  FLAG_RECEIVED_MYSTIC_TICKET, FLAG_DEFEATED_LUGIA),
+    RUMOR(MatchCall_Legend_Mew,       FLAG_IS_CHAMPION,                  FLAG_RECEIVED_OLD_SEA_MAP,   FLAG_CAUGHT_MEW),
+};
+
+// The three birds share one rumour, so unlike the table above it has to stay
+// available until ALL of them are resolved, not just the first.
+static const u16 sMatchCallBirdDoneFlags[] =
+{
+    FLAG_CAUGHT_ARTICUNO, FLAG_DEFEATED_ARTICUNO,
+    FLAG_CAUGHT_ZAPDOS,   FLAG_DEFEATED_ZAPDOS,
+    FLAG_CAUGHT_MOLTRES,  FLAG_DEFEATED_MOLTRES,
+};
+
+static const struct MatchCallText sMatchCallLegendBirdsText =
+    { .text = MatchCall_Legend_Birds, .stringVarFuncIds = STRS_NORMAL_MSG };
+// Jirachi's gate is a var, not a flag, so it sits outside the table.
+static const struct MatchCallText sMatchCallLegendJirachiText =
+    { .text = MatchCall_Legend_Jirachi, .stringVarFuncIds = STRS_NORMAL_MSG };
+static const struct MatchCallText sMatchCallQuestMuseumTicketText =
+    { .text = MatchCall_Quest_MuseumTicket, .stringVarFuncIds = STRS_NORMAL_MSG };
+static const struct MatchCallText sMatchCallMixedSightingText =
+    { .text = MatchCall_Mixed_Sighting, .stringVarFuncIds = STRS_NORMAL_MSG };
+static const struct MatchCallText sMatchCallMixedRareCatchText =
+    { .text = MatchCall_Mixed_RareCatch, .stringVarFuncIds = STRS_NORMAL_MSG };
+static const struct MatchCallText sMatchCallMixedSecretBaseTexts[2] =
+{
+    [MALE]   = { .text = MatchCall_Mixed_SecretBaseM, .stringVarFuncIds = STRS_NORMAL_MSG },
+    [FEMALE] = { .text = MatchCall_Mixed_SecretBaseF, .stringVarFuncIds = STRS_NORMAL_MSG },
+};
+static const struct MatchCallText sMatchCallQuestFashionistaText =
+    { .text = MatchCall_Quest_Fashionista, .stringVarFuncIds = STRS_NORMAL_MSG };
+
+// The four Fashionista NPCs, one per Pokemon Center 1F. The call names
+// whichever city it picks so the player knows where to go.
+static const u16 sFashionistaCityMapSecs[] =
+{
+    MAPSEC_SLATEPORT_CITY,
+    MAPSEC_LAVARIDGE_TOWN,
+    MAPSEC_LILYCOVE_CITY,
+    MAPSEC_SOOTOPOLIS_CITY,
+};
+
+// The Weather Institute's postgame beast hunts, in (caught, defeated) pairs.
+static const u16 sWeatherInstituteBeastFlags[] =
+{
+    FLAG_CAUGHT_SUICUNE, FLAG_DEFEATED_SUICUNE,
+    FLAG_CAUGHT_RAIKOU,  FLAG_DEFEATED_RAIKOU,
+    FLAG_CAUGHT_ENTEI,   FLAG_DEFEATED_ENTEI,
 };
 
 static const struct MatchCallText sMatchCallGeneralTipTexts[] =
@@ -1146,6 +1250,8 @@ static const u8 *const sSpecialCallTexts[SPECIAL_CALL_COUNT] =
     [SPECIAL_CALL_BIRCH]          = MatchCall_Leisure_Birch1,
     [SPECIAL_CALL_RIVAL]          = MatchCall_Leisure_Rival1,
     [SPECIAL_CALL_STEVEN]         = MatchCall_Leisure_Steven1,
+    [SPECIAL_CALL_RIVAL_WEATHER]  = MatchCall_Quest_WeatherInstitute,
+    [SPECIAL_CALL_RIVAL_MIXED]    = MatchCall_Mixed_RivalMet,
 };
 
 // Second variant for the leisure callers, picked by a coin flip.
@@ -1155,6 +1261,96 @@ static const u8 *const sSpecialCallTextsAlt[SPECIAL_CALL_COUNT] =
     [SPECIAL_CALL_BIRCH]  = MatchCall_Leisure_Birch2,
     [SPECIAL_CALL_RIVAL]  = MatchCall_Leisure_Rival2,
     [SPECIAL_CALL_STEVEN] = MatchCall_Leisure_Steven2,
+};
+
+// Where each secret base entrance physically sits. The save only stores
+// secretBaseId; the route is in the map's bg_events, which C can't reach at
+// runtime, so this table is generated from data/maps/*/map.json. Every base
+// interior reports MAPSEC_SECRET_BASE, which is why GetMapName can't be used
+// for a friend's base.
+struct SecretBaseLocation
+{
+    u8 baseId;
+    u8 mapSec;
+};
+
+static const struct SecretBaseLocation sSecretBaseLocations[] =
+{
+    { SECRET_BASE_RED_CAVE1_1,    MAPSEC_ROUTE_118 },
+    { SECRET_BASE_RED_CAVE1_2,    MAPSEC_ROUTE_125 },
+    { SECRET_BASE_RED_CAVE1_3,    MAPSEC_ROUTE_113 },
+    { SECRET_BASE_RED_CAVE2_1,    MAPSEC_ROUTE_118 },
+    { SECRET_BASE_RED_CAVE2_2,    MAPSEC_ROUTE_121 },
+    { SECRET_BASE_RED_CAVE2_3,    MAPSEC_ROUTE_111 },
+    { SECRET_BASE_RED_CAVE3_1,    MAPSEC_ROUTE_115 },
+    { SECRET_BASE_RED_CAVE3_2,    MAPSEC_ROUTE_121 },
+    { SECRET_BASE_RED_CAVE3_3,    MAPSEC_ROUTE_119 },
+    { SECRET_BASE_RED_CAVE4_1,    MAPSEC_ROUTE_127 },
+    { SECRET_BASE_RED_CAVE4_2,    MAPSEC_ROUTE_125 },
+    { SECRET_BASE_RED_CAVE4_3,    MAPSEC_ROUTE_111 },
+    { SECRET_BASE_BROWN_CAVE1_1,  MAPSEC_ROUTE_114 },
+    { SECRET_BASE_BROWN_CAVE1_2,  MAPSEC_ROUTE_115 },
+    { SECRET_BASE_BROWN_CAVE1_3,  MAPSEC_ROUTE_115 },
+    { SECRET_BASE_BROWN_CAVE2_1,  MAPSEC_ROUTE_114 },
+    { SECRET_BASE_BROWN_CAVE2_2,  MAPSEC_ROUTE_115 },
+    { SECRET_BASE_BROWN_CAVE2_3,  MAPSEC_ROUTE_115 },
+    { SECRET_BASE_BROWN_CAVE3_1,  MAPSEC_ROUTE_114 },
+    { SECRET_BASE_BROWN_CAVE3_2,  MAPSEC_ROUTE_115 },
+    { SECRET_BASE_BROWN_CAVE3_3,  MAPSEC_ROUTE_115 },
+    { SECRET_BASE_BROWN_CAVE4_1,  MAPSEC_ROUTE_114 },
+    { SECRET_BASE_BROWN_CAVE4_2,  MAPSEC_ROUTE_115 },
+    { SECRET_BASE_BROWN_CAVE4_3,  MAPSEC_ROUTE_114 },
+    { SECRET_BASE_BLUE_CAVE1_1,   MAPSEC_ROUTE_116 },
+    { SECRET_BASE_BLUE_CAVE1_2,   MAPSEC_ROUTE_123 },
+    { SECRET_BASE_BLUE_CAVE1_3,   MAPSEC_ROUTE_123 },
+    { SECRET_BASE_BLUE_CAVE2_1,   MAPSEC_ROUTE_116 },
+    { SECRET_BASE_BLUE_CAVE2_2,   MAPSEC_ROUTE_123 },
+    { SECRET_BASE_BLUE_CAVE2_3,   MAPSEC_ROUTE_120 },
+    { SECRET_BASE_BLUE_CAVE3_1,   MAPSEC_ROUTE_120 },
+    { SECRET_BASE_BLUE_CAVE3_2,   MAPSEC_ROUTE_116 },
+    { SECRET_BASE_BLUE_CAVE3_3,   MAPSEC_ROUTE_119 },
+    { SECRET_BASE_BLUE_CAVE4_1,   MAPSEC_ROUTE_120 },
+    { SECRET_BASE_BLUE_CAVE4_2,   MAPSEC_ROUTE_116 },
+    { SECRET_BASE_BLUE_CAVE4_3,   MAPSEC_ROUTE_119 },
+    { SECRET_BASE_YELLOW_CAVE1_1, MAPSEC_ROUTE_111 },
+    { SECRET_BASE_YELLOW_CAVE1_2, MAPSEC_ROUTE_118 },
+    { SECRET_BASE_YELLOW_CAVE1_3, MAPSEC_ROUTE_127 },
+    { SECRET_BASE_YELLOW_CAVE2_1, MAPSEC_ROUTE_111 },
+    { SECRET_BASE_YELLOW_CAVE2_2, MAPSEC_ROUTE_125 },
+    { SECRET_BASE_YELLOW_CAVE2_3, MAPSEC_ROUTE_115 },
+    { SECRET_BASE_YELLOW_CAVE3_1, MAPSEC_ROUTE_111 },
+    { SECRET_BASE_YELLOW_CAVE3_2, MAPSEC_ROUTE_127 },
+    { SECRET_BASE_YELLOW_CAVE3_3, MAPSEC_ROUTE_127 },
+    { SECRET_BASE_YELLOW_CAVE4_1, MAPSEC_ROUTE_127 },
+    { SECRET_BASE_YELLOW_CAVE4_2, MAPSEC_ROUTE_125 },
+    { SECRET_BASE_YELLOW_CAVE4_3, MAPSEC_ROUTE_111 },
+    { SECRET_BASE_TREE1_1,        MAPSEC_ROUTE_111 },
+    { SECRET_BASE_TREE1_2,        MAPSEC_ROUTE_121 },
+    { SECRET_BASE_TREE1_3,        MAPSEC_ROUTE_118 },
+    { SECRET_BASE_TREE1_4,        MAPSEC_ROUTE_111 },
+    { SECRET_BASE_TREE2_1,        MAPSEC_ROUTE_118 },
+    { SECRET_BASE_TREE2_2,        MAPSEC_ROUTE_121 },
+    { SECRET_BASE_TREE2_3,        MAPSEC_ROUTE_119 },
+    { SECRET_BASE_TREE2_4,        MAPSEC_ROUTE_115 },
+    { SECRET_BASE_TREE3_1,        MAPSEC_ROUTE_110 },
+    { SECRET_BASE_TREE3_2,        MAPSEC_ROUTE_114 },
+    { SECRET_BASE_TREE3_3,        MAPSEC_ROUTE_115 },
+    { SECRET_BASE_TREE4_1,        MAPSEC_ROUTE_110 },
+    { SECRET_BASE_TREE4_2,        MAPSEC_ROUTE_114 },
+    { SECRET_BASE_TREE4_3,        MAPSEC_ROUTE_119 },
+    { SECRET_BASE_SHRUB1_1,       MAPSEC_ROUTE_119 },
+    { SECRET_BASE_SHRUB1_2,       MAPSEC_ROUTE_119 },
+    { SECRET_BASE_SHRUB1_3,       MAPSEC_ROUTE_120 },
+    { SECRET_BASE_SHRUB1_4,       MAPSEC_ROUTE_120 },
+    { SECRET_BASE_SHRUB2_1,       MAPSEC_ROUTE_119 },
+    { SECRET_BASE_SHRUB2_2,       MAPSEC_ROUTE_119 },
+    { SECRET_BASE_SHRUB2_3,       MAPSEC_ROUTE_120 },
+    { SECRET_BASE_SHRUB3_1,       MAPSEC_ROUTE_119 },
+    { SECRET_BASE_SHRUB3_2,       MAPSEC_ROUTE_120 },
+    { SECRET_BASE_SHRUB3_3,       MAPSEC_ROUTE_119 },
+    { SECRET_BASE_SHRUB4_1,       MAPSEC_ROUTE_119 },
+    { SECRET_BASE_SHRUB4_2,       MAPSEC_ROUTE_120 },
+    { SECRET_BASE_SHRUB4_3,       MAPSEC_ROUTE_119 },
 };
 
 static const u16 sFrontierBrainTrainerIds[NUM_FRONTIER_FACILITIES] =
@@ -1844,6 +2040,79 @@ static bool32 PlayerHasAnyFrontierStreak(void)
     return FALSE;
 }
 
+// TRUE once the player is Champion and at least one of the three roaming
+// beasts the Weather Institute researchers send you after is unresolved.
+static bool32 IsWeatherInstituteInResearchPhase(void)
+{
+    u32 i;
+
+    if (!FlagGet(FLAG_SYS_GAME_CLEAR))
+        return FALSE;
+
+    for (i = 0; i < ARRAY_COUNT(sWeatherInstituteBeastFlags); i += 2)
+    {
+        if (!FlagGet(sWeatherInstituteBeastFlags[i]) && !FlagGet(sWeatherInstituteBeastFlags[i + 1]))
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+// Two eras for the same call. During the story the Institute is under Aqua
+// occupation and wants help; VAR_WEATHER_INSTITUTE_STATE only leaves 0 once
+// Shelly is beaten, and FLAG_RECEIVED_CASTFORM closes the quest out. In the
+// postgame the researchers recruit again for the beast hunts.
+static bool32 ShouldOfferWeatherInstituteCall(void)
+{
+    if (VarGet(VAR_WEATHER_INSTITUTE_STATE) == 0 && !FlagGet(FLAG_RECEIVED_CASTFORM))
+        return TRUE;
+
+    return IsWeatherInstituteInResearchPhase();
+}
+
+// The outfit hint stops once every Fashionista outfit has been unlocked.
+// The flags are contiguous from FLAG_STYLE_UNLOCKED_BRAZIL.
+// NOTE: FLAG_SYS_NO_COLLISION shares a value with the last one
+// (FLAG_STYLE_UNLOCKED_TREECKO, 0x2B5) -- see flags.h. In a debug session
+// with no-collision on, this reads one outfit as already unlocked. Harmless
+// here (it can only end the hint marginally early) but it is a real clash.
+// PLAYER_STYLE_COUNT lives in src/data/player_styles.h, which isn't meant to
+// be included from here, so the count comes from the flag range instead.
+#define NUM_OUTFIT_UNLOCK_FLAGS (FLAG_STYLE_UNLOCKED_TREECKO - FLAG_STYLE_UNLOCKED_BRAZIL + 1)
+
+static bool32 ShouldOfferFashionistaCall(void)
+{
+    u32 i;
+
+    for (i = 0; i < NUM_OUTFIT_UNLOCK_FLAGS; i++)
+    {
+        if (!FlagGet(FLAG_STYLE_UNLOCKED_BRAZIL + i))
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+static bool32 HasAnyRecordMixedTrainer(void)
+{
+    u8 i;
+
+    for (i = 1; i < SECRET_BASES_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->secretBases[i].secretBaseId != 0)
+            return TRUE;
+    }
+
+    for (i = NUM_NORMAL_TVSHOW_SLOTS; i < TV_SHOWS_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->tvShows[i].common.kind == TVSHOW_TODAYS_RIVAL_TRAINER
+         && gSaveBlock1Ptr->tvShows[i].common.active)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
 // Family B: callers with no rematch-table entry. Each gets its own roll and
 // falls through to the next on a miss, rarest first.
 static bool32 TrySelectSpecialCall(void)
@@ -1862,6 +2131,22 @@ static bool32 TrySelectSpecialCall(void)
             sMatchCallState.specialCallId = SPECIAL_CALL_HEART_RIVAL;
         else
             sMatchCallState.specialCallId = SPECIAL_CALL_HEART_STEVEN;
+        return TRUE;
+    }
+
+    // The rival telling the player about the Weather Institute. Two eras:
+    // the Aqua takeover during the story, and the postgame research the
+    // institute staff recruit for. Both stop once their work is finished.
+    if ((Random() % 14) == 0 && ShouldOfferWeatherInstituteCall())
+    {
+        sMatchCallState.specialCallId = SPECIAL_CALL_RIVAL_WEATHER;
+        return TRUE;
+    }
+
+    // The rival meeting somebody who came in through record mixing.
+    if ((Random() % 14) == 0 && HasAnyRecordMixedTrainer())
+    {
+        sMatchCallState.specialCallId = SPECIAL_CALL_RIVAL_MIXED;
         return TRUE;
     }
 
@@ -1923,12 +2208,23 @@ static u8 GetFirstNonEggPartyIndex(void)
     return 0;
 }
 
+// The rival is always the opposite gender to the player.
+static void PopulateRivalName(u8 *destStr)
+{
+    if (gSaveBlock2Ptr->playerGender == MALE)
+        StringCopy(destStr, gTrainers[TRAINER_MAY_ROUTE_103_TREECKO].trainerName);
+    else
+        StringCopy(destStr, gTrainers[TRAINER_BRENDAN_ROUTE_103_TREECKO].trainerName);
+}
+
 static void BuildSpecialCallString(u8 *str)
 {
     const u8 *text;
     u16 streak, best;
     u32 topic;
     int i, bestId;
+    u8 metGender = MALE;
+    bool8 metGenderKnown = FALSE;
 
     text = sSpecialCallTexts[sMatchCallState.specialCallId];
     if (sSpecialCallTextsAlt[sMatchCallState.specialCallId] != NULL && (Random() % 2))
@@ -1943,10 +2239,26 @@ static void BuildSpecialCallString(u8 *str)
         break;
     case SPECIAL_CALL_HEART_RIVAL:
     case SPECIAL_CALL_RIVAL:
-        if (gSaveBlock2Ptr->playerGender == MALE)
-            StringCopy(gStringVar1, gTrainers[TRAINER_MAY_ROUTE_103_TREECKO].trainerName);
-        else
-            StringCopy(gStringVar1, gTrainers[TRAINER_BRENDAN_ROUTE_103_TREECKO].trainerName);
+        PopulateRivalName(gStringVar1);
+        break;
+    case SPECIAL_CALL_RIVAL_WEATHER:
+        PopulateRivalName(gStringVar1);
+        // Same caller, two eras: the Aqua occupation during the story, the
+        // beast-hunt recruitment afterwards.
+        if (IsWeatherInstituteInResearchPhase())
+            text = MatchCall_Quest_WeatherResearch;
+        break;
+    case SPECIAL_CALL_RIVAL_MIXED:
+        PopulateRivalName(gStringVar1);
+        // The crush variant only exists when the mixed-in trainer's gender is
+        // known (secret bases record it, TV shows don't) AND is the opposite
+        // of the rival's own -- the rival is always the player's opposite. It
+        // stays a 1-in-3 so it reads as an occasional slip, not a running gag.
+        if (TryPopulateMixedTrainerForRival(&metGender, &metGenderKnown)
+         && metGenderKnown
+         && metGender == gSaveBlock2Ptr->playerGender
+         && (Random() % 3) == 0)
+            text = MatchCall_Mixed_RivalCrush;
         break;
     case SPECIAL_CALL_HEART_WALLACE:
         // Reading the actual Hall of Fame means pulling flash sectors 28-29
@@ -2048,19 +2360,220 @@ static bool32 TryPopulateRareCatchVars(bool8 *wasShiny)
     return TRUE;
 }
 
+// Secret base and Apprentice names are PLAYER_NAME_LENGTH bytes with NO room
+// for a terminator, unlike TV show names. Copying one with StringCopy runs
+// off the end into the adjacent fields.
+static void CopyUnterminatedPlayerName(u8 *dest, const u8 *src, u8 language)
+{
+    StringCopyN(dest, src, PLAYER_NAME_LENGTH);
+    dest[PLAYER_NAME_LENGTH] = EOS;
+    ConvertInternationalString(dest, language);
+}
+
+// Record-mix TV shows live in slots NUM_NORMAL_TVSHOW_SLOTS..TV_SHOWS_COUNT-1;
+// slots below that are the player's own. Returns a random live show of the
+// requested kind, or NULL.
+static TVShow *FindRecordMixedShow(u8 kind)
+{
+    TVShow *matches[TV_SHOWS_COUNT];
+    u8 count = 0;
+    u8 i;
+
+    for (i = NUM_NORMAL_TVSHOW_SLOTS; i < TV_SHOWS_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->tvShows[i].common.kind == kind
+         && gSaveBlock1Ptr->tvShows[i].common.active)
+            matches[count++] = &gSaveBlock1Ptr->tvShows[i];
+    }
+
+    if (count == 0)
+        return NULL;
+
+    return matches[Random() % count];
+}
+
+// "I ran into {STR_VAR_2} over on {STR_VAR_3}."
+static bool32 TryPopulateMixedSightingVars(void)
+{
+    TVShow *show = FindRecordMixedShow(TVSHOW_TODAYS_RIVAL_TRAINER);
+
+    if (show != NULL)
+    {
+        TVShowConvertInternationalString(gStringVar2, show->rivalTrainer.playerName, show->rivalTrainer.language);
+        GetMapName(gStringVar3, show->rivalTrainer.location, 0);
+        return TRUE;
+    }
+
+    show = FindRecordMixedShow(TVSHOW_BREAKING_NEWS);
+    if (show != NULL)
+    {
+        TVShowConvertInternationalString(gStringVar2, show->breakingNews.playerName, show->breakingNews.language);
+        GetMapName(gStringVar3, show->breakingNews.location, 0);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+// "{STR_VAR_2} caught a {STR_VAR_3}!" Note the mixed-in data records WHAT was
+// caught but not whether it was shiny -- no TV show carries that -- so this
+// call never claims a shiny. The player's own shinies are covered by
+// MatchCall_RareCatch_Shiny instead.
+static bool32 TryPopulateMixedCatchVars(void)
+{
+    TVShow *show = FindRecordMixedShow(TVSHOW_POKEMON_TODAY_CAUGHT);
+
+    if (show == NULL || show->pokemonToday.species == SPECIES_NONE)
+        return FALSE;
+
+    TVShowConvertInternationalString(gStringVar2, show->pokemonToday.playerName, show->pokemonToday.language);
+    StringCopy(gStringVar3, gSpeciesNames[show->pokemonToday.species]);
+    return TRUE;
+}
+
+static u16 GetSecretBaseMapSec(u8 baseId)
+{
+    u32 i;
+
+    for (i = 0; i < ARRAY_COUNT(sSecretBaseLocations); i++)
+    {
+        if (sSecretBaseLocations[i].baseId == baseId)
+            return sSecretBaseLocations[i].mapSec;
+    }
+
+    return MAPSEC_NONE;
+}
+
+// "{STR_VAR_2}'s base is on {STR_VAR_3}." Slot 0 is always the player's own
+// base, so it's skipped.
+static bool32 TryPopulateMixedBaseVars(u8 *gender)
+{
+    u8 slots[SECRET_BASES_COUNT];
+    u8 count = 0;
+    u8 i;
+    u16 mapSec;
+
+    for (i = 1; i < SECRET_BASES_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->secretBases[i].secretBaseId != 0
+         && GetSecretBaseMapSec(gSaveBlock1Ptr->secretBases[i].secretBaseId) != MAPSEC_NONE)
+            slots[count++] = i;
+    }
+
+    if (count == 0)
+        return FALSE;
+
+    i = slots[Random() % count];
+    mapSec = GetSecretBaseMapSec(gSaveBlock1Ptr->secretBases[i].secretBaseId);
+    *gender = gSaveBlock1Ptr->secretBases[i].gender;
+    CopyUnterminatedPlayerName(gStringVar2, gSaveBlock1Ptr->secretBases[i].trainerName,
+                               gSaveBlock1Ptr->secretBases[i].language);
+    GetMapName(gStringVar3, mapSec, 0);
+    return TRUE;
+}
+
+// A mixed-in trainer for the rival to have met. Secret bases are preferred
+// because they're the only mixed source that records the owner's GENDER,
+// which the rival's crush line needs; TV shows are the nameless-gender
+// fallback and can only produce the neutral variant.
+static bool32 TryPopulateMixedTrainerForRival(u8 *gender, bool8 *genderKnown)
+{
+    TVShow *show;
+    u8 slots[SECRET_BASES_COUNT];
+    u8 count = 0;
+    u8 i;
+
+    *genderKnown = FALSE;
+
+    for (i = 1; i < SECRET_BASES_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->secretBases[i].secretBaseId != 0)
+            slots[count++] = i;
+    }
+
+    if (count != 0)
+    {
+        i = slots[Random() % count];
+        *gender = gSaveBlock1Ptr->secretBases[i].gender;
+        *genderKnown = TRUE;
+        CopyUnterminatedPlayerName(gStringVar2, gSaveBlock1Ptr->secretBases[i].trainerName,
+                                   gSaveBlock1Ptr->secretBases[i].language);
+        return TRUE;
+    }
+
+    show = FindRecordMixedShow(TVSHOW_TODAYS_RIVAL_TRAINER);
+    if (show != NULL)
+    {
+        TVShowConvertInternationalString(gStringVar2, show->rivalTrainer.playerName, show->rivalTrainer.language);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+// Index into sMatchCallLegendRumors of a rumour whose gate is open and whose
+// hunt isn't resolved yet, or -1 if there's nothing worth gossiping about.
+static int SelectLegendRumor(void)
+{
+    u8 usable[ARRAY_COUNT(sMatchCallLegendRumors)];
+    u8 count = 0;
+    u32 i;
+
+    for (i = 0; i < ARRAY_COUNT(sMatchCallLegendRumors); i++)
+    {
+        if (!FlagGet(sMatchCallLegendRumors[i].gate))
+            continue;
+        if (FlagGet(sMatchCallLegendRumors[i].done1))
+            continue;
+        if (sMatchCallLegendRumors[i].done2 != MATCH_CALL_NO_FLAG
+         && FlagGet(sMatchCallLegendRumors[i].done2))
+            continue;
+
+        usable[count++] = i;
+    }
+
+    if (count == 0)
+        return -1;
+
+    return usable[Random() % count];
+}
+
+// The birds share one rumour, so it stays available until every one of them
+// has been caught or knocked out.
+static bool32 ShouldOfferBirdRumor(void)
+{
+    u32 i;
+
+    if (!FlagGet(FLAG_BEAT_ALL_3RD_REMATCHES))
+        return FALSE;
+
+    for (i = 0; i < ARRAY_COUNT(sMatchCallBirdDoneFlags); i += 2)
+    {
+        if (!FlagGet(sMatchCallBirdDoneFlags[i]) && !FlagGet(sMatchCallBirdDoneFlags[i + 1]))
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
 // Family A: the caller is a registered rematch trainer, so {STR_VAR_1} is
 // filled by the normal PopulateTrainerName path. Categories that don't pass
 // their gate simply aren't offered.
 static const struct MatchCallText *SelectCasualMatchCallText(int matchCallId, u8 *str)
 {
-    u8 candidates[CASUAL_COUNT + 2];
+    // +4 covers the doubled CASUAL_CHATTER plus slack. Every new category
+    // added below must stay within this.
+    u8 candidates[CASUAL_COUNT + 4];
     u8 count = 0;
     bool8 useNationalVariant = FALSE;
     bool8 catchWasShiny = FALSE;
+    u8 baseOwnerGender = MALE;
     u8 hours;
+    int rumorId;
 
     RtcCalcLocalTime();
     hours = gLocalTime.hours;
+    rumorId = SelectLegendRumor();
 
     // Vanilla chatter is weighted double so the new material stays a garnish
     // rather than replacing the trainers' own voices.
@@ -2082,6 +2595,37 @@ static const struct MatchCallText *SelectCasualMatchCallText(int matchCallId, u8
     if (!FlagGet(FLAG_DAILY_RARE_CATCH_MATCH_CALL) && TryPopulateRareCatchVars(&catchWasShiny))
         candidates[count++] = CASUAL_RARE_CATCH;
 
+    if (rumorId >= 0)
+        candidates[count++] = CASUAL_LEGEND_RUMOR;
+
+    if (ShouldOfferBirdRumor())
+        candidates[count++] = CASUAL_LEGEND_BIRDS;
+
+    // Jirachi's gate is the National Dex upgrade cutscene, which sets this var.
+    if (VarGet(VAR_MOSSDEEP_CITY_STATE) == 4 && !FlagGet(FLAG_BATTLED_JIRACHI))
+        candidates[count++] = CASUAL_LEGEND_JIRACHI;
+
+    // The Lilycove Museum curator hands out the Mystic Ticket for filling his
+    // gallery. Stops the moment the player has the ticket.
+    if (FlagGet(FLAG_IS_CHAMPION) && !FlagGet(FLAG_RECEIVED_MYSTIC_TICKET))
+        candidates[count++] = CASUAL_QUEST_MUSEUM;
+
+    if (ShouldOfferFashionistaCall())
+        candidates[count++] = CASUAL_QUEST_FASHIONISTA;
+
+    if (TryPopulateMixedSightingVars())
+        candidates[count++] = CASUAL_MIXED_SIGHTING;
+
+    if (TryPopulateMixedCatchVars())
+        candidates[count++] = CASUAL_MIXED_CATCH;
+
+    if (TryPopulateMixedBaseVars(&baseOwnerGender))
+        candidates[count++] = CASUAL_MIXED_BASE;
+
+    // Every TryPopulate* above writes gStringVar2/gStringVar3, so by now they
+    // hold whichever candidate was tested LAST. Each case below re-populates
+    // for the category that actually won. A re-call can't fail: the probe
+    // already proved the data is there.
     switch (candidates[Random() % count])
     {
     case CASUAL_ABILITY_TIP:
@@ -2097,14 +2641,36 @@ static const struct MatchCallText *SelectCasualMatchCallText(int matchCallId, u8
             return &sMatchCallLateNightTexts[Random() % ARRAY_COUNT(sMatchCallLateNightTexts)];
         return &sMatchCallEarlyMorningTexts[Random() % ARRAY_COUNT(sMatchCallEarlyMorningTexts)];
     case CASUAL_OUTBREAK:
+        TryPopulateOutbreakVars(&useNationalVariant);
         if (useNationalVariant)
             return &sMatchCallOutbreakNationalText;
         return &sMatchCallOutbreakText;
     case CASUAL_RARE_CATCH:
+        TryPopulateRareCatchVars(&catchWasShiny);
         FlagSet(FLAG_DAILY_RARE_CATCH_MATCH_CALL);
         if (catchWasShiny)
             return &sMatchCallRareCatchShinyText;
         return &sMatchCallRareCatchLegendaryText;
+    case CASUAL_LEGEND_RUMOR:
+        return &sMatchCallLegendRumors[rumorId].text;
+    case CASUAL_LEGEND_BIRDS:
+        return &sMatchCallLegendBirdsText;
+    case CASUAL_LEGEND_JIRACHI:
+        return &sMatchCallLegendJirachiText;
+    case CASUAL_QUEST_MUSEUM:
+        return &sMatchCallQuestMuseumTicketText;
+    case CASUAL_QUEST_FASHIONISTA:
+        GetMapName(gStringVar2, sFashionistaCityMapSecs[Random() % ARRAY_COUNT(sFashionistaCityMapSecs)], 0);
+        return &sMatchCallQuestFashionistaText;
+    case CASUAL_MIXED_SIGHTING:
+        TryPopulateMixedSightingVars();
+        return &sMatchCallMixedSightingText;
+    case CASUAL_MIXED_CATCH:
+        TryPopulateMixedCatchVars();
+        return &sMatchCallMixedRareCatchText;
+    case CASUAL_MIXED_BASE:
+        TryPopulateMixedBaseVars(&baseOwnerGender);
+        return &sMatchCallMixedSecretBaseTexts[baseOwnerGender];
     case CASUAL_CHATTER:
     default:
         if (Random() % 3)

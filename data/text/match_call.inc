@@ -2992,8 +2992,8 @@ MatchCall_AbilityTip_Synchronize::
 	.string "A breeder told me something\n"
 	.string "clever the other day.\p"
 	.string "Lead with a SYNCHRONIZE POKéMON\n"
-	.string "and wild ones you meet often\l"
-	.string "share its very nature!$"
+	.string "and every wild one you meet\l"
+	.string "shares its nature. Every time!$"
 
 MatchCall_AbilityTip_CuteCharm::
 	.string "It's {STR_VAR_1}!\p"
@@ -3272,3 +3272,228 @@ MatchCall_Veritas::
 	.string "………………\p"
 	.string "………………\p"
 	.string "…Thank you once again.$"
+
+@ --- Wave 2: abilities the first pass wrongly called battle-only ---
+MatchCall_AbilityTip_FlameBody::
+	.string "This is {STR_VAR_1}!\p"
+	.string "Waiting on an EGG to hatch?\p"
+	.string "Carry a FLAME BODY or MAGMA\n"
+	.string "ARMOR POKéMON and it'll hatch\l"
+	.string "in half the walking!\p"
+	.string "It doesn't even have to lead.\n"
+	.string "Anywhere in the party works!$"
+
+MatchCall_AbilityTip_Pickup::
+	.string "{STR_VAR_1} here!\p"
+	.string "Free stuff, that's my kind of tip.\p"
+	.string "A POKéMON with PICKUP that\n"
+	.string "isn't holding anything will grab\l"
+	.string "items after battles.\p"
+	.string "The higher its level, the better\n"
+	.string "the haul!$"
+
+MatchCall_AbilityTip_Swarm::
+	.string "It's {STR_VAR_1}!\p"
+	.string "Ever notice how the wild POKéMON\n"
+	.string "cry out more often around some\l"
+	.string "TRAINERS?\p"
+	.string "That's SWARM! Lead with one and\n"
+	.string "the whole route gets chatty.$"
+
+MatchCall_AbilityTip_HyperCutter::
+	.string "This is {STR_VAR_1}!\p"
+	.string "Here's one nobody knows.\p"
+	.string "Use CUT with a HYPER CUTTER\n"
+	.string "POKéMON and it clears a whole\l"
+	.string "patch instead of one tuft!\p"
+	.string "Saves so much time.$"
+
+@ --- Quest hints. All stop once their quest is finished. ---
+MatchCall_Quest_WeatherInstitute::
+	.string "{STR_VAR_1} here!\p"
+	.string "Have you been up Route 119?\p"
+	.string "The WEATHER INSTITUTE is asking\n"
+	.string "for TRAINERS. Something about\l"
+	.string "needing help urgently.\p"
+	.string "Sounds like more than research\n"
+	.string "trouble, if you ask me…$"
+
+MatchCall_Quest_WeatherResearch::
+	.string "{STR_VAR_1} here!\p"
+	.string "Remember the WEATHER INSTITUTE?\p"
+	.string "The researchers there are\n"
+	.string "recruiting TRAINERS again.\p"
+	.string "They keep picking up readings\n"
+	.string "they can't explain, and they\l"
+	.string "won't go looking themselves.\p"
+	.string "Sounds like your sort of job!$"
+
+MatchCall_Quest_MuseumTicket::
+	.string "This is {STR_VAR_1}!\p"
+	.string "Word from LILYCOVE CITY!\p"
+	.string "The MUSEUM owner is handing out\n"
+	.string "a boat ticket to anyone who\l"
+	.string "helps fill his gallery.\p"
+	.string "A ticket to somewhere that\n"
+	.string "isn't on any map, they say!$"
+
+@ --- Postgame legendary rumours. Each stops once that one is settled. ---
+MatchCall_Legend_Suicune::
+	.string "{STR_VAR_1} here!\p"
+	.string "Divers keep talking about the\n"
+	.string "water down south.\p"
+	.string "They say it runs clean as glass\n"
+	.string "in one spot, like something\l"
+	.string "purified it.\p"
+	.string "The WEATHER INSTITUTE is\n"
+	.string "measuring it, apparently!$"
+
+MatchCall_Legend_Raikou::
+	.string "This is {STR_VAR_1}!\p"
+	.string "Did you feel that storm?\p"
+	.string "No clouds, no rain, and the air\n"
+	.string "went electric anyway.\p"
+	.string "They're tracking the readings\n"
+	.string "at the WEATHER INSTITUTE!$"
+
+MatchCall_Legend_Entei::
+	.string "{STR_VAR_1} here!\p"
+	.string "The ground shook near MT.\n"
+	.string "CHIMNEY again last night.\p"
+	.string "Not an eruption. Footsteps,\n"
+	.string "one old hiker swore to me.\p"
+	.string "Something big is walking\n"
+	.string "around out there!$"
+
+MatchCall_Legend_Birds::
+	.string "It's {STR_VAR_1}!\p"
+	.string "You've beaten every GYM LEADER\n"
+	.string "twice over now, haven't you?\p"
+	.string "Then here's a rumor worth your\n"
+	.string "time. Three great birds have\l"
+	.string "been sighted in HOENN.\p"
+	.string "Ice in a sea cave, thunder\n"
+	.string "underground, fire in a hideout\l"
+	.string "nobody uses anymore!$"
+
+MatchCall_Legend_Mewtwo::
+	.string "{STR_VAR_1} here…\p"
+	.string "I shouldn't even say this.\p"
+	.string "There's a cave that TRAINERS\n"
+	.string "walk out of not remembering\l"
+	.string "why they went in.\p"
+	.string "They only let people with the\n"
+	.string "SILVER SYMBOLS near it.\p"
+	.string "Be careful, alright?$"
+
+MatchCall_Legend_Jirachi::
+	.string "This is {STR_VAR_1}!\p"
+	.string "There's a white stone out at\n"
+	.string "MOSSDEEP CITY.\p"
+	.string "Kids say if you make a wish on\n"
+	.string "it, something wakes up.\p"
+	.string "Silly, right? …Right?$"
+
+MatchCall_Legend_Celebi::
+	.string "{STR_VAR_1} here!\p"
+	.string "You'll think I'm dreaming.\p"
+	.string "There's an island that isn't\n"
+	.string "there most days, and someone\l"
+	.string "saw a green POKéMON in the\l"
+	.string "trees on it.\p"
+	.string "It vanished. Just… vanished.$"
+
+MatchCall_Legend_Deoxys::
+	.string "It's {STR_VAR_1}!\p"
+	.string "PROF. COZMO is beside himself.\p"
+	.string "Something came down out of the\n"
+	.string "sky and landed on an island\l"
+	.string "east of everything.\p"
+	.string "He's giving his boat ticket to\n"
+	.string "someone who'd know what to do\l"
+	.string "with it. Someone like you!$"
+
+MatchCall_Legend_NavelRock::
+	.string "This is {STR_VAR_1}!\p"
+	.string "Sailors are talking about a rock\n"
+	.string "in the middle of nowhere.\p"
+	.string "A silver bird above the clouds,\n"
+	.string "a diving one far below…\p"
+	.string "You'd need a very special\n"
+	.string "ticket to get out there!$"
+
+MatchCall_Legend_Mew::
+	.string "{STR_VAR_1} here!\p"
+	.string "You've seen every POKéMON there\n"
+	.string "is, haven't you? Everyone knows.\p"
+	.string "So here's the last secret.\p"
+	.string "There's an island the sailors\n"
+	.string "refuse to chart, and something\l"
+	.string "very small living on it.\p"
+	.string "PROF. BIRCH has the map!$"
+
+@ --- Record mixing. Names come from other players' mixed-in data. ---
+MatchCall_Mixed_Sighting::
+	.string "This is {STR_VAR_1}!\p"
+	.string "I ran into a TRAINER called\n"
+	.string "{STR_VAR_2} over on {STR_VAR_3}\l"
+	.string "earlier today.\p"
+	.string "Really putting their POKéMON\n"
+	.string "through their paces, too!\p"
+	.string "You two should battle sometime.$"
+
+MatchCall_Mixed_RareCatch::
+	.string "{STR_VAR_1} here!\p"
+	.string "It was all over the TV!\p"
+	.string "A TRAINER named {STR_VAR_2}\n"
+	.string "caught a {STR_VAR_3}!\p"
+	.string "Everyone's talking about it.\n"
+	.string "Some people have all the luck!$"
+
+MatchCall_Mixed_SecretBaseM::
+	.string "It's {STR_VAR_1}!\p"
+	.string "I finally found {STR_VAR_2}'s\n"
+	.string "SECRET BASE!\p"
+	.string "It's tucked away on {STR_VAR_3}.\n"
+	.string "He's done the place up nicely.\p"
+	.string "Go challenge him sometime!$"
+
+MatchCall_Mixed_SecretBaseF::
+	.string "It's {STR_VAR_1}!\p"
+	.string "I finally found {STR_VAR_2}'s\n"
+	.string "SECRET BASE!\p"
+	.string "It's tucked away on {STR_VAR_3}.\n"
+	.string "She's done the place up nicely.\p"
+	.string "Go challenge her sometime!$"
+
+MatchCall_Mixed_RivalMet::
+	.string "{STR_VAR_1} here!\p"
+	.string "Guess who I bumped into?\n"
+	.string "A TRAINER called {STR_VAR_2}!\p"
+	.string "Not from around here at all.\n"
+	.string "Totally different team, totally\l"
+	.string "different way of battling.\p"
+	.string "It's a big world out there,\n"
+	.string "isn't it?$"
+
+MatchCall_Mixed_RivalCrush::
+	.string "{STR_VAR_1} here!\p"
+	.string "So, um. I met a TRAINER today.\n"
+	.string "{STR_VAR_2}, from somewhere far\l"
+	.string "away.\p"
+	.string "We battled and I lost and it\n"
+	.string "was… it was fine. It was good.\p"
+	.string "…Anyway! That's all. Bye!$"
+
+@ --- Fashionista outfit hint. Stops once every outfit is unlocked. ---
+MatchCall_Quest_Fashionista::
+	.string "{STR_VAR_1} here!\p"
+	.string "You have to see what I'm wearing!\p"
+	.string "There's a FASHIONISTA at the
+"
+	.string "{STR_VAR_2} POKéMON CENTER, and\l"
+	.string "she made me the loveliest outfit.\p"
+	.string "Show one of them the right
+"
+	.string "POKéMON and they'll dress you\l"
+	.string "up too. Go on, treat yourself!$"

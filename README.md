@@ -531,9 +531,15 @@ Because far more picks now survive, the per-attempt roll was **lowered** from 30
 
 #### Someone Is Always Calling
 
-Registered trainers no longer only ever talk about rematches. They now also share **gameplay tips** — including one for **every ability with an overworld effect** (Synchronize natures, Cute Charm genders, Magnet Pull and Static type bias, Compound Eyes held items, Suction Cups fishing, Keen Eye / Intimidate and Hustle / Vital Spirit / Pressure level bias, and the encounter-rate abilities) — plus **rumours of a very strong trainer out on Southern Island**, and, once Rayquaza has been dealt with, a sighting of **a woman riding a dragon Pokémon flying out to sea**.
+Registered trainers no longer only ever talk about rematches. They now also share **gameplay tips** — one for **every ability with an overworld effect**: Flame Body and Magma Armor halving egg cycles from any party slot, Pickup, Synchronize natures, Cute Charm genders, Magnet Pull and Static type bias, Compound Eyes held items, Suction Cups fishing, Keen Eye / Intimidate and Hustle / Vital Spirit / Pressure level bias, the encounter-rate abilities, Swarm's ambient cries, and Hyper Cutter's wider Cut. Plus **rumours of a very strong trainer out on Southern Island**, and, once Rayquaza has been dealt with, a sighting of **a woman riding a dragon Pokémon flying out to sea**.
 
 They'll also read you the news: **Gen 2-style mass outbreak reports** naming the Pokémon and the route (a Pokémon foreign to Hoenn only gets mentioned once your **National Pokédex** is unlocked), and a call from someone who **saw your shiny or legendary catch on TV** and rang to congratulate you. Call at 3 AM and they'll tell you to get some sleep; call at dawn and they'll be impressed you're up.
+
+#### Rumours, Errands and Gossip
+
+Trainers pass on **hints for things you haven't done yet** — and stop the moment you finish them, so nothing ever nags. The Weather Institute asking for help (and, later, recruiting for its stranger readings); the Lilycove Museum owner handing out a boat ticket to somewhere that isn't on any map; a **Fashionista** in a Pokémon Center who'll dress you up if you show her the right Pokémon; and, once the postgame opens, quiet rumours about **water that runs too clean, thunder with no clouds, footsteps near Mt. Chimney, three great birds, a wishing stone, and an island that isn't there most days**.
+
+If you've **mixed records** with anyone, the network gets busier still: trainers report **spotting your friends out on the routes**, tell you **what someone just caught**, and let slip **where a friend built their Secret Base**. Your rival calls about the out-of-region trainers they keep bumping into — and occasionally gets a little flustered about one of them.
 
 And some callers aren't on your rematch list at all:
 
