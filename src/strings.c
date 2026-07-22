@@ -1787,6 +1787,7 @@ const u8 gText_YourName[] = _("YOUR NAME?");
 const u8 gText_BoxName[] = _("BOX NAME?");
 const u8 gText_PkmnsNickname[] = _("{STR_VAR_1}'s nickname?");
 const u8 gText_TellHimTheWords[] = _("Tell him the words.");
+const u8 gText_InsertPrizeCode[] = _("Insert Prize Code");
 const u8 gText_MoveOkBack[] = _("{DPAD_NONE}MOVE  {A_BUTTON}OK  {B_BUTTON}BACK");
 const u8 gText_CallCantBeMadeHere[] = _("A call can't be made from here.");
 const u8 gText_ContestLady_Handsome[] = _("HANDSOME");

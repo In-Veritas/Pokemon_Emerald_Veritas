@@ -5499,7 +5499,7 @@ static void CB2_HandleTournamentCode(void)
 void TournamentPrize_DoCodeEntry(void)
 {
     gStringVar2[0] = EOS;
-    DoNamingScreen(NAMING_SCREEN_WALDA, gStringVar2, 0, 0, 0, CB2_HandleTournamentCode);
+    DoNamingScreen(NAMING_SCREEN_TOURNEY_CODE, gStringVar2, 0, 0, 0, CB2_HandleTournamentCode);
 }
 
 // ============================================================

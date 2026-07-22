@@ -474,7 +474,8 @@ static void NamingScreen_Init(void)
     sNamingScreen->template = sNamingScreenTemplates[sNamingScreen->templateNum];
     sNamingScreen->currentPage = sNamingScreen->template->initialPage;
     sNamingScreen->inputCharBaseXPos = (DISPLAY_WIDTH - sNamingScreen->template->maxChars * 8) / 2 + 6;
-    if (sNamingScreen->templateNum == NAMING_SCREEN_WALDA)
+    if (sNamingScreen->templateNum == NAMING_SCREEN_WALDA
+     || sNamingScreen->templateNum == NAMING_SCREEN_TOURNEY_CODE)
         sNamingScreen->inputCharBaseXPos += 11;
     sNamingScreen->keyRepeatStartDelayCopy = gKeyRepeatStartDelay;
     memset(sNamingScreen->textBuffer, EOS, sizeof(sNamingScreen->textBuffer));
@@ -1373,6 +1374,7 @@ static void NamingScreen_CreatePlayerIcon(void);
 static void NamingScreen_CreatePCIcon(void);
 static void NamingScreen_CreateMonIcon(void);
 static void NamingScreen_CreateWaldaDadIcon(void);
+static void NamingScreen_CreateJirachiIcon(void);
 
 static void (*const sIconFunctions[])(void) =
 {
@@ -1381,6 +1383,7 @@ static void (*const sIconFunctions[])(void) =
     NamingScreen_CreatePCIcon,
     NamingScreen_CreateMonIcon,
     NamingScreen_CreateWaldaDadIcon,
+    NamingScreen_CreateJirachiIcon,
 };
 
 static void CreateInputTargetIcon(void)
@@ -1445,6 +1448,18 @@ static void NamingScreen_CreateWaldaDadIcon(void)
 
     spriteId = CreateObjectGraphicsSprite(OBJ_EVENT_GFX_MAN_1, SpriteCallbackDummy, 56, 37, 0);
     gSprites[spriteId].oam.priority = 3;
+    StartSpriteAnim(&gSprites[spriteId], ANIM_STD_GO_SOUTH);
+}
+
+// Walking Jirachi for the tournament prize code entry screen.
+static void NamingScreen_CreateJirachiIcon(void)
+{
+    u8 spriteId;
+
+    spriteId = CreateObjectGraphicsSprite(OBJ_EVENT_GFX_JIRACHI, SpriteCallbackDummy, 56, 37, 0);
+    gSprites[spriteId].oam.priority = 3;
+    // Jirachi's anim table is custom: GO_SOUTH is its sleeping pose — fitting
+    // for whispering a wish (prize code) to it.
     StartSpriteAnim(&gSprites[spriteId], ANIM_STD_GO_SOUTH);
 }
 
@@ -1742,7 +1757,8 @@ static void (*const sDrawTextEntryBoxFuncs[])(void) =
     [NAMING_SCREEN_BOX]        = DrawNormalTextEntryBox,
     [NAMING_SCREEN_CAUGHT_MON] = DrawMonTextEntryBox,
     [NAMING_SCREEN_NICKNAME]   = DrawMonTextEntryBox,
-    [NAMING_SCREEN_WALDA]      = DrawNormalTextEntryBox,
+    [NAMING_SCREEN_WALDA]        = DrawNormalTextEntryBox,
+    [NAMING_SCREEN_TOURNEY_CODE] = DrawNormalTextEntryBox,
 };
 
 static void DrawTextEntryBox(void)
@@ -2145,13 +2161,26 @@ static const struct NamingScreenTemplate sWaldaWordsScreenTemplate =
     .title = gText_TellHimTheWords,
 };
 
+// Same layout as the Walda screen but with no NPC icon and a neutral title.
+static const struct NamingScreenTemplate sTourneyCodeScreenTemplate =
+{
+    .copyExistingString = TRUE,
+    .maxChars = WALDA_PHRASE_LENGTH,
+    .iconFunction = 5,
+    .addGenderIcon = FALSE,
+    .initialPage = KBPAGE_LETTERS_UPPER,
+    .unused = 11,
+    .title = gText_InsertPrizeCode,
+};
+
 static const struct NamingScreenTemplate *const sNamingScreenTemplates[] =
 {
     [NAMING_SCREEN_PLAYER]     = &sPlayerNamingScreenTemplate,
     [NAMING_SCREEN_BOX]        = &sPCBoxNamingTemplate,
     [NAMING_SCREEN_CAUGHT_MON] = &sMonNamingScreenTemplate,
     [NAMING_SCREEN_NICKNAME]   = &sMonNamingScreenTemplate,
-    [NAMING_SCREEN_WALDA]      = &sWaldaWordsScreenTemplate,
+    [NAMING_SCREEN_WALDA]        = &sWaldaWordsScreenTemplate,
+    [NAMING_SCREEN_TOURNEY_CODE] = &sTourneyCodeScreenTemplate,
 };
 
 static const struct OamData sOam_8x8 =
