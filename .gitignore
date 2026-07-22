@@ -65,3 +65,7 @@ summary.md
 # Emerald Composer build droppings (the generated app itself IS committed)
 tools/emerald_composer/selftest.mid
 tools/emerald_composer/selftest.s
+
+# Generated tournament prize codes (secret - don't publish)
+tools/tournament_codes.txt
+__pycache__/
