@@ -29,7 +29,7 @@ Veritas stands on the shoulders of two excellent projects without which it would
 
 #### Special Thanks
 
-🙏 **Huge thanks to [Exclsior](https://github.com/Exclsior)** for personally helping me through countless questions while I was building this hack — answering decomp questions, pointing me at the right files, debugging tricky systems, and being generous with their time as I learned. Veritas only exists in the form it does because Exclsior was patient with a first-time ROM hacker.
+🙏 **Huge thanks to [Exclsior](https://github.com/Exclsior)** — first for creating Emerald Legacy Enhanced, the project Veritas is built on, and then for personally helping me through countless questions while I was building this hack: answering decomp questions, pointing me at the right files, debugging tricky systems, and being generous with their time as I learned.
 
 Veritas is a sister project to Legacy and Enhanced, not a fork-with-tweaks. Most of the systems have been rewritten or extended for the multiplayer focus and the Hoenn-essence direction, but every line of base code I started from came from those two projects, and full credit for that work belongs to their authors.
 
@@ -1061,23 +1061,9 @@ Contest painting rewards have been modified:
   * Smart Contest: Gardevoir (Level 50)
   * Tough Contest: Aggron (Level 50)
 
-## Emerald Composer — write your own music for the game
-
-A piano-roll music editor that plays the **actual Veritas soundfont** — every instrument is synthesized in your browser from the same samples, loop points, envelopes and PSG voices the GBA sound driver uses, so what you compose is what the game plays.
-
-* **Build it once**: `python tools/emerald_composer/build.py` → produces `tools/emerald_composer/emerald_composer.html` (a single self-contained file — open it in any browser, no server, works offline).
-* Pick any of the game's **193 voicegroups** (the dropdown shows which songs use each bank), lay out up to **16 tracks** (the BGM player's limit) with per-track instrument / volume / pan, and draw notes on the grid. Space to play. Drum-kit slots map one percussion sample per key at its true pitch and pan.
-* **Export .mid** produces a mid2agb-ready file (24 PPQN, program changes = voicegroup slots, CC7/CC10, `[` `]` loop markers). Register it in the game with one command:
-  ```
-  python tools/add_song.py my_song.mid MUS_MYSONG --voicegroup 51
-  ```
-  then build the ROM as usual and play it with `playbgm MUS_MYSONG` (or set it as any map's music).
-* Also exports **.wav** renders for sharing previews, and saves/loads project files (with browser autosave).
-* Fidelity notes: DirectSound instruments are sample-exact with m4a-style ADSR; square/wave/noise PSG channels are close approximations; the GBA's 8-bit output crunch is not simulated.
-
 ## Base Features from Emerald Legacy Enhanced
 
-This ROM hack includes **all features** from Pokémon Emerald Legacy Enhanced v1.1.4, including:
+This ROM hack is built on Pokémon Emerald Legacy Enhanced v1.1.4 and includes **most** of its features — though not all of them: some have been removed or reworked for Veritas (see the strikethroughs below and the changes documented throughout this README). Highlights inherited from Enhanced:
 
 * **All Pokémon Emerald Legacy features** (improved story, better trainer battles, expanded post-game)
 * **Pokémon Followers** with shiny support
