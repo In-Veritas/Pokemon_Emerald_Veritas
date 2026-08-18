@@ -378,8 +378,9 @@ static void Task_LinkupExchangeDataWithLeader(u8 taskId)
         card->monSpecies[1] = GetMonData(&gPlayerParty[gSelectedOrderFromParty[1] - 1], MON_DATA_SPECIES, NULL);
         // Append per-player battle scene pick to the trainer-card block so
         // every peer can read all picks via gBlockRecvBuffer after the
-        // exchange. Writes to byte SCENE_BLOCK_OFFSET (0xC0), well past
-        // the TrainerCard struct which ends at 0x64.
+        // exchange. Writes into the card's filler bytes at offset 0x44
+        // (layout in src/link_battle_scene.c), inside the 100-byte block
+        // the lobby already exchanges.
         LinkBattleScene_FillSendBuffer();
         gTasks[taskId].func = Task_LinkupAwaitTrainerCardData;
     }
@@ -430,7 +431,7 @@ static void Task_LinkupCheckStatusAfterConfirm(u8 taskId)
         card->monSpecies[0] = GetMonData(&gPlayerParty[gSelectedOrderFromParty[0] - 1], MON_DATA_SPECIES, NULL);
         card->monSpecies[1] = GetMonData(&gPlayerParty[gSelectedOrderFromParty[1] - 1], MON_DATA_SPECIES, NULL);
         // Mirror the buffer fill in Task_LinkupAwaitConnection — see comment
-        // there. Same SCENE_BLOCK_OFFSET, both code paths must write so peers
+        // there. Same filler-byte offset; both code paths must write so peers
         // see the scene pick regardless of which task path runs.
         LinkBattleScene_FillSendBuffer();
         gTasks[taskId].func = Task_LinkupAwaitTrainerCardData;

@@ -945,8 +945,8 @@ static const u16 *const sOpponentMugshotsPals[MUGSHOTS_COUNT] =
 // below) so each terrain has a clashing pair of palettes. Task_LinkBattle
 // picks one of the two columns deterministically via the same XOR-of-
 // trainer-IDs-and-RTC seed (LinkBattleScene_GetSyncSeed), so every peer
-// renders the same color. With the terrain picker removed, the resolved
-// terrain is always LINK_SCENE_NONE → row 0 (PLAIN) pair.
+// renders the same color. If no terrain was negotiated (LINK_SCENE_NONE,
+// e.g. a peer without the picker), row 0 (PLAIN) is the fallback pair.
 //
 // Palette → dominant hue:
 //   sMugshotPal_Sidney   = red    sMugshotPal_Drake   = orange
@@ -2724,6 +2724,8 @@ static void Mugshots_CreateTrainerPics(struct Task *task)
     struct Sprite *opponentSprite, *playerSprite;
     u8 trainerPicId;
     u8 linkOppIdx;
+    u8 mySide;
+    u8 i;
 
     s16 mugshotId = task->tMugshotId;
     if (mugshotId == MUGSHOT_SECRET_BASE)
@@ -2732,12 +2734,16 @@ static void Mugshots_CreateTrainerPics(struct Task *task)
     }
     else if (mugshotId == MUGSHOT_LINK_OPPONENT)
     {
-        // Pick the OPPOSITE-side LEADER (lowest multiplayerId on the
-        // enemy side). For 2-player battles that's just `myId ^ 1`. For
-        // 4-player multi: side bit = id & 1, opp leader id = !sideBit
-        // = (myId & 1) ^ 1. Both reduce to the same expression. Honors
-        // each linked player's broadcast RS-style toggle via
-        // LinkBattleScene_GetTrainerPicId.
+        // Pick the OPPOSITE-side leader (lowest link slot on the enemy
+        // side). Battle sides come from the chosen colosseum SEAT, not
+        // the link slot: gLinkPlayers[slot].id holds the seat (0-3, set
+        // by which tile the player stepped on) and seat parity (id & 1)
+        // is the side. In 2-player battles slot parity happens to match,
+        // but in a 4-player multi slot order and seat order can differ,
+        // so scan for the first slot whose seat parity differs from
+        // ours. Empty slots (2P) are zeroed → even parity, and can never
+        // be hit before a real opponent. Honors each linked player's
+        // broadcast RS-style toggle via LinkBattleScene_GetTrainerPicId.
         //
         // Use gSavedMultiplayerId instead of GetMultiplayerId(): the
         // wired flow runs SetCloseLinkCallback + DisableSerial BEFORE
@@ -2751,9 +2757,16 @@ static void Mugshots_CreateTrainerPics(struct Task *task)
         // wireless flow keeps RFU state alive through Shutdown so it was
         // already correct, but switching to the saved id is harmless
         // there and keeps both flows consistent.
-        linkOppIdx = (gSavedMultiplayerId & 1) ^ 1;
-        if (linkOppIdx >= MAX_LINK_PLAYERS)
-            linkOppIdx = 0; // defensive
+        mySide = gLinkPlayers[gSavedMultiplayerId].id & 1;
+        linkOppIdx = gSavedMultiplayerId ^ 1; // fallback, always overwritten below
+        for (i = 0; i < MAX_LINK_PLAYERS; i++)
+        {
+            if ((gLinkPlayers[i].id & 1) != mySide)
+            {
+                linkOppIdx = i;
+                break;
+            }
+        }
         trainerPicId = LinkBattleScene_GetTrainerPicId(linkOppIdx, gLinkPlayers[linkOppIdx].gender);
     }
     else

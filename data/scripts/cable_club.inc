@@ -293,7 +293,8 @@ CableClub_EventScript_CableClubUnlockedRecordCorner::
 @ trainer ID; the code carries the item, amount, tournament and placement).
 @ Reached from the Direct Corner attendant's cable menu. VAR_RESULT from
 @ TournamentPrize_DoCodeEntry: 0 invalid, 1 granted (item/qty in
-@ VAR_0x8004/0x8005), 2 already redeemed, 3 bag full, 4 cancelled.
+@ VAR_0x8004/0x8005), 2 already redeemed, 3 bag full, 4 cancelled,
+@ 5 granted (a hardcoded Pokemon; id in VAR_0x8004).
 CableClub_EventScript_TournamentPrize::
 	msgbox CableClub_Text_TournamentPrizeAskCode, MSGBOX_DEFAULT
 	special TournamentPrize_DoCodeEntry
@@ -304,6 +305,7 @@ CableClub_EventScript_TournamentPrize::
 	case 2, CableClub_EventScript_TournamentPrizeAlreadyUsed
 	case 3, CableClub_EventScript_TournamentPrizeNoRoom
 	case 4, CableClub_EventScript_WirelessClubDesk
+	case 5, CableClub_EventScript_TournamentPrizeGiveMon
 	end
 
 @ VAR_0x8006 = tournament (0 = none), VAR_0x8007 = 1/2/3 placement or 4 for a
@@ -348,6 +350,67 @@ CableClub_EventScript_TournamentPrizeThird::
 CableClub_EventScript_TournamentPrizeParticipation::
 	msgbox CableClub_Text_TournamentPrizeParticipation, MSGBOX_DEFAULT
 	giveitem VAR_0x8004, VAR_0x8005
+	goto CableClub_EventScript_WirelessClubDesk
+	end
+
+@ Pokemon prize (case 5): print the same placement banner as an item prize,
+@ then hand over the hardcoded mon via GiveTournamentPrizeMon (STR_VAR_2 = its
+@ nickname). VAR_RESULT: 0 party, 1 PC, 2 no room at all.
+CableClub_EventScript_TournamentPrizeGiveMon::
+	goto_if_eq VAR_0x8006, 0, CableClub_EventScript_TournamentPrizeMonGeneric
+	switch VAR_0x8007
+	case 1, CableClub_EventScript_TournamentPrizeMonFirst
+	case 2, CableClub_EventScript_TournamentPrizeMonSecond
+	case 3, CableClub_EventScript_TournamentPrizeMonThird
+	case 4, CableClub_EventScript_TournamentPrizeMonParticipation
+	goto CableClub_EventScript_TournamentPrizeMonGeneric
+	end
+
+CableClub_EventScript_TournamentPrizeMonGeneric::
+	msgbox CableClub_Text_TournamentPrizeWinner, MSGBOX_DEFAULT
+	goto CableClub_EventScript_TournamentPrizeMonGiveNow
+	end
+
+CableClub_EventScript_TournamentPrizeMonFirst::
+	msgbox CableClub_Text_TournamentPrizeFirst, MSGBOX_DEFAULT
+	goto CableClub_EventScript_TournamentPrizeMonGiveNow
+	end
+
+CableClub_EventScript_TournamentPrizeMonSecond::
+	msgbox CableClub_Text_TournamentPrizeSecond, MSGBOX_DEFAULT
+	goto CableClub_EventScript_TournamentPrizeMonGiveNow
+	end
+
+CableClub_EventScript_TournamentPrizeMonThird::
+	msgbox CableClub_Text_TournamentPrizeThird, MSGBOX_DEFAULT
+	goto CableClub_EventScript_TournamentPrizeMonGiveNow
+	end
+
+CableClub_EventScript_TournamentPrizeMonParticipation::
+	msgbox CableClub_Text_TournamentPrizeParticipation, MSGBOX_DEFAULT
+	goto CableClub_EventScript_TournamentPrizeMonGiveNow
+	end
+
+CableClub_EventScript_TournamentPrizeMonGiveNow::
+	specialvar VAR_RESULT, GiveTournamentPrizeMon
+	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PC, CableClub_EventScript_TournamentPrizeMonToPC
+	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PARTY, CableClub_EventScript_TournamentPrizeMonToParty
+	msgbox CableClub_Text_TournamentPrizeMonNoRoom, MSGBOX_DEFAULT
+	goto CableClub_EventScript_WirelessClubDesk
+	end
+
+CableClub_EventScript_TournamentPrizeMonToParty::
+	playfanfare MUS_OBTAIN_ITEM
+	msgbox CableClub_Text_TournamentPrizeMonReceived, MSGBOX_DEFAULT
+	waitfanfare
+	goto CableClub_EventScript_WirelessClubDesk
+	end
+
+CableClub_EventScript_TournamentPrizeMonToPC::
+	playfanfare MUS_OBTAIN_ITEM
+	msgbox CableClub_Text_TournamentPrizeMonReceived, MSGBOX_DEFAULT
+	waitfanfare
+	msgbox CableClub_Text_TournamentPrizeMonToPC, MSGBOX_DEFAULT
 	goto CableClub_EventScript_WirelessClubDesk
 	end
 

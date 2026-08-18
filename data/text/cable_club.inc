@@ -558,3 +558,17 @@ CableClub_Text_TournamentPrizeParticipation:
 	.string "Every TRAINER who steps up\n"
 	.string "deserves something for it.\l"
 	.string "Here you go!$"
+
+CableClub_Text_TournamentPrizeMonReceived:
+	.string "You received {STR_VAR_2},\n"
+	.string "a shiny GOLDEEN!$"
+
+CableClub_Text_TournamentPrizeMonToPC:
+	.string "{STR_VAR_2} was sent to\n"
+	.string "your PC.$"
+
+CableClub_Text_TournamentPrizeMonNoRoom:
+	.string "Oh dear, your party and your PC\n"
+	.string "BOXES are all full.\p"
+	.string "Please make room, then come back\n"
+	.string "with your code.$"
