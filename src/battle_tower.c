@@ -1690,6 +1690,7 @@ static void FillTrainerParty(u16 trainerId, u8 firstMonId, u8 monCount)
     u8 bfMonCount;
     const u16 *monSet = NULL;
     u32 otID = 0;
+    u32 attempts;
 
     if (trainerId < FRONTIER_TRAINERS_COUNT)
     {
@@ -1737,13 +1738,28 @@ static void FillTrainerParty(u16 trainerId, u8 firstMonId, u8 monCount)
         ;
     i = 0;
     otID = Random32();
+    // Veritas: escape hatch for the selection loop below. A pool that can't
+    // satisfy every filter used to spin here forever and hard-freeze the
+    // game right after the trainer's intro text -- e.g. an elite cameo pool
+    // with fewer distinct held items than party slots, or one that is all
+    // high-tier mons while the computed level is exactly 50 (Open level
+    // entered with a level-50 team). After enough failed rolls the filters
+    // are progressively dropped: the item clause first (a duplicate item is
+    // the least harmful concession), then the tier filter, then the species
+    // clause, and finally the exact-duplicate check (a pool with fewer
+    // entries than party slots cannot terminate otherwise). A well-formed
+    // pool never comes anywhere near the caps.
+    attempts = 0;
     while (i != monCount)
     {
         u16 monId = monSet[Random() % bfMonCount];
 
+        attempts++;
+
         // "High tier" Pokémon are only allowed on open level mode
         // 20 is not a possible value for level here
-        if ((level == FRONTIER_MAX_LEVEL_50 || level == 20) && monId > FRONTIER_MONS_HIGH_TIER)
+        if ((level == FRONTIER_MAX_LEVEL_50 || level == 20) && monId > FRONTIER_MONS_HIGH_TIER
+         && attempts <= 2000)
             continue;
 
         // Ensure this Pokémon species isn't a duplicate.
@@ -1752,7 +1768,7 @@ static void FillTrainerParty(u16 trainerId, u8 firstMonId, u8 monCount)
             if (GetMonData(&gEnemyParty[j], MON_DATA_SPECIES, NULL) == gFacilityTrainerMons[monId].species)
                 break;
         }
-        if (j != i + firstMonId)
+        if (j != i + firstMonId && attempts <= 3000)
             continue;
 
         // Ensure this Pokemon's held item isn't a duplicate.
@@ -1762,7 +1778,7 @@ static void FillTrainerParty(u16 trainerId, u8 firstMonId, u8 monCount)
              && GetMonData(&gEnemyParty[j], MON_DATA_HELD_ITEM, NULL) == gBattleFrontierHeldItems[gFacilityTrainerMons[monId].itemTableId])
                 break;
         }
-        if (j != i + firstMonId)
+        if (j != i + firstMonId && attempts <= 1000)
             continue;
 
         // Ensure this exact Pokémon index isn't a duplicate. This check doesn't seem necessary
@@ -1772,7 +1788,7 @@ static void FillTrainerParty(u16 trainerId, u8 firstMonId, u8 monCount)
             if (chosenMonIndices[j] == monId)
                 break;
         }
-        if (j != i)
+        if (j != i && attempts <= 4000)
             continue;
 
         chosenMonIndices[i] = monId;

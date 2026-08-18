@@ -6565,14 +6565,17 @@ const struct FacilityMon gBattleFrontierMons[NUM_FRONTIER_MONS] =
     [FRONTIER_MON_ELITE_PORYGON2_GABRIEL] = {
         .species = SPECIES_PORYGON2,
         .moves = {MOVE_THUNDER, MOVE_ICE_BEAM, MOVE_TRI_ATTACK, MOVE_RECOVER},
-        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        // Items must be pairwise distinct within a team: FillTrainerParty's
+        // item clause can't fill 3-4 slots from a pool with fewer distinct
+        // items (it used to hang the game -- see the escape hatch there).
+        .itemTableId = BATTLE_FRONTIER_ITEM_BRIGHT_POWDER,
         .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_HP,
         .nature = NATURE_MODEST
     },
     [FRONTIER_MON_ELITE_MISDREAVUS_GABRIEL] = {
         .species = SPECIES_MISDREAVUS,
         .moves = {MOVE_THUNDER, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_DESTINY_BOND},
-        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .itemTableId = BATTLE_FRONTIER_ITEM_SPELL_TAG,
         .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_SPEED,
         .nature = NATURE_MODEST
     },
@@ -6580,7 +6583,10 @@ const struct FacilityMon gBattleFrontierMons[NUM_FRONTIER_MONS] =
     [FRONTIER_MON_ELITE_FLYGON_NIJI] = {
         .species = SPECIES_FLYGON,
         .moves = {MOVE_EARTHQUAKE, MOVE_DRAGON_CLAW, MOVE_CRUNCH, MOVE_AERIAL_ACE},
-        .itemTableId = BATTLE_FRONTIER_ITEM_LUM_BERRY,
+        // Was a second LUM_BERRY; teams need pairwise-distinct items (the
+        // item clause in FillTrainerParty hangs otherwise; Rayquaza keeps
+        // LUM for Outrage confusion).
+        .itemTableId = BATTLE_FRONTIER_ITEM_SHELL_BELL,
         .evSpread = F_EV_SPREAD_ATTACK | F_EV_SPREAD_SPEED,
         .nature = NATURE_JOLLY
     },
@@ -6654,14 +6660,16 @@ const struct FacilityMon gBattleFrontierMons[NUM_FRONTIER_MONS] =
     [FRONTIER_MON_ELITE_GENGAR_NICOLAS] = {
         .species = SPECIES_GENGAR,
         .moves = {MOVE_SHADOW_BALL, MOVE_THUNDERBOLT, MOVE_SLUDGE_BOMB, MOVE_HYPNOSIS},
-        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        // Was a third LEFTOVERS; teams need pairwise-distinct items (the
+        // item clause in FillTrainerParty hangs otherwise).
+        .itemTableId = BATTLE_FRONTIER_ITEM_SPELL_TAG,
         .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_SPEED,
         .nature = NATURE_TIMID
     },
     [FRONTIER_MON_ELITE_GARDEVOIR_NICOLAS] = {
         .species = SPECIES_GARDEVOIR,
         .moves = {MOVE_PSYCHIC, MOVE_CALM_MIND, MOVE_THUNDERBOLT, MOVE_HYPNOSIS},
-        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        .itemTableId = BATTLE_FRONTIER_ITEM_TWISTED_SPOON,
         .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_SP_DEFENSE,
         .nature = NATURE_BOLD
     },
@@ -6683,7 +6691,10 @@ const struct FacilityMon gBattleFrontierMons[NUM_FRONTIER_MONS] =
     [FRONTIER_MON_ELITE_LAPRAS_YANN] = {
         .species = SPECIES_LAPRAS,
         .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_BODY_SLAM, MOVE_CONFUSE_RAY},
-        .itemTableId = BATTLE_FRONTIER_ITEM_LEFTOVERS,
+        // Was a second LEFTOVERS; teams need pairwise-distinct items (the
+        // item clause in FillTrainerParty hangs otherwise; Milotic keeps
+        // LEFTOVERS).
+        .itemTableId = BATTLE_FRONTIER_ITEM_NEVER_MELT_ICE,
         .evSpread = F_EV_SPREAD_SP_ATTACK | F_EV_SPREAD_HP,
         .nature = NATURE_MODEST
     },
