@@ -251,6 +251,10 @@ SecretBase_EventScript_SetDecorationFlags::
 SecretBase_EventScript_InitDecorations::
 	setvar VAR_0x8004, 0
 	setvar VAR_0x8005, 0
+	@ Veritas: the map grid + furniture exist now (unlike at ON_TRANSITION),
+	@ so validate/relocate the party mon and yield its slot if the doll
+	@ decorations about to spawn would overflow the object limit.
+	special AdjustSecretBasePartyMon
 	special InitSecretBaseDecorationSprites
 	setvar VAR_SECRET_BASE_INITIALIZED, 1
 	end

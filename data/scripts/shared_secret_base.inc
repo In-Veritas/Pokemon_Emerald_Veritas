@@ -13,6 +13,8 @@ SecretBase_OnTransition:
 	call SecretBase_EventScript_SetDecorationFlags
 	special SetSecretBaseOwnerGfxId
 	special InitSecretBaseVars
+	@ Veritas: stage one of the owner's record-mixed party mons (object 16)
+	special TrySpawnSecretBasePartyMon
 	end
 
 SecretBase_OnFrame:
@@ -213,3 +215,20 @@ SecretBase_Text_DiscoveredSmallCavern::
 
 SecretBase_Text_WantToMakeYourSecretBaseHere:
 	.string "Want to make your SECRET BASE here?$"
+
+@ Veritas: talking to the record-mixed owner's party mon.
+SecretBase_EventScript_PartyMon::
+	lock
+	faceplayer
+	specialvar VAR_RESULT, GetSecretBasePartyMonSpecies
+	bufferspeciesname STR_VAR_1, VAR_RESULT
+	playmoncry VAR_RESULT, CRY_MODE_NORMAL
+	msgbox SecretBase_Text_PartyMonHangingOut, MSGBOX_DEFAULT
+	waitmoncry
+	release
+	end
+
+SecretBase_Text_PartyMonHangingOut:
+	.string "{STR_VAR_1} is relaxing here,\n"
+	.string "keeping watch over its\l"
+	.string "TRAINER's base.$"

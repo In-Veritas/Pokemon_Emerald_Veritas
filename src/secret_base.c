@@ -26,6 +26,7 @@
 #include "metatile_behavior.h"
 #include "overworld.h"
 #include "palette.h"
+#include "random.h"
 #include "script.h"
 #include "secret_base.h"
 #include "sound.h"
@@ -36,6 +37,7 @@
 #include "window.h"
 #include "constants/event_bg.h"
 #include "constants/decorations.h"
+#include "constants/event_object_movement.h"
 #include "constants/event_objects.h"
 #include "constants/field_specials.h"
 #include "constants/items.h"
@@ -670,6 +672,229 @@ void HideSecretBaseDecorationSprites(void)
 void SetSecretBaseOwnerGfxId(void)
 {
     VarSet(VAR_OBJ_GFX_ID_F, sSecretBaseOwnerGfxIds[GetSecretBaseOwnerType(VarGet(VAR_CURRENT_SECRET_BASE))]);
+}
+
+// ===== Veritas: a record-mixed friend's party mon hangs out in their base ===
+
+// Object event 16 in every SecretBase_* map.json (OBJ_EVENT_GFX_VAR_E, hidden
+// behind FLAG_TEMP_E). On each transition into a friend's base, one of the
+// party mons carried by the record mix is picked at random and staged onto
+// that template.
+#define SECRET_BASE_PARTY_MON_LOCALID 16
+
+static EWRAM_DATA u16 sSecretBasePartyMonSpecies = SPECIES_NONE;
+
+// Nature -> idle behavior. Uses the ORIGINAL nature (personality % 25): the
+// record-mix party carries no hiddenNature field, so a minted mon shows its
+// born personality here -- a deliberate wire-format limitation.
+static const u8 sPartyMonNatureMovements[NUM_NATURES] =
+{
+    [NATURE_HARDY]   = MOVEMENT_TYPE_WANDER_AROUND,
+    [NATURE_LONELY]  = MOVEMENT_TYPE_FACE_DOWN,
+    [NATURE_BRAVE]   = MOVEMENT_TYPE_WALK_UP_AND_DOWN,
+    [NATURE_ADAMANT] = MOVEMENT_TYPE_WALK_LEFT_AND_RIGHT,
+    [NATURE_NAUGHTY] = MOVEMENT_TYPE_ROTATE_COUNTERCLOCKWISE,
+    [NATURE_BOLD]    = MOVEMENT_TYPE_WANDER_AROUND,
+    [NATURE_DOCILE]  = MOVEMENT_TYPE_LOOK_AROUND,
+    [NATURE_RELAXED] = MOVEMENT_TYPE_WALK_SLOWLY_IN_PLACE_DOWN,
+    [NATURE_IMPISH]  = MOVEMENT_TYPE_ROTATE_CLOCKWISE,
+    [NATURE_LAX]     = MOVEMENT_TYPE_WALK_SLOWLY_IN_PLACE_DOWN,
+    [NATURE_TIMID]   = MOVEMENT_TYPE_COPY_PLAYER_OPPOSITE,
+    [NATURE_HASTY]   = MOVEMENT_TYPE_JOG_IN_PLACE_DOWN,
+    [NATURE_SERIOUS] = MOVEMENT_TYPE_WALK_UP_AND_DOWN,
+    [NATURE_JOLLY]   = MOVEMENT_TYPE_ROTATE_CLOCKWISE,
+    [NATURE_NAIVE]   = MOVEMENT_TYPE_COPY_PLAYER,
+    [NATURE_MODEST]  = MOVEMENT_TYPE_FACE_DOWN_AND_UP,
+    [NATURE_MILD]    = MOVEMENT_TYPE_LOOK_AROUND,
+    [NATURE_QUIET]   = MOVEMENT_TYPE_FACE_UP,
+    [NATURE_BASHFUL] = MOVEMENT_TYPE_FACE_UP,
+    [NATURE_RASH]    = MOVEMENT_TYPE_RUN_IN_PLACE_DOWN,
+    [NATURE_CALM]    = MOVEMENT_TYPE_FACE_DOWN_AND_UP,
+    [NATURE_GENTLE]  = MOVEMENT_TYPE_LOOK_AROUND,
+    [NATURE_SASSY]   = MOVEMENT_TYPE_FACE_DOWN_LEFT_AND_RIGHT,
+    [NATURE_CAREFUL] = MOVEMENT_TYPE_WANDER_UP_AND_DOWN,
+    [NATURE_QUIRKY]  = MOVEMENT_TYPE_ROTATE_COUNTERCLOCKWISE,
+};
+
+// Runs from SecretBase_OnTransition (before objects spawn). Own base or no
+// usable party -> the template stays hidden behind FLAG_TEMP_E. Otherwise
+// the mon is parked on the tile below the owner NPC (template 0) -- the tile
+// the player talks to them from, so it is walkable in every base layout --
+// and its movement type comes from the nature table above.
+void TrySpawnSecretBasePartyMon(void)
+{
+    struct SecretBase *base;
+    const struct ObjectEventGraphicsInfo *gfx;
+    u8 candidates[PARTY_SIZE];
+    u8 count = 0;
+    u8 i, slot, nature;
+    u16 species;
+    u16 idx = VarGet(VAR_CURRENT_SECRET_BASE);
+
+    sSecretBasePartyMonSpecies = SPECIES_NONE;
+    FlagSet(FLAG_TEMP_E); // default: hidden
+
+    if (idx == 0 || idx >= SECRET_BASES_COUNT) // own base stores no mixed party
+        return;
+
+    base = &gSaveBlock1Ptr->secretBases[idx];
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        species = base->party.species[i];
+        if (species == SPECIES_NONE || species >= NUM_SPECIES)
+            continue;
+        // Skip mons whose OW sprite is bigger than 32x32: base interiors are
+        // tiny, and the follower system makes the same call for indoor maps.
+        gfx = GetObjectEventGraphicsInfo(OBJ_EVENT_GFX_MON_BASE + species);
+        if (gfx == NULL || gfx->width > 32 || gfx->height > 32)
+            continue;
+        candidates[count++] = i;
+    }
+
+    if (count == 0)
+        return;
+
+    slot = candidates[Random() % count];
+    species = base->party.species[slot];
+    nature = GetNatureFromPersonality(base->party.personality[slot]);
+
+    sSecretBasePartyMonSpecies = species;
+    // No shiny tag: the record-mix party stores no OT id, so shininess is
+    // not recoverable (CreateSecretBaseEnemyParty rolls OT_ID_RANDOM_NO_SHINY
+    // for the same reason).
+    VarSet(VAR_OBJ_GFX_ID_E, (OBJ_EVENT_GFX_MON_BASE + species) & OBJ_EVENT_GFX_SPECIES_MASK);
+    SetObjEventTemplateCoords(SECRET_BASE_PARTY_MON_LOCALID,
+                              gSaveBlock1Ptr->objectEventTemplates[0].x,
+                              gSaveBlock1Ptr->objectEventTemplates[0].y + 1);
+    SetObjEventTemplateMovementType(SECRET_BASE_PARTY_MON_LOCALID,
+                                    sPartyMonNatureMovements[nature]);
+    FlagClear(FLAG_TEMP_E);
+}
+
+// specialvar: species staged by TrySpawnSecretBasePartyMon, so the
+// interaction script can buffer the name and play the cry.
+u16 GetSecretBasePartyMonSpecies(void)
+{
+    // After save+continue inside the base, the mon object is restored from
+    // the serialized objectEvents but this EWRAM cache is gone (neither
+    // ON_TRANSITION nor ON_WARP re-runs on continue). VAR_OBJ_GFX_ID_E
+    // still encodes the species -- recover it from there so the interaction
+    // doesn't show species 0 and play a garbage cry.
+    if (sSecretBasePartyMonSpecies == SPECIES_NONE)
+    {
+        u16 gfx = VarGet(VAR_OBJ_GFX_ID_E) & OBJ_EVENT_GFX_SPECIES_MASK;
+        if (gfx > OBJ_EVENT_GFX_MON_BASE && gfx - OBJ_EVENT_GFX_MON_BASE < NUM_SPECIES)
+            sSecretBasePartyMonSpecies = gfx - OBJ_EVENT_GFX_MON_BASE;
+    }
+    return sSecretBasePartyMonSpecies;
+}
+
+// Candidate tiles for the mon, relative to the owner NPC's template, in
+// preference order. (0,1) is the staged default: the tile the player talks
+// to the owner from.
+static const s8 sPartyMonPlacementOffsets[][2] =
+{
+    { 0, 1 },
+    { 1, 1 },
+    {-1, 1 },
+    { 1, 0 },
+    {-1, 0 },
+    { 0, 2 },
+    { 1, 2 },
+    {-1, 2 },
+};
+
+// Runs from SecretBase_EventScript_InitDecorations (ON_WARP), i.e. AFTER the
+// map grid and the friend's furniture metatiles exist (InitSecretBaseAppearance
+// draws them during InitMap, which is after ON_TRANSITION -- the staging
+// special could not see them), and BEFORE the doll/cushion sprites spawn.
+// Two duties:
+// 1. Object budget: if the base's sprite-decorations plus the objects already
+//    present would overflow OBJECT_EVENTS_COUNT, the mon yields its slot so
+//    every decoration can spawn (>= keeps one slot spare for the follower).
+// 2. Placement: validate the staged tile with the same collision test the
+//    mon's own movement uses (walls, furniture, elevation, other objects);
+//    if blocked, relocate to the first free tile around the owner, and if
+//    none exists the mon sits this visit out.
+void AdjustSecretBasePartyMon(void)
+{
+    struct ObjectEvent *mon;
+    u8 *decorations;
+    s16 ownerX, ownerY;
+    s16 x, y;
+    u8 monObjId, i;
+    u8 behavior;
+    u8 dolls = 0;
+    u8 active = 0;
+
+    // The hook script (SecretBase_EventScript_InitDecorations) also runs for
+    // the player's own bedroom decorations, where local id 16 is a real
+    // object and VAR_CURRENT_SECRET_BASE is stale. Never touch anything
+    // outside an actual secret base.
+    if (!CurMapIsSecretBase())
+        return;
+    if (FlagGet(FLAG_TEMP_E))
+        return; // no mon staged this visit
+
+    monObjId = GetObjectEventIdByLocalIdAndMap(SECRET_BASE_PARTY_MON_LOCALID,
+                                               gSaveBlock1Ptr->location.mapNum,
+                                               gSaveBlock1Ptr->location.mapGroup);
+    if (monObjId >= OBJECT_EVENTS_COUNT)
+    {
+        FlagSet(FLAG_TEMP_E);
+        return;
+    }
+
+    decorations = gSaveBlock1Ptr->secretBases[VarGet(VAR_CURRENT_SECRET_BASE)].decorations;
+    for (i = 0; i < DECOR_MAX_SECRET_BASE; i++)
+    {
+        if (decorations[i] != DECOR_NONE && decorations[i] <= NUM_DECORATIONS
+         && gDecorations[decorations[i]].permission == DECORPERM_SPRITE)
+            dolls++;
+    }
+    for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
+    {
+        if (gObjectEvents[i].active)
+            active++;
+    }
+    if (active + dolls >= OBJECT_EVENTS_COUNT)
+    {
+        RemoveObjectEventByLocalIdAndMap(SECRET_BASE_PARTY_MON_LOCALID,
+                                         gSaveBlock1Ptr->location.mapNum,
+                                         gSaveBlock1Ptr->location.mapGroup);
+        FlagSet(FLAG_TEMP_E);
+        return;
+    }
+
+    mon = &gObjectEvents[monObjId];
+    ownerX = gSaveBlock1Ptr->objectEventTemplates[0].x;
+    ownerY = gSaveBlock1Ptr->objectEventTemplates[0].y;
+    for (i = 0; i < ARRAY_COUNT(sPartyMonPlacementOffsets); i++)
+    {
+        x = ownerX + sPartyMonPlacementOffsets[i][0];
+        y = ownerY + sPartyMonPlacementOffsets[i][1];
+        // A doll/cushion metatile is passable to the collision test and its
+        // sprite only spawns AFTER this runs (InitSecretBaseDecorationSprites
+        // is the next script command) -- don't stand where a decoration is
+        // about to appear.
+        behavior = MapGridGetMetatileBehaviorAt(x + MAP_OFFSET, y + MAP_OFFSET);
+        if (MetatileBehavior_HoldsSmallDecoration(behavior) == TRUE
+         || MetatileBehavior_HoldsLargeDecoration(behavior) == TRUE)
+            continue;
+        if (GetCollisionAtCoords(mon, x + MAP_OFFSET, y + MAP_OFFSET, DIR_SOUTH) == COLLISION_NONE)
+        {
+            TryMoveObjectEventToMapCoords(SECRET_BASE_PARTY_MON_LOCALID,
+                                          gSaveBlock1Ptr->location.mapNum,
+                                          gSaveBlock1Ptr->location.mapGroup, x, y);
+            return;
+        }
+    }
+
+    // Every candidate tile is walled/furnished over: no mon this visit.
+    RemoveObjectEventByLocalIdAndMap(SECRET_BASE_PARTY_MON_LOCALID,
+                                     gSaveBlock1Ptr->location.mapNum,
+                                     gSaveBlock1Ptr->location.mapGroup);
+    FlagSet(FLAG_TEMP_E);
 }
 
 void SetCurSecretBaseIdFromPosition(const struct MapPosition *position, const struct MapEvents *events)
