@@ -151,7 +151,11 @@ MatchCall_NegativeBattleText3::
 	.string "It's me, {STR_VAR_1}.\p"
 	.string "I just got cleaned in a battle.\p"
 	.string "I guess I need to raise my team\n"
-	.string "some more!$"
+	.string "some more!\p"
+	.string "My POKéMON gave it everything…\n"
+	.string "I just called the wrong moves.\p"
+	.string "Next time will be different.\n"
+	.string "You watch me go!$"
 
 MatchCall_NegativeBattleText4::
 	.string "Hey, {PLAYER}.\n"
@@ -217,7 +221,10 @@ MatchCall_NegativeBattleText11::
 	.string "This is {STR_VAR_1}.\l"
 	.string "How are your POKéMON?\p"
 	.string "I just lost yet another battle.\p"
-	.string "Well, see you!$"
+	.string "Maybe I should shuffle my team\n"
+	.string "around a little…\p"
+	.string "How do you decide who battles?\n"
+	.string "…I'll work it out. See you!$"
 
 MatchCall_NegativeBattleText12::
 	.string "Hello, {PLAYER}{KUN}.\n"
@@ -242,6 +249,9 @@ MatchCall_NegativeBattleText14::
 	.string "Are you doing good?\p"
 	.string "You should go home every so often,\n"
 	.string "though.\p"
+	.string "Your mom must worry with you\n"
+	.string "adventuring all over the place.\p"
+	.string "Mine sure does!\n"
 	.string "Bye-bye!$"
 
 MatchCall_PositiveBattleText1::
@@ -256,7 +266,11 @@ MatchCall_PositiveBattleText2::
 	.string "Hello, {PLAYER}{KUN}!\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "I had a battle yesterday and\n"
-	.string "I won! It's fantastic!$"
+	.string "I won! It's fantastic!\p"
+	.string "My POKéMON get a little braver\n"
+	.string "with every single battle.\p"
+	.string "One day we'll be strong enough\n"
+	.string "to challenge even you!$"
 
 MatchCall_PositiveBattleText3::
 	.string "Hey there, {PLAYER}!\n"
@@ -2969,6 +2983,8 @@ MatchCall_BirthdayText1::
 MatchCall_BirthdayText2::
 	.string "{STR_VAR_1} here!\p"
 	.string "Happy birthday, {PLAYER}!\p"
+	.string "Are you doing something special?\n"
+	.string "You'd better be celebrating!\p"
 	.string "Make it a day to remember…\n"
 	.string "and spoil your POKéMON a little!$"
 
@@ -2979,8 +2995,31 @@ MatchCall_BirthdayText3::
 	.string "I hope it's a great one!\n"
 	.string "Don't battle TOO hard today!$"
 
+@ --- Birthday-soon teases (once a day while it's 1-6 days away) ---
+MatchCall_BirthdaySoonText1::
+	.string "Hi, {PLAYER}{KUN}! It's {STR_VAR_1}!\p"
+	.string "Say, isn't your birthday\n"
+	.string "coming up pretty soon?\p"
+	.string "I've got the date circled on\n"
+	.string "my calendar. Get excited!$"
+
+MatchCall_BirthdaySoonText2::
+	.string "{STR_VAR_1} here!\p"
+	.string "Word travels fast, {PLAYER}{KUN}…\n"
+	.string "Your birthday is almost here!\p"
+	.string "Save me a slice of cake,\n"
+	.string "okay?$"
+
+MatchCall_BirthdaySoonText3::
+	.string "It's {STR_VAR_1}!\p"
+	.string "Isn't your birthday coming\n"
+	.string "up? It's so close now!\p"
+	.string "I'm already thinking about\n"
+	.string "what to wish you. No peeking!$"
+
 @ --- Ability tips: every ability with a real overworld effect here ---
 MatchCall_AbilityTip_LightningRod::
+	.string "Hi, {PLAYER}{KUN}!\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "Say, is that a LIGHTNING ROD\n"
 	.string "POKéMON leading your party?\p"
@@ -2988,6 +3027,7 @@ MatchCall_AbilityTip_LightningRod::
 	.string "calls like mine. Funny, huh?$"
 
 MatchCall_AbilityTip_Synchronize::
+	.string "Hello, {PLAYER}{KUN}!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "A breeder told me something\n"
 	.string "clever the other day.\p"
@@ -2996,6 +3036,7 @@ MatchCall_AbilityTip_Synchronize::
 	.string "shares its nature. Every time!$"
 
 MatchCall_AbilityTip_CuteCharm::
+	.string "Hey there, {PLAYER}{KUN}!\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "Ooh, here's a romantic one!\p"
 	.string "Lead with a CUTE CHARM POKéMON\n"
@@ -3003,6 +3044,7 @@ MatchCall_AbilityTip_CuteCharm::
 	.string "as the opposite gender!$"
 
 MatchCall_AbilityTip_MagnetPull::
+	.string "Oh, {PLAYER}{KUN}! Perfect timing!\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "Hunting a particular type?\p"
 	.string "MAGNET PULL up front draws out\n"
@@ -3010,6 +3052,7 @@ MatchCall_AbilityTip_MagnetPull::
 	.string "in ELECTRIC ones!$"
 
 MatchCall_AbilityTip_EncounterRate::
+	.string "{PLAYER}{KUN}! Glad I caught you!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "Tired of tripping over wild\n"
 	.string "POKéMON every other step?\p"
@@ -3019,6 +3062,7 @@ MatchCall_AbilityTip_EncounterRate::
 	.string "bring them running!$"
 
 MatchCall_AbilityTip_KeenEye::
+	.string "Hey, {PLAYER}{KUN}, got a minute?\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "Sick of weak wild POKéMON\n"
 	.string "wasting your time?\p"
@@ -3026,6 +3070,7 @@ MatchCall_AbilityTip_KeenEye::
 	.string "scares off the little ones!$"
 
 MatchCall_AbilityTip_Hustle::
+	.string "Good to hear you, {PLAYER}{KUN}!\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "Want a real challenge out there?\p"
 	.string "HUSTLE, VITAL SPIRIT or PRESSURE\n"
@@ -3033,6 +3078,7 @@ MatchCall_AbilityTip_Hustle::
 	.string "stronger wild POKéMON!$"
 
 MatchCall_AbilityTip_SuctionCups::
+	.string "Hi, {PLAYER}{KUN}!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "Do the fish keep getting away\n"
 	.string "from you?\p"
@@ -3041,6 +3087,7 @@ MatchCall_AbilityTip_SuctionCups::
 	.string "stay hooked!$"
 
 MatchCall_AbilityTip_CompoundEyes::
+	.string "Hello, {PLAYER}{KUN}!\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "Here's one for the collectors.\p"
 	.string "COMPOUND EYES up front makes\n"
@@ -3049,6 +3096,7 @@ MatchCall_AbilityTip_CompoundEyes::
 
 @ --- General gameplay tips ---
 MatchCall_Tip_FanClubBirthday::
+	.string "Hey there, {PLAYER}{KUN}!\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "A fellow at the LILYCOVE fan\n"
 	.string "club keeps a birthday chart!\p"
@@ -3056,6 +3104,7 @@ MatchCall_Tip_FanClubBirthday::
 	.string "happens on the big day!$"
 
 MatchCall_Tip_Pokerus::
+	.string "Oh, {PLAYER}{KUN}! Perfect timing!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "If a POKéMON has had the\n"
 	.string "POKéRUS, its training gains\l"
@@ -3064,21 +3113,60 @@ MatchCall_Tip_Pokerus::
 	.string "monster gains!$"
 
 MatchCall_Tip_TradedExp::
+	.string "{PLAYER}{KUN}! Glad I caught you!\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "POKéMON received in trades grow\n"
 	.string "faster than usual!\p"
+	.string "A friend traded me one once and\n"
+	.string "it outpaced my whole team.\p"
 	.string "Trading with friends really\n"
 	.string "pays off!$"
 
 MatchCall_Tip_SecretBase::
+	.string "Hey, {PLAYER}{KUN}, got a minute?\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "Secret base trainers can battle\n"
 	.string "in singles OR doubles now!\p"
 	.string "Mix records with friends and go\n"
 	.string "visit their bases!$"
 
+MatchCall_Tip_EverstoneBreeding::
+	.string "Good to hear you, {PLAYER}{KUN}!\n"
+	.string "{STR_VAR_1} here!\p"
+	.string "A DAY CARE secret for you.\p"
+	.string "A mother holding an EVERSTONE\n"
+	.string "passes her nature on to the\l"
+	.string "little one more often than not!$"
+
+MatchCall_Tip_AmuletCoin::
+	.string "Hi, {PLAYER}{KUN}!\n"
+	.string "It's {STR_VAR_1}!\p"
+	.string "Money trouble? Listen close.\p"
+	.string "Bring an AMULET COIN into a\n"
+	.string "TRAINER battle and the payout\l"
+	.string "doubles! Cha-ching!$"
+
+MatchCall_Tip_RematchGrowth::
+	.string "Hello, {PLAYER}{KUN}!\n"
+	.string "This is {STR_VAR_1}!\p"
+	.string "You know how TRAINERS keep\n"
+	.string "calling you for rematches?\p"
+	.string "Their teams grow stronger every\n"
+	.string "time! Don't sleep on them or\l"
+	.string "they'll catch right up to you!$"
+
+MatchCall_Tip_SootheBell::
+	.string "Hey there, {PLAYER}{KUN}!\n"
+	.string "{STR_VAR_1} here!\p"
+	.string "Trying to win a POKéMON's\n"
+	.string "heart?\p"
+	.string "Let it hold a SOOTHE BELL and\n"
+	.string "walk together. Friendship\l"
+	.string "grows so much faster!$"
+
 @ --- Southern Island lore ---
 MatchCall_Lore_SouthernIsland::
+	.string "Oh, {PLAYER}{KUN}! Perfect timing!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "Have you heard the rumor about\n"
 	.string "SOUTHERN ISLAND?\p"
@@ -3088,6 +3176,7 @@ MatchCall_Lore_SouthernIsland::
 	.string "For someone. Spooky, right?$"
 
 MatchCall_Lore_DragonLady::
+	.string "{PLAYER}{KUN}! Glad I caught you!\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "You won't believe what flew\n"
 	.string "over my head today!\p"
@@ -3098,6 +3187,7 @@ MatchCall_Lore_DragonLady::
 
 @ --- Rare POKéMON sightings (mass outbreak data) ---
 MatchCall_Rare_Outbreak::
+	.string "Hey, {PLAYER}{KUN}, got a minute?\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "Word is that {STR_VAR_2} have\n"
 	.string "been swarming around\l"
@@ -3106,6 +3196,7 @@ MatchCall_Rare_Outbreak::
 	.string "to go looking!$"
 
 MatchCall_Rare_OutbreakNational::
+	.string "Good to hear you, {PLAYER}{KUN}!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "Now this is a strange one.\p"
 	.string "{STR_VAR_2} aren't even native\n"
@@ -3124,12 +3215,14 @@ MatchCall_Time_LateNight1::
 
 MatchCall_Time_LateNight2::
 	.string "{STR_VAR_1} here… yaaawn…\p"
-	.string "Sorry, I saw your light was on.\p"
+	.string "Sorry, I had a feeling you'd\n"
+	.string "still be out on the road.\p"
 	.string "Don't stay up all night\n"
 	.string "training. The wild POKéMON will\l"
 	.string "still be there tomorrow!$"
 
 MatchCall_Time_EarlyMorning1::
+	.string "Hi, {PLAYER}{KUN}!\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "Up with the TAILLOW, I see!\p"
 	.string "The early TRAINER catches the\n"
@@ -3229,19 +3322,31 @@ MatchCall_Heart_Steven::
 
 MatchCall_Heart_Wallace::
 	.string "WALLACE speaking.\p"
+	.string "Ah, {PLAYER}{KUN}. I hoped you\n"
+	.string "would pick up.\p"
 	.string "I find myself replaying our\n"
 	.string "battle at the LEAGUE.\p"
 	.string "That {STR_VAR_2} of yours…\n"
 	.string "such presence. Such grace.\p"
+	.string "Water shapes itself to its\n"
+	.string "vessel, they say. Your team\l"
+	.string "shapes itself to the moment.\p"
+	.string "Few TRAINERS ever learn that.\n"
+	.string "Fewer still make it look easy.\p"
 	.string "{STR_VAR_3} times you've stood\n"
 	.string "in that HALL now.\p"
 	.string "The record remembers, and so\n"
-	.string "do I.$"
+	.string "do I.\p"
+	.string "I'll be at the LEAGUE, refining\n"
+	.string "my art. Come defend that title\l"
+	.string "whenever you are ready…\p"
+	.string "I fully intend to take it back.$"
 
 @ --- Frontier Brains. One voice each; they only call once the player holds
 @ --- that facility's Silver Symbol. {STR_VAR_2} is the real win streak.
 MatchCall_Frontier_Anabel::
-	.string "…Hello. It's ANABEL.\p"
+	.string "…Hello, {PLAYER}{KUN}.\n"
+	.string "It's ANABEL.\p"
 	.string "Forgive me for calling. I had a\n"
 	.string "feeling, and it was about you.\p"
 	.string "{STR_VAR_2} straight wins in the\n"
@@ -3249,6 +3354,9 @@ MatchCall_Frontier_Anabel::
 	.string "I can sense your POKéMON even\n"
 	.string "from here. They trust you\l"
 	.string "completely.\p"
+	.string "The TOWER feels taller when\n"
+	.string "you're away, somehow.\p"
+	.string "Come climb it again soon…\n"
 	.string "I should like to feel that again.$"
 
 MatchCall_Frontier_Tucker::
@@ -3258,24 +3366,37 @@ MatchCall_Frontier_Tucker::
 	.string "{STR_VAR_2} wins? The crowd has\n"
 	.string "been chanting your name, and I\l"
 	.string "will NOT have that.\p"
-	.string "Come back and let's give them a\n"
-	.string "show they'll never forget!$"
+	.string "An audience is a fickle beast,\n"
+	.string "{PLAYER}{KUN}. They forget you\l"
+	.string "the moment you stop dazzling.\p"
+	.string "So come back to my DOME and\n"
+	.string "let's give them a show they'll\l"
+	.string "never forget!$"
 
 MatchCall_Frontier_Spenser::
 	.string "Gwahahaha! SPENSER here!\p"
+	.string "Still standing, {PLAYER}{KUN}?\n"
+	.string "Good, good!\p"
 	.string "{STR_VAR_2} in a row, is it?\n"
 	.string "Even the old mountain heard.\p"
 	.string "Numbers, numbers. Bah!\p"
 	.string "It's the bond that wins in my\n"
 	.string "PALACE, youngster. Nothing else.\p"
-	.string "Come and show me yours!$"
+	.string "These old bones have a few\n"
+	.string "battles left in them yet.\p"
+	.string "Come to the PALACE and show me\n"
+	.string "your bond before they run out!$"
 
 MatchCall_Frontier_Greta::
 	.string "Yo! GRETA here!\p"
+	.string "{PLAYER}{KUN}! Don't you go\n"
+	.string "quiet on me now!\p"
 	.string "{STR_VAR_2} wins?! Okay, okay,\n"
 	.string "that's actually kinda good!\p"
 	.string "But numbers don't hit back.\n"
 	.string "I do.\p"
+	.string "And hey, I've been drilling a\n"
+	.string "new team just for you!\p"
 	.string "Get down to the ARENA and show\n"
 	.string "me what you've really got!$"
 
@@ -3287,12 +3408,20 @@ MatchCall_Frontier_Noland::
 	.string "You did it with rentals.\p"
 	.string "Anyone can win with their own\n"
 	.string "team. You pulled it out of\l"
-	.string "strangers. That's talent.$"
+	.string "strangers. That's talent.\p"
+	.string "I've rotated fresh stock onto\n"
+	.string "the shelves since you left.\p"
+	.string "Swing by the FACTORY and run\n"
+	.string "the gauntlet again sometime.$"
 
 MatchCall_Frontier_Lucy::
 	.string "…LUCY.\p"
 	.string "{STR_VAR_2} wins.\p"
 	.string "The PIKE doesn't care.\p"
+	.string "It has three doors and no\n"
+	.string "memory. Neither do I.\p"
+	.string "…That's a lie.\n"
+	.string "I remember you.\p"
 	.string "…Come anyway.$"
 
 MatchCall_Frontier_Brandon::
@@ -3301,11 +3430,103 @@ MatchCall_Frontier_Brandon::
 	.string "I have read the records!\p"
 	.string "But a streak is a soft thing.\n"
 	.string "The PYRAMID is not!\p"
+	.string "Its floors have swallowed\n"
+	.string "prouder streaks than yours,\l"
+	.string "and the dark eats the careless!\p"
 	.string "Bring that fire to my ruins and\n"
 	.string "we shall see what survives it!$"
 
+@ --- Frontier Brain invitations: the player holds the FRONTIER PASS but has
+@ --- never really played this Brain's facility, so they call to invite.
+MatchCall_FrontierInvite_Anabel::
+	.string "…Hello, {PLAYER}{KUN}.\n"
+	.string "My name is ANABEL.\p"
+	.string "I lead the BATTLE TOWER, out on\n"
+	.string "the BATTLE FRONTIER.\p"
+	.string "Word of you reaches even here…\n"
+	.string "yet you've never come to us.\p"
+	.string "The TOWER is the FRONTIER's\n"
+	.string "heart: battle after battle,\l"
+	.string "no tricks, only strength.\p"
+	.string "I would very much like to meet\n"
+	.string "you at the top someday.$"
+
+MatchCall_FrontierInvite_Tucker::
+	.string "Helloooo, {PLAYER}{KUN}!\p"
+	.string "TUCKER! THE DOME ACE!\n"
+	.string "Yes, THE Tucker, darling!\p"
+	.string "I hear you've never set foot in\n"
+	.string "my BATTLE DOME. Scandalous!\p"
+	.string "Sixteen TRAINERS! One bracket!\n"
+	.string "A roaring crowd!\p"
+	.string "Talent like yours deserves an\n"
+	.string "audience, darling.\p"
+	.string "Come to the FRONTIER and give\n"
+	.string "them someone to cheer for!$"
+
+MatchCall_FrontierInvite_Spenser::
+	.string "Gwahahaha! Hello there!\p"
+	.string "SPENSER, of the BATTLE PALACE!\p"
+	.string "So you're the youngster the\n"
+	.string "other BRAINS keep mentioning.\p"
+	.string "In my PALACE your POKéMON fight\n"
+	.string "by their own hearts, with no\l"
+	.string "orders from you at all.\p"
+	.string "Think your bond would survive\n"
+	.string "that? Gwahaha!\p"
+	.string "Come to the FRONTIER and prove\n"
+	.string "it, why don't you!$"
+
+MatchCall_FrontierInvite_Greta::
+	.string "Yo! {PLAYER}{KUN}, right?\p"
+	.string "GRETA! BATTLE ARENA! You've\n"
+	.string "seriously never visited?!\p"
+	.string "My ARENA is three-on-three,\n"
+	.string "no stalling, judges scoring\l"
+	.string "every single move!\p"
+	.string "It's the purest scrap on the\n"
+	.string "whole FRONTIER!\p"
+	.string "Come show me you're more than\n"
+	.string "the rumors, yeah?$"
+
+MatchCall_FrontierInvite_Lucy::
+	.string "…LUCY.\p"
+	.string "BATTLE PIKE.\p"
+	.string "You haven't come.\p"
+	.string "Three doors. Luck decides what\n"
+	.string "waits behind each one.\p"
+	.string "Most TRAINERS don't like what\n"
+	.string "they find.\p"
+	.string "…I think you might.\n"
+	.string "Come find out.$"
+
+MatchCall_FrontierInvite_Noland::
+	.string "Hey. NOLAND, BATTLE FACTORY.\p"
+	.string "Heard about you from the other\n"
+	.string "BRAINS. Never seen you, though.\p"
+	.string "Here's my deal: you leave your\n"
+	.string "team at the door and battle\l"
+	.string "with rentals. Everyone's equal.\p"
+	.string "No favorites, no crutches.\n"
+	.string "Just knowledge and nerve.\p"
+	.string "Sounds fun, right? Come by the\n"
+	.string "FRONTIER and prove it.$"
+
+MatchCall_FrontierInvite_Brandon::
+	.string "BRANDON! PYRAMID KING!\p"
+	.string "Hah! So YOU'RE the one they\n"
+	.string "talk about, greenhorn!\p"
+	.string "Yet my BATTLE PYRAMID tells me\n"
+	.string "you have never dared its dark!\p"
+	.string "Wild POKéMON in every shadow!\n"
+	.string "Items scattered in the gloom!\l"
+	.string "Only GUTS will see you through!\p"
+	.string "Come to the FRONTIER, find my\n"
+	.string "ruins, and CLIMB!$"
+
 @ --- Congratulations on a rare capture (record mix / party data) ---
 MatchCall_RareCatch_Legendary::
+	.string "Hello, {PLAYER}{KUN}!\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "I just saw it on TV!\p"
 	.string "They said {STR_VAR_2} was\n"
@@ -3315,6 +3536,7 @@ MatchCall_RareCatch_Legendary::
 	.string "thing to witness!$"
 
 MatchCall_RareCatch_Shiny::
+	.string "Hey there, {PLAYER}{KUN}!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "Is it true?! The TV said\n"
 	.string "someone found a {STR_VAR_2}\l"
@@ -3331,6 +3553,7 @@ MatchCall_Veritas::
 
 @ --- Wave 2: abilities the first pass wrongly called battle-only ---
 MatchCall_AbilityTip_FlameBody::
+	.string "Oh, {PLAYER}{KUN}! Perfect timing!\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "Waiting on an EGG to hatch?\p"
 	.string "Carry a FLAME BODY or MAGMA\n"
@@ -3340,6 +3563,7 @@ MatchCall_AbilityTip_FlameBody::
 	.string "Anywhere in the party works!$"
 
 MatchCall_AbilityTip_Pickup::
+	.string "{PLAYER}{KUN}! Glad I caught you!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "Free stuff, that's my kind of tip.\p"
 	.string "A POKéMON with PICKUP that\n"
@@ -3349,6 +3573,7 @@ MatchCall_AbilityTip_Pickup::
 	.string "the haul!$"
 
 MatchCall_AbilityTip_Swarm::
+	.string "Hey, {PLAYER}{KUN}, got a minute?\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "Ever notice how the wild POKéMON\n"
 	.string "cry out more often around some\l"
@@ -3357,6 +3582,7 @@ MatchCall_AbilityTip_Swarm::
 	.string "the whole route gets chatty.$"
 
 MatchCall_AbilityTip_HyperCutter::
+	.string "Good to hear you, {PLAYER}{KUN}!\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "Here's one nobody knows.\p"
 	.string "Use CUT with a HYPER CUTTER\n"
@@ -3376,6 +3602,7 @@ MatchCall_Quest_WeatherResearch::
 	.string "Sounds like your sort of job!$"
 
 MatchCall_Quest_MuseumTicket::
+	.string "Hi, {PLAYER}{KUN}!\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "Word from LILYCOVE CITY!\p"
 	.string "The MUSEUM owner is handing out\n"
@@ -3386,6 +3613,7 @@ MatchCall_Quest_MuseumTicket::
 
 @ --- Postgame legendary rumours. Each stops once that one is settled. ---
 MatchCall_Legend_Suicune::
+	.string "Hello, {PLAYER}{KUN}!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "Divers keep talking about the\n"
 	.string "water down south.\p"
@@ -3396,6 +3624,7 @@ MatchCall_Legend_Suicune::
 	.string "measuring it, apparently!$"
 
 MatchCall_Legend_Raikou::
+	.string "Hey there, {PLAYER}{KUN}!\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "Did you feel that storm?\p"
 	.string "No clouds, no rain, and the air\n"
@@ -3404,6 +3633,7 @@ MatchCall_Legend_Raikou::
 	.string "at the WEATHER INSTITUTE!$"
 
 MatchCall_Legend_Entei::
+	.string "Oh, {PLAYER}{KUN}! Perfect timing!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "The ground shook near MT.\n"
 	.string "CHIMNEY again last night.\p"
@@ -3413,6 +3643,7 @@ MatchCall_Legend_Entei::
 	.string "around out there!$"
 
 MatchCall_Legend_Birds::
+	.string "{PLAYER}{KUN}! Glad I caught you!\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "You've beaten every GYM LEADER\n"
 	.string "twice over now, haven't you?\p"
@@ -3424,6 +3655,7 @@ MatchCall_Legend_Birds::
 	.string "nobody uses anymore!$"
 
 MatchCall_Legend_Mewtwo::
+	.string "…{PLAYER}{KUN}? Good, it's you.\n"
 	.string "{STR_VAR_1} here…\p"
 	.string "I shouldn't even say this.\p"
 	.string "There's a cave that TRAINERS\n"
@@ -3434,6 +3666,7 @@ MatchCall_Legend_Mewtwo::
 	.string "Be careful, alright?$"
 
 MatchCall_Legend_Jirachi::
+	.string "Hey, {PLAYER}{KUN}, got a minute?\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "There's a white stone out at\n"
 	.string "MOSSDEEP CITY.\p"
@@ -3442,6 +3675,7 @@ MatchCall_Legend_Jirachi::
 	.string "Silly, right? …Right?$"
 
 MatchCall_Legend_Celebi::
+	.string "Good to hear you, {PLAYER}{KUN}!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "You'll think I'm dreaming.\p"
 	.string "There's an island that isn't\n"
@@ -3451,6 +3685,7 @@ MatchCall_Legend_Celebi::
 	.string "It vanished. Just… vanished.$"
 
 MatchCall_Legend_Deoxys::
+	.string "Hi, {PLAYER}{KUN}!\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "PROF. COZMO is beside himself.\p"
 	.string "Something came down out of the\n"
@@ -3461,6 +3696,7 @@ MatchCall_Legend_Deoxys::
 	.string "with it. Someone like you!$"
 
 MatchCall_Legend_NavelRock::
+	.string "Hello, {PLAYER}{KUN}!\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "Sailors are talking about a rock\n"
 	.string "in the middle of nowhere.\p"
@@ -3470,6 +3706,7 @@ MatchCall_Legend_NavelRock::
 	.string "ticket to get out there!$"
 
 MatchCall_Legend_Mew::
+	.string "Hey there, {PLAYER}{KUN}!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "You've seen every POKéMON there\n"
 	.string "is, haven't you? Everyone knows.\p"
@@ -3481,6 +3718,7 @@ MatchCall_Legend_Mew::
 
 @ --- Record mixing. Names come from other players' mixed-in data. ---
 MatchCall_Mixed_Sighting::
+	.string "Oh, {PLAYER}{KUN}! Perfect timing!\n"
 	.string "This is {STR_VAR_1}!\p"
 	.string "I ran into a TRAINER called\n"
 	.string "{STR_VAR_2} over on {STR_VAR_3}\l"
@@ -3490,6 +3728,7 @@ MatchCall_Mixed_Sighting::
 	.string "You two should battle sometime.$"
 
 MatchCall_Mixed_RareCatch::
+	.string "{PLAYER}{KUN}! Glad I caught you!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "It was all over the TV!\p"
 	.string "A TRAINER named {STR_VAR_2}\n"
@@ -3498,6 +3737,7 @@ MatchCall_Mixed_RareCatch::
 	.string "Some people have all the luck!$"
 
 MatchCall_Mixed_SecretBaseM::
+	.string "Hey, {PLAYER}{KUN}, got a minute?\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "I finally found {STR_VAR_2}'s\n"
 	.string "SECRET BASE!\p"
@@ -3506,6 +3746,7 @@ MatchCall_Mixed_SecretBaseM::
 	.string "Go challenge him sometime!$"
 
 MatchCall_Mixed_SecretBaseF::
+	.string "Good to hear you, {PLAYER}{KUN}!\n"
 	.string "It's {STR_VAR_1}!\p"
 	.string "I finally found {STR_VAR_2}'s\n"
 	.string "SECRET BASE!\p"
@@ -3540,6 +3781,7 @@ MatchCall_Mixed_RivalCrush::
 
 @ --- Fashionista outfit hint. Stops once every outfit is unlocked. ---
 MatchCall_Quest_Fashionista::
+	.string "Hi, {PLAYER}{KUN}!\n"
 	.string "{STR_VAR_1} here!\p"
 	.string "You have to see what I'm wearing!\p"
 	.string "There's a FASHIONISTA at the\n"

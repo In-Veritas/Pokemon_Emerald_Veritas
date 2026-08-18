@@ -90,9 +90,9 @@
 #define FLAG_CAUGHT_JIRACHI                                 0x4C // Check for Jirachi Caught, for Rematch
 #define FLAG_DEFEATED_JIRACHI                               0x4D // Check for Jirachi Defeated, for Rematch
 #define FLAG_ENABLE_SHORT_POKECENTER                        0x4E // Flag for enabling short Pokemon Center dialog
-// RESERVED for Exclsior (the person -- author of Emerald Legacy Enhanced).
+// Exclsior (the person -- author of Emerald Legacy Enhanced).
 // Distinct from Veritas the Southern Island superboss; his Champion's Room
-// cameo is written but currently disabled. Do not fold this into VERITAS.
+// cameo rolls after Wallace's rematch is beaten. Do not fold this into VERITAS.
 #define FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR                    0x4F
 
 // Scripts
@@ -1306,7 +1306,7 @@
 #define FLAG_RECEIVED_GIFT_DAY_NEVERMELTICE                        0x4E9 // Prof Birch's one-time Gift Day NeverMeltIce (was FLAG_UNUSED_0x4E9)
 #define FLAG_RECEIVED_GIFT_DAY_DELIBIRD                            0x4EA // Rival's one-time Gift Day shiny -> shiny Delibird trade (was FLAG_UNUSED_0x4EA)
 #define FLAG_BERRY_STEP_BASELINE_SET                               0x4EB // Latch: dead-clock berry growth has captured its step baseline (was FLAG_UNUSED_0x4EB)
-#define FLAG_UNUSED_0x4EC                                           0x4EC // Unused Flag
+#define FLAG_DISABLE_MATCH_CALLS                                    0x4EC // Veritas: when set, PokeNav match calls are silenced (options menu toggle) (was FLAG_UNUSED_0x4EC)
 #define FLAG_UNUSED_0x4ED                                           0x4ED // Unused Flag
 #define FLAG_UNUSED_0x4EE                                           0x4EE // Unused Flag
 
@@ -1570,7 +1570,7 @@
 #define FLAG_DAILY_SECRET_BASE                      (DAILY_FLAGS_START + 0x2)
 #define FLAG_DAILY_VERITAS_MATCH_CALL               (DAILY_FLAGS_START + 0x3)  // Veritas' mysterious PokeNav call fires at most once a day (was FLAG_UNUSED_0x923)
 #define FLAG_DAILY_RARE_CATCH_MATCH_CALL            (DAILY_FLAGS_START + 0x4)  // "I saw your rare catch on TV!" call fires at most once a day (was FLAG_UNUSED_0x924)
-#define FLAG_UNUSED_0x925                           (DAILY_FLAGS_START + 0x5)  // Unused Flag
+#define FLAG_DAILY_BIRTHDAY_SOON_MATCH_CALL         (DAILY_FLAGS_START + 0x5)  // "Isn't your birthday coming up?" PokeNav call, once a day while the birthday is 1-6 days away (was FLAG_UNUSED_0x925)
 #define FLAG_UNUSED_0x926                           (DAILY_FLAGS_START + 0x6)  // Unused Flag
 #define FLAG_UNUSED_0x927                           (DAILY_FLAGS_START + 0x7)  // Unused Flag
 #define FLAG_UNUSED_0x928                           (DAILY_FLAGS_START + 0x8)  // Unused Flag

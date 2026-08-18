@@ -29,6 +29,7 @@ enum
     SAVE_MENU_PLAY_TIME,
     SAVE_MENU_LOCATION,
     SAVE_MENU_BADGES,
+    SAVE_MENU_SYMBOLS,
 };
 
 struct MenuAction
@@ -79,6 +80,7 @@ void DecompressAndLoadBgGfxUsingHeap(u8 bgId, const void *src, u32 size, u16 off
 s8 Menu_ProcessInputNoWrapClearOnChoose(void);
 s8 ProcessMenuInput_other(void);
 void DoScheduledBgTilemapCopiesToVram(void);
+void DoScheduledMapBgTilemapCopiesToVram(void);
 void ClearScheduledBgCopiesToVram(void);
 void AddTextPrinterParameterized4(u8 windowId, u8 fontId, u8 x, u8 y, u8 letterSpacing, u8 lineSpacing, const u8 *color, s8 speed, const u8 *str);
 void DrawDialogFrameWithCustomTileAndPalette(u8 windowId, bool8 copyToVram, u16 tileNum, u8 paletteNum);

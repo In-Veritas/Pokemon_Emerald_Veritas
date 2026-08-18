@@ -5,7 +5,21 @@ available again). These are **not started** — each is a prompt/brief, not a pl
 
 ---
 
-## 1. 4-player double battle over link (2v2, one Pokémon each)
+## 1. 4-player double battle over link (2v2, one Pokémon each) — ✅ DONE (2026-07-27)
+
+**Resolved: the mode already existed.** Vanilla Multi Battle is exactly this —
+4 human players, two teams of two, each controlling their own Pokémon in a
+double battle. Verified in Veritas: wired Cable Club + wireless Direct Corner
+(`LINK_GROUP_MULTI_BATTLE`, capacity 4), all four battlers human-controlled
+(`InitLinkBtlControllers`), each player picks 1–3 mons at their colosseum seat
+(minimum 1 → "one Pokémon each" works out of the box). Teams = same side of
+the colosseum table (seat parity).
+
+Fixed while verifying: the 4-player VS mugshot picked the opponent by
+link-slot parity instead of seat parity and could show a teammate
+(`src/battle_transition.c`, `Mugshots_CreateTrainerPics`); plus two stale
+comments and a fictional README claim about side-by-side dual mugshots.
+Documented under "4-Player Multi Battles" in README.md.
 
 > ❯ Would it be possible to make a 4v4 battle mode on link battles, where each
 > player controls one pokemon in a double battle, in two different teams?
@@ -38,7 +52,13 @@ Pokémon on the field at once, two per side, not 4 Pokémon per trainer.)
 
 ---
 
-## 2. Champion Exclsior
+## 2. Champion Exclsior — ✅ DONE (2026-07-27)
+
+Re-enabled the roll in `EverGrandeCity_ChampionsRoom/scripts.inc`: after the
+player has beaten `TRAINER_WALLACE_2` once, each Champion's Room entry has a
+1-in-5 chance of Exclsior replacing Wallace. Also added
+`CheckPartyForStarterUnlocks` to his victory path for parity with the other
+champion fights. Trainer/party/dialogue/map object were already final.
 
 > ❯ Add champion Exclsior
 

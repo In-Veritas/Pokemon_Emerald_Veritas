@@ -70,6 +70,7 @@ enum
     MENUITEM_WORLD_PLAYERSTYLE,
     MENUITEM_WORLD_SHORTPOKECENTER,
     MENUITEM_WORLD_DEVONSCOPE,
+    MENUITEM_WORLD_MATCHCALLS,
     MENUITEM_WORLD_CANCEL,
     MENUITEM_WORLD_COUNT,
 };
@@ -213,6 +214,7 @@ static void DrawChoices_BikeMusic(int selection, int y);
 static void DrawChoices_SurfMusic(int selection, int y);
 static void DrawChoices_MonOverworld(int selection, int y);
 static void DrawChoices_PlayerStyle(int selection, int y);
+static void DrawChoices_MatchCalls(int selection, int y);
 static void DrawChoices_ShortPokecenter(int selection, int y);
 static void DrawChoices_DevonScope(int selection, int y);
 static void DrawChoices_SurfOverworld(int selection, int y);
@@ -294,6 +296,7 @@ struct // MENU_WORLD
     [MENUITEM_WORLD_PLAYERSTYLE]        = {DrawChoices_PlayerStyle,     ProcessInput_Options_Two},
     [MENUITEM_WORLD_SHORTPOKECENTER]    = {DrawChoices_ShortPokecenter, ProcessInput_Options_Two},
     [MENUITEM_WORLD_DEVONSCOPE]         = {DrawChoices_DevonScope,      ProcessInput_Options_Two},
+    [MENUITEM_WORLD_MATCHCALLS]         = {DrawChoices_MatchCalls,      ProcessInput_Options_Two},
     [MENUITEM_WORLD_CANCEL]             = {NULL, NULL},
 };
 
@@ -355,6 +358,7 @@ static const u8 sText_ImprovedFishing[]     = _("IMPROVED FISHING");
 static const u8 sText_PlayerStyle[]         = _("PLAYER STYLE");
 static const u8 sText_ShortPokecenter[]     = _("SHORT POKéCENTER");
 static const u8 sText_DevonScope[]          = _("DEVON SCOPE");
+static const u8 sText_MatchCalls[]          = _("POKéNAV CALLS");
 static const u8 *const sOptionMenuItemsNamesWorld[MENUITEM_WORLD_COUNT] =
 {
     [MENUITEM_WORLD_MONOVERWORLD]       = sText_MonOverworld,
@@ -364,6 +368,7 @@ static const u8 *const sOptionMenuItemsNamesWorld[MENUITEM_WORLD_COUNT] =
     [MENUITEM_WORLD_PLAYERSTYLE]        = sText_PlayerStyle,
     [MENUITEM_WORLD_SHORTPOKECENTER]    = sText_ShortPokecenter,
     [MENUITEM_WORLD_DEVONSCOPE]         = sText_DevonScope,
+    [MENUITEM_WORLD_MATCHCALLS]         = sText_MatchCalls,
     [MENUITEM_WORLD_CANCEL]             = gText_OptionMenuSave,
 };
 
@@ -461,6 +466,7 @@ static bool8 CheckConditions(int selection)
 #endif
         case MENUITEM_WORLD_SHORTPOKECENTER: return TRUE;
         case MENUITEM_WORLD_DEVONSCOPE:      return FlagGet(FLAG_RECEIVED_DEVON_SCOPE);
+        case MENUITEM_WORLD_MATCHCALLS:      return TRUE;
         case MENUITEM_WORLD_CANCEL:          return TRUE;
         case MENUITEM_WORLD_COUNT:           return TRUE;
         }
@@ -554,6 +560,8 @@ static const u8 sText_Desc_ShortPokecenter_On[]         = _("Skip the yes/no que
 static const u8 sText_Desc_ShortPokecenter_Off[]        = _("Original experience.\nAlways ask the yes/no question.");
 static const u8 sText_Desc_DevonScope_On[]              = _("Show FEEBAS tiles on ROUTE 119.\nLower encounter rate (5%).");
 static const u8 sText_Desc_DevonScope_Off[]             = _("Hide FEEBAS tiles. Vanilla mechanics.\nHigher encounter rate (50%).");
+static const u8 sText_Desc_MatchCalls_On[]              = _("Trainers ring your POKéNAV with\ntips, rumors and idle chatter.");
+static const u8 sText_Desc_MatchCalls_Off[]             = _("Silence every POKéNAV call.\nNo one will phone you.");
 static const u8 *const sOptionMenuItemDescriptionsWorld[MENUITEM_WORLD_COUNT][4] =
 {
     [MENUITEM_WORLD_AUTORUN]            = {sText_Desc_AutoRun_On,           sText_Desc_AutoRun_Off},
@@ -563,6 +571,7 @@ static const u8 *const sOptionMenuItemDescriptionsWorld[MENUITEM_WORLD_COUNT][4]
     [MENUITEM_WORLD_PLAYERSTYLE]        = {sText_Desc_PlayerStyle_Emerald,  sText_Desc_PlayerStyle_RS},
     [MENUITEM_WORLD_SHORTPOKECENTER]    = {sText_Desc_ShortPokecenter_On,   sText_Desc_ShortPokecenter_Off},
     [MENUITEM_WORLD_DEVONSCOPE]         = {sText_Desc_DevonScope_On,        sText_Desc_DevonScope_Off},
+    [MENUITEM_WORLD_MATCHCALLS]         = {sText_Desc_MatchCalls_On,        sText_Desc_MatchCalls_Off},
     [MENUITEM_WORLD_CANCEL]             = {sText_Desc_Save,                 sText_Empty},
 };
 
@@ -621,6 +630,7 @@ static const u8 *const sOptionMenuItemDescriptionsDisabledWorld[MENUITEM_WORLD_C
     [MENUITEM_WORLD_PLAYERSTYLE]        = sText_Desc_PlayerStyle_Disabled,
     [MENUITEM_WORLD_SHORTPOKECENTER]    = sText_Empty,
     [MENUITEM_WORLD_DEVONSCOPE]         = sText_Empty,
+    [MENUITEM_WORLD_MATCHCALLS]         = sText_Empty,
     [MENUITEM_WORLD_CANCEL]             = sText_Empty,
 };
 
@@ -952,6 +962,7 @@ void CB2_InitOptionPlusMenu(void)
         sOptions->sel_world[MENUITEM_WORLD_PLAYERSTYLE]         = FlagGet(FLAG_PLAYER_STYLE_RS);
         sOptions->sel_world[MENUITEM_WORLD_SHORTPOKECENTER]     = !FlagGet(FLAG_ENABLE_SHORT_POKECENTER);   // Used the inverse to align with ON/OFF Buttons
         sOptions->sel_world[MENUITEM_WORLD_DEVONSCOPE]          = !FlagGet(FLAG_RECEIVED_DEVON_SCOPE);      // ON = tiles visible, OFF = vanilla
+        sOptions->sel_world[MENUITEM_WORLD_MATCHCALLS]          = FlagGet(FLAG_DISABLE_MATCH_CALLS);        // ON = calls enabled (flag clear), OFF = silenced
 
         //Surf
         sOptions->sel_surf[MENUITEM_SURF_FASTSURF]            = !FlagGet(FLAG_ENABLE_FASTSURF);           // Used the inverse to align with ON/OFF Buttons
@@ -1254,6 +1265,8 @@ static void Task_OptionMenuSave(u8 taskId)
     else
         FlagClear(FLAG_RECEIVED_DEVON_SCOPE);
     GetFeebasTiles(); // Remix Feebas tile locations when Devon Scope is toggled
+    // PokeNav calls toggle: ON (sel 0) enables calls, so clear the disable flag.
+    sOptions->sel_world[MENUITEM_WORLD_MATCHCALLS]         == 0 ? FlagClear(FLAG_DISABLE_MATCH_CALLS) : FlagSet(FLAG_DISABLE_MATCH_CALLS);
 
     //Surf
     sOptions->sel_surf[MENUITEM_SURF_FASTSURF]              == 0 ? FlagSet(FLAG_ENABLE_FASTSURF)        : FlagClear(FLAG_ENABLE_FASTSURF);          // Used the inverse to align with other similar options.
@@ -1782,6 +1795,15 @@ static void DrawChoices_DevonScope(int selection, int y)
 {
     bool8 active = CheckConditions(MENUITEM_WORLD_DEVONSCOPE);
     DrawOptionMenuChoiceStrings(selection, y, active, sDevonScopeStrings, 2);
+}
+
+static const u8 sText_MatchCalls_ChoiceOn[]  = _("ON");
+static const u8 sText_MatchCalls_ChoiceOff[] = _("OFF");
+static const u8 *const sMatchCallsStrings[] = {sText_MatchCalls_ChoiceOn, sText_MatchCalls_ChoiceOff};
+static void DrawChoices_MatchCalls(int selection, int y)
+{
+    bool8 active = CheckConditions(MENUITEM_WORLD_MATCHCALLS);
+    DrawOptionMenuChoiceStrings(selection, y, active, sMatchCallsStrings, 2);
 }
 
 static const u8 sText_FastSurf_On[]   = _("ON");

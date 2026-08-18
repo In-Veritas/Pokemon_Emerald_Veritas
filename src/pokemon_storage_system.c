@@ -7,6 +7,7 @@
 #include "dynamic_placeholder_text_util.h"
 #include "event_data.h"
 #include "field_screen_effect.h"
+#include "daycare.h"
 #include "field_weather.h"
 #include "fldeff_misc.h"
 #include "gpu_regs.h"
@@ -7785,8 +7786,14 @@ static void SetDisplayMonData(void *pokemon, u8 mode)
             sStorage->displayMonLevel = GetLevelFromBoxMonExp(boxMon);
             sStorage->displayMonMarkings = GetBoxMonData(boxMon, MON_DATA_MARKINGS);
             sStorage->displayMonPersonality = GetBoxMonData(boxMon, MON_DATA_PERSONALITY);
-            sStorage->displayMonPalette = GetMonSpritePalFromSpeciesAndPersonality(sStorage->displayMonSpecies, otId, sStorage->displayMonPersonality);
-            gender = GetGenderFromSpeciesAndPersonality(sStorage->displayMonSpecies, sStorage->displayMonPersonality);
+            // Veritas: match GetMonFrontSpritePal (the MODE_PARTY path above):
+            // legendary eggs show their blue-purple shell in the box hover too.
+            if (sStorage->displayMonSpecies == SPECIES_EGG
+             && IsSpeciesLegendary(GetBoxMonData(boxMon, MON_DATA_SPECIES)))
+                sStorage->displayMonPalette = gMonPalette_EggLegendary;
+            else
+                sStorage->displayMonPalette = GetMonSpritePalFromSpeciesAndPersonality(sStorage->displayMonSpecies, otId, sStorage->displayMonPersonality);
+            gender = GetBoxMonGender(boxMon); // Veritas: respect the Morph Powder gender override
             sStorage->displayMonItemId = GetBoxMonData(boxMon, MON_DATA_HELD_ITEM);
         }
     }

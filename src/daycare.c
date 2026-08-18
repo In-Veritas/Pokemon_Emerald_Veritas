@@ -9,6 +9,7 @@
 #include "event_data.h"
 #include "random.h"
 #include "main.h"
+#include "new_game.h"
 #include "egg_hatch.h"
 #include "text.h"
 #include "menu.h"
@@ -907,6 +908,12 @@ static u16 DetermineEggSpeciesAndParentSlots(struct DayCare *daycare, u8 *parent
     u16 species[DAYCARE_MON_COUNT];
     u16 eggSpecies;
 
+    // Veritas: default the slots so a pair that resolves no explicit mother
+    // (e.g. an edge case around a morphed parent) can never fall through the
+    // loop and read an uninitialized slot / pick a garbage species.
+    parentSlots[0] = 0;
+    parentSlots[1] = 1;
+
     for (i = 0; i < DAYCARE_MON_COUNT; i++)
     {
         species[i] = GetBoxMonData(&daycare->mons[i].mon, MON_DATA_SPECIES);
@@ -1019,8 +1026,15 @@ void CreateEgg(struct Pokemon *mon, u16 species, bool8 setHotSpringsLocation)
     u8 language;
     u8 metLocation;
     u8 isEgg;
+    u32 otId;
 
-    CreateMon(mon, species, EGG_HATCH_LEVEL, USE_RANDOM_IVS, FALSE, 0, OT_ID_PLAYER_ID, 0);
+    // Gift Eggs roll no shininess here either: like daycare Eggs, their single
+    // shiny window is at hatch (CreateHatchedMon) -- except a pending
+    // FLAG_SHINY_CREATION (the guaranteed-shiny minigame eggs), which
+    // CreateBoxMon's OT_ID_PRESET path honors at creation. The OT is
+    // identical to OT_ID_PLAYER_ID.
+    otId = GetTrainerId(gSaveBlock2Ptr->playerTrainerId);
+    CreateMon(mon, species, EGG_HATCH_LEVEL, USE_RANDOM_IVS, FALSE, 0, OT_ID_PRESET, otId);
     metLevel = 0;
     ball = ITEM_POKE_BALL;
     language = LANGUAGE_JAPANESE;
@@ -1042,12 +1056,18 @@ void CreateEgg(struct Pokemon *mon, u16 species, bool8 setHotSpringsLocation)
 static void SetInitialEggData(struct Pokemon *mon, u16 species, struct DayCare *daycare)
 {
     u32 personality;
+    u32 otId;
     u16 ball;
     u8 metLevel;
     u8 language;
 
     personality = daycare->offspringPersonality;
-    CreateMon(mon, species, EGG_HATCH_LEVEL, USE_RANDOM_IVS, TRUE, personality, OT_ID_PLAYER_ID, 0);
+    // Pass the player's ID as a preset OT so CreateBoxMon keeps the crafted
+    // personality untouched and grants no shiny re-rolls here: an Egg's single
+    // shiny window is at hatch (CreateHatchedMon), where the different-OT
+    // breeding bonus is also applied. The OT is identical to OT_ID_PLAYER_ID.
+    otId = GetTrainerId(gSaveBlock2Ptr->playerTrainerId);
+    CreateMon(mon, species, EGG_HATCH_LEVEL, USE_RANDOM_IVS, TRUE, personality, OT_ID_PRESET, otId);
     metLevel = 0;
     ball = ITEM_POKE_BALL;
     language = LANGUAGE_JAPANESE;
@@ -1262,12 +1282,14 @@ static u8 GetDaycareCompatibilityScore(struct DayCare *daycare)
 
     for (i = 0; i < DAYCARE_MON_COUNT; i++)
     {
-        u32 personality;
-
         species[i] = GetBoxMonData(&daycare->mons[i].mon, MON_DATA_SPECIES);
         trainerIds[i] = GetBoxMonData(&daycare->mons[i].mon, MON_DATA_OT_ID);
-        personality = GetBoxMonData(&daycare->mons[i].mon, MON_DATA_PERSONALITY);
-        genders[i] = GetGenderFromSpeciesAndPersonality(species[i], personality);
+        // Veritas: use the effective (Morph Powder-aware) gender, matching
+        // DetermineEggSpeciesAndParentSlots. Reading the raw PID gender here
+        // made the compatibility check disagree with the egg-species logic:
+        // a morphed parent could pass compatibility yet leave the mother slot
+        // unresolved, so the egg took the wrong parent's species.
+        genders[i] = GetBoxMonGender(&daycare->mons[i].mon);
         eggGroups[i][0] = gSpeciesInfo[species[i]].eggGroups[0];
         eggGroups[i][1] = gSpeciesInfo[species[i]].eggGroups[1];
     }

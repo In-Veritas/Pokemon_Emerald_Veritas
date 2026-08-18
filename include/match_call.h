@@ -17,6 +17,7 @@ bool32 IsMatchCallTaskActive(void);
 void StartMatchCallFromScript(const u8 *message);
 void BufferPokedexRatingForMatchCall(u8 *destStr);
 bool32 SelectMatchCallMessage(int, u8 *);
+void MatchCall_MaybeGoCasualForPlayerCall(u16 trainerId);
 void LoadMatchCallWindowGfx(u32 windowId, u32 destOffset, u32 paletteId);
 void DrawMatchCallTextBoxBorder(u32 windowId, u32 tileOffset, u32 paletteId);
 

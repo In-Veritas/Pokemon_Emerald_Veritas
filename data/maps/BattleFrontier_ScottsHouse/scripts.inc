@@ -99,9 +99,8 @@ BattleFrontier_ScottsHouse_EventScript_ScottGivesBeldum::
 	end
 	
 BattleFrontier_ScottsHouse_EventScript_GiveBeldum::
-	setflag FLAG_SHINY_CREATION
 	setvar VAR_TEMP_TRANSFERRED_SPECIES, SPECIES_BELDUM
-	givemon SPECIES_BELDUM, 5
+	specialvar VAR_RESULT, GiveScottShinyBeldum
 	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PARTY, BattleFrontier_ScottsHouseEventScript_SendBeldumParty
 	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PC, BattleFrontier_ScottsHouseEventScript_SendBeldumPC
 	goto Common_EventScript_NoMoreRoomForPokemon

@@ -41,6 +41,7 @@ bool8 TrySetupDateNotSetReminder(void);
 bool8 IsCalendarDateSet(void);
 void GetVirtualDate(u8 *month, u8 *day);
 u16 IsPlayerBirthdayToday(void);
+u16 PlayerBirthdayDaysAway(void);
 u16 IsSpookyDayToday(void);
 u16 GetRandomSpookySpecies(void);
 u16 IsHoennDayToday(void);

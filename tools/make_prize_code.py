@@ -5,20 +5,24 @@ Usage:
     python tools/make_prize_code.py <trainer_id> <slot> <item> <amount>
                                     [tournament_id] [placement]
 
-    trainer_id     The 5-digit ID shown on the winner's TRAINER CARD (0-65535).
-                   It is NOT stored in the code: it keys the payload whitening
-                   and the MAC, so the code only verifies on that winner's save.
+    trainer_id     The 5-digit ID shown on the winner's TRAINER CARD (0-65535),
+                   or a known player name (see KNOWN_TRAINERS, e.g. AILES). It is
+                   NOT stored in the code: it keys the payload whitening and the
+                   MAC, so the code only verifies on that winner's save.
     slot           1-15. The once-per-save key — each slot can be redeemed once
                    per save (bitmask in VAR_TOURNEY_PRIZES_REDEEMED). Use one
                    slot per prize category, e.g. 1 = winner's prize,
                    5 = participation prize. Reusing a slot for a second prize
                    means that winner can only ever claim one of them.
     item           Item name or number: RARE_CANDY, ITEM_RARE_CANDY or 68.
-                   Names are read live from include/constants/items.h.
+                   Names are read live from include/constants/items.h. Pass the
+                   literal "mon" to award a hardcoded Pokemon instead of an item
+                   (then <amount> is the mon id: 1 = Bernard the GOLDEEN).
     amount         1-99.
     tournament_id  Optional, 0-7 (default 0 = generic congratulations).
-                   1 = MAGMA VS AQUA, 2 = SOUTHERN ISLAND. IDs 3-7 open —
-                   see sTournamentNames in src/field_specials.c.
+                   1 = MAGMA VS AQUA, 2 = SOUTHERN ISLAND, 3 = FISHING,
+                   4 = UNIVERSITY. IDs 5-7 open — see sTournamentNames in
+                   src/field_specials.c.
     placement      Optional, 1 / 2 / 3 for first / second / third place, or 4
                    for a participation code. Default 1. Each gets its own clerk
                    dialog. Only used when tournament_id != 0.
@@ -58,7 +62,24 @@ MASK = 0xFFFFFFFF
 MASK25 = 0x01FFFFFF  # payload width
 MASK30 = 0x3FFFFFFF  # MAC width
 
-TOURNAMENTS = {0: "(none)", 1: "MAGMA VS AQUA", 2: "SOUTHERN ISLAND"}
+TOURNAMENTS = {0: "(none)", 1: "MAGMA VS AQUA", 2: "SOUTHERN ISLAND", 3: "FISHING",
+               4: "UNIVERSITY"}
+
+# Hardcoded Pokemon prizes: pass "mon" as the <item> and the mon id as the
+# <amount>. The marker below (the max 9-bit value, above ITEMS_COUNT) rides in
+# the item-id field; RedeemTournamentCode maps it to GiveTournamentPrizeMon.
+MON_MARKER = 0x1FF
+PRIZE_MONS = {1: "Bernard the GOLDEEN"}
+
+# Known players -> their 5-digit Trainer ID, so codes can be minted by name
+# (e.g. "AILES") instead of a raw ID. A code is keyed to this exact ID, so it
+# only ever works on that person's save. Add new winners here as you learn them.
+KNOWN_TRAINERS = {
+    "AILES": 33082,
+    "NIJI":  10910,
+    "GABS":  9448,
+    "ALHYA": 44281,
+}
 
 # Placement 4 = participation: the clerk thanks the entrant for taking part
 # instead of naming a placement. Rides in the same 2 placement bits as 1-3.
@@ -138,6 +159,18 @@ def resolve_item(token, names):
     return names[key]
 
 
+def resolve_trainer(token):
+    """Accept a 5-digit Trainer ID, or a known player name (AILES, NIJI, ...)."""
+    if token.isdigit():
+        return int(token)
+    tid = KNOWN_TRAINERS.get(token.strip().upper())
+    if tid is None:
+        raise ValueError("unknown trainer %r — pass a 5-digit Trainer ID or a "
+                         "known name (%s)"
+                         % (token, ", ".join(sorted(KNOWN_TRAINERS))))
+    return tid
+
+
 def item_label(item_id, names, amount):
     for name, value in names.items():
         if value == item_id:
@@ -212,21 +245,33 @@ def main():
         print(__doc__)
         sys.exit(1)
     names, items_count = load_items()
-    trainer_id = int(sys.argv[1])
+    trainer_id = resolve_trainer(sys.argv[1])
     slot = int(sys.argv[2])
-    item_id = resolve_item(sys.argv[3], names)
     amount = int(sys.argv[4])
     tournament_id = int(sys.argv[5]) if len(sys.argv) > 5 else 0
     placement = int(sys.argv[6]) if len(sys.argv) > 6 else 1
 
-    code = make_code(trainer_id, slot, item_id, amount, tournament_id,
-                     placement, items_count)
-    prize = item_label(item_id, names, amount)
+    # A prize can be a hardcoded Pokemon instead of an item: pass "mon" as the
+    # <item> and the mon id as the <amount>. The marker (0x1FF) sits in the
+    # item-id field, above ITEMS_COUNT, so item_count validation is skipped.
+    if sys.argv[3].strip().lower() == "mon":
+        item_id = MON_MARKER
+        prize = PRIZE_MONS.get(amount, "prize Pokemon #%d" % amount)
+        code = make_code(trainer_id, slot, item_id, amount, tournament_id,
+                         placement, None)
+        prize_line = prize
+    else:
+        item_id = resolve_item(sys.argv[3], names)
+        prize = item_label(item_id, names, amount)
+        code = make_code(trainer_id, slot, item_id, amount, tournament_id,
+                         placement, items_count)
+        prize_line = "{} (item #{})".format(prize, item_id)
+
     log_code(code, trainer_id, slot, prize, tournament_id, placement)
 
     print("Trainer ID : {:05d}".format(trainer_id))
     print("Slot       : {} (redeemable once per save)".format(slot))
-    print("Prize      : {} (item #{})".format(prize, item_id))
+    print("Prize      : {}".format(prize_line))
     print("Tournament : {}".format(TOURNAMENTS.get(tournament_id,
                                                    "#%d" % tournament_id)))
     if tournament_id:

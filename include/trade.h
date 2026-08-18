@@ -19,5 +19,6 @@ void InitTradeSequenceBgGpuRegs(void);
 void LinkTradeDrawWindow(void);
 void LoadTradeAnimGfx(void);
 void DrawTextOnTradeWindow(u8, const u8 *, u8);
+void SetInGameTradeSenderOverride(const u8 *senderName);
 
 #endif //GUARD_TRADE_H

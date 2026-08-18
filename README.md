@@ -81,7 +81,7 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 
 * Link battles now open with the same dramatic **VS mugshot transition** the Elite Four/Champion fights use, replacing the default cable-club spiral wipe.
 * The mugshot dynamically pulls each peer's trainer pic from `gLinkPlayers`, so you actually see your opponent's face (Brendan / May / RS variants depending on their unlocked style).
-* In **multi battles** (4-player Lv50 Multi), the transition shows both opposing trainers side-by-side and labels them clearly.
+* In **4-player multi battles**, the mugshot shows the opposing side's lead trainer — picked by colosseum seat, so it's always a member of the enemy team, never your partner.
 * The cutscene runs in sync with the battle music — the song starts the moment all players are in place, mugshots fire on-beat.
 
 #### Lv 50 Cable Club Battle Modes
@@ -90,6 +90,14 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 * Pokémon above Lv50 are temporarily scaled down for the duration of the battle and restored to their original levels afterward — no need for a competitive box.
 * Works on both wired and wireless link.
 * The same scale-don't-reject behavior applies to **Lv50 Battle Frontier** (Tower / Dome / Arena / Palace / Pike). Originals restored at challenge end via `LoadPlayerParty` from `gSaveBlock1Ptr`. Battle Pyramid Lv50 keeps the vanilla "reject high-level mons at team-select" behavior — its between-floor `SavePlayerParty` flow doesn't go through the swap-and-restore pattern other facilities use, and persisting a capped party to flash would permanently reduce levels.
+
+#### 4-Player Multi Battles (2v2, One Pokémon Each)
+
+* The Cable Club **Multi Battle** (wired) and Direct Corner **Multi Battle** (wireless) are full 4-player link battles: two teams of two in a double battle, each player controlling their own Pokémon. All four battlers are human-controlled — no NPC partner.
+* Teams are chosen by seating: the two players sitting on the same side of the colosseum table are partners.
+* Each player picks **1 to 3 Pokémon** from their party at their seat — bring exactly one each for a pure "one Pokémon per player" 2v2.
+* Available at standard levels and as **Lv50 Multi**, on both wired and wireless link.
+* Veritas fix: in 4-player battles the VS mugshot now always shows an actual opponent (it previously picked by link-join order and could show a teammate instead).
 
 #### Battle Frontier Lv. 100 Mode
 
@@ -102,7 +110,8 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 * On the **last battle of any Lv. 100 challenge run** once your streak is **14 or higher**, there's a **12.5% chance** the opponent is one of 5 hand-built elite trainers (Gabriel / Niji / Emeline / Nicolas / Yann) instead of a random Frontier roster pick.
 * Each elite has their own dialog (encounter, win, lose) and a curated 4-mon pool with Gen-3-legal moves, EVs, natures, and held items. The team-fill still picks 3 of 4 (2 for Multi) at random for variety across runs.
 * Elite trainers are excluded from Frontier Brain battles — the brain still gets their dedicated slot.
-* Lv50 mode skips them entirely because their mons sit above the FRONTIER_MONS_HIGH_TIER cutoff that gates Lv50 team-fill.
+* Lv50 mode skips them entirely (the elite cameo roll only happens above Lv50 mode).
+* **Fixed 2026-08:** every elite pool now carries **four distinct held items**. The team-fill's item clause needs as many distinct items as party slots, and pools that repeated an item (Gabriel and Nicolas with triple Leftovers; Niji and Yann for 4-mon Doubles) made the selection loop spin forever — the game froze right after the trainer's intro line (first reported against Gabriel in the Battle Pike). The selection loop itself also gained an escape hatch that progressively relaxes its filters instead of hanging, which additionally covers entering an open-level challenge with a best Pokémon of exactly Lv 50 (the computed level used to trip the Lv50 tier filter and reject every elite mon).
 
 #### Outfit and Style Sharing in Link
 
@@ -118,9 +127,9 @@ All three wireless minigames are accessible from **both** the Mossdeep Game Corn
 #### Tournament Prize Codes
 
 * The Cable Club attendant (first desk in every Pokémon Center 2F) now offers a **TOURNAMENT PRIZE** option in her service menu
-* Winners enter an **8-character prize code**; codes are generated offline with `tools/make_prize_code.py` from the winner's visible Trainer ID + a prize ID, so a code **only works on that winner's save**, and each prize ID redeems **once per save**
-* Prizes live in a small table in `field_specials.c` (Golden Cap, Master Ball, Rare Candy ×5, Shiny Charm as IDs 1-4; IDs 5-15 open) — adding a new prize is a one-line change
-* Codes can also carry a **tournament and placement**: the clerk then congratulates the winner on taking first/second/third place in the tournament by name ("MAGMA VS AQUA" and "SOUTHERN ISLAND" registered; more are a one-line addition)
+* Winners enter an **11-character prize code**; codes are generated offline with `tools/make_prize_code.py` and keyed to the winner's visible Trainer ID, so a code **only works on that winner's save**. Each code carries its own item + quantity plus a slot number that redeems **once per save**
+* Codes can also award a **Pokémon** instead of an item — the first is **Bernard**, a shiny Lv5 Goldeen with perfect IVs, Lock-On and a Big Pearl, who arrives as a genuine foreign-OT mon (OT: PECHE) with his own nickname. If your party and boxes are full, the code isn't consumed — make room and enter it again
+* Codes can also carry a **tournament and placement**: the clerk then congratulates the winner on taking first/second/third place in the tournament by name ("MAGMA VS AQUA", "SOUTHERN ISLAND", "FISHING" and "UNIVERSITY" registered; more are a one-line addition)
 * This replaces hardcoded name-based gifts as the tournament reward channel; changing the shared salt invalidates all outstanding codes
 
 #### Auto Record Mixing After Link Battles
@@ -345,6 +354,11 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * The marking is stored within existing unused Pokémon data bits — no save structure changes
 * Existing Pokémon are unaffected; only newly generated Pokémon going forward are tracked
 
+#### Frontier Symbols on the Save Screen
+
+* Once you hold the **FRONTIER PASS**, the save-info window (the box shown when saving) gains a **SYMBOLS** row: `G:n S:n` — your gold symbol count and your silver-only count, matching what the pass itself displays (gold replaces silver there)
+* Hidden until the Battle Frontier is unlocked, so the window stays vanilla for the main story
+
 #### Battle Music Selection
 
 * Choose your preferred battle music before link battles and secret base NPC battles
@@ -356,8 +370,9 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 
 #### Steven's Beldum Gift
 
-* The gift Beldum in Steven's house now has "STEVEN" as its OT name, male OT gender, and a unique trainer ID
+* The gift Beldum in Steven's house now has "STEVEN" as its OT name, male OT gender, and a fixed trainer ID (00374 — Beldum's dex number)
 * Makes the Beldum feel like a genuine gift from Steven rather than a self-caught Pokémon
+* **Fixed 2026-08:** the original implementation stamped Steven's OT id onto the mon *after* creation, which shifted its encryption key and turned every gifted Beldum into a **Bad Egg**. The Beldum is now created with Steven's OT from the start and handed over via the foreign-OT gift path (same as tournament prize Pokémon). Corrupted Beldum on existing saves are recoverable: `tools/repair_bad_egg_save.py` re-keys the Bad Egg back into the real Beldum, or can clear `FLAG_RECEIVED_BELDUM` so the Pokéball in Steven's house reappears
 
 #### Cookie the Shiny Zigzagoon (Battle Frontier Trade)
 
@@ -368,10 +383,10 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 
 #### Champion Exclsior (Post-Game)
 
-* After becoming Champion, there is a 20% chance of encountering Exclsior instead of Wallace
-* Uses Red's trainer pic and the Veritas battle theme
-* Team consists of six Lv80 Pokémon: Typhlosion, Breloom, Scizor, Gardevoir, Tyranitar, and a shiny Latios
-* Defeating Exclsior warps directly to the Hall of Fame
+* Once you've beaten Wallace's title-defense rematch at least once, every later Champion's Room visit has a 20% chance of Exclsior standing in as Champion instead of Wallace
+* Uses Red's trainer pic and the FRLG VS Deoxys battle theme
+* Team of six at Lv80-85: Typhlosion, Breloom, Scizor, Gardevoir, Tyranitar, with a shiny Latios ace at Lv86
+* Pays out a fixed ₽30,000 on defeat (Amulet Coin doubles it) and warps directly to the Hall of Fame
 
 <details>
 <summary><b>👻 Southern Island superboss (endgame spoilers)</b></summary>
@@ -385,6 +400,13 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 
 * Secret base battles now show a VS mugshot transition (like Elite Four and Champion battles)
 * The mugshot dynamically displays the opponent's NPC trainer sprite
+
+#### Friends' Pokémon Live in Their Bases
+
+* Enter a friend's record-mixed secret base and **one of their battle-party Pokémon** is hanging out inside as a walking overworld sprite, near its trainer.
+* Which party member you meet is **random on every visit**, and its idle behavior is driven by its **nature** — the original, personality-derived one, not a minted-on nature: a Brave mon patrols, a Timid one shies away from you, a Naive one mimics your steps, a Naughty one spins in circles, a Lax one barely shuffles in place…
+* Talk to it to hear its cry. Pokémon with oversized overworld sprites (64×64 legendaries) politely stay home — base interiors are small.
+* The mon respects the room: it spawns beside its trainer on a verified-free tile (relocating around furniture if needed), all its movement uses normal NPC collision so it can never cross walls or furniture, and in the rare base packed wall-to-wall with doll decorations it politely sits the visit out rather than pushing a decoration off-screen.
 
 #### Secret Base Battle Mode Choice
 
@@ -401,6 +423,7 @@ Trade evolutions have been restored while keeping alternative evolution methods 
 * **Pay Day** now snowballs like Uproar: each **consecutive** use adds **+20 power** (60 → 160 cap) **and** scatters progressively more coins. Using another move resets the chain. Description updated to match.
 * **Rapid Spin** now also **raises the user's Speed by one stage** (in addition to clearing hazards/binding), like its modern incarnation.
 * **Doom Desire** base power increased from 150 to **160**.
+* **Octazooka** base power increased to **85** (from 70 in this engine's base; vanilla is 65), making Octillery's signature move worth clicking.
 
 #### Ability Capsule → Medicine Pocket
 
@@ -518,16 +541,20 @@ On a themed or Mew day both wanderers are always out (the daily rotation is set 
 * Not on the list? A member of the **Lilycove Pokémon Trainer Fan Club** keeps a birthday chart and will record yours: a single-number spinner picks the month (1-12), then the day (with proper 28/30/31-day months); his record-mixing fan dialogue stays intact afterwards. Already registered? **Talk to him twice** to change it
 * Carrying a **friend's traded Pokémon on their birthday**? The nurse recognizes its original Trainer and reminds you to wish them a happy birthday (a gentle nudge — no music or perks)
 * On your birthday, the **first PokéNav call of the day is a birthday wish** from one of your registered trainers — it comes quickly (the usual call-chance rolls are bypassed) and happens once per birthday
+* In the **week before** your birthday (1-6 days out), one PokéNav call a day becomes an **"isn't your birthday coming up?"** tease from whoever rings — it follows the normal call pacing, so it lands at an organic moment
 
 #### PokéNav Calls Actually Happen Now
 
 Call *rhythm* is untouched (same every-10th-step check, same 10-minute gate — and the classic easter egg stands: a lead **Lightning Rod** Pokémon doubles the odds). What's fixed is the two reasons calls almost never actually *triggered*:
 
-* **The silent drop**: after passing every timer and roll, vanilla still discarded the call unless the randomly-picked trainer was rematch-ready **on the exact route you were standing on** (and before your 5th badge, that was the *only* accepted reason). A third of those discarded picks now go through as **casual calls** instead
+* **The silent drop**: after passing every timer and roll, vanilla still discarded the call unless the randomly-picked trainer was rematch-ready **on the exact route you were standing on** (and before your 5th badge, that was the *only* accepted reason). Half of those discarded picks now go through as **casual calls** instead
 * **The dead-clock jam**: on carts with a dead RTC battery (or bootlegs whose clock never ticks), the "have 10 minutes passed?" check could never pass again — the PokéNav literally never rang. The game now detects a frozen clock (~1,200 steps with zero time movement) and paces call opportunities by steps instead
 * Rematch invitations are untouched — they still work exactly like vanilla
 
 Tuned to average **about 2 calls per hour** of walking. The 10-minute rhythm caps attempts at six per hour, so the per-attempt roll was raised to 50% (75% with a lead Lightning Rod) to actually hit that.
+
+* **Never a total drought**: an independent step-based pity timer guarantees a call attempt every **4,000 steps** of walking, even if every timed roll misses. It runs alongside the normal rhythm and never suppresses it
+* **Or total silence, if you prefer**: a **POKéNAV CALLS** toggle in the options menu (World tab) silences all match calls entirely
 
 #### Berries Grow Even With a Dead Clock
 
@@ -538,6 +565,10 @@ Many cartridges — especially bootlegs — have a dead or non-ticking RTC batte
 Registered trainers no longer only ever talk about rematches. They now also share **gameplay tips** — one for **every ability with an overworld effect**: Flame Body and Magma Armor halving egg cycles from any party slot, Pickup, Synchronize natures, Cute Charm genders, Magnet Pull and Static type bias, Compound Eyes held items, Suction Cups fishing, Keen Eye / Intimidate and Hustle / Vital Spirit / Pressure level bias, the encounter-rate abilities, Swarm's ambient cries, and Hyper Cutter's wider Cut. Plus **rumours of a very strong trainer out on Southern Island**, and, once Rayquaza has been dealt with, a sighting of **a woman riding a dragon Pokémon flying out to sea**.
 
 They'll also read you the news: **Gen 2-style mass outbreak reports** naming the Pokémon and the route (a Pokémon foreign to Hoenn only gets mentioned once your **National Pokédex** is unlocked), and a call from someone who **saw your shiny or legendary catch on TV** and rang to congratulate you. Call at 3 AM and they'll tell you to get some sleep; call at dawn and they'll be impressed you're up.
+
+**Dialing out reaches the same pool now**: when you call a registered trainer yourself and they have no battle business to discuss, half the time they'll serve a tip, a rumour or some small talk instead of their stock lines (rematch offers always take priority). The general-tip rotation also grew — Everstone nature-passing at the Day Care, the Amulet Coin payout, rematch teams growing stronger over time, and the Soothe Bell — and the shortest vanilla chatter lines got an extra beat so no call feels like a hang-up.
+
+Callers also **greet you by name now** — tips, rumours, sightings and gossip open with a proper "Hi, {PLAYER}!"-style salutation instead of launching straight into the caller announcing themselves. Wallace's post-Hall-of-Fame call and every Frontier Brain call were lengthened too, each in their own voice.
 
 #### Rumours, Errands and Gossip
 
@@ -556,8 +587,8 @@ And some callers aren't on your rematch list at all:
 | **Prof. Birch** | once you have the Pokédex |
 | **Brendan / May** | any time; and in the postgame, a quieter one about missing how often you used to run into each other |
 | **Steven** | after Meteor Falls; and in the postgame, about how far you've come since Granite Cave |
-| **Wallace** | after your first Hall of Fame entry — he remembers your team and counts your visits |
-| **Frontier Brains** | once you've taken their **Silver Symbol** and have a streak going — each one calls in their own voice, quoting your real number |
+| **Wallace** | once you've beaten his title-defense challenge at the LEAGUE — he remembers your team, counts your Hall of Fame visits, and vows to take the title back |
+| **Frontier Brains** | once you hold the **FRONTIER PASS** — a Brain whose facility you've never tried calls to **invite you over**, and one you've played calls to goad you into a rematch, quoting your real streak. Each of the seven speaks in their own voice |
 | **???** | rare, and only after a certain island goes quiet |
 
 <details>
@@ -887,6 +918,11 @@ The headline shinies of Pokémon Emerald Veritas. Each of the three superancient
       <b>Latios</b><br>
       <sub>Red body — wears his<br>sister LATIAS's colors</sub>
     </td>
+    <td align="center" width="33%">
+      <img src="docs/shiny_previews/shiny_kingdra.png" alt="Shiny Kingdra" width="120"><br>
+      <b>Kingdra</b><br>
+      <sub>Deep navy body<br>coral-pink belly and fins</sub>
+    </td>
   </tr>
 </table>
 
@@ -1047,7 +1083,7 @@ The following gift Pokémon are **no longer guaranteed shiny** (changed from Enh
 
 Still shiny gift Pokémon (unchanged from Enhanced):
 
-* **Beldum from Scott** (Battle Frontier Gold Symbols reward) - remains shiny
+* **Beldum from Scott** (Battle Frontier Gold Symbols reward) - remains shiny; since 2026-08 it also has **perfect IVs** and is genuinely Scott's: OT **SCOTT** (male, ID 02005), given through the safe foreign-OT gift path with the shiny personality crafted against Scott's ID
 * **Latios/Latias** (Southern Island) - remains shiny
 
 #### Contest Reward Changes

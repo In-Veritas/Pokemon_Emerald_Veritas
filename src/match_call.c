@@ -101,10 +101,11 @@ enum {
 // message instead of the vanilla rematch/chatter selection.
 enum
 {
-    FORCED_CALL_NONE,     // vanilla behavior
-    FORCED_CALL_BIRTHDAY, // first call on the player's birthday: a birthday wish
-    FORCED_CALL_CASUAL,   // fallback call: random tip or idle chatter
-    FORCED_CALL_SPECIAL,  // a fixed caller (Mom, Steven, a Frontier Brain, ...)
+    FORCED_CALL_NONE,          // vanilla behavior
+    FORCED_CALL_BIRTHDAY,      // first call on the player's birthday: a birthday wish
+    FORCED_CALL_BIRTHDAY_SOON, // "isn't your birthday coming up?", once a day when it's 1-6 days away
+    FORCED_CALL_CASUAL,        // fallback call: random tip or idle chatter
+    FORCED_CALL_SPECIAL,       // a fixed caller (Mom, Steven, a Frontier Brain, ...)
 };
 
 // Veritas "family B" callers: people who are NOT in the rematch table, so
@@ -163,6 +164,7 @@ struct MatchCallState
     u8 specialCallId;
     bool8 veritasCallActive; // the call in progress ends with a cry, not a goodbye
     u16 frozenRtcChecks;
+    u16 stepsSinceCall; // Veritas pity timer: steps since the last call of any kind
 };
 
 struct MatchCallTrainerTextInfo
@@ -238,7 +240,6 @@ static void BuildSpecialCallString(u8 *);
 static const struct MatchCallText *SelectCasualMatchCallText(int, u8 *);
 static bool32 TryPopulateOutbreakVars(bool8 *);
 static bool32 TryPopulateRareCatchVars(bool8 *);
-static bool32 PlayerHasAnyFrontierStreak(void);
 static bool32 ShouldOfferWeatherInstituteCall(void);
 static bool32 HasAnyRecordMixedTrainer(void);
 static bool32 TryPopulateMixedTrainerForRival(u8 *, bool8 *);
@@ -1100,6 +1101,15 @@ static const struct MatchCallText sMatchCallBirthdayTexts[] =
     { .text = MatchCall_BirthdayText3, .stringVarFuncIds = STRS_NORMAL_MSG },
 };
 
+// Veritas: "isn't your birthday coming up?" teases, offered once a day
+// while the player's birthday is 1-6 days away.
+static const struct MatchCallText sMatchCallBirthdaySoonTexts[] =
+{
+    { .text = MatchCall_BirthdaySoonText1, .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_BirthdaySoonText2, .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_BirthdaySoonText3, .stringVarFuncIds = STRS_NORMAL_MSG },
+};
+
 // One tip per ability that actually changes something outside battle in this
 // repo. Verified against the implementation, not against vanilla:
 //   egg cycles   egg_hatch.c GetEggCyclesToSubtract (any party slot)
@@ -1221,10 +1231,14 @@ static const u16 sWeatherInstituteBeastFlags[] =
 
 static const struct MatchCallText sMatchCallGeneralTipTexts[] =
 {
-    { .text = MatchCall_Tip_FanClubBirthday, .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_Tip_Pokerus,         .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_Tip_TradedExp,       .stringVarFuncIds = STRS_NORMAL_MSG },
-    { .text = MatchCall_Tip_SecretBase,      .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Tip_FanClubBirthday,   .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Tip_Pokerus,           .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Tip_TradedExp,         .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Tip_SecretBase,        .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Tip_EverstoneBreeding, .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Tip_AmuletCoin,        .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Tip_RematchGrowth,     .stringVarFuncIds = STRS_NORMAL_MSG },
+    { .text = MatchCall_Tip_SootheBell,        .stringVarFuncIds = STRS_NORMAL_MSG },
 };
 
 // Late night (22:00-03:59) vs early morning (04:00-06:59).
@@ -1391,20 +1405,6 @@ static const u16 sFrontierBrainTrainerIds[NUM_FRONTIER_FACILITIES] =
     [FRONTIER_FACILITY_PYRAMID] = TRAINER_BRANDON,
 };
 
-// A Brain only rings once the player has beaten them for the Silver Symbol.
-// GetPlayerSymbolCountForFacility() can't be reused here: it indexes by the
-// REAL facility id, and this file's ids are swapped for Pike/Factory.
-static const u16 sFrontierSilverSymbolFlags[NUM_FRONTIER_FACILITIES] =
-{
-    [FRONTIER_FACILITY_TOWER]   = FLAG_SYS_TOWER_SILVER,
-    [FRONTIER_FACILITY_DOME]    = FLAG_SYS_DOME_SILVER,
-    [FRONTIER_FACILITY_PALACE]  = FLAG_SYS_PALACE_SILVER,
-    [FRONTIER_FACILITY_ARENA]   = FLAG_SYS_ARENA_SILVER,
-    [MATCH_CALL_PIKE]           = FLAG_SYS_PIKE_SILVER,
-    [MATCH_CALL_FACTORY]        = FLAG_SYS_FACTORY_SILVER,
-    [FRONTIER_FACILITY_PYRAMID] = FLAG_SYS_PYRAMID_SILVER,
-};
-
 // One voice per Brain rather than a shared line.
 static const u8 *const sFrontierBrainTexts[NUM_FRONTIER_FACILITIES] =
 {
@@ -1415,6 +1415,19 @@ static const u8 *const sFrontierBrainTexts[NUM_FRONTIER_FACILITIES] =
     [MATCH_CALL_PIKE]           = MatchCall_Frontier_Lucy,
     [MATCH_CALL_FACTORY]        = MatchCall_Frontier_Noland,
     [FRONTIER_FACILITY_PYRAMID] = MatchCall_Frontier_Brandon,
+};
+
+// Invitation lines for a Brain whose facility the player has never really
+// played: they ring to sell their facility instead of teasing a comeback.
+static const u8 *const sFrontierBrainInviteTexts[NUM_FRONTIER_FACILITIES] =
+{
+    [FRONTIER_FACILITY_TOWER]   = MatchCall_FrontierInvite_Anabel,
+    [FRONTIER_FACILITY_DOME]    = MatchCall_FrontierInvite_Tucker,
+    [FRONTIER_FACILITY_PALACE]  = MatchCall_FrontierInvite_Spenser,
+    [FRONTIER_FACILITY_ARENA]   = MatchCall_FrontierInvite_Greta,
+    [MATCH_CALL_PIKE]           = MatchCall_FrontierInvite_Lucy,
+    [MATCH_CALL_FACTORY]        = MatchCall_FrontierInvite_Noland,
+    [FRONTIER_FACILITY_PYRAMID] = MatchCall_FrontierInvite_Brandon,
 };
 
 static const struct MatchCallText *const sMatchCallGeneralTopics[] =
@@ -1430,6 +1443,11 @@ static const struct MatchCallText *const sMatchCallGeneralTopics[] =
 extern const u8 gBirchDexRatingText_AreYouCurious[];
 extern const u8 gBirchDexRatingText_SoYouveSeenAndCaught[];
 extern const u8 gBirchDexRatingText_OnANationwideBasis[];
+
+// Veritas: the step-based call system fires on its own every this many steps
+// of walking, INDEPENDENTLY of the time-based system (see TryStartMatchCall).
+// The two overlap -- neither resets the other's counters.
+#define MATCH_CALL_PITY_STEPS 4000
 
 void InitMatchCallCounters(void)
 {
@@ -1534,6 +1552,7 @@ static bool32 UpdateMatchCallStepCounter(void)
 static bool32 SelectMatchCallTrainer(void)
 {
     u32 matchCallId;
+    u16 birthdayDaysAway;
     u32 numRegistered = GetNumRegisteredNPCs();
 
     sMatchCallState.forcedCallType = FORCED_CALL_NONE;
@@ -1568,6 +1587,24 @@ static bool32 SelectMatchCallTrainer(void)
     if ((TrainerIsEligibleForRematch(matchCallId) && GetRematchTrainerLocation(matchCallId) == gMapHeader.regionMapSectionId)
      || ShouldTrainerRequestBattle(matchCallId))
         return TRUE;
+
+    // Veritas: in the week before the birthday (1-6 days out), one call a
+    // day is an "isn't your birthday coming up?" tease. It sits BELOW the
+    // rematch gate so battle offers keep priority -- only a pick with no
+    // battle business is converted -- and unlike the birthday itself there
+    // is no CheckMatchCallChance bypass: it rides the normal 10-minute/50%
+    // pacing. The daily flag is checked first because it's cheap;
+    // PlayerBirthdayDaysAway reads the hardware RTC and this path reruns
+    // on failed pity-timer attempts.
+    if (!FlagGet(FLAG_DAILY_BIRTHDAY_SOON_MATCH_CALL))
+    {
+        birthdayDaysAway = PlayerBirthdayDaysAway();
+        if (birthdayDaysAway >= 1 && birthdayDaysAway <= 6)
+        {
+            sMatchCallState.forcedCallType = FORCED_CALL_BIRTHDAY_SOON;
+            return TRUE;
+        }
+    }
 
     // Veritas: vanilla dropped the call entirely here, which is why players
     // barely got any -- before 5 badges ShouldTrainerRequestBattle is always
@@ -1630,8 +1667,41 @@ static u32 GetActiveMatchCallTrainerId(u32 activeMatchCallId)
 */
 bool32 TryStartMatchCall(void)
 {
-    if (FlagGet(FLAG_HAS_MATCH_CALL)
-        && UpdateMatchCallStepCounter()
+    if (!FlagGet(FLAG_HAS_MATCH_CALL))
+        return FALSE;
+
+    // Veritas: the player can silence PokeNav calls from the options menu.
+    if (FlagGet(FLAG_DISABLE_MATCH_CALLS))
+        return FALSE;
+
+    // Veritas step-based system. Runs INDEPENDENTLY of the time-based system
+    // below: it counts every step and fires on its own every
+    // MATCH_CALL_PITY_STEPS, and the two systems never reset each other's
+    // counters, so they overlap (a time-based call can land and you still get
+    // your step-based one on schedule). ONLY a step-based call resets this
+    // counter; if no map/caller is available when it comes due it backs off
+    // and retries every 50 steps.
+    if (sMatchCallState.stepsSinceCall < 0xFFFF)
+        sMatchCallState.stepsSinceCall++;
+
+    if (sMatchCallState.stepsSinceCall >= MATCH_CALL_PITY_STEPS)
+    {
+        if (MapAllowsMatchCall() && SelectMatchCallTrainer())
+        {
+            sMatchCallState.stepsSinceCall = 0;
+            StartMatchCall();
+            return TRUE;
+        }
+        // Failed attempt (bad map or no caller picked). Back the counter off
+        // so the full selection pipeline (64 flag reads, RTC reads, ~10
+        // Random() rolls) retries every 50 steps instead of on EVERY step
+        // while pinned -- this function runs on the per-step hot path.
+        sMatchCallState.stepsSinceCall = MATCH_CALL_PITY_STEPS - 50;
+    }
+
+    // Time-based system (vanilla cadence + Veritas tuning), unchanged and
+    // independent of the step counter above.
+    if (UpdateMatchCallStepCounter()
         && UpdateMatchCallMinutesCounter()
         && CheckMatchCallChance()
         && MapAllowsMatchCall()
@@ -2041,6 +2111,14 @@ bool32 SelectMatchCallMessage(int trainerId, u8 *str)
         BuildMatchCallString(matchCallId, matchCallText, str);
         return FALSE;
     }
+    if (sMatchCallState.forcedCallType == FORCED_CALL_BIRTHDAY_SOON)
+    {
+        sMatchCallState.forcedCallType = FORCED_CALL_NONE;
+        FlagSet(FLAG_DAILY_BIRTHDAY_SOON_MATCH_CALL);
+        matchCallText = &sMatchCallBirthdaySoonTexts[Random() % ARRAY_COUNT(sMatchCallBirthdaySoonTexts)];
+        BuildMatchCallString(matchCallId, matchCallText, str);
+        return FALSE;
+    }
     if (sMatchCallState.forcedCallType == FORCED_CALL_CASUAL)
     {
         sMatchCallState.forcedCallType = FORCED_CALL_NONE;
@@ -2080,33 +2158,47 @@ bool32 SelectMatchCallMessage(int trainerId, u8 *str)
     return newRematchRequest;
 }
 
+// Veritas: called by the PokeNav call list right before SelectMatchCallMessage
+// when the player dials a generic (non-special) registered trainer. Without
+// this, player-dialed calls could never reach the casual pool -- forcedCallType
+// is only ever set by the overworld triggers -- so dialing a trainer served the
+// same handful of vanilla lines forever. Half of the calls with no battle
+// business to discuss become casual calls (tips, rumors, small talk) instead.
+// Battle business always wins: a rematch-ready trainer on this map or one
+// entitled to request a battle keeps the vanilla message (and its rematch
+// request), and ShouldTrainerRequestBattle is deterministic, so the check here
+// agrees with the one inside SelectMatchCallMessage.
+void MatchCall_MaybeGoCasualForPlayerCall(u16 trainerId)
+{
+    int matchCallId;
+
+    if (sMatchCallState.forcedCallType != FORCED_CALL_NONE)
+        return;
+
+    matchCallId = GetTrainerMatchCallId(trainerId);
+    if (TrainerIsEligibleForRematch(matchCallId)
+     && GetRematchTrainerLocation(matchCallId) == gMapHeader.regionMapSectionId)
+        return;
+    if (ShouldTrainerRequestBattle(matchCallId))
+        return;
+
+    if (Random() % 2)
+        sMatchCallState.forcedCallType = FORCED_CALL_CASUAL;
+}
+
 // ===========================================================================
 // Veritas PokeNav calls. Full write-up in docs/POKENAV_CALLS.md.
 // ===========================================================================
 
-// A Brain is willing to call only about a facility whose Silver Symbol the
-// player already holds AND where they have a streak worth mentioning.
-static bool32 IsFrontierBrainCallable(int facilityId)
+// "Played" = the facility has a streak worth mentioning (best across modes,
+// current or record). A facility the player entered once and washed out of
+// immediately still reads as untried, so its Brain keeps inviting -- which
+// is the right nudge for that player anyway.
+static bool32 HasPlayedFrontierFacility(int facilityId)
 {
     u32 topic;
 
-    if (!FlagGet(sFrontierSilverSymbolFlags[facilityId]))
-        return FALSE;
-
     return GetFrontierStreakInfo(facilityId, &topic) > 1;
-}
-
-static bool32 PlayerHasAnyFrontierStreak(void)
-{
-    int i;
-
-    for (i = 0; i < NUM_FRONTIER_FACILITIES; i++)
-    {
-        if (IsFrontierBrainCallable(i))
-            return TRUE;
-    }
-
-    return FALSE;
 }
 
 // The Weather Institute call is about the POSTGAME research quests -- the
@@ -2228,13 +2320,20 @@ static bool32 TrySelectSpecialCall(void)
         return TRUE;
     }
 
-    if (GetGameStat(GAME_STAT_ENTERED_HOF) != 0 && (Random() % 20) == 0)
+    // Wallace is the title CHALLENGER in this hack (Steven is the first
+    // champion, and Juan takes over the Sootopolis Gym postgame), so his
+    // "replaying our battle" call only makes sense once the player has
+    // actually fought his Champion's Room title defense -- entering the
+    // Hall of Fame alone only proves Steven was beaten.
+    if (HasTrainerBeenFought(TRAINER_WALLACE_2) && (Random() % 20) == 0)
     {
         sMatchCallState.specialCallId = SPECIAL_CALL_HEART_WALLACE;
         return TRUE;
     }
 
-    if (PlayerHasAnyFrontierStreak() && (Random() % 16) == 0)
+    // Brains stay silent until the player holds the FRONTIER PASS; from then
+    // on they either invite (facility untried) or goad a comeback (played).
+    if (FlagGet(FLAG_SYS_FRONTIER_PASS) && (Random() % 16) == 0)
     {
         sMatchCallState.specialCallId = SPECIAL_CALL_FRONTIER_BRAIN;
         return TRUE;
@@ -2301,6 +2400,8 @@ static void BuildSpecialCallString(u8 *str)
     u16 streak, best;
     u32 topic;
     int i, bestId;
+    u8 untried[NUM_FRONTIER_FACILITIES];
+    u8 untriedCount;
     u8 metGender = MALE;
     bool8 metGenderKnown = FALSE;
 
@@ -2349,33 +2450,50 @@ static void BuildSpecialCallString(u8 *str)
         ConvertIntToDecimalStringN(gStringVar3, GetGameStat(GAME_STAT_ENTERED_HOF), STR_CONV_MODE_LEFT_ALIGN, 5);
         break;
     case SPECIAL_CALL_FRONTIER_BRAIN:
-        // Best streak among only those facilities the player has already
-        // earned the Silver Symbol in, so a Brain never rings about a
-        // facility the player hasn't beaten them in yet.
+        // Split the facilities: played ones compete on best streak for a
+        // comeback call; untried ones queue up for an invitation. When both
+        // kinds exist a coin flip decides, so invitations keep surfacing
+        // without drowning out the comeback teasing.
         best = 0;
         bestId = -1;
+        untriedCount = 0;
         for (i = 0; i < NUM_FRONTIER_FACILITIES; i++)
         {
-            if (!IsFrontierBrainCallable(i))
-                continue;
-
-            streak = GetFrontierStreakInfo(i, &topic);
-            if (bestId < 0 || streak > best)
+            if (HasPlayedFrontierFacility(i))
             {
-                best = streak;
-                bestId = i;
+                streak = GetFrontierStreakInfo(i, &topic);
+                if (bestId < 0 || streak > best)
+                {
+                    best = streak;
+                    bestId = i;
+                }
+            }
+            else
+            {
+                untried[untriedCount++] = i;
             }
         }
 
-        // TrySelectSpecialCall already proved one exists; this is a guard.
-        if (bestId < 0)
-            bestId = FRONTIER_FACILITY_TOWER;
-
-        sBattleFrontierStreakInfo.facilityId = bestId;
-        sBattleFrontierStreakInfo.streak = best;
-        text = sFrontierBrainTexts[bestId];
-        StringCopy(gStringVar1, gTrainers[sFrontierBrainTrainerIds[bestId]].trainerName);
-        ConvertIntToDecimalStringN(gStringVar2, best, STR_CONV_MODE_LEFT_ALIGN, 4);
+        if (untriedCount != 0 && (bestId < 0 || (Random() % 2)))
+        {
+            i = untried[Random() % untriedCount];
+            sBattleFrontierStreakInfo.facilityId = i;
+            sBattleFrontierStreakInfo.streak = 0;
+            text = sFrontierBrainInviteTexts[i];
+            StringCopy(gStringVar1, gTrainers[sFrontierBrainTrainerIds[i]].trainerName);
+        }
+        else
+        {
+            // All seven facilities sort into one of the two buckets, so
+            // bestId < 0 here is unreachable; guard anyway.
+            if (bestId < 0)
+                bestId = FRONTIER_FACILITY_TOWER;
+            sBattleFrontierStreakInfo.facilityId = bestId;
+            sBattleFrontierStreakInfo.streak = best;
+            text = sFrontierBrainTexts[bestId];
+            StringCopy(gStringVar1, gTrainers[sFrontierBrainTrainerIds[bestId]].trainerName);
+            ConvertIntToDecimalStringN(gStringVar2, best, STR_CONV_MODE_LEFT_ALIGN, 4);
+        }
         break;
     }
 

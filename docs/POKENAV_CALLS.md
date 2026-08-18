@@ -29,9 +29,25 @@ If neither holds, vanilla returns `FALSE` and the call is thrown away. So for
 most of the game a call needed a rematch-ready trainer to happen to live on the
 route the player was standing on. That is the drought.
 
-Fix: a failed pick no longer always drops. One in three becomes a *casual call*
+Fix: a failed pick no longer always drops. Half become a *casual call*
 (`FORCED_CALL_CASUAL`) — the same trainer rings, but with tip/rumour/chatter
 material instead of a rematch request.
+
+Two later additions layer on top:
+
+- **Pity timer** (`MATCH_CALL_PITY_STEPS` = 4000 in `TryStartMatchCall`): an
+  independent step counter that forces a call attempt every 4000 steps,
+  bypassing the minutes gate and the chance roll. Only a successful step-based
+  call resets it; the two systems never touch each other's counters.
+- **Options toggle** (`FLAG_DISABLE_MATCH_CALLS`, options World tab): when set,
+  `TryStartMatchCall` returns immediately and no match call ever fires.
+- **Player-dialed calls** (`MatchCall_MaybeGoCasualForPlayerCall`, called from
+  `GetMatchCallMessageText` in `pokenav_match_call_list.c`): dialing a generic
+  trainer yourself now has a 1-in-2 shot at the casual pool when the trainer
+  has no rematch business — previously `forcedCallType` was only ever set by
+  the overworld triggers, so dialed calls could never leave the vanilla pools.
+  Rematch offers always win: the helper bails out on the same (deterministic)
+  checks `SelectMatchCallMessage` uses.
 
 **b) A frozen RTC jams the 10-minute gate forever.** `UpdateMatchCallMinutesCounter()`
 compares `gLocalTime` against a stored minute. On a cart with a dead RTC battery
@@ -125,7 +141,7 @@ Charm / Quick Learner / Mystic Tempo are battle-only.
 | Category | Labels | Caller | Gate |
 |---|---|---|---|
 | Birthday wish | `MatchCall_BirthdayText1-3` | registered trainer | `IsPlayerBirthdayToday()` + `FLAG_DAILY_BIRTHDAY_MATCH_CALL` unset |
-| General tips | `MatchCall_Tip_FanClubBirthday`, `_Pokerus`, `_TradedExp`, `_SecretBase` | registered trainer | none |
+| General tips | `MatchCall_Tip_FanClubBirthday`, `_Pokerus`, `_TradedExp`, `_SecretBase`, `_EverstoneBreeding`, `_AmuletCoin`, `_RematchGrowth`, `_SootheBell` | registered trainer | none |
 | Southern Island rumour | `MatchCall_Lore_SouthernIsland` | registered trainer | none (it's a teaser hint) |
 | Dragon lady | `MatchCall_Lore_DragonLady` | registered trainer | `FLAG_DEFEATED_RAYQUAZA` |
 | Rare sighting | `MatchCall_Rare_Outbreak` | registered trainer | live mass outbreak, species in Hoenn dex |
@@ -140,8 +156,8 @@ Charm / Quick Learner / Mystic Tempo are battle-only.
 | Leisure — Steven | `MatchCall_Leisure_Steven1-2` | **Steven** | `FLAG_DEFEATED_METEOR_FALLS_STEVEN` or `FLAG_IS_CHAMPION` |
 | Heart-to-heart — rival | `MatchCall_Heart_Rival` | **Brendan / May** | `FLAG_IS_CHAMPION` |
 | Heart-to-heart — Steven | `MatchCall_Heart_Steven` | **Steven** | `FLAG_IS_CHAMPION` |
-| Champion memory | `MatchCall_Heart_Wallace` | **Wallace** | `GAME_STAT_ENTERED_HOF > 0` |
-| Frontier Brain | `MatchCall_Frontier_Anabel` … `_Brandon` (7) | **the Brain of that facility** | **Silver Symbol held** for that facility AND streak > 1 |
+| Champion memory | `MatchCall_Heart_Wallace` | **Wallace** | `HasTrainerBeenFought(TRAINER_WALLACE_2)` — the title-defense fight, NOT mere HoF entry (the first clear beats Steven, and Juan holds the Sootopolis Gym postgame) |
+| Frontier Brain | `MatchCall_Frontier_Anabel` … `_Brandon` (7) + `MatchCall_FrontierInvite_*` (7) | **the Brain of that facility** | **FRONTIER PASS held**; untried facility → invitation, played facility (streak > 1) → comeback call |
 | Mystery call | `MatchCall_Veritas` | **Veritas** | `FLAG_DEFEATED_VERITAS`, `FLAG_DAILY_VERITAS_MATCH_CALL` unset |
 
 ### Wave 2: quest hints, legendary rumours, record mixing
@@ -199,25 +215,32 @@ gates on `FLAG_SYS_GAME_CLEAR`, matching the quest-givers themselves
 (`Route119_WeatherInstitute_1F/2F` scripts both `goto_if_unset FLAG_SYS_GAME_CLEAR`),
 and stops once all three beasts are caught or knocked out.
 
-#### Frontier Brains: Silver Symbol gated, one voice each
+#### Frontier Brains: pass-gated, invitations first, one voice each
 
-A Brain only rings about a facility whose **Silver Symbol the player already
-holds** -- i.e. they have beaten that Brain at least once -- and where the
-streak is worth mentioning (`> 1`). `IsFrontierBrainCallable()` is the test.
+Brains never ring before the player holds the **FRONTIER PASS**
+(`FLAG_SYS_FRONTIER_PASS` gates the trigger in `TrySelectSpecialCall`). From
+then on, `BuildSpecialCallString` splits the seven facilities:
 
-> ⚠️ `GetPlayerSymbolCountForFacility()` in `frontier_util.c` cannot be reused
-> here. It computes `FLAG_SYS_TOWER_SILVER + facility * 2` using the **real**
-> `FRONTIER_FACILITY_*` ids, but this file deliberately swaps Pike and Factory
-> (see the comment at the top of `match_call.c`). `sFrontierSilverSymbolFlags[]`
-> is therefore written in this file's swapped index space, matching
-> `sBattleFrontierFacilityNames[]`, `sFrontierBrainTrainerIds[]` and
-> `sFrontierBrainTexts[]`. Lucy must land on Battle Pike, Noland on Factory.
+- **Untried** (`HasPlayedFrontierFacility()` false — no streak `> 1` in any
+  mode): that facility's Brain calls with a personal **invitation**
+  (`sFrontierBrainInviteTexts[]`) selling their facility.
+- **Played**: the best-streak facility's Brain calls to goad a **comeback**,
+  quoting the streak (`sFrontierBrainTexts[]`).
 
-Each Brain has their own line rather than sharing one generic message:
-Anabel quiet and intuitive, Tucker playing to the crowd, Spenser laughing
-about bonds over numbers, Greta spoiling for a scrap, Noland impressed you
-did it with rentals, Lucy managing four short sentences, Brandon booming
-about ruins.
+When both kinds exist, a coin flip picks which family fires, so invitations
+keep surfacing without drowning out the comeback calls. The old Silver Symbol
+gate is gone (`sFrontierSilverSymbolFlags[]` was removed with it).
+
+> ⚠️ All brain tables in this file are written in the file's **swapped**
+> Pike/Factory index space (see the comment at the top of `match_call.c`),
+> matching `sBattleFrontierFacilityNames[]`, `sFrontierBrainTrainerIds[]`,
+> `sFrontierBrainTexts[]` and `sFrontierBrainInviteTexts[]`. Lucy must land
+> on Battle Pike, Noland on Factory.
+
+Each Brain has their own voice in both text families: Anabel quiet and
+intuitive, Tucker playing to the crowd, Spenser laughing about bonds over
+numbers, Greta spoiling for a scrap, Noland all about rentals, Lucy terse,
+Brandon booming about ruins and guts.
 
 #### Norman
 
@@ -268,7 +291,7 @@ but it is a genuine collision and worth fixing separately.
 | Veritas | 1/12 |
 | Rival or Steven heart-to-heart | 1/24, then a coin flip between the two |
 | Wallace | 1/20 |
-| Frontier Brain | 1/16 |
+| Frontier Brain | 1/16 (requires `FLAG_SYS_FRONTIER_PASS`) |
 | Leisure (Mom / Birch / rival / Steven) | 1/8, then uniform among the four |
 
 ---
@@ -279,7 +302,7 @@ but it is a genuine collision and worth fixing separately.
 |---|---|
 | Outbreak | `gSaveBlock1Ptr->outbreakPokemonSpecies` / `outbreakDaysLeft` / `outbreakLocation{MapGroup,MapNum}` → `Overworld_GetMapHeaderByGroupAndId()` → `GetMapName()` |
 | National-Dex check | `NationalToHoennOrder(SpeciesToNationalPokedexNum(species)) == 0` + `IsNationalPokedexEnabled()` |
-| Frontier Brain | `GetFrontierStreakInfo()` over all `NUM_FRONTIER_FACILITIES`, highest streak wins; brain name from `gTrainers[…].trainerName` |
+| Frontier Brain | `GetFrontierStreakInfo()` over all `NUM_FRONTIER_FACILITIES`; untried facilities (streak ≤ 1) pool for a random invitation, played ones compete on highest streak; brain name from `gTrainers[…].trainerName` |
 | Wallace | `GAME_STAT_ENTERED_HOF` + the player's first non-egg party mon |
 | Rare catch | party scan: `IsMonShiny()` / `IsSpeciesLegendary()`, OT via `MON_DATA_OT_NAME` |
 | Rival gender | `gSaveBlock2Ptr->playerGender` → `gTrainers[TRAINER_MAY_ROUTE_103_TREECKO / TRAINER_BRENDAN_ROUTE_103_TREECKO].trainerName` |
@@ -320,10 +343,26 @@ already test for his unlocks.
 | `FLAG_DAILY_BIRTHDAY_MATCH_CALL` | `DAILY_FLAGS_START + 0x0` | birthday wish fires once per birthday (was `FLAG_UNUSED_0x920`) |
 | `FLAG_DAILY_VERITAS_MATCH_CALL` | `DAILY_FLAGS_START + 0x3` | Veritas call fires at most once a day (was `FLAG_UNUSED_0x923`) |
 | `FLAG_DAILY_RARE_CATCH_MATCH_CALL` | `DAILY_FLAGS_START + 0x4` | rare-catch congratulation fires at most once a day (was `FLAG_UNUSED_0x924`) |
+| `FLAG_DAILY_BIRTHDAY_SOON_MATCH_CALL` | `DAILY_FLAGS_START + 0x5` | "isn't your birthday coming up?" tease, once a day while the birthday is 1-6 days away (was `FLAG_UNUSED_0x925`) |
 
-All three sit inside the existing daily block and auto-clear at midnight via
-`ClearDailyFlags()`. Both reclaimed flags were verified to have zero references
+All four sit inside the existing daily block and auto-clear at midnight via
+`ClearDailyFlags()`. Every reclaimed flag was verified to have zero references
 anywhere in the tree before being taken.
+
+### Birthday-soon calls
+
+`PlayerBirthdayDaysAway()` (`src/field_specials.c`, exported via
+`field_specials.h`) returns the distance to the next birthday on the virtual
+calendar: 0 = today, 1-364 = upcoming, `0xFFFF` = unknown. Unlike
+`IsPlayerBirthdayToday()` it is **pure** — it never arms the 364-day
+anti-abuse latch, so it is safe to call speculatively. When the distance is
+1-6 and the daily flag is clear, `SelectMatchCallTrainer()` forces
+`FORCED_CALL_BIRTHDAY_SOON` — a new forced type slotted **after the rematch
+gate** and before the casual fallback, so rematch offers keep priority and
+only a pick with no battle business is converted. There is deliberately
+**no** `CheckMatchCallChance()` bypass — the tease rides the normal
+10-minute/50% pacing and lands once a day at an organic moment. Texts:
+`MatchCall_BirthdaySoonText1..3`.
 
 ---
 
@@ -331,8 +370,9 @@ anywhere in the tree before being taken.
 
 1. `SelectMatchCallMessage()` — the `FORCED_CALL_SPECIAL` branch must stay
    above `GetTrainerMatchCallId()`. See the warning in §2.
-2. `SelectCasualMatchCallText()` — `candidates[]` is sized `CASUAL_COUNT + 2`
-   and the maximum number of pushes is 9. Adding a category means bumping that.
+2. `SelectCasualMatchCallText()` — `candidates[]` is sized `CASUAL_COUNT + 4`
+   (18 possible pushes with the double-weighted chatter entries). Adding a
+   category means re-counting the worst-case pushes against that size.
 3. `sFrontierBrainTrainerIds[]` — indexed with this file's **swapped**
    `MATCH_CALL_PIKE` / `MATCH_CALL_FACTORY` convention (see the comment at the
    top of `match_call.c`), matching `sBattleFrontierFacilityNames[]`. Lucy must

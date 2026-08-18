@@ -31,6 +31,7 @@
 #include "overworld.h"
 #include "party_menu.h"
 #include "pokeblock.h"
+#include "pokedex.h"
 #include "pokemon.h"
 #include "pokemon_storage_system.h"
 #include "random.h"
@@ -45,6 +46,7 @@
 #include "strings.h"
 #include "task.h"
 #include "text.h"
+#include "trade.h"
 #include "tv.h"
 #include "wallclock.h"
 #include "window.h"
@@ -4587,30 +4589,87 @@ void Debug_MarkLastPartyMonTrueShiny(void)
         SetMonData(&gPlayerParty[count - 1], MON_DATA_TRUE_SHINY, &trueShiny);
 }
 
-void SetLastGiftMonStevenOT(void)
+// Steven's parting gift: the BELDUM left in his house. It must carry
+// Steven's OT, so it is created up front with a preset OT id and handed
+// over with GiveForeignMonToPlayer. The previous implementation ran the
+// mon through givemon (which keys the encrypted substructs to the PLAYER's
+// OT id) and then stamped a random OT id on top with
+// SetMonData(MON_DATA_OT_ID) -- but the OT id is a plaintext field that
+// feeds the substruct encryption key (personality ^ otId), so re-stamping
+// it after creation scrambles the mon into a Bad Egg. Same trap Bernard
+// the GOLDEEN once shipped with, just in the other direction (see
+// GiveForeignMonToPlayer in pokemon.c). The OT id is fixed -- 00374,
+// BELDUM's dex number -- so every gifted BELDUM is identifiably Steven's
+// and tools/repair_bad_egg_save.py can re-key corrupted ones from old
+// saves deterministically.
+#define STEVEN_BELDUM_OT_ID 374
+
+u16 GiveStevenBeldum(void)
 {
-    u32 otId = Random32();
-    u8 gender = MALE;
+    struct Pokemon mon;
+    u8 otGender = MALE;
+    u16 dexNum;
+    u16 result;
 
-    if (gSpecialVar_Result == MON_GIVEN_TO_PARTY)
+    CreateMon(&mon, SPECIES_BELDUM, 5, USE_RANDOM_IVS, FALSE, 0, OT_ID_PRESET, STEVEN_BELDUM_OT_ID);
+    SetMonData(&mon, MON_DATA_OT_NAME, gText_Steven);
+    SetMonData(&mon, MON_DATA_OT_GENDER, &otGender);
+    result = GiveForeignMonToPlayer(&mon);
+    if (result == MON_GIVEN_TO_PARTY || result == MON_GIVEN_TO_PC)
     {
-        u8 count = CalculatePlayerPartyCount();
-
-        if (count > 0)
-        {
-            SetMonData(&gPlayerParty[count - 1], MON_DATA_OT_NAME, gText_Steven);
-            SetMonData(&gPlayerParty[count - 1], MON_DATA_OT_GENDER, &gender);
-            SetMonData(&gPlayerParty[count - 1], MON_DATA_OT_ID, &otId);
-        }
+        dexNum = SpeciesToNationalPokedexNum(SPECIES_BELDUM);
+        GetSetPokedexFlag(dexNum, FLAG_SET_SEEN);
+        GetSetPokedexFlag(dexNum, FLAG_SET_CAUGHT);
     }
-    else if (gSpecialVar_Result == MON_GIVEN_TO_PC)
+    return result;
+}
+
+// Build a personality that is guaranteed shiny against otId: random low
+// half, high half constructed so HIHALF ^ LOHALF ^ HIHALF_OT ^ LOHALF_OT
+// < SHINY_ODDS (the rebuild trick from CreateBoxMon's forced-shiny path).
+// Every crafted-shiny gift/trade mon goes through here -- callers with
+// gender/nature constraints loop on the result.
+static u32 CraftShinyPersonality(u32 otId)
+{
+    u16 lo = Random();
+    u16 hi = ((u16)otId ^ (u16)(otId >> 16)) ^ lo ^ (u16)(Random() & (SHINY_ODDS - 1));
+
+    return ((u32)hi << 16) | lo;
+}
+
+// Scott's reward for sweeping all seven gold symbols: a shiny, perfect-IV
+// Lv5 BELDUM that is genuinely Scott's (OT SCOTT, male, id 02005). The
+// script used to run FLAG_SHINY_CREATION + givemon, which produced a shiny
+// keyed to the PLAYER -- so the shiny PID is built here against Scott's id
+// instead. Handing over via GiveForeignMonToPlayer keeps the OT intact;
+// stamping it afterwards is the Bad Egg trap (see GiveStevenBeldum above).
+#define SCOTT_BELDUM_OT_ID 2005
+
+static const u8 sScottBeldumOtName[] = _("SCOTT");
+
+u16 GiveScottShinyBeldum(void)
+{
+    struct Pokemon mon;
+    u8 otGender = MALE;
+    u32 personality;
+    u16 dexNum;
+    u16 result;
+
+    // BELDUM is genderless and the nature is unconstrained, so one pass
+    // suffices.
+    personality = CraftShinyPersonality(SCOTT_BELDUM_OT_ID);
+
+    CreateMon(&mon, SPECIES_BELDUM, 5, MAX_PER_STAT_IVS, TRUE, personality, OT_ID_PRESET, SCOTT_BELDUM_OT_ID);
+    SetMonData(&mon, MON_DATA_OT_NAME, sScottBeldumOtName);
+    SetMonData(&mon, MON_DATA_OT_GENDER, &otGender);
+    result = GiveForeignMonToPlayer(&mon);
+    if (result == MON_GIVEN_TO_PARTY || result == MON_GIVEN_TO_PC)
     {
-        struct BoxPokemon *boxMon = GetBoxedMonPtr(gSpecialVar_MonBoxId, gSpecialVar_MonBoxPos);
-
-        SetBoxMonData(boxMon, MON_DATA_OT_NAME, gText_Steven);
-        SetBoxMonData(boxMon, MON_DATA_OT_GENDER, &gender);
-        SetBoxMonData(boxMon, MON_DATA_OT_ID, &otId);
+        dexNum = SpeciesToNationalPokedexNum(SPECIES_BELDUM);
+        GetSetPokedexFlag(dexNum, FLAG_SET_SEEN);
+        GetSetPokedexFlag(dexNum, FLAG_SET_CAUGHT);
     }
+    return result;
 }
 
 static bool8 IsValidNameByte(u8 byte)
@@ -5025,10 +5084,9 @@ void CreateCookieZigzagoon(void)
     static const u16 sMoves[MAX_MON_MOVES] = {
         MOVE_EXTREME_SPEED, MOVE_GUILLOTINE, MOVE_THIEF, MOVE_YAWN,
     };
+    static const u8 sSender[] = _("EMELINE");
     const u32 otId = 50135;
     u32 personality;
-    u16 lo;
-    u16 hi;
     u8 i;
     u8 level;
     u8 ivVal = MAX_PER_STAT_IVS;
@@ -5039,18 +5097,18 @@ void CreateCookieZigzagoon(void)
     u16 heldItem = ITEM_LAVA_COOKIE;
     u16 move;
 
-    // Force a shiny PID against the preset OT. Pick a random low half and
-    // construct the high half so HIHALF ^ LOHALF ^ HIHALF_OT ^ LOHALF_OT
-    // is < SHINY_ODDS (8) — the standard shiny-rebuild trick from
-    // CreateBoxMon's FLAG_SHINY_CREATION path. Then loop until Cookie
-    // is male (boyfriend's barking dog) AND has the Naughty nature.
+    // Force a shiny PID against the preset OT, looping until Cookie is male
+    // (boyfriend's barking dog) AND has the Naughty nature.
     do
     {
-        lo = Random();
-        hi = ((u16)otId ^ (u16)(otId >> 16)) ^ lo ^ (u16)(Random() & (SHINY_ODDS - 1));
-        personality = ((u32)hi << 16) | lo;
+        personality = CraftShinyPersonality(otId);
     } while ((personality & 0xFF) < 127
           || (personality % NUM_NATURES) != NATURE_NAUGHTY);
+
+    // The trade scene's "sent to {name}" line has no sIngameTrades row to
+    // read for this custom trade; Emeline is the one making it (the stored
+    // OT stays Gabriel).
+    SetInGameTradeSenderOverride(sSender);
 
     level = (gSpecialVar_0x8005 < PARTY_SIZE)
           ? GetMonData(&gPlayerParty[gSpecialVar_0x8005], MON_DATA_LEVEL, NULL)
@@ -5097,10 +5155,10 @@ void CreateGiftDelibird(void)
     static const u16 sMoves[MAX_MON_MOVES] = {
         MOVE_AEROBLAST, MOVE_PRESENT, MOVE_POWDER_SNOW, MOVE_AURORA_BEAM,
     };
+    static const u8 sSenderMay[] = _("MAY");
+    static const u8 sSenderBrendan[] = _("BRENDAN");
     const u32 otId = 25120; // festive preset OT id
     u32 personality;
-    u16 lo;
-    u16 hi;
     u8 i;
     u8 ivVal = MAX_PER_STAT_IVS;
     u8 metLocation = METLOC_IN_GAME_TRADE;
@@ -5108,12 +5166,14 @@ void CreateGiftDelibird(void)
     u8 pp;
     u16 move;
 
-    // Force a shiny PID against the preset OT — build the high half so
-    // HIHALF ^ LOHALF ^ HIHALF_OT ^ LOHALF_OT < SHINY_ODDS (the standard
-    // rebuild trick; no gender/nature constraint, so a single pass suffices).
-    lo = Random();
-    hi = ((u16)otId ^ (u16)(otId >> 16)) ^ lo ^ (u16)(Random() & (SHINY_ODDS - 1));
-    personality = ((u32)hi << 16) | lo;
+    // Force a shiny PID against the preset OT (no gender/nature constraint,
+    // so a single pass suffices).
+    personality = CraftShinyPersonality(otId);
+
+    // The trade scene's "sent to {name}" line has no sIngameTrades row to
+    // read for this custom trade; the rival is the one handing Santy over
+    // (the stored OT stays SANTA).
+    SetInGameTradeSenderOverride(gSaveBlock2Ptr->playerGender == MALE ? sSenderMay : sSenderBrendan);
 
     CreateMon(&gEnemyParty[0], SPECIES_DELIBIRD, 12, USE_RANDOM_IVS,
               TRUE, personality, OT_ID_PRESET, otId);
@@ -5353,19 +5413,30 @@ void UpdateRoute117WandererFlags(void)
 #define TOURNEY_CODE_LENGTH 11
 #define TOURNEY_SLOT_COUNT 16 // slots 1-15; one bit each in VAR_TOURNEY_PRIZES_REDEEMED
 #define TOURNEY_MAX_QUANTITY 99
+
+// A prize can be a hardcoded Pokemon instead of a bag item: itemId == this
+// sentinel (the max 9-bit value, safely above ITEMS_COUNT) marks the code as a
+// mon prize, and the mon index rides in the quantity field. Same crypto,
+// trainer-ID keying and single-use slot as item prizes.
+#define TOURNEY_PRIZE_MON_MARKER 0x1FF
+#define TOURNEY_PRIZE_MON_COUNT  2   // index 0 unused; 1 = Bernard the GOLDEEN
 #define TOURNEY_SALT_1 0x56455249 // "VERI" — must match tools/make_prize_code.py
 #define TOURNEY_SALT_2 0x54415321 // "TAS!"
 #define TOURNEY_SALT_3 0x504B4D4E // "PKMN" — payload whitening key
 
 // Tournament IDs for payload bits 2-4. ID 0 = no specific tournament (generic
-// congratulations). IDs 3-7 are open.
+// congratulations). IDs 5-7 are open.
 static const u8 sTourneyName_MagmaVsAqua[]    = _("MAGMA VS AQUA");
 static const u8 sTourneyName_SouthernIsland[] = _("SOUTHERN ISLAND");
+static const u8 sTourneyName_Fishing[]        = _("FISHING");
+static const u8 sTourneyName_University[]     = _("UNIVERSITY");
 static const u8 *const sTournamentNames[8] =
 {
     NULL,
     sTourneyName_MagmaVsAqua,
     sTourneyName_SouthernIsland,
+    sTourneyName_Fishing,
+    sTourneyName_University,
 };
 
 // 32-character code alphabet (no I, O, 0 or 1 — too easy to misread).
@@ -5385,6 +5456,7 @@ enum
     TOURNEY_CODE_ALREADY_USED, // this prize ID was already redeemed
     TOURNEY_CODE_NO_BAG_SPACE, // valid, but no room in the bag
     TOURNEY_CODE_CANCELLED,    // player backed out of the naming screen
+    TOURNEY_CODE_OK_MON,       // prize granted, and it's a hardcoded Pokemon (id in 0x8004)
 };
 
 static u32 TourneyMix(u32 x)
@@ -5460,6 +5532,35 @@ static u16 RedeemTournamentCode(const u8 *code)
 
     if (slot == 0 || slot >= TOURNEY_SLOT_COUNT)
         return TOURNEY_CODE_INVALID;
+
+    // Veritas: hardcoded Pokemon prize (e.g. Bernard) — the mon index rides in
+    // the quantity field. Reuses the code's trainer-ID keying and single-use
+    // slot; the script gives the mon via GiveTournamentPrizeMon.
+    if (itemId == TOURNEY_PRIZE_MON_MARKER)
+    {
+        if (quantity == 0 || quantity >= TOURNEY_PRIZE_MON_COUNT)
+            return TOURNEY_CODE_INVALID;
+        if (tournamentId != 0 && sTournamentNames[tournamentId] == NULL)
+            return TOURNEY_CODE_INVALID;
+
+        redeemed = VarGet(VAR_TOURNEY_PRIZES_REDEEMED);
+        if (redeemed & (1 << slot))
+            return TOURNEY_CODE_ALREADY_USED;
+
+        // Unlike item prizes (which bail out with NO_BAG_SPACE before burning
+        // their slot), a mon can still fail at hand-over if the party AND all
+        // PC boxes are full. So the slot is NOT burned here: it's stashed in
+        // 0x8005 and GiveTournamentPrizeMon burns it only once the mon is
+        // actually placed, letting the player make room and re-enter the code.
+        gSpecialVar_0x8004 = quantity;        // which hardcoded prize mon
+        gSpecialVar_0x8005 = slot;            // burned on successful hand-over
+        gSpecialVar_0x8006 = tournamentId;
+        gSpecialVar_0x8007 = placement + 1;
+        if (tournamentId != 0)
+            StringCopy(gStringVar1, sTournamentNames[tournamentId]);
+        return TOURNEY_CODE_OK_MON;
+    }
+
     if (itemId == ITEM_NONE || itemId >= ITEMS_COUNT)
         return TOURNEY_CODE_INVALID;
     if (quantity == 0 || quantity > TOURNEY_MAX_QUANTITY)
@@ -5485,6 +5586,57 @@ static u16 RedeemTournamentCode(const u8 *code)
     if (tournamentId != 0)
         StringCopy(gStringVar1, sTournamentNames[tournamentId]);
     return TOURNEY_CODE_OK;
+}
+
+// Naive nature, male, and shiny against OT 02607 are all baked into this fixed
+// personality (computed offline), so every copy of Bernard is identical.
+#define TOURNEY_PRIZE_BERNARD_PID 0x0EEC04C3
+
+static const u8 sTourneyPrizeBernardNick[] = _("Bernard");
+static const u8 sTourneyPrizePecheOtName[] = _("PECHE");
+
+// Hands over a hardcoded prize Pokemon; gSpecialVar_0x8004 selects which one
+// (only Bernard exists for now). The script prints the placement banner first,
+// then calls this via specialvar to get MON_GIVEN_TO_PARTY / _PC / _CANT_GIVE,
+// and gStringVar2 is left holding the mon's nickname for the "received" line.
+u16 GiveTournamentPrizeMon(void)
+{
+    struct Pokemon mon;
+    u8 otGender = MALE;
+    u16 heldItem = ITEM_BIG_PEARL;
+    u16 dexNum;
+    u8 result;
+
+    // Bernard: shiny male Lv5 GOLDEEN, Naive, 31 IVs in every stat, knows
+    // LOCK-ON, holds a BIG PEARL, OT PECHE / ID 02607, nicknamed Bernard. The
+    // fixed personality carries the nature/gender/shininess; fixedIV 31 sets
+    // all IVs; OT_ID_PRESET pins the OT ID so the shininess holds.
+    CreateMon(&mon, SPECIES_GOLDEEN, 5, 31, TRUE, TOURNEY_PRIZE_BERNARD_PID, OT_ID_PRESET, 2607);
+    SetMonData(&mon, MON_DATA_NICKNAME, sTourneyPrizeBernardNick);
+    SetMonData(&mon, MON_DATA_OT_NAME, sTourneyPrizePecheOtName);
+    SetMonData(&mon, MON_DATA_OT_GENDER, &otGender);
+    SetMonData(&mon, MON_DATA_HELD_ITEM, &heldItem);
+    SetMonMoveSlot(&mon, MOVE_LOCK_ON, 0);
+
+    StringCopy(gStringVar2, sTourneyPrizeBernardNick);
+    // GiveForeignMonToPlayer, NOT GiveMonToPlayer: the latter stamps the
+    // player as OT, which shifts the encryption key mid-flight and turns
+    // Bernard into a Bad Egg (this shipped once -- see the comment on
+    // GiveForeignMonToPlayer in pokemon.c). Bernard must stay PECHE's:
+    // his crafted shiny PID is keyed to OT id 02607.
+    result = GiveForeignMonToPlayer(&mon);
+    // Burn the one-use code slot only when the mon actually lands somewhere;
+    // on MON_CANT_GIVE the code stays valid so the player can make room and
+    // enter it again (see RedeemTournamentCode, which stashed the slot).
+    if (result != MON_CANT_GIVE)
+    {
+        VarSet(VAR_TOURNEY_PRIZES_REDEEMED, VarGet(VAR_TOURNEY_PRIZES_REDEEMED) | (1 << gSpecialVar_0x8005));
+        // Register the prize mon in the Pokedex like every other gift path.
+        dexNum = SpeciesToNationalPokedexNum(SPECIES_GOLDEEN);
+        GetSetPokedexFlag(dexNum, FLAG_SET_SEEN);
+        GetSetPokedexFlag(dexNum, FLAG_SET_CAUGHT);
+    }
+    return result;
 }
 
 static void CB2_HandleTournamentCode(void)
@@ -5672,6 +5824,36 @@ u16 IsPlayerBirthdayToday(void)
         return TRUE;
     }
     return FALSE;
+}
+
+// 0-based day-of-year on the fixed 365-day virtual calendar.
+static s32 CalendarDayOfYear(u8 month, u8 day)
+{
+    s32 i;
+    s32 doy = day - 1;
+
+    for (i = 0; i < month - 1; i++)
+        doy += sCalendarMonthLengths[i];
+    return doy;
+}
+
+// Days until the player's next birthday on the virtual calendar: 0 = today,
+// 1-364 = upcoming, 0xFFFF = unknown (no calendar date set or no birthday
+// registered). Pure, unlike IsPlayerBirthdayToday -- it never arms the
+// anti-abuse latch, so it's safe to call from speculative checks like the
+// PokéNav "birthday coming up" calls.
+u16 PlayerBirthdayDaysAway(void)
+{
+    u8 month, day, bMonth, bDay;
+
+    if (!IsCalendarDateSet())
+        return 0xFFFF;
+    if (!GetPlayerBirthdayDate(&bMonth, &bDay))
+        return 0xFFFF;
+    GetVirtualDate(&month, &day);
+    if (month == 0)
+        return 0xFFFF;
+    return (u16)((CalendarDayOfYear(bMonth, bDay) - CalendarDayOfYear(month, day) + 365) % 365);
 }
 
 // Shown once per boot after this update, until the player sets a date:

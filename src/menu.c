@@ -1749,6 +1749,32 @@ void DoScheduledBgTilemapCopiesToVram(void)
     }
 }
 
+// Veritas: flush only the map-layer BGs (1-3). Used by VBlankCB_Field's
+// scroll-flicker fix so that a VBlank landing in the middle of a task can
+// never consume a BG0 (menu/text window) copy while its tilemap buffer is
+// only half-built - menus set the BG0 flag mid-sequence and rely on the
+// main loop's end-of-frame flush, as vanilla intended. Consuming BG0 from
+// the interrupt corrupted multi-window screens (e.g. the Player PC's
+// Withdraw Item flow: garbled top-left box, empty bottom text box).
+void DoScheduledMapBgTilemapCopiesToVram(void)
+{
+    if (sScheduledBgCopiesToVram[1] == TRUE)
+    {
+        CopyBgTilemapBufferToVram(1);
+        sScheduledBgCopiesToVram[1] = FALSE;
+    }
+    if (sScheduledBgCopiesToVram[2] == TRUE)
+    {
+        CopyBgTilemapBufferToVram(2);
+        sScheduledBgCopiesToVram[2] = FALSE;
+    }
+    if (sScheduledBgCopiesToVram[3] == TRUE)
+    {
+        CopyBgTilemapBufferToVram(3);
+        sScheduledBgCopiesToVram[3] = FALSE;
+    }
+}
+
 void ResetTempTileDataBuffers(void)
 {
     int i;
@@ -2142,6 +2168,29 @@ void BufferSaveMenuText(u8 textId, u8 *dest, u8 color)
             }
             *string = flagCount + CHAR_0;
             *endOfString = EOS;
+            break;
+        case SAVE_MENU_SYMBOLS:
+            // Veritas: Battle Frontier symbols as "G:n S:n". Gold counts the
+            // gold symbols; silver counts silver-only facilities, matching
+            // what the FRONTIER PASS shows (gold replaces silver there).
+            // Each facility's gold flag is its silver flag + 1.
+            for (curFlag = FLAG_SYS_TOWER_GOLD, flagCount = 0; curFlag <= FLAG_SYS_PYRAMID_GOLD; curFlag += 2)
+            {
+                if (FlagGet(curFlag))
+                    flagCount++;
+            }
+            *(string++) = CHAR_G;
+            *(string++) = CHAR_COLON;
+            string = ConvertIntToDecimalStringN(string, flagCount, STR_CONV_MODE_LEFT_ALIGN, 1);
+            *(string++) = CHAR_SPACE;
+            for (curFlag = FLAG_SYS_TOWER_SILVER, flagCount = 0; curFlag <= FLAG_SYS_PYRAMID_SILVER; curFlag += 2)
+            {
+                if (FlagGet(curFlag) && !FlagGet(curFlag + 1))
+                    flagCount++;
+            }
+            *(string++) = CHAR_S;
+            *(string++) = CHAR_COLON;
+            ConvertIntToDecimalStringN(string, flagCount, STR_CONV_MODE_LEFT_ALIGN, 1);
             break;
     }
 }

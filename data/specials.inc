@@ -31,6 +31,9 @@ gSpecials::
 	def_special GetObjectEventLocalIdByFlag
 	def_special GetSecretBaseTypeInFrontOfPlayer
 	def_special SetSecretBaseOwnerGfxId
+	def_special TrySpawnSecretBasePartyMon
+	def_special GetSecretBasePartyMonSpecies
+	def_special AdjustSecretBasePartyMon
 	def_special PutAwayDecorationIteration
 	def_special EnterNewlyCreatedSecretBase
 	def_special SetBattledOwnerFromResult
@@ -571,6 +574,9 @@ gSpecials::
 	def_special Fashionista_GetTip
 	def_special UpdateRoute117WandererFlags
 	def_special TournamentPrize_DoCodeEntry
+	def_special GiveTournamentPrizeMon
+	def_special GiveStevenBeldum
+	def_special GiveScottShinyBeldum
 	def_special IsPlayerBirthdayToday
 	def_special DateSetFromScript
 	def_special FanClub_GetBirthdayAskState

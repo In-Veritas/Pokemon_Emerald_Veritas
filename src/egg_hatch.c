@@ -162,6 +162,16 @@ static const struct SpritePalette sEgg_SpritePalette =
     .tag = PALTAG_EGG
 };
 
+// Veritas: legendary eggs (Latios/Latias) use a blue-purple shell. Same tag as
+// the normal egg palette, since only one egg is on screen at a time.
+static const u16 sEggLegendaryPalette[] = INCBIN_U16("graphics/pokemon/egg/normal_legendary.gbapal");
+
+static const struct SpritePalette sEggLegendary_SpritePalette =
+{
+    .data = sEggLegendaryPalette,
+    .tag = PALTAG_EGG
+};
+
 static const struct SpriteTemplate sSpriteTemplate_Egg =
 {
     .tileTag = GFXTAG_EGG,
@@ -546,7 +556,11 @@ static void CB2_LoadEggHatch(void)
     case 3:
         LoadSpriteSheet(&sEggHatch_Sheet);
         LoadSpriteSheet(&sEggShards_Sheet);
-        LoadSpritePalette(&sEgg_SpritePalette);
+        // Veritas: legendary eggs hatch from a blue-purple shell.
+        if (IsSpeciesLegendary(GetMonData(&gPlayerParty[sEggHatchData->eggPartyId], MON_DATA_SPECIES)))
+            LoadSpritePalette(&sEggLegendary_SpritePalette);
+        else
+            LoadSpritePalette(&sEgg_SpritePalette);
         gMain.state++;
         break;
     case 4:

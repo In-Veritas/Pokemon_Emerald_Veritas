@@ -3318,18 +3318,25 @@ static void LoadTradeSequenceSpriteSheetsAndPalettes(void)
     LoadSpritePalette(&sSpritePalette_Gba);
 }
 
+// Veritas: custom gift trades (Cookie, Santy) build gEnemyParty[0] in their
+// own creator specials and never set gSpecialVar_0x8004 to an sIngameTrades
+// index -- indexing the table by whatever the var holds (the player's party
+// slot) credited a random NPC as the sender. The creator registers the
+// display name here instead; consumed and cleared by BufferTradeSceneStrings.
+static EWRAM_DATA const u8 *sInGameTradeSenderOverride = NULL;
+
+void SetInGameTradeSenderOverride(const u8 *senderName)
+{
+    sInGameTradeSenderOverride = senderName;
+}
+
 // Buffers "[Pokemon] will be sent to [Trainer]" strings
 static void BufferTradeSceneStrings(void)
 {
     u8 mpId;
     u8 name[POKEMON_NAME_BUFFER_SIZE];
     const struct InGameTrade *ingameTrade;
-    // Veritas: detection state for the Cookie trade override below.
     u8 enemyNickname[POKEMON_NAME_BUFFER_SIZE];
-    u8 enemyOtName[TRAINER_NAME_LENGTH + 1];
-    static const u8 sCookieNickname[] = _("Cookie");
-    static const u8 sGabrielOt[] = _("Gabriel");
-    static const u8 sEmelineSender[] = _("EMELINE");
 
     if (sTradeAnim->isLinkTrade)
     {
@@ -3342,24 +3349,15 @@ static void BufferTradeSceneStrings(void)
     }
     else
     {
-        // Veritas: the Cookie trade bypasses CreateInGameTradePokemon
-        // (see CreateCookieZigzagoon in field_specials.c) so it never
-        // sets gSpecialVar_0x8004 to a valid sIngameTrades index. The
-        // trade scene would then index sIngameTrades by the player's
-        // chosen party slot and display whichever NPC name happened to
-        // sit there (commonly "SKYLAR" at INGAME_TRADE_BAGON = 2).
-        // Detect Cookie via the nickname + OT combo CreateCookieZigzagoon
-        // wrote into gEnemyParty[0] and substitute Emeline's name for
-        // the trade-scene sender line. Cookie's stored OT stays "Gabriel"
-        // so the summary screen still credits him.
-        GetMonData(&gEnemyParty[0], MON_DATA_NICKNAME, enemyNickname);
-        GetMonData(&gEnemyParty[0], MON_DATA_OT_NAME, enemyOtName);
-        if (GetMonData(&gEnemyParty[0], MON_DATA_SPECIES) == SPECIES_ZIGZAGOON
-         && StringCompare(enemyNickname, sCookieNickname) == 0
-         && StringCompare(enemyOtName, sGabrielOt) == 0)
+        // Veritas: a custom gift trade registered its sender by name (see
+        // SetInGameTradeSenderOverride above); everything else reads the
+        // sIngameTrades row the script selected.
+        if (sInGameTradeSenderOverride != NULL)
         {
-            StringCopy(gStringVar1, sEmelineSender);
+            GetMonData(&gEnemyParty[0], MON_DATA_NICKNAME, enemyNickname);
+            StringCopy(gStringVar1, sInGameTradeSenderOverride);
             StringCopy_Nickname(gStringVar3, enemyNickname);
+            sInGameTradeSenderOverride = NULL;
         }
         else
         {

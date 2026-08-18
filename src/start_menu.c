@@ -1388,6 +1388,13 @@ static void ShowSaveInfoWindow(void)
     {
         saveInfoWindow.height -= 2;
     }
+    // Veritas: one extra row for the Battle Frontier symbol counts. Height
+    // 12 is the ceiling -- the frame border lands on tile row 14 and the
+    // save message box starts at row 15.
+    if (FlagGet(FLAG_SYS_FRONTIER_PASS))
+    {
+        saveInfoWindow.height += 2;
+    }
 
     sSaveInfoWindowId = AddWindow(&saveInfoWindow);
     DrawStdWindowFrame(sSaveInfoWindowId, FALSE);
@@ -1425,6 +1432,16 @@ static void ShowSaveInfoWindow(void)
         yOffset += 16;
         AddTextPrinterParameterized(sSaveInfoWindowId, FONT_NORMAL, gText_SavingPokedex, 0, yOffset, TEXT_SKIP_DRAW, NULL);
         BufferSaveMenuText(SAVE_MENU_CAUGHT, gStringVar4, color);
+        xOffset = GetStringRightAlignXOffset(FONT_NORMAL, gStringVar4, 0x70);
+        AddTextPrinterParameterized(sSaveInfoWindowId, FONT_NORMAL, gStringVar4, xOffset, yOffset, TEXT_SKIP_DRAW, NULL);
+    }
+
+    if (FlagGet(FLAG_SYS_FRONTIER_PASS))
+    {
+        // Veritas: print gold/silver Battle Frontier symbol counts
+        yOffset += 16;
+        AddTextPrinterParameterized(sSaveInfoWindowId, FONT_NORMAL, gText_SavingSymbols, 0, yOffset, TEXT_SKIP_DRAW, NULL);
+        BufferSaveMenuText(SAVE_MENU_SYMBOLS, gStringVar4, color);
         xOffset = GetStringRightAlignXOffset(FONT_NORMAL, gStringVar4, 0x70);
         AddTextPrinterParameterized(sSaveInfoWindowId, FONT_NORMAL, gStringVar4, xOffset, yOffset, TEXT_SKIP_DRAW, NULL);
     }

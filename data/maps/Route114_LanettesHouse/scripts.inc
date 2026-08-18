@@ -119,7 +119,9 @@ Route114_LanettesHouse_EventScript_EeveeGift::
 	lockall
 	waitmovement 0
 	applymovement LOCALID_LANETTE, Common_Movement_FacePlayer
-	call_if_set FLAG_TEMP_3, Route114_LanettesHouse_EventScript_WouldYouLikeEevee
+	@ On a repeat ask, skip straight to the question. goto, not call:
+	@ WouldYouLikeEevee never returns (every path ends the script).
+	goto_if_set FLAG_TEMP_3, Route114_LanettesHouse_EventScript_WouldYouLikeEevee
 	setflag FLAG_TEMP_3
 	waitmovement 0
 	playse SE_PIN

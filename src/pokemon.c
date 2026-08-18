@@ -2261,6 +2261,24 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
         case OT_ID_PRESET:
         {
             value = fixedOtId;
+            // Veritas: honor a pending forced shiny here too. Eggs are
+            // created with the player's id as a PRESET OT (so no charm
+            // rolls happen at creation; see CreateEgg/SetInitialEggData),
+            // but the FLAG_SHINY_CREATION craft and its FlagClear used to
+            // live only in the OT_ID_PLAYER_ID branch below -- the
+            // guaranteed-shiny minigame gift eggs silently lost their
+            // guarantee and the still-set flag leaked onto the next
+            // player-OT creation (usually a wild mon, force-shinied).
+            if (!hasFixedPersonality && FlagGet(FLAG_SHINY_CREATION))
+            {
+                u8 nature = personality % NUM_NATURES;  // keep current nature
+                do {
+                    personality = Random32();
+                    personality = ((((Random() % SHINY_ODDS) ^ (HIHALF(value) ^ LOHALF(value))) ^ LOHALF(personality)) << 16) | LOHALF(personality);
+                } while (nature != GetNatureFromPersonality(personality));
+                SetBoxMonData(boxMon, MON_DATA_PERSONALITY, &personality);
+                FlagClear(FLAG_SHINY_CREATION);
+            }
         }
         break;
 
@@ -2322,34 +2340,55 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
                 // twice as often.
                 if (IsGiftDayToday())
                     maxRolls++;
-                // Re-roll until shiny or out of attempts
-                // If hasFixedPersonality (e.g. Synchronize), preserve the nature
+                // If hasFixedPersonality (Everstone egg, Synchronize, Cute Charm),
+                // the caller crafted this personality to lock in traits, so never
+                // discard it outright: the rolls below only grant extra chances to
+                // upgrade the mon to shiny on top of the crafted personality.
                 if (hasFixedPersonality)
                 {
-                    u8 nature = fixedPersonality % NUM_NATURES;
-                    do
-                    {
-                        personality = Random32();
-                        shinyValue = HIHALF(value) ^ LOHALF(value) ^ HIHALF(personality) ^ LOHALF(personality);
-                        rolls++;
-                    } while (shinyValue >= SHINY_ODDS && rolls < maxRolls);
-                    // Preserve nature while keeping shininess if shiny
+                    // The crafted personality's own shiny check counts as roll #1
+                    // and is this mon's one natural 1/8192 roll. A crafted nature
+                    // (Everstone, Synchronize) or gender (Cute Charm) does not
+                    // disqualify it: if this first roll hits, it is a TRUE shiny.
+                    // This is also how hatched Eggs earn true-shiny status, since
+                    // Egg generation rolls nothing and hatching runs this path.
+                    shinyValue = HIHALF(value) ^ LOHALF(value) ^ HIHALF(personality) ^ LOHALF(personality);
+                    rolls = 1;
                     if (shinyValue < SHINY_ODDS)
                     {
-                        // Shiny: rebuild personality with correct nature AND shiny XOR.
-                        // Synchronize-provided personality is caller-crafted, so a shiny
-                        // produced here is never a "true shiny" (no natural initial roll).
-                        u16 tid = LOHALF(value) ^ HIHALF(value);
-                        do {
-                            personality = Random32();
-                            personality = (((tid ^ (Random() % SHINY_ODDS)) ^ LOHALF(personality)) << 16) | LOHALF(personality);
-                        } while (GetNatureFromPersonality(personality) != nature);
+                        // Naturally shiny as crafted: keep it untouched.
+                        isTrueShiny = TRUE;
                     }
                     else
                     {
-                        // Not shiny: just fix the nature
-                        while (GetNatureFromPersonality(personality) != nature)
-                            personality++;
+                        // Re-roll until shiny or out of attempts.
+                        while (shinyValue >= SHINY_ODDS && rolls < maxRolls)
+                        {
+                            personality = Random32();
+                            shinyValue = HIHALF(value) ^ LOHALF(value) ^ HIHALF(personality) ^ LOHALF(personality);
+                            rolls++;
+                        }
+
+                        if (shinyValue < SHINY_ODDS)
+                        {
+                            // A re-roll hit: rebuild a shiny personality that keeps
+                            // the crafted nature AND gender (Cute Charm). Re-roll
+                            // shinies are never TRUE shinies (roll #1 missed).
+                            u8 nature = GetNatureFromPersonality(fixedPersonality);
+                            u8 gender = GetGenderFromSpeciesAndPersonality(species, fixedPersonality);
+                            u16 tid = LOHALF(value) ^ HIHALF(value);
+                            do {
+                                personality = Random32();
+                                personality = (((tid ^ (Random() % SHINY_ODDS)) ^ LOHALF(personality)) << 16) | LOHALF(personality);
+                            } while (GetNatureFromPersonality(personality) != nature
+                                  || GetGenderFromSpeciesAndPersonality(species, personality) != gender);
+                        }
+                        else
+                        {
+                            // No shiny: restore the crafted personality untouched
+                            // (nature, gender, ability slot - everything).
+                            personality = fixedPersonality;
+                        }
                     }
                 }
                 else
@@ -4761,6 +4800,10 @@ void CopyMon(void *dest, void *src, size_t size)
     memcpy(dest, src, size);
 }
 
+// NOTE: stamps the PLAYER as the mon's OT. Only hand this mons created with
+// the player's own OT (OT_ID_PLAYER_ID). For a mon that must keep a foreign
+// OT, use GiveForeignMonToPlayer below -- overwriting MON_DATA_OT_ID here
+// would corrupt it (see that function's comment).
 u8 GiveMonToPlayer(struct Pokemon *mon)
 {
     s32 i;
@@ -4768,6 +4811,34 @@ u8 GiveMonToPlayer(struct Pokemon *mon)
     SetMonData(mon, MON_DATA_OT_NAME, gSaveBlock2Ptr->playerName);
     SetMonData(mon, MON_DATA_OT_GENDER, &gSaveBlock2Ptr->playerGender);
     SetMonData(mon, MON_DATA_OT_ID, gSaveBlock2Ptr->playerTrainerId);
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL) == SPECIES_NONE)
+            break;
+    }
+
+    if (i >= PARTY_SIZE)
+        return CopyMonToPC(mon);
+
+    CopyMon(&gPlayerParty[i], mon, sizeof(*mon));
+    gPlayerPartyCount = i + 1;
+    return MON_GIVEN_TO_PARTY;
+}
+
+// Veritas: like GiveMonToPlayer, but keeps the mon's own OT (name, gender,
+// id). Handing a mon whose OT is NOT the player through GiveMonToPlayer
+// corrupts it into a Bad Egg: MON_DATA_OT_ID is a plaintext field, so
+// overwriting it shifts the substruct encryption key (personality ^ otId)
+// WITHOUT re-encrypting the substructs, and the next encrypted-field access
+// fails its checksum. Vanilla never trips this because its gift mons are
+// always created with the player's own OT, and foreign-OT mons arrive via
+// the trade flow, which never stamps the OT. Used by foreign-OT prizes like
+// Bernard the tournament GOLDEEN (OT PECHE/02607 -- his crafted shiny PID is
+// keyed to that exact OT, so it must survive the hand-over).
+u8 GiveForeignMonToPlayer(struct Pokemon *mon)
+{
+    s32 i;
 
     for (i = 0; i < PARTY_SIZE; i++)
     {
@@ -6976,8 +7047,10 @@ u16 GetBattleBGM(void)
             trainerClass = TRAINER_CLASS_EXPERT;
         else
             trainerClass = gTrainers[gTrainerBattleOpponent_A].trainerClass;
-        if (gTrainerBattleOpponent_A == TRAINER_VERITAS || gTrainerBattleOpponent_A == TRAINER_CHAMPION_EXCLSIOR)
+        if (gTrainerBattleOpponent_A == TRAINER_VERITAS)
             return MUS_C_VS_LEGEND_BEAST;
+        if (gTrainerBattleOpponent_A == TRAINER_CHAMPION_EXCLSIOR)
+            return MUS_RG_VS_DEOXYS;
         // Veritas: Frontier-only — legendary opponent wins over every
         // class-based song below (including brain music). Computed here so
         // we have it before the switch decides whether to use it (only the
@@ -7136,6 +7209,13 @@ const struct CompressedSpritePalette *GetMonSpritePalStruct(struct Pokemon *mon)
     if (species == SPECIES_EGG && IsSpeciesLegendary(GetMonData(mon, MON_DATA_SPECIES, 0)))
         return &sEggLegendaryPalette;
     return GetMonSpritePalStructFromOtIdPersonality(species, otId, personality);
+}
+
+// Veritas: public accessor so the summary screen (and any other UI) can apply
+// the legendary-egg shell palette without duplicating the static struct.
+const struct CompressedSpritePalette *GetEggLegendarySpritePalStruct(void)
+{
+    return &sEggLegendaryPalette;
 }
 
 const struct CompressedSpritePalette *GetMonSpritePalStructFromOtIdPersonality(u16 species, u32 otId , u32 personality)
