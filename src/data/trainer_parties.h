@@ -15131,7 +15131,7 @@ static const struct TrainerMon sParty_Veritas[] = {
 static const struct TrainerMon sParty_ChampionExclsior[] = {
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 80,
+    .lvl = 83,
     .species = SPECIES_TYPHLOSION,
     .heldItem = ITEM_CHARCOAL,
     .ability = ABILITY_SLOT_1,
@@ -15151,7 +15151,7 @@ static const struct TrainerMon sParty_ChampionExclsior[] = {
     },
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 80,
+    .lvl = 82,
     .species = SPECIES_SCIZOR,
     .heldItem = ITEM_CHOICE_BAND,
     .ability = ABILITY_SLOT_1,
@@ -15161,7 +15161,7 @@ static const struct TrainerMon sParty_ChampionExclsior[] = {
     },
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 80,
+    .lvl = 84,
     .species = SPECIES_GARDEVOIR,
     .heldItem = ITEM_LUM_BERRY,
     .ability = ABILITY_SLOT_1,
@@ -15171,7 +15171,7 @@ static const struct TrainerMon sParty_ChampionExclsior[] = {
     },
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 80,
+    .lvl = 85,
     .species = SPECIES_TYRANITAR,
     .heldItem = ITEM_QUICK_CLAW,
     .ability = ABILITY_SLOT_1,
@@ -15181,7 +15181,7 @@ static const struct TrainerMon sParty_ChampionExclsior[] = {
     },
     {
     .ivs = BEST_IV_SPREAD,
-    .lvl = 80,
+    .lvl = 86,
     .species = SPECIES_LATIOS,
     .heldItem = ITEM_SOUL_DEW,
     .ability = ABILITY_SLOT_1,

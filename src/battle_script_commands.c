@@ -52,6 +52,7 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/trainers.h"
+#include "constants/opponents.h"
 #include "constants/flags.h"
 #include "debug.h"
 
@@ -5897,6 +5898,11 @@ static u32 GetTrainerMoneyToGive(u16 trainerId)
     if (trainerId == TRAINER_SECRET_BASE)
     {
         moneyReward = 20 * gBattleResources->secretBase->party.levels[0] * gBattleStruct->moneyMultiplier;
+    }
+    else if (trainerId == TRAINER_CHAMPION_EXCLSIOR)
+    {
+        // Champion cameo pays a fixed purse (Amulet Coin still doubles it).
+        moneyReward = 30000 * gBattleStruct->moneyMultiplier;
     }
     else
     {

@@ -15,17 +15,17 @@ EverGrandeCity_ChampionsRoom_OnTransition:
 	clearflag FLAG_HIDE_CHAMPIONS_ROOM_WALLACE
 	setflag FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR
 	call_if_unset FLAG_IS_CHAMPION, EverGrandeCity_ChampionsRoom_EventScript_SetStevenLayout
-	@ Exclsior champion feature disabled for now
-	@ call_if_set FLAG_IS_CHAMPION, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll
+	call_if_set FLAG_IS_CHAMPION, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll
 	end
 
+@ After the player has beaten Wallace's title defense at least once, each later
+@ visit has a 1 in 5 chance of Exclsior standing in as champion instead.
 EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll::
-	@ Disabled — always show Wallace
-	@ goto_if_unset TRAINER_FLAGS_START + TRAINER_WALLACE_2, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End
-	@ random 5
-	@ goto_if_ne VAR_RESULT, 0, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End
-	@ setflag FLAG_HIDE_CHAMPIONS_ROOM_WALLACE
-	@ clearflag FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR
+	goto_if_not_defeated TRAINER_WALLACE_2, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End
+	random 5
+	goto_if_ne VAR_RESULT, 0, EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End
+	setflag FLAG_HIDE_CHAMPIONS_ROOM_WALLACE
+	clearflag FLAG_HIDE_CHAMPIONS_ROOM_EXCLSIOR
 	return
 
 EverGrandeCity_ChampionsRoom_EventScript_TryExclsiorRoll_End::
@@ -287,6 +287,7 @@ EverGrandeCity_ChampionsRoom_EventScript_ChampionExclsior::
 	setmetatile 6, 1, METATILE_EliteFour_OpenDoorChampion_Frame, FALSE
 	setmetatile 6, 2, METATILE_EliteFour_OpenDoorChampion_Opening, FALSE
 	special DrawWholeMapView
+	special CheckPartyForStarterUnlocks
 	msgbox EverGrandeCity_ChampionsRoom_Text_ExclsiorPostBattle, MSGBOX_DEFAULT
 	closemessage
 	delay 30
